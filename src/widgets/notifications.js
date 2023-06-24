@@ -178,10 +178,6 @@ export function DNDToggle(props) {
         ...props,
         onClick: Notifications.toggleDND,
     });
-    Notifications.connect(button, () => {
-        Notifications.dnd
-            ? button.get_style_context().add_class('on')
-            : button.get_style_context().remove_class('on');
-    });
+    Notifications.connect(button, () => button.toggleClassName(Notifications.dnd, 'on'));
     return button;
 }

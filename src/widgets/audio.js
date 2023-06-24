@@ -111,9 +111,7 @@ export function MicMuteToggle(props) {
             if (!Audio.microphone)
                 return;
 
-            Audio.microphone.isMuted
-                ? button.get_style_context().add_class('on')
-                : button.get_style_context().remove_class('on');
+            button.toggleClassName(Audio.microphone.isMuted, 'on');
         },
     });
     return button;

@@ -28,10 +28,8 @@ export function Toggle(props) {
         ...props,
         onClick: Bluetooth.toggle,
     });
-    Bluetooth.connect(button, () => {
-        Bluetooth.state.state === 'enabled'
-            ? button.get_style_context().add_class('on')
-            : button.get_style_context().remove_class('on');
-    });
+    Bluetooth.connect(button, () =>
+        button.toggleClassName(Bluetooth.state.state === 'enabled', 'on'));
+
     return button;
 }

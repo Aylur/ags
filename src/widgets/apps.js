@@ -1,8 +1,8 @@
 import App from '../app.js';
 import Applications from '../service/apps.js';
-import { restcheck, typecheck } from '../utils.js';
 import Widget from '../widget.js';
 import { Box, Icon, Scrollable } from './basic.js';
+import { restcheck, typecheck } from '../utils.js';
 
 const _item = ({ name, description, iconName, launch }, window) => {
     const title = Widget({
@@ -21,11 +21,10 @@ const _item = ({ name, description, iconName, launch }, window) => {
         justify: 'left',
         valign: 'center',
     });
-    desc.connect('draw', () => {
-        if (!description)
-            desc.hide();
+    const ico = Icon({
+        icon: iconName,
+        size: 38,
     });
-    const ico = Icon({ icon: iconName, size: 38 });
     const btn = Widget({
         className: 'app',
         type: 'button',
@@ -62,7 +61,7 @@ const _listbox = () => {
 };
 
 const _layout = ({ entry, listbox }) => {
-    const box = Box({
+    return Box({
         orientation: 'vertical',
         children: [
             entry,
@@ -72,10 +71,6 @@ const _layout = ({ entry, listbox }) => {
             }),
         ],
     });
-
-    box._entry = entry;
-    box._listbox = listbox;
-    return box;
 };
 
 export function AppLauncher({ type, placeholder, layout, item, listbox, window, ...rest }) {

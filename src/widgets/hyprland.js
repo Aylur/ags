@@ -1,4 +1,3 @@
-import Gtk from 'gi://Gtk?version=3.0';
 import { Box, Icon, Label } from './basic.js';
 import Hyprland from '../service/hyprland.js';
 import Widget from '../widget.js';
@@ -25,18 +24,12 @@ export function Workpsaces({ type, monitors, fixed, active, empty, occupied, ...
                 ? [occupied, 'occupied']
                 : [empty, 'empty'];
 
-        const btn = child
-            ? new Gtk.Button()
-            : Gtk.Button.new_with_label(`${workspaces.get(i)?.name || i}`);
-
-        if (child)
-            btn.add(Widget(child));
-
-        btn.connect('clicked', () => Hyprland
-            .Hyprctl(`dispatch workspace ${i}`));
-
-        btn.get_style_context().add_class(className);
-        return btn;
+        return Widget({
+            type: 'button',
+            onClick: () => Hyprland.Hyprctl(`dispatch workspace ${i}`),
+            className,
+            child: child ? Widget(child) : `${workspaces.get(i)?.name || i}`,
+        });
     };
 
     const forFixed = () => {

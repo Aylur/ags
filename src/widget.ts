@@ -141,16 +141,23 @@ function parseParams(widget: Gtk.Widget, {
         widget.set_tooltip_text(tooltip);
 
     // @ts-ignore
-    widget.set_css = (css: string) => {
+    widget.setStyle = (css: string) => {
         const provider = new Gtk.CssProvider();
         provider.load_from_data(`* { ${css} }`);
         widget.reset_style();
         widget.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
     };
 
+    // @ts-ignore
+    widget.toggleClassName = (condition: boolean, className: string) => {
+        condition
+            ? widget.get_style_context().add_class(className)
+            : widget.get_style_context().remove_class(className);
+    };
+
     if (style)
         // @ts-ignore
-        widget.set_css(style);
+        widget.setStyle(style);
 
     if (!visible)
         widget.hide();

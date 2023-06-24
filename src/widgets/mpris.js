@@ -23,7 +23,7 @@ export function CoverArt({ player, ...props }) {
         if (!url)
             return;
 
-        box.set_css(`background-image: url("${url}")`);
+        box.setStyle(`background-image: url("${url}")`);
     });
 
     return box;

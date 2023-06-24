@@ -135,10 +135,8 @@ export function WifiToggle(props) {
         ...props,
         onClick: Network.toggleWifi,
     });
-    Network.connect(button, () => {
-        Network.state.wifi.enabled
-            ? button.get_style_context().add_class('on')
-            : button.get_style_context().remove_class('on');
-    });
+    Network.connect(button, () =>
+        button.toggleClassName(Network.state.wifi.enabled, 'on'));
+
     return button;
 }
