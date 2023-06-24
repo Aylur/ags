@@ -3,7 +3,16 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import { Window } from './window.js';
+import App from './app.js';
+import { type Window } from './window.js';
+
+interface Config {
+  windows?: Window[]
+  style?: string
+  stackTraceOnError?: boolean
+  baseIconSize?: number
+  notificationPopupTimeout?: number
+}
 
 export const CACHE = `${GLib.get_user_cache_dir()}/${pkg.name}`;
 export const MEDIA_CACHE_PATH = `${CACHE}/media`;
@@ -11,11 +20,17 @@ export const NOTIFICATIONS_CACHE_PATH = `${CACHE}/notifications`;
 export const CONFIG_DIR = `${GLib.get_user_config_dir()}/${pkg.name}`;
 
 export function error(message: string) {
-    log(`ERROR: ${message}`);
+    getConfig()?.stackTraceOnError
+        ? logError(new Error(message))
+        : log(`ERROR: ${message}`);
+
+    App.quit();
 }
 
 export function warning(message: string) {
-    log(`WARNING: ${message}`);
+    getConfig()?.stackTraceOnError
+        ? logError(new Error(message))
+        : log(`WARNING: ${message}`);
 }
 
 export function typecheck(key: string, value: unknown, type: string|string[], widget: string ) {
@@ -109,11 +124,6 @@ export function timeout(ms: number, callback: () => void) {
     });
 }
 
-export function ensureIntance(service: { _instance: any, new(): any }) {
-    if (!service._instance)
-        service._instance = new service();
-}
-
 export function runCmd(cmd: string|((widget?: Gtk.Widget) => void), widget?: Gtk.Widget) {
     if (!cmd)
         return;
@@ -125,13 +135,6 @@ export function runCmd(cmd: string|((widget?: Gtk.Widget) => void), widget?: Gtk
         return cmd(widget);
 }
 
-interface Config {
-  windows?: Window[]
-  style?: string
-  stackTraceOnError?: boolean
-  baseIconSize?: number
-  notificationPopupTimeout?: number
-}
 export function getConfig(): Config|null {
     let config: Config|null = null;
 
@@ -168,13 +171,13 @@ export function applyCss(path?: string) {
     );
 }
 
-export function lookUpIcon(name: string|null): Gtk.IconInfo|null {
+export function lookUpIcon(name: string|null, size = 16): Gtk.IconInfo|null {
     if (!name)
         return null;
 
     return Gtk.IconTheme.get_default().lookup_icon(
         name,
-        16,
+        size,
         Gtk.IconLookupFlags.USE_BUILTIN,
     );
 }
