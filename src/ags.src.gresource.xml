@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/com/github/Aylur/ags/js">
+    <file>main.js</file>
+    <file>app.js</file>
+    <file>utils.js</file>
+    <file>widget.js</file>
+    <file>window.js</file>
+
+    <file>widgets/apps.js</file>
+    <file>widgets/audio.js</file>
+    <file>widgets/basic.js</file>
+    <file>widgets/battery.js</file>
+    <file>widgets/bluetooth.js</file>
+    <file>widgets/clock.js</file>
+    <file>widgets/hyprland.js</file>
+    <file>widgets/mpris.js</file>
+    <file>widgets/network.js</file>
+    <file>widgets/notifications.js</file>
+
+    <file>service/service.js</file>
+    <file>service/apps.js</file>
+    <file>service/audio.js</file>
+    <file>service/battery.js</file>
+    <file>service/bluetooth.js</file>
+    <file>service/hyprland.js</file>
+    <file>service/mpris.js</file>
+    <file>service/network.js</file>
+    <file>service/notifications.js</file>
+
+    <file>dbus/dbus.js</file>
+    <file>dbus/mpris.js</file>
+    <file>dbus/notifications.js</file>
+    <file>dbus/upower.js</file>
+  </gresource>
+</gresources>

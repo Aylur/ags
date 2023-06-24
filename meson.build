@@ -1,25 +1,26 @@
 project('ags',
           version: '0.1.0',
     meson_version: '>= 0.62.0',
+    	  license: ['GPL-3.0-or-later'],
   default_options: [ 'warning_level=2', 'werror=false', ],
 )
 
-i18n = import('i18n')
-gnome = import('gnome')
+APP = meson.project_name()
 
-pkgdatadir = join_paths(get_option('datadir'), meson.project_name())
+dependency('gobject-introspection-1.0', version: '>= 1.49.1')
+dependency('gio-2.0', version: '>= 2.56.0')
+dependency('gjs-1.0', version: '>= 1.73.1')
+dependency('gtk+-3.0', version: '>= 3.0')
 
-gjs_dep = dependency('gjs-1.0', version: '>= 1.54.0')
-gjs_console = gjs_dep.get_variable(pkgconfig: 'gjs_console')
-
-tsc = find_program('tsc', required: true)
-
-subdir('data')
-subdir('src')
-subdir('po')
-
-gnome.post_install(
-     glib_compile_schemas: true,
-    gtk_update_icon_cache: true,
-  update_desktop_database: true,
+subproject('gvc',
+  default_options: [
+    'package_name=' + APP,
+    'pkgdatadir=' + get_option('datadir') / APP,
+    'pkglibdir=' + get_option('libdir') / APP,
+    'static=false',
+    'introspection=true',
+    'alsa=false'
+  ]
 )
+
+subdir('src')

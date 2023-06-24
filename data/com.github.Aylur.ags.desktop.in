@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=ags
-Exec=com.github.Aylur.ags
-Icon=com.github.Aylur.ags
-Terminal=false
-Type=Application
-Categories=GTK;
-StartupNotify=true

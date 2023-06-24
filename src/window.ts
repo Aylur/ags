@@ -1,109 +1,122 @@
-import Adw from 'gi://Adw';
-import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
-import Gtk from 'gi://Gtk?version=4.0';
+import Gtk from 'gi://Gtk?version=3.0';
+import Gdk from 'gi://Gdk?version=3.0';
+import { restcheck, typecheck, warning } from './utils.js';
+import Widget from './widget.js';
 
-/**
- * Windows are the top-level widgets in our application.
- * They hold all of the other widgets, and when a window is closed
- * all of them are destroyed (unless `hide-on-close` is set).
- *
- * For most cases, you will want to use an AdwApplicationWindow
- * as the parent class for your windows. GtkApplicationWindow and
- * AdwApplicationWindow both integrate with your Application class,
- * getting information about the application like the app ID and tying
- * the window and application's lifecycles together. In addition,
- * both of these classes allow you to directly add actions to them.
- * These actions will be prefixed with `win`.
- *
- * For more information on windows, see:
- *  - https://docs.gtk.org/gtk4/class.Window.html
- *  - https://docs.gtk.org/gtk4/class.ApplicationWindow.html
- *  - https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/class.ApplicationWindow.html
- */
-export class Window extends Adw.ApplicationWindow {
-    private _toastOverlay!: Adw.ToastOverlay;
+imports.gi.versions.GtkLayerShell = '0.1';
+const { GtkLayerShell: GtkLayerShell } = imports.gi;
 
-    static {
-        /**
-         * Here we use a template. We define the resource path to the .ui file
-         * and the `id` of the objects we want to be able to access programmatically.
-         *
-         * For a detailed guide on how to use templates in GTK4,
-         * see https://rmnvgr.gitlab.io/gtk4-gjs-book/application/ui-templates-composite-widgets/
-         *
-         * **IMPORTANT**: Above where you see `private _toastOverlay!: Adw.ToastOverlay;`
-         * is where we actually declare the field. Template children are handled by GJS,
-         * but we need to tell TypeScript that they exist. We prepend the underscore
-         * so we match the name of the field that GJS will generate, and add
-         * the exclamation point to tell the typescript compiler where to look.
-         */
-        GObject.registerClass(
-            {
-                Template:
-                    'resource:///com/github/Aylur/ags/window.ui',
-                InternalChildren: ['toastOverlay'],
-            },
-            this
-        );
+export interface Window {
+  name?: string
+  anchor?: string[]
+  margin?: number[]
+  layer?: string
+  exclusive?: boolean
+  popup?: boolean
+  focusable?: boolean
+  monitor?: number
+  child?: { type: string }|Gtk.Widget|null
+  className?: string
+}
 
-        // Widgets allow you to directly add shortcuts to them when subclassing
-        Gtk.Widget.add_shortcut(
-            new Gtk.Shortcut({
-                action: new Gtk.NamedAction({ action_name: 'window.close' }),
-                trigger: Gtk.ShortcutTrigger.parse_string('<Control>w'),
-            })
+export default function Window({
+    name = 'gtk-layer-shell',
+    anchor = [],
+    margin = [],
+    layer = 'top',
+    exclusive = false,
+    popup = false,
+    focusable = false,
+    child = null,
+    className = '',
+    monitor,
+    ...rest
+}: Window): Gtk.Window {
+    typecheck('name', name, 'string', 'window');
+    typecheck('anchor', anchor, 'array', 'window');
+    typecheck('margin', margin, 'array', 'window');
+    typecheck('layer', layer, 'string', 'window');
+    typecheck('exclusive', exclusive, 'boolean', 'window');
+    typecheck('popup', popup, 'boolean', 'window');
+    typecheck('focusable', focusable, 'boolean', 'window');
+    typecheck('child', child, 'object', 'window');
+    typecheck('className', className, 'string', 'window');
+    typecheck('monitor', monitor, ['number', 'undefined'], 'window');
+    restcheck(rest, `window: ${name}`);
+
+    const win = new Gtk.Window({ name });
+    GtkLayerShell.init_for_window(win);
+
+    GtkLayerShell.set_namespace(win, name);
+
+    if (anchor) {
+        anchor.forEach(side => GtkLayerShell
+            .set_anchor(
+                win,
+                GtkLayerShell.Edge[side.toUpperCase()],
+                true,
+            ),
         );
     }
 
-    constructor(params?: Partial<Adw.ApplicationWindow.ConstructorProperties>) {
-        super(params);
+    if (margin) {
+        let margins: [side: string, index: number][] = [];
+        if (typeof margin === 'number')
+            margin = [margin];
 
-        /**
-         * Actions can also have parameters. In order to allow developers
-         * to choose different types of parameters for their application,
-         * we need to use something called a `GVariant`. When creating the
-         * application we pass a string that denotes the type of the variant.
-         *
-         * For more information on variants, see:
-         *  - https://docs.gtk.org/glib/struct.Variant.html
-         *  - https://docs.gtk.org/glib/struct.VariantType.html
-         */
-        const openLink = new Gio.SimpleAction({
-            name: 'open-link',
-            parameter_type: GLib.VariantType.new('s'),
-        });
-
-        openLink.connect('activate', (_source, param) => {
-            if (param) {
-                // When using a variant parameter, we need to get the type we expect
-                const link = param.get_string()[0];
-
-                const launcher = new Gtk.UriLauncher({ uri: link });
-
-                /**
-                 * NOTE: The Typescript definition generator is not perfect,
-                 * so you may see cases like this. We disable ESLint because
-                 * we know for sure that this function exists, takes these
-                 * arguments, and returns the right values.
-                 */
-
-                /* eslint-disable @typescript-eslint/no-unsafe-call */
-                /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-                launcher
-                    .launch(this, null)
-                    // @ts-expect-error GtkUriLauncher.launch isn't properly generated in our type defs
-                    .then(() => {
-                        const toast = new Adw.Toast({
-                            title: _('Opened link'),
-                        });
-                        this._toastOverlay.add_toast(toast);
-                    })
-                    .catch(console.error);
-            }
-        });
-
-        this.add_action(openLink);
+        switch (margin.length) {
+        case 1:
+            margins = [['TOP', 0], ['RIGHT', 0], ['BOTTOM', 0], ['LEFT', 0]];
+            break;
+        case 2:
+            margins = [['TOP', 0], ['RIGHT', 1], ['BOTTOM', 0], ['LEFT', 1]];
+            break;
+        case 3:
+            margins = [['TOP', 0], ['RIGHT', 1], ['BOTTOM', 2], ['LEFT', 1]];
+            break;
+        case 4:
+            margins = [['TOP', 0], ['RIGHT', 1], ['BOTTOM', 2], ['LEFT', 3]];
+            break;
+        default:
+            break;
+        }
+        margins.forEach(([side, i]) =>
+            GtkLayerShell.set_margin(win, GtkLayerShell.Edge[side], margin[i]),
+        );
     }
+
+    GtkLayerShell.set_layer(win, GtkLayerShell.Layer[layer?.toUpperCase()]);
+
+    if (exclusive)
+        GtkLayerShell.auto_exclusive_zone_enable(win);
+
+    if (monitor || monitor === 0) {
+        const display = Gdk.Display.get_default();
+        display
+            ? GtkLayerShell.set_monitor(win, display.get_monitor(monitor))
+            : warning(`Coulnd not find monitor ${monitor}`);
+    }
+
+    if (className) {
+        className.split(' ').forEach(cn => {
+            win.get_style_context().add_class(cn);
+        });
+    }
+
+    if (child)
+        win.add(Widget(child));
+
+    if (focusable)
+        GtkLayerShell.set_keyboard_mode(win, GtkLayerShell.KeyboardMode.ON_DEMAND);
+
+    win.show_all();
+    if (popup) {
+        win.hide();
+        win.connect('key-press-event', (_, event) => {
+            if (event.get_keyval()[1] === Gdk.KEY_Escape)
+                win.hide();
+        });
+    }
+
+    return win;
 }

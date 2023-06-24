@@ -1,6 +1,3 @@
-_build/
-.vscode/
-.flatpak/
-node_modules/
-.fenv/
-.flatpak-builder/
+node_modules
+_build
+run.sh

@@ -1,0 +1,124 @@
+env:
+  es2021: true
+extends:
+  - 'eslint:recommended'
+  - 'plugin:@typescript-eslint/recommended'
+parser: '@typescript-eslint/parser'
+parserOptions:
+  ecmaVersion: 2022
+  sourceType: 'module'
+  project: './tsconfig.json'
+  warnOnUnsupportedTypeScriptVersion: false
+root: true
+plugins:
+  - '@typescript-eslint'
+rules:
+  no-unused-vars:
+    - off
+  '@typescript-eslint/no-unused-vars':
+    - 'warn'
+  '@typescript-eslint/restrict-template-expressions':
+    - 'off'
+  '@typescript-eslint/no-explicit-any':
+    - 'off'
+  '@typescript-eslint/no-implied-eval':
+    - 'off'
+  '@typescript-eslint/no-unsafe-assignment':
+    - 'off'
+  '@typescript-eslint/no-unsafe-member-access':
+    - 'off'
+  '@typescript-eslint/no-unsafe-call':
+    - 'off'
+  '@typescript-eslint/no-floating-promises':
+    - 'off'
+  '@typescript-eslint/no-misused-promises':
+    - 'off'
+  '@typescript-eslint/ban-ts-comment':
+    - 'off'
+  '@typescript-eslint/no-empty-function':
+    - 'off'
+  '@typescript-eslint/no-misused-new':
+    - 'off'
+  arrow-parens:
+    - error
+    - as-needed
+  comma-dangle:
+    - error
+    - always-multiline
+  comma-spacing:
+    - error
+    - before: false
+      after: true
+  comma-style:
+    - error
+    - last
+  curly:
+    - error
+    - multi-or-nest
+    - consistent
+  dot-location:
+    - error
+    - property
+  eol-last: error
+  indent:
+    - error
+    - 4
+    - ignoredNodes:
+      - 'CallExpression[callee.object.name=GObject][callee.property.name=registerClass] > ClassExpression:first-child'
+      MemberExpression: 'off'
+  keyword-spacing:
+    - error
+    - before: true
+  lines-between-class-members:
+    - error
+    - always
+    - exceptAfterSingleLine: true
+  padded-blocks:
+    - error
+    - never
+    - allowSingleLineBlocks: false
+  prefer-const: error
+  quotes:
+    - error
+    - single
+    - avoidEscape: true
+  semi:
+    - error
+    - always
+  nonblock-statement-body-position:
+    - error
+    - below
+  no-trailing-spaces:
+    - error
+  array-bracket-spacing:
+    - error
+    - never
+  key-spacing:
+    - error
+    - beforeColon: false
+      afterColon: true
+  object-curly-spacing: 
+    - error
+    - always
+  no-useless-escape:
+    - off
+globals:
+  pkg: readonly
+  ARGV: readonly
+  Debugger: readonly
+  GIRepositoryGType: readonly
+  globalThis: readonly
+  imports: readonly
+  Intl: readonly
+  log: readonly
+  logError: readonly
+  print: readonly
+  printerr: readonly
+  window: readonly
+  TextEncoder: readonly
+  TextDecoder: readonly
+  console: readonly
+  setTimeout: readonly
+  setInterval: readonly
+  clearTimeout: readonly
+  clearInterval: readonly

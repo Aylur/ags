@@ -1,24 +1,24 @@
 {
   "name": "ags",
   "version": "0.1.0",
-  "description": "Template for writing GNOME applications in TypeScript",
+  "description": "description",
   "main": "src/main.ts",
-  "repository": "https://github.com/Aylur/ags",
-  "author": "Aylur <>",
-  "license": "MIT",
+  "repository": "",
+  "author": "Aylur",
+  "license": "GPL",
   "dependencies": {
+    "@girs/gvc-1.0": "^1.0.0-3.1.0",
+    "@girs/nm-1.0": "^1.43.1-3.1.0",
     "typescript": "^5.1.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
-    "eslint": "^8.42.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "prettier": "^2.8.8"
+    "eslint": "^8.42.0"
   },
   "scripts": {
     "build": "tsc --strict",
-    "typecheck": "tsc --strict --noEmit"
+    "typecheck": "tsc --strict --noEmit",
+    "lint": "eslint ."
   }
 }
