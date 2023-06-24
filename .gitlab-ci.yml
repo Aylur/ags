@@ -1,0 +1,32 @@
+include:
+  - project: "gnome/citemplates"
+    file: "flatpak/flatpak_ci_initiative.yml"
+
+variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+    GIT_SUBMODULE_DEPTH: 1
+
+flatpak:
+  variables:
+    MANIFEST_PATH: "build-aux/flatpak/com.github.Aylur.ags.json"
+    BUNDLE: "com.github.Aylur.ags.flatpak"
+    FLATPAK_MODULE: "ags"
+    RUNTIME_REPO: "https://nightly.gnome.org/gnome-nightly.flatpakrepo"
+    APP_ID: "com.github.Aylur.ags"
+  extends: .flatpak
+  before_script:
+    - flatpak --user install -y org.freedesktop.Sdk.Extension.node18//23.08beta org.freedesktop.Sdk.Extension.typescript//23.08beta
+
+eslint:
+  image: quay.io/fedora/fedora:latest
+
+  variables:
+    LINT_LOG: "eslint-report.txt"
+  script:
+    - sudo dnf install -y npm
+    - npm install
+    - npx eslint -o $LINT_LOG --no-color src || { cat $LINT_LOG; false; }
+  artifacts:
+    paths:
+      - ${LINT_LOG}
+    when: on_failure

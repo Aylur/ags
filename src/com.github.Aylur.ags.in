@@ -1,0 +1,28 @@
+#!@GJS@ -m
+
+/**
+ * This file is the entry point of our application. When executed,
+ * it runs in the GJS interpreter.
+ */
+import { exit, programArgs } from "system";
+
+/**
+ * This block sets up important package information. GJS uses this to load
+ * our files correctly. At build time, the `@VARIABLE@` strings will be
+ * replaced with the information we configure in meson.
+ */
+imports.package.init({
+  name: "@PACKAGE_NAME@",
+  version: "@PACKAGE_VERSION@",
+  prefix: "@prefix@",
+  libdir: "@libdir@",
+  datadir: "@datadir@",
+});
+
+// Initialize translations and formatting
+pkg.initGettext();
+pkg.initFormat();
+
+const module = await import("resource://@resource_path@/js/main.js");
+const exitCode = await module.main(programArgs);
+exit(exitCode);

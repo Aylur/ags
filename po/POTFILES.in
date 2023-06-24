@@ -1,0 +1,6 @@
+data/com.github.Aylur.ags.desktop.in
+data/com.github.Aylur.ags.appdata.xml.in
+data/com.github.Aylur.ags.gschema.xml
+data/window.ui
+src/main.ts
+src/window.ts

@@ -1,0 +1,6 @@
+_build/
+.vscode/
+.flatpak/
+node_modules/
+.fenv/
+.flatpak-builder/
