@@ -318,6 +318,7 @@ class MprisService extends Service{
 }
 
 export default class Mpris {
+    static { Service.export(this, 'Mpris'); }
     static _instance: MprisService;
 
     static connect(widget: Gtk.Widget, callback: () => void) {

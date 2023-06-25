@@ -248,6 +248,7 @@ class NotificationsService extends Service{
 }
 
 export default class Notifications {
+    static { Service.export(this, 'Notifications'); }
     static _instance: NotificationsService;
 
     static connect(widget: Gtk.Widget, callback: () => void) {

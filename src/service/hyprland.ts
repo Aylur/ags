@@ -240,6 +240,7 @@ class HyprlandService extends Service {
 }
 
 export default class Hyprland {
+    static { Service.export(this, 'Hyprland'); }
     static _instance: HyprlandService;
 
     static connect(widget: Gtk.Widget, callback: () => void) {

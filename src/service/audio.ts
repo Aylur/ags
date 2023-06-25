@@ -163,6 +163,7 @@ class AudioService extends Service{
 }
 
 export default class Audio {
+    static { Service.export(this, 'Audio'); }
     static _instance: AudioService;
 
     static connect(widget: Gtk.Widget, callback: () => void) {

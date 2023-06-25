@@ -30,6 +30,10 @@ export default class Service extends GObject.Object {
         GObject.registerClass({ Signals }, service);
     }
 
+    static export(api: any, name: string) {
+        (Service as { [key: string]: any })[name] = api;
+    }
+
     listen(widget: Gtk.Widget, callback: (widget: Gtk.Widget) => void) {
         const bind = this.connect('changed', () => callback(widget));
         widget.connect('destroy', () => this.disconnect(bind));

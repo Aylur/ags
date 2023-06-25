@@ -2,16 +2,17 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import * as Utils from './utils.js';
 import App from './app.js';
+import Service from './service/service.js';
 import Window from './window.js';
 import Widget from './widget.js';
-import Applications from './service/apps.js';
-import Audio from './service/audio.js';
-import Battery from './service/battery.js';
-import Bluetooth from './service/bluetooth.js';
-import Hyprland from './service/hyprland.js';
-import Mpris from './service/mpris.js';
-import Network from './service/network.js';
-import Notifications from './service/notifications.js';
+import './service/apps.js';
+import './service/audio.js';
+import './service/battery.js';
+import './service/bluetooth.js';
+import './service/hyprland.js';
+import './service/mpris.js';
+import './service/network.js';
+import './service/notifications.js';
 
 const APP_BUS = 'com.github.Aylur.'+pkg.name;
 const APP_PATH = '/com/github/Aylur/'+pkg.name;
@@ -44,16 +45,7 @@ export function main(args: string[]) {
         Utils,
         Window,
         Widget,
-        Service: {
-            Applications,
-            Audio,
-            Battery,
-            Bluetooth,
-            Hyprland,
-            Mpris,
-            Network,
-            Notifications,
-        },
+        Service,
     };
 
     if (!Utils.isRunning(APP_BUS))

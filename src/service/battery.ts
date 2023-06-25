@@ -65,6 +65,7 @@ class BatteryService extends Service{
 }
 
 export default class Battery {
+    static { Service.export(this, 'Battery'); }
     static _instance: BatteryService;
 
     static connect(widget: Gtk.Widget, callback: () => void) {

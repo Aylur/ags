@@ -83,6 +83,7 @@ class ApplicationsService extends Service {
 }
 
 export default class Applications {
+    static { Service.export(this, 'Applications'); }
     static _instance: ApplicationsService;
 
     static query(term: string) {

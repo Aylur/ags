@@ -195,6 +195,7 @@ class NetworkService extends Service{
 }
 
 export default class Network {
+    static { Service.export(this, 'Network'); }
     static _instance: NetworkService;
 
     static connect(widget: Gtk.Widget, callback: () => void) {

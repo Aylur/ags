@@ -138,6 +138,7 @@ class BluetoothService extends Service{
 }
 
 export default class Bluetooth {
+    static { Service.export(this, 'Bluetooth'); }
     static _instance: BluetoothService;
 
     static connect(widget: Gtk.Widget, callback: () => void) {
