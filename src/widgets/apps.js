@@ -60,18 +60,17 @@ const _listbox = () => {
     return box;
 };
 
-const _layout = ({ entry, listbox }) => {
-    return Box({
-        orientation: 'vertical',
-        children: [
-            entry,
-            Scrollable({
-                hscroll: 'never',
-                child: listbox,
-            }),
-        ],
-    });
-};
+const _layout = ({ entry, listbox }) => ({
+    type: 'box',
+    orientation: 'vertical',
+    children: [
+        entry,
+        Scrollable({
+            hscroll: 'never',
+            child: listbox,
+        }),
+    ],
+});
 
 export function AppLauncher({ type, placeholder, layout, item, listbox, window, ...rest }) {
     layout ||= _layout;
@@ -83,22 +82,12 @@ export function AppLauncher({ type, placeholder, layout, item, listbox, window, 
     typecheck('window', window, 'string', type);
     restcheck(rest, type);
 
-    const appsbox = listbox();
-
-    const onAccept = search => {
-        const list = Applications.query(search);
-        if (list[0]) {
-            App.toggleWindow('app-launcher');
-            list[0].launch();
-        }
-    };
+    const appsbox = Widget(listbox());
 
     const update = search => {
-        const list = Applications.query(search);
-
         appsbox.clear();
-        list.forEach(app => {
-            appsbox.push(item(app, window));
+        Applications.query(search).forEach(app => {
+            appsbox.push(Widget(item(app, window)));
         });
     };
     update();
@@ -107,14 +96,20 @@ export function AppLauncher({ type, placeholder, layout, item, listbox, window, 
         type: 'entry',
         hexpand: true,
         placeholder,
-        onAccept,
+        onAccept: search => {
+            const list = Applications.query(search);
+            if (list[0]) {
+                App.toggleWindow('app-launcher');
+                list[0].launch();
+            }
+        },
         onChange: update,
     });
 
-    const box = layout({
+    const box = Widget(layout({
         entry,
         listbox: appsbox,
-    });
+    }));
 
     App.connect('window-toggled', (_app, name) => {
         if (name !== window)
