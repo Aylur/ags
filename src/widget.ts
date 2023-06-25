@@ -181,7 +181,7 @@ function parseParams(widget: Gtk.Widget, {
 export default function Widget(params: null|Widget|string|(() => Gtk.Widget)|Gtk.Widget ): Gtk.Widget {
     if (!params) {
         error('Widget from null');
-        return new Gtk.Label({ label: `Error on ${params}` });
+        return new Gtk.Label({ label: `Null error on ${params}` });
     }
 
     if (typeof params === 'string')

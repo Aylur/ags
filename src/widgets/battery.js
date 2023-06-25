@@ -1,3 +1,4 @@
+import Widget from '../widget.js';
 import Battery from '../service/battery.js';
 import { Dynamic, Label } from './basic.js';
 
@@ -25,17 +26,16 @@ function _default(charging) {
     return items.reverse();
 }
 
-function _indicators(items) {
-    const dynamic = Dynamic({ items });
-    Battery.connect(dynamic, () => {
+const _indicators = items => Widget({
+    type: 'dynamic',
+    items,
+    connections: [[Battery, dynamic => {
         dynamic.update(value => {
             const { state } = Battery;
             return state.percent >= value;
         });
-    });
-
-    return dynamic;
-}
+    }]],
+});
 
 export function Indicator({
     charging = _indicators(_default(true)),

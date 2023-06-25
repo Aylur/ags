@@ -16,12 +16,13 @@ function _connectStream({ stream, widget, callback }) {
         disconnect();
 
         widget[stream] = Audio[stream];
-        widget._id = widget[stream].connect('changed', callback);
-        callback();
+        widget._id = widget[stream].connect('changed', () => callback(widget));
+        callback(widget);
     });
+    return widget;
 }
 
-export function SpeakerIndicator({ items, ...rest }) {
+export const SpeakerIndicator = ({ items, ...rest }) => {
     items ||= [
         { value: 101, widget: { type: 'icon', icon: 'audio-volume-overamplified-symbolic' } },
         { value: 67, widget: { type: 'icon', icon: 'audio-volume-high-symbolic' } },
@@ -29,73 +30,47 @@ export function SpeakerIndicator({ items, ...rest }) {
         { value: 1, widget: { type: 'icon', icon: 'audio-volume-low-symbolic' } },
         { value: 0, widget: { type: 'icon', icon: 'audio-volume-muted-symbolic' } },
     ];
-    const dynamic = Dynamic({ items, ...rest });
-    _connectStream({
+    return _connectStream({
         stream: 'speaker',
-        widget: dynamic,
-        callback: () => dynamic.update(value => value <= Audio.speaker.volume),
+        widget: Dynamic({ items, ...rest }),
+        callback: dynamic => dynamic.update(value => value <= Audio.speaker.volume),
     });
+};
 
-    return dynamic;
-}
+export const SpeakerLabel = props => _connectStream({
+    stream: 'speaker',
+    widget: Label(props),
+    callback: label => label.label = `${Math.floor(Audio.speaker.volume)}`,
+});
 
-export function SpeakerLabel(props) {
-    const label = Label(props);
-    _connectStream({
-        stream: 'speaker',
-        widget: label,
-        callback: () => { label.label = `${Math.floor(Audio.speaker.volume)}`; },
-    });
-    return label;
-}
+export const SpeakerSlider = props => _connectStream({
+    stream: 'speaker',
+    widget: Slider({
+        onChange: value => Audio.speaker.volume = value,
+        ...props,
+    }),
+    callback: slider => slider.adjustment.value = Audio.speaker.volume,
+});
 
-export function SpeakerSlider(props) {
-    const slider = Slider(props);
-    slider.connect('value-changed', ({ adjustment: { value } }) => {
-        if (!slider._dragging)
-            return;
-
-        Audio.speaker.volume = value;
-    });
-
-    const update = () => {
-        if (slider._dragging)
-            return;
-
-        slider.adjustment.value = Audio.speaker.volume;
-    };
-    _connectStream({
-        stream: 'speaker',
-        widget: slider,
-        callback: update,
-    });
-    return slider;
-}
-
-export function MicMuteIndicator({
+export const MicMuteIndicator = ({
     muted = Icon({ icon: 'microphone-disabled-symbolic' }),
     unmuted = Icon({ icon: 'microphone-sensitivity-high-symbolic' }),
     ...rest
-}) {
-    const dynamic = Dynamic({
+}) => _connectStream({
+    stream: 'microphone',
+    widget: Dynamic({
         ...rest,
         items: [
             { value: true, widget: muted },
             { value: false, widget: unmuted },
         ],
-    });
+    }),
+    callback: dynamic => dynamic.update(value => value === Audio.microphone?.isMuted),
+});
 
-    _connectStream({
-        stream: 'microphone',
-        widget: dynamic,
-        callback: () => dynamic.update(value => value === Audio.microphone?.isMuted),
-    });
-
-    return dynamic;
-}
-
-export function MicMuteToggle(props) {
-    const button = Button({
+export const MicMuteToggle = props => _connectStream({
+    stream: 'microphone',
+    widget: Button({
         ...props,
         onClick: () => {
             if (!Audio.microphone)
@@ -103,16 +78,11 @@ export function MicMuteToggle(props) {
 
             Audio.microphone.isMuted = !Audio.microphone.isMuted;
         },
-    });
-    _connectStream({
-        stream: 'microphone',
-        widget: button,
-        callback: () => {
-            if (!Audio.microphone)
-                return;
+    }),
+    callback: button => {
+        if (!Audio.microphone)
+            return;
 
-            button.toggleClassName(Audio.microphone.isMuted, 'on');
-        },
-    });
-    return button;
-}
+        button.toggleClassName(Audio.microphone.isMuted, 'on');
+    },
+});
