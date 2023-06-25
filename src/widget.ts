@@ -218,3 +218,5 @@ export default function Widget(params: null|Widget|string|(() => Gtk.Widget)|Gtk
 
     return widget;
 }
+
+Widget.widgets = widgets;
