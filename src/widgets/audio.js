@@ -94,7 +94,12 @@ export function AppMixer({ item, ...props }) {
     item ||= stream => {
         const icon = Icon();
         const label = Label({ xalign: 0, justify: 'left', wrap: true });
-        const slider = Slider({ onChange: value => stream.volume = value });
+        const percent = Label({ xalign: 1 });
+        const slider = Widget({
+            type: 'slider',
+            hexpand: true,
+            onChange: value => stream.volume = value,
+        });
         const box = Widget({
             type: 'box',
             hexpand: true,
@@ -106,7 +111,13 @@ export function AppMixer({ item, ...props }) {
                     orientation: 'vertical',
                     children: [
                         label,
-                        slider,
+                        {
+                            type: 'box',
+                            children: [
+                                slider,
+                                percent,
+                            ],
+                        },
                     ],
                 }),
             ],
@@ -115,6 +126,7 @@ export function AppMixer({ item, ...props }) {
             icon.icon_name = stream.state.iconName;
             icon.set_tooltip_text(stream.state.name);
             slider.set_value(stream.volume);
+            percent.label = `${Math.floor(stream.volume)}%`;
             stream.state.description.length > 37
                 ? label.label = stream.state.description.substring(0, 37)+'..'
                 : label.label = stream.state.description;
