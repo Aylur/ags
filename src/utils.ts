@@ -12,6 +12,7 @@ interface Config {
   stackTraceOnError?: boolean
   baseIconSize?: number
   notificationPopupTimeout?: number
+  exitOnError?: boolean
 }
 
 export const CACHE = `${GLib.get_user_cache_dir()}/${pkg.name}`;
@@ -24,7 +25,8 @@ export function error(message: string) {
         ? logError(new Error(message))
         : log(`ERROR: ${message}`);
 
-    App.quit();
+    if (getConfig()?.exitOnError)
+        App.quit();
 }
 
 export function warning(message: string) {
