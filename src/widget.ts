@@ -90,6 +90,7 @@ const widgets: Widgets = {
     'audio/speaker-slider': Audio.SpeakerSlider,
     'audio/microphone-mute-indicator': Audio.MicMuteIndicator,
     'audio/microphone-mute-toggle': Audio.MicMuteToggle,
+    'audio/app-mixer': Audio.AppMixer,
 
     'bluetooth/indicator': Bluetooth.Indicator,
     'bluetooth/toggle': Bluetooth.Toggle,

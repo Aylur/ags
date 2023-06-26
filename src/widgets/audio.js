@@ -1,5 +1,8 @@
+import Widget from '../widget.js';
 import Audio from '../service/audio.js';
-import { Button, Dynamic, Icon, Label, Slider } from './basic.js';
+import Gtk from 'gi://Gtk?version=3.0';
+import { Box, Button, Dynamic, Icon, Label, Slider } from './basic.js';
+import { error } from '../utils.js';
 
 function _connectStream({ stream, widget, callback }) {
     Audio.connect(widget, () => {
@@ -86,3 +89,58 @@ export const MicMuteToggle = props => _connectStream({
         button.toggleClassName(Audio.microphone.isMuted, 'on');
     },
 });
+
+export function AppMixer({ item, ...props }) {
+    item ||= stream => {
+        const icon = Icon();
+        const label = Label({ xalign: 0, justify: 'left', wrap: true });
+        const slider = Slider({ onChange: value => stream.volume = value });
+        const box = Widget({
+            type: 'box',
+            hexpand: true,
+            children: [
+                icon,
+                Widget({
+                    type: 'box',
+                    hexpand: true,
+                    orientation: 'vertical',
+                    children: [
+                        label,
+                        slider,
+                    ],
+                }),
+            ],
+        });
+        box.update = () => {
+            icon.icon_name = stream.state.iconName;
+            icon.set_tooltip_text(stream.state.name);
+            slider.set_value(stream.volume);
+            stream.state.description.length > 37
+                ? label.label = stream.state.description.substring(0, 37)+'..'
+                : label.label = stream.state.description;
+        };
+        return box;
+    };
+
+    const box = Box({ orientation: 'vertical', ...props });
+    Audio.connect(box, () => {
+        box.get_children().forEach(ch => ch.destroy());
+        for (const [, stream] of Audio.apps) {
+            const app = item(stream);
+            if (!(app instanceof Gtk.Widget) || typeof app.update !== 'function')
+                error('App Mixer item needs return a Gtk.Widget and has to have an update function');
+
+            box.add(app);
+            const id1 = stream.connect('changed', () => app.update());
+            const id2 = stream.connect('closed', () => stream.disconnect(id1));
+            app.connect('destroy', () => {
+                stream.disconnect(id1);
+                stream.disconnect(id2);
+            });
+            app.update();
+        }
+
+        box.show_all();
+    });
+    return box;
+}
