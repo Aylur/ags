@@ -7,12 +7,13 @@ import App from './app.js';
 import { type Window } from './window.js';
 
 interface Config {
-  windows?: Window[]
-  style?: string
-  stackTraceOnError?: boolean
-  baseIconSize?: number
-  notificationPopupTimeout?: number
-  exitOnError?: boolean
+    windows?: Window[]
+    style?: string
+    stackTraceOnError?: boolean
+    baseIconSize?: number
+    notificationPopupTimeout?: number
+    exitOnError?: boolean
+    closeWindowDelay: { [key: string]: number }
 }
 
 export const CACHE = `${GLib.get_user_cache_dir()}/${pkg.name}`;

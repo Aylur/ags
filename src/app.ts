@@ -3,18 +3,22 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Window from './window.js';
-import { applyCss, error, warning, getConfig } from './utils.js';
+import { applyCss, error, warning, getConfig, timeout } from './utils.js';
 
 const APP_BUS = 'com.github.Aylur.'+pkg.name;
 
 export default class App extends Gtk.Application {
     private _windows: Map<string, Gtk.Window>;
+    private _closeDelay!: { [key: string]: number };
+
     static _instance: App;
 
     static {
         GObject.registerClass({
             Signals: {
-                'window-toggled': { param_types: [GObject.TYPE_STRING] },
+                'window-toggled': {
+                    param_types: [GObject.TYPE_STRING, GObject.TYPE_BOOLEAN],
+                },
             },
         }, this);
     }
@@ -31,8 +35,15 @@ export default class App extends Gtk.Application {
         const window = App.getWindow(name);
 
         if (window) {
-            window.visible = !window.visible;
-            App._instance.emit('window-toggled', name);
+            const delay = App._instance._closeDelay[name];
+            if (delay && window.visible) {
+                timeout(delay, () => window.hide());
+                App._instance.emit('window-toggled', name, false);
+            }
+            else {
+                window.visible = !window.visible;
+                App._instance.emit('window-toggled', name, window.visible);
+            }
             return;
         }
 
@@ -71,6 +82,7 @@ export default class App extends Gtk.Application {
             return;
         }
 
+        this._closeDelay = config.closeWindowDelay || {};
         applyCss(config.style);
         config.windows?.forEach(window => {
             const w = Window(window);
