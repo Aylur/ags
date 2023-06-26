@@ -48,6 +48,7 @@ const widgets: Widgets = {
     'revealer': Basic.Revealer,
     'scrollable': Basic.Scrollable,
     'slider': Basic.Slider,
+    'overlay': Basic.Overlay,
 
     'app-launcher': AppLauncher,
     'clock': Clock,

@@ -370,3 +370,16 @@ export function Revealer({ type, transition, duration, child, ...rest }) {
 
     return revealer;
 }
+
+export function Overlay({ type, children = [], ...rest }) {
+    restcheck(rest, type);
+
+    const overlay = new Gtk.Overlay();
+
+    if (children[0]) {
+        overlay.add(Widget(children[0]));
+        children.splice(1).forEach(ch => overlay.add_overlay(Widget(ch)));
+    }
+
+    return overlay;
+}
