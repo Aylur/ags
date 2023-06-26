@@ -99,7 +99,7 @@ export function AppLauncher({ type, placeholder, layout, item, listbox, window, 
         onAccept: search => {
             const list = Applications.query(search);
             if (list[0]) {
-                App.toggleWindow('app-launcher');
+                App.toggleWindow(window);
                 list[0].launch();
             }
         },
