@@ -396,6 +396,6 @@ export function ProgressBar({ type, inverted, orientation, ...rest }) {
         inverted,
     });
 
-    bar.set_value = v => bar.set_fraction(v/100);
+    bar.setValue = v => bar.set_fraction(v/100);
     return bar;
 }
