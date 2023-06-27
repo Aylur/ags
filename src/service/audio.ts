@@ -55,8 +55,11 @@ class Stream extends GObject.Object{
     }
 
     set volume(value) { // 0..100
-        if (value > 150 || value < 0)
-            return;
+        if (value > 150)
+            value = 150;
+
+        if (value < 0)
+            value = 0;
 
         this._stream.set_volume(value/100 * Audio._instance._control.get_vol_max_norm());
         this._stream.push_volume();
