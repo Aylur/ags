@@ -198,15 +198,15 @@ export function Button({ type, child, onClick, onSecondaryClick, onScrollUp, onS
     return btn;
 }
 
-export function Slider({ type, flipped, orientation, min, max, value, onChange, drawValue, ...rest } = {}) {
-    flipped ||= false;
+export function Slider({ type, inverted, orientation, min, max, value, onChange, drawValue, ...rest } = {}) {
+    inverted ||= false;
     orientation ||= 'horizontal';
     min ||= 0;
     max ||= 100;
     value ||= 0;
     onChange ||= '';
     drawValue ||= false;
-    typecheck('flipped', flipped, 'boolean', type);
+    typecheck('inverted', inverted, 'boolean', type);
     typecheck('orientation', orientation, 'string', type);
     typecheck('min', min, 'number', type);
     typecheck('max', max, 'number', type);
@@ -224,7 +224,7 @@ export function Slider({ type, flipped, orientation, min, max, value, onChange, 
             step_increment: (max-min) /100,
         }),
         draw_value: drawValue,
-        inverted: flipped,
+        inverted: inverted,
     });
 
     slider.connect('button-press-event', () => { slider._dragging = true; });
@@ -382,4 +382,20 @@ export function Overlay({ type, children = [], ...rest }) {
     }
 
     return overlay;
+}
+
+export function ProgressBar({ type, inverted, orientation, ...rest }) {
+    inverted ||= false;
+    orientation ||= 'horizontal';
+    typecheck('inverted', inverted, 'boolean', type);
+    typecheck(orientation, orientation, 'string', type);
+    restcheck(rest, type);
+
+    const bar = new Gtk.ProgressBar({
+        orientation: _orientation(orientation),
+        inverted,
+    });
+
+    bar.set_value = v => bar.set_fraction(v/100);
+    return bar;
 }

@@ -45,10 +45,11 @@ const widgets: Widgets = {
     'eventbox': Basic.EventBox,
     'icon': Basic.Icon,
     'label': Basic.Label,
+    'overlay': Basic.Overlay,
+    'progressbar': Basic.ProgressBar,
     'revealer': Basic.Revealer,
     'scrollable': Basic.Scrollable,
     'slider': Basic.Slider,
-    'overlay': Basic.Overlay,
 
     'app-launcher': AppLauncher,
     'clock': Clock,
