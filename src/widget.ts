@@ -30,6 +30,7 @@ interface Widget {
   visible?: boolean
   connections?: ([s: string|ServiceAPI, callback: (...args: any[]) => any] | [ServiceAPI, number])[]
   [key: string]: any
+  properties?: [any, any][]
 }
 
 interface Widgets {
@@ -105,7 +106,7 @@ const widgets: Widgets = {
 };
 
 function parseParams(widget: Gtk.Widget, {
-    type, className, style, sensitive, tooltip,  connections,
+    type, className, style, sensitive, tooltip,  connections, properties,
     halign = 'fill', valign = 'fill',
     hexpand = false, vexpand = false, visible = true,
 }: Widget) {
@@ -179,6 +180,13 @@ function parseParams(widget: Gtk.Widget, {
                 s.connect(widget, callback);
         });
     }
+
+    if (properties) {
+        properties.forEach(([key, value]) => {
+            // @ts-ignore
+            widget[`_${key}`] = value;
+        });
+    }
 }
 
 export default function Widget(params: null|Widget|string|(() => Gtk.Widget)|Gtk.Widget ): Gtk.Widget {
@@ -197,7 +205,7 @@ export default function Widget(params: null|Widget|string|(() => Gtk.Widget)|Gtk
         return params;
 
     const {
-        type, className, style, halign, valign, connections,
+        type, className, style, halign, valign, connections, properties,
         hexpand, vexpand, sensitive, tooltip, visible,
         ...props
     }: Widget = params;
@@ -215,7 +223,7 @@ export default function Widget(params: null|Widget|string|(() => Gtk.Widget)|Gtk
     }
 
     parseParams(widget, {
-        type, className, style, halign, valign, connections,
+        type, className, style, halign, valign, connections, properties,
         hexpand, vexpand, sensitive, tooltip, visible,
     });
 
