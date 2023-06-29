@@ -10,9 +10,14 @@ I will make a wiki, but for now if you want to try it out your only documentatio
 ```bash
 # dependencies
 # Arch
-yay -S gjs gtk3 socat gnome-bluetooth-3.0 upower networkmanager
+yay -S nodejs gjs gtk3 socat gnome-bluetooth-3.0 upower networkmanager
 # Fedora
-sudo dnf install gjs gtk3 socat gnome-bluetooth upower NetworkManager
+sudo dnf install nodejs gjs gtk3 socat gnome-bluetooth upower NetworkManager
+# clone
+git clone https://github.com/Aylur/ags.git
+# npm
+cd ags
+npm i
 # build and install
 meson setup build
 meson install -C build
