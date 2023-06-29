@@ -213,4 +213,24 @@ export default class Network {
         const state = { ...Network._instance._state };
         return state;
     }
+
+    static get connectivity() {
+        Service.ensureInstance(Network, NetworkService);
+        return Network._instance._state.connectivity;
+    }
+
+    static get primary() {
+        Service.ensureInstance(Network, NetworkService);
+        return Network._instance._state.primary;
+    }
+
+    static get wifi() {
+        Service.ensureInstance(Network, NetworkService);
+        return Network._instance._state.wifi;
+    }
+
+    static get wired() {
+        Service.ensureInstance(Network, NetworkService);
+        return Network._instance._state.wired;
+    }
 }

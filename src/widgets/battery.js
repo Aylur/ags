@@ -30,10 +30,7 @@ const _indicators = items => Widget({
     type: 'dynamic',
     items,
     connections: [[Battery, dynamic => {
-        dynamic.update(value => {
-            const { state } = Battery;
-            return state.percent >= value;
-        });
+        dynamic.update(value => Battery.percent >= value);
     }]],
 });
 
@@ -51,7 +48,7 @@ export function Indicator({
     });
 
     Battery.connect(dynamic, () => {
-        const { state: { charging, charged } } = Battery;
+        const { charging, charged } = Battery;
         dynamic.update(value => value === charging || value === charged);
     });
 
@@ -61,7 +58,7 @@ export function Indicator({
 export function LevelLabel(props) {
     const label = Label(props);
     Battery.connect(label, () => {
-        label.label = `${Battery.state.percent}`;
+        label.label = `${Battery.percent}`;
     });
     return label;
 }

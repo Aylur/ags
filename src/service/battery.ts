@@ -78,4 +78,24 @@ export default class Battery {
         const state = { ...Battery._instance._state };
         return state;
     }
+
+    static get available() {
+        Service.ensureInstance(Battery, BatteryService);
+        return Battery._instance._state.available;
+    }
+
+    static get percent() {
+        Service.ensureInstance(Battery, BatteryService);
+        return Battery._instance._state.percent;
+    }
+
+    static get charging() {
+        Service.ensureInstance(Battery, BatteryService);
+        return Battery._instance._state.charging;
+    }
+
+    static get charged() {
+        Service.ensureInstance(Battery, BatteryService);
+        return Battery._instance._state.charged;
+    }
 }

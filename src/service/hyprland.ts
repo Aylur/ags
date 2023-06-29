@@ -248,9 +248,24 @@ export default class Hyprland {
         Hyprland._instance.listen(widget, callback);
     }
 
-    static get state() {
+    static get active() {
         Service.ensureInstance(Hyprland, HyprlandService);
-        return Hyprland._instance._state;
+        return Hyprland._instance._state.active;
+    }
+
+    static get monitors() {
+        Service.ensureInstance(Hyprland, HyprlandService);
+        return Hyprland._instance._state.monitors;
+    }
+
+    static get workspaces() {
+        Service.ensureInstance(Hyprland, HyprlandService);
+        return Hyprland._instance._state.workspaces;
+    }
+
+    static get clients() {
+        Service.ensureInstance(Hyprland, HyprlandService);
+        return Hyprland._instance._state.clients;
     }
 
     static Hyprctl(cmd: string) {

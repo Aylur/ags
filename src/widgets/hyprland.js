@@ -16,7 +16,7 @@ export function Workpsaces({ type, monitors, fixed, active, empty, occupied, ...
     }
 
     const button = (windows, i) => {
-        const { active: { workspace }, workspaces } = Hyprland.state;
+        const { active: { workspace }, workspaces } = Hyprland;
 
         const [child, className] = workspace.id === i
             ? [active, 'active']
@@ -34,7 +34,7 @@ export function Workpsaces({ type, monitors, fixed, active, empty, occupied, ...
 
     const forFixed = () => {
         box.get_children().forEach(ch => ch.destroy());
-        const { workspaces } = Hyprland.state;
+        const { workspaces } = Hyprland;
         for (let i=1; i<fixed+1; ++i) {
             if (workspaces.has(i)) {
                 const { windows } = workspaces.get(i);
@@ -47,10 +47,10 @@ export function Workpsaces({ type, monitors, fixed, active, empty, occupied, ...
 
     const forMonitors = () => {
         box.get_children().forEach(ch => ch.destroy());
-        const { state } = Hyprland;
-        state.workspaces.forEach(({ id, windows, monitor }) => {
-            if (!monitors.includes(state.monitors.get(monitor).name)
-                && !monitors.includes(state.monitors.get(monitor).id))
+        const { workspaces, monitors } = Hyprland;
+        workspaces.forEach(({ id, windows, monitor }) => {
+            if (!monitors.includes(monitors.get(monitor).name)
+                && !monitors.includes(monitors.get(monitor).id))
                 return;
 
             box.add(button(windows, id));
@@ -76,7 +76,7 @@ export function WindowLabel({ type, show, substitutes, fallback, ...props }) {
     if (show === 'title' || show === 'class') {
         const label = Label({ type, ...props });
         Hyprland.connect(label, () => {
-            let name = Hyprland.state.active.client[show] || '';
+            let name = Hyprland.active.client[show] || '';
             substitutes.forEach(({ from, to }) => {
                 if (name === from)
                     name = to;
@@ -99,8 +99,8 @@ export function WindowIcon({ type, symbolic, substitutes, fallback, ...rest }) {
 
     const icon = Icon({ type, ...rest });
     Hyprland.connect(icon, () => {
-        let classIcon = `${Hyprland.state.active.client.class}${symbolic ? '-symbolic' : ''}`;
-        let titleIcon = `${Hyprland.state.active.client.title}${symbolic ? '-symbolic' : ''}`;
+        let classIcon = `${Hyprland.active.client.class}${symbolic ? '-symbolic' : ''}`;
+        let titleIcon = `${Hyprland.active.client.title}${symbolic ? '-symbolic' : ''}`;
         substitutes.forEach(({ from, to }) => {
             if (classIcon === from)
                 classIcon = to;
@@ -131,7 +131,7 @@ const _item = ({ iconName }, { address, title }) => ({
     type: 'button',
     child: { type: 'icon', icon: iconName },
     tooltip: title,
-    className: Hyprland.state.active.client.address === address.substring(2) ? 'focused' : 'nonfocused',
+    className: Hyprland.active.client.address === address.substring(2) ? 'focused' : 'nonfocused',
     onClick: () => Hyprland.Hyprctl(`dispatch focuswindow address:${address}`),
 });
 
@@ -148,7 +148,7 @@ export function Taskbar({ type, item, ...props }) {
     Applications.connect(box, update);
     Hyprland.connect(box, () => {
         box.get_children().forEach(ch => ch.destroy());
-        Hyprland.state.clients.forEach(client => {
+        Hyprland.clients.forEach(client => {
             for (const app of apps) {
                 if (client.title && app.match(client.title) || client.class && app.match(client.class)) {
                     box.add(Widget(item(app, client)));

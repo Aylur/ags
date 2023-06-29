@@ -4,7 +4,7 @@ import { Button, Dynamic, Label } from './basic.js';
 export function SSIDLabel(props) {
     const label = Label(props);
     Network.connect(label, () => {
-        label.label = Network.state.wifi.ssid;
+        label.label = Network.wifi.ssid;
     });
     return label;
 }
@@ -12,7 +12,7 @@ export function SSIDLabel(props) {
 export function WifiStrengthLabel(props) {
     const label = Label(props);
     Network.connect(label, () => {
-        label.label = `${Network.state.wifi.strength}`;
+        label.label = `${Network.wifi.strength}`;
     });
     return label;
 }
@@ -37,7 +37,7 @@ export function WiredIndicator({
     });
 
     const decide = () => {
-        const { state: { wired: { internet, state } } } = Network;
+        const { internet, state } = Network.wired;
         if (internet === 'connected' || internet === 'connecting')
             return internet;
 
@@ -83,7 +83,7 @@ export function WifiIndicator({
     });
 
     const decide = () => {
-        const { state: { wifi: { internet, enabled, strength } } } = Network;
+        const { internet, enabled, strength } = Network.wifi;
         if (internet === 'connected')
             return strength;
 
@@ -123,7 +123,7 @@ export function Indicator({
     });
 
     Network.connect(dynamic, () => {
-        const primary = Network.state.primary || 'wifi';
+        const primary = Network.primary || 'wifi';
         dynamic.update(value => value === primary);
     });
 
@@ -136,7 +136,7 @@ export function WifiToggle(props) {
         onClick: Network.toggleWifi,
     });
     Network.connect(button, () =>
-        button.toggleClassName(Network.state.wifi.enabled, 'on'));
+        button.toggleClassName(Network.wifi.enabled, 'on'));
 
     return button;
 }

@@ -4,12 +4,12 @@ import Service from './service.js';
 imports.gi.versions.GnomeBluetooth = '3.0';
 const { GnomeBluetooth } = imports.gi;
 
-const _STATES = {
-    [GnomeBluetooth.AdapterState.ABSENT]: 'absent',
-    [GnomeBluetooth.AdapterState.ON]: 'enabled',
-    [GnomeBluetooth.AdapterState.TURNING_ON]: 'enabled',
-    [GnomeBluetooth.AdapterState.OFF]: 'disabled',
-    [GnomeBluetooth.AdapterState.TURNING_OFF]: 'disabled',
+const _ENABLED = {
+    [GnomeBluetooth.AdapterState.ABSENT]: false,
+    [GnomeBluetooth.AdapterState.ON]: true,
+    [GnomeBluetooth.AdapterState.TURNING_ON]: true,
+    [GnomeBluetooth.AdapterState.OFF]: false,
+    [GnomeBluetooth.AdapterState.TURNING_OFF]: false,
 };
 
 type BluetoothDevice = {
@@ -25,7 +25,7 @@ type BluetoothDevice = {
 }
 
 type BluetoothState = {
-    state: string,
+    enabled: boolean
     connectedDevices: BluetoothDevice[]
     devices: BluetoothDevice[]
 }
@@ -111,7 +111,7 @@ class BluetoothService extends Service{
 
     _sync() {
         this._state = {
-            state: _STATES[this._client.default_adapter_state],
+            enabled: _ENABLED[this._client.default_adapter_state],
             connectedDevices: [],
             devices: [],
         };
@@ -151,9 +151,18 @@ export default class Bluetooth {
         Bluetooth._instance.toggle();
     }
 
-    static get state() {
+    static get enabled() {
         Service.ensureInstance(Bluetooth, BluetoothService);
-        const state = { ...Bluetooth._instance._state };
-        return state;
+        return Bluetooth._instance._state.enabled;
+    }
+
+    static get devices() {
+        Service.ensureInstance(Bluetooth, BluetoothService);
+        return Bluetooth._instance._state.devices;
+    }
+
+    static get connectedDevices() {
+        Service.ensureInstance(Bluetooth, BluetoothService);
+        return Bluetooth._instance._state.connectedDevices;
     }
 }
