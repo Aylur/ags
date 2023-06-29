@@ -18,7 +18,7 @@ interface ServiceAPI {
 }
 
 interface Widget {
-  type: string
+  type: string|(() => Gtk.Widget)
   className?: string
   style?: string
   halign?: 'start'|'center'|'end'|'fill'
@@ -110,6 +110,7 @@ function parseParams(widget: Gtk.Widget, {
     halign = 'fill', valign = 'fill',
     hexpand = false, vexpand = false, visible = true,
 }: Widget) {
+    type = type.toString();
     typecheck('className', className, ['string', 'undefined'], type);
     typecheck('style', style, ['string', 'undefined'], type);
     typecheck('sensitive', sensitive, ['boolean', 'undefined'], type);
@@ -212,7 +213,7 @@ export default function Widget(params: null|Widget|string|(() => Gtk.Widget)|Gtk
 
     let widget: Gtk.Widget|null = null;
     if (typeof type === 'function')
-        widget = (type as () => Gtk.Widget)();
+        widget = type();
 
     if (typeof type === 'string' && type in widgets)
         widget = widgets[type]({ type, ...props });

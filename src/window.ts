@@ -34,7 +34,7 @@ export default function Window({
 }: Window): Gtk.Window {
     typecheck('name', name, 'string', 'window');
     typecheck('anchor', anchor, 'array', 'window');
-    typecheck('margin', margin, 'array', 'window');
+    typecheck('margin', margin, ['number', 'array'], 'window');
     typecheck('layer', layer, 'string', 'window');
     typecheck('exclusive', exclusive, 'boolean', 'window');
     typecheck('popup', popup, 'boolean', 'window');
