@@ -384,11 +384,13 @@ export function Overlay({ type, children = [], ...rest }) {
     return overlay;
 }
 
-export function ProgressBar({ type, inverted, orientation, ...rest }) {
+export function ProgressBar({ type, value, inverted, orientation, ...rest }) {
     inverted ||= false;
     orientation ||= 'horizontal';
+    value ||= 0;
     typecheck('inverted', inverted, 'boolean', type);
-    typecheck(orientation, orientation, 'string', type);
+    typecheck('orientation', orientation, 'string', type);
+    typecheck('value', value, 'number', type);
     restcheck(rest, type);
 
     const bar = new Gtk.ProgressBar({
@@ -396,6 +398,7 @@ export function ProgressBar({ type, inverted, orientation, ...rest }) {
         inverted,
     });
 
-    bar.setValue = v => bar.set_fraction(v/100);
+    bar.setValue = v => bar.set_fraction(v);
+    bar.setValue(value);
     return bar;
 }
