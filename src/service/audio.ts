@@ -8,15 +8,6 @@ import { bulkConnect, bulkDisconnect } from '../utils.js';
 // import Gvc from '@girs/gvc-1.0';
 const { Gvc } = imports.gi;
 
-type AudioStreamState = {
-    description: string|null
-    iconName: string|null
-    id: number
-    isMuted: boolean
-    name: string|null
-    volume: number
-}
-
 class Stream extends GObject.Object{
     static {
         GObject.registerClass({
@@ -29,29 +20,29 @@ class Stream extends GObject.Object{
 
     _stream: Gvc.MixerStream;
     _ids: number[];
-    _state!: AudioStreamState;
 
     constructor(stream: Gvc.MixerStream) {
         super();
 
         this._stream = stream;
         this._ids = bulkConnect(this._stream, [
-            ['notify::description', this._sync.bind(this)],
-            ['notify::is-muted', this._sync.bind(this)],
-            ['notify::volume', this._sync.bind(this)],
-            ['notify::icon-name', this._sync.bind(this)],
-            ['notify::id', this._sync.bind(this)],
-            ['notify::state', this._sync.bind(this)],
+            ['notify::description', () => this.emit('changed')],
+            ['notify::is-muted',    () => this.emit('changed')],
+            ['notify::volume',      () => this.emit('changed')],
+            ['notify::icon-name',   () => this.emit('changed')],
+            ['notify::id',          () => this.emit('changed')],
+            ['notify::state',       () => this.emit('changed')],
         ]);
-        this._sync();
+        this.emit('changed');
     }
 
-    get state(): AudioStreamState {
-        return this._state;
-    }
+    get description() { return this._stream.description; }
+    get iconName() { return this._stream.icon_name; }
+    get id() { return this._stream.id; }
+    get name() { return this._stream.name; }
 
     get volume() {
-        return this._state.volume;
+        return this._stream.volume / Audio._instance._control.get_vol_max_norm();
     }
 
     set volume(value) { // 0..100
@@ -61,37 +52,21 @@ class Stream extends GObject.Object{
         if (value < 0)
             value = 0;
 
-        this._stream.set_volume(value/100 * Audio._instance._control.get_vol_max_norm());
+        this._stream.set_volume(value * Audio._instance._control.get_vol_max_norm());
         this._stream.push_volume();
     }
 
-    set isMuted(value) {
-        this._stream.is_muted = value;
+    set isMuted(muted) {
+        this._stream.is_muted = muted;
     }
 
     get isMuted() {
         return this._stream.is_muted;
     }
 
-    toggleMute() {
-        this._stream.is_muted = !this._stream.is_muted;
-    }
-
     close() {
         bulkDisconnect((this._stream as unknown) as GObject.Object, this._ids);
         this.emit('closed');
-    }
-
-    _sync() {
-        this._state = {
-            description: this._stream.description,
-            iconName: this._stream.icon_name,
-            id: this._stream.id,
-            isMuted: this._stream.is_muted,
-            name: this._stream.name,
-            volume: this._stream.volume / Audio._instance._control.get_vol_max_norm()*100,
-        };
-        this.emit('changed');
     }
 }
 

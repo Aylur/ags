@@ -202,7 +202,7 @@ export function Slider({ type, inverted, orientation, min, max, value, onChange,
     inverted ||= false;
     orientation ||= 'horizontal';
     min ||= 0;
-    max ||= 100;
+    max ||= 1;
     value ||= 0;
     onChange ||= '';
     drawValue ||= false;

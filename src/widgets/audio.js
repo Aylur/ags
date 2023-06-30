@@ -36,14 +36,20 @@ export const SpeakerIndicator = ({ items, ...rest }) => {
     return _connectStream({
         stream: 'speaker',
         widget: Dynamic({ items, ...rest }),
-        callback: dynamic => dynamic.update(value => value <= Audio.speaker.volume),
+        callback: dynamic => dynamic.update(value => {
+            const volume = value <= Audio.speaker.volume*100;
+            if (Audio.speaker.isMuted)
+                return value === 0;
+
+            return value <= volume;
+        }),
     });
 };
 
 export const SpeakerLabel = props => _connectStream({
     stream: 'speaker',
     widget: Label(props),
-    callback: label => label.label = `${Math.floor(Audio.speaker.volume)}`,
+    callback: label => label.label = `${Math.floor(Audio.speaker.volume*100)}`,
 });
 
 export const SpeakerSlider = props => _connectStream({
@@ -52,7 +58,10 @@ export const SpeakerSlider = props => _connectStream({
         onChange: value => Audio.speaker.volume = value,
         ...props,
     }),
-    callback: slider => slider.adjustment.value = Audio.speaker.volume,
+    callback: slider => {
+        slider.adjustment.value = Audio.speaker.volume;
+        slider.sensitive = !Audio.speaker.isMuted;
+    },
 });
 
 export const MicMuteIndicator = ({
@@ -123,13 +132,13 @@ export function AppMixer({ item, ...props }) {
             ],
         });
         box.update = () => {
-            icon.icon_name = stream.state.iconName;
-            icon.set_tooltip_text(stream.state.name);
+            icon.icon_name = stream.iconName;
+            icon.set_tooltip_text(stream.name);
             slider.set_value(stream.volume);
-            percent.label = `${Math.floor(stream.volume)}%`;
-            stream.state.description.length > 37
-                ? label.label = stream.state.description.substring(0, 37)+'..'
-                : label.label = stream.state.description;
+            percent.label = `${Math.floor(stream.volume*100)}%`;
+            stream.description.length > 37
+                ? label.label = stream.description.substring(0, 37)+'..'
+                : label.label = stream.description;
         };
         return box;
     };

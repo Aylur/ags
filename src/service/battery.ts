@@ -73,12 +73,6 @@ export default class Battery {
         Battery._instance.listen(widget, callback);
     }
 
-    static get state() {
-        Service.ensureInstance(Battery, BatteryService);
-        const state = { ...Battery._instance._state };
-        return state;
-    }
-
     static get available() {
         Service.ensureInstance(Battery, BatteryService);
         return Battery._instance._state.available;
