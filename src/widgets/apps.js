@@ -82,7 +82,7 @@ export function AppLauncher({ type, placeholder, layout, item, listbox, window, 
     typecheck('window', window, 'string', type);
     restcheck(rest, type);
 
-    const appsbox = Widget(listbox());
+    const appsbox = Widget(listbox);
 
     const update = search => {
         appsbox.clear();
@@ -106,18 +106,19 @@ export function AppLauncher({ type, placeholder, layout, item, listbox, window, 
         onChange: update,
     });
 
-    const box = Widget(layout({
-        entry,
-        listbox: appsbox,
-    }));
+    const box = Widget({
+        type: () => Widget(layout({
+            entry,
+            listbox: appsbox,
+        })),
+        connections: [[App, App.connect('window-toggled', (_app, name, visible) => {
+            if (name === window)
+                return;
 
-    App.connect('window-toggled', (_app, name) => {
-        if (name !== window)
-            return;
-
-        entry.set_text('');
-        if (App.getWindow(name).visible)
-            box.grab_focus();
+            entry.set_text('');
+            if (visible)
+                box.grab_focus();
+        })]],
     });
 
     return box;

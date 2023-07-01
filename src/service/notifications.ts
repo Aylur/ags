@@ -7,7 +7,7 @@ import { NotificationIFace } from '../dbus/notifications.js';
 import { NOTIFICATIONS_CACHE_PATH, ensureCache, getConfig, timeout, writeFile } from '../utils.js';
 
 type action = {
-    id: string
+    action: string
     label: string
 }
 
@@ -20,7 +20,7 @@ type Hints = {
 type Notification = {
     id: number
     appName: string
-    appId: string
+    appEntry: string
     appIcon: string
     summary: string
     body: string
@@ -55,8 +55,8 @@ class NotificationsService extends Service{
         this._sync();
     }
 
-    toggleDND() {
-        this._dnd = !this._dnd;
+    set dnd(value: boolean) {
+        this._dnd = value;
         this.emit('changed');
     }
 
@@ -88,7 +88,7 @@ class NotificationsService extends Service{
             if (actions[i+1] !== '') {
                 acts.push({
                     label: actions[i+1],
-                    id: actions[i],
+                    action: actions[i],
                 });
             }
         }
@@ -99,7 +99,7 @@ class NotificationsService extends Service{
         const notification: Notification = {
             id,
             appName: app_name,
-            appId: hints['desktop-entry']?.unpack() || '',
+            appEntry: hints['desktop-entry']?.unpack() || '',
             appIcon: app_icon,
             summary,
             body,
@@ -271,11 +271,6 @@ export default class Notifications {
         Notifications._instance.CloseNotification(id);
     }
 
-    static toggleDND() {
-        Service.ensureInstance(Notifications, NotificationsService);
-        Notifications._instance.toggleDND();
-    }
-
     static dismiss(id: number) {
         Service.ensureInstance(Notifications, NotificationsService);
         Notifications._instance.dismiss(id);
@@ -284,6 +279,11 @@ export default class Notifications {
     static get dnd() {
         Service.ensureInstance(Notifications, NotificationsService);
         return Notifications._instance._dnd;
+    }
+
+    static set dnd(value: boolean) {
+        Service.ensureInstance(Notifications, NotificationsService);
+        Notifications._instance.dnd = value;
     }
 
     static get popups() {

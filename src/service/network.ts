@@ -7,56 +7,36 @@ import Service from './service.js';
 imports.gi.versions.NM = '1.0';
 const { NM } = imports.gi;
 
+type Internet = 'connected'|'connecting'|'disconnected';
+type DeviceState = 'disabled'|'enabled'|'unknown';
+type Connectivity = 'unknown'|'none'|'portal'|'limited'|'full';
+
 function _CONNECTIVITY(state: NM.ConnectivityState): Connectivity {
     switch (state) {
-    case NM.ConnectivityState.UNKNOWN:
-        return 'unknown';
-
-    case NM.ConnectivityState.NONE:
-        return 'none';
-
-    case NM.ConnectivityState.PORTAL:
-        return 'portal';
-
-    case NM.ConnectivityState.LIMITED:
-        return 'limited';
-
-    case NM.ConnectivityState.FULL:
-        return 'full';
+    case NM.ConnectivityState.UNKNOWN: return 'unknown';
+    case NM.ConnectivityState.NONE: return 'none';
+    case NM.ConnectivityState.PORTAL: return 'portal';
+    case NM.ConnectivityState.LIMITED: return 'limited';
+    case NM.ConnectivityState.FULL: return 'full';
     }
 }
 
 function _INTERNET(state: NM.ActiveConnection): Internet {
     switch (state?.state) {
-    case NM.ActiveConnectionState.ACTIVATED:
-        return 'connected';
-
-    case NM.ActiveConnectionState.ACTIVATING:
-        return 'connecting';
-
-    default:
-        return 'disconnected';
+    case NM.ActiveConnectionState.ACTIVATED: return 'connected';
+    case NM.ActiveConnectionState.ACTIVATING: return 'connecting';
+    default: return 'disconnected';
     }
 }
 
 function _STATE(state: NM.DeviceState): DeviceState {
     switch (state) {
     case NM.DeviceState.DISCONNECTED:
-    case NM.DeviceState.UNAVAILABLE:
-        return 'disabled';
-
-    case NM.DeviceState.ACTIVATED:
-        return 'enabled';
-
-    default:
-        return 'unknown';
+    case NM.DeviceState.UNAVAILABLE: return 'disabled';
+    case NM.DeviceState.ACTIVATED: return 'enabled';
+    default: return 'unknown';
     }
 }
-
-
-type Internet = 'connected'|'connecting'|'disconnected';
-type DeviceState = 'disabled'|'enabled'|'unknown';
-type Connectivity = 'unknown'|'none'|'portal'|'limited'|'full';
 
 type WifiState = {
     ssid: string
@@ -206,12 +186,6 @@ export default class Network {
     static toggleWifi() {
         Service.ensureInstance(Network, NetworkService);
         Network._instance.toggleWifi();
-    }
-
-    static get state() {
-        Service.ensureInstance(Network, NetworkService);
-        const state = { ...Network._instance._state };
-        return state;
     }
 
     static get connectivity() {

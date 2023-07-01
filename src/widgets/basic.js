@@ -244,7 +244,7 @@ export function Slider({ type, inverted, orientation, min, max, value, onChange,
 
     if (onChange) {
         slider.adjustment.connect('notify::value', ({ value }) => {
-            if (!(slider._dragging || slider.has_focus))
+            if (!slider._dragging)
                 return;
 
             typeof onChange === 'function'

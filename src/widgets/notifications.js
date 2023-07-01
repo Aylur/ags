@@ -3,7 +3,7 @@ import { lookUpIcon, restcheck, timeout, typecheck } from '../utils.js';
 import Widget from '../widget.js';
 import { Box, Button, Dynamic, Icon } from './basic.js';
 
-const _icon = ({ appId, appIcon, image }) => {
+const _icon = ({ appEntry, appIcon, image }) => {
     if (image) {
         return {
             type: 'box',
@@ -20,8 +20,8 @@ const _icon = ({ appId, appIcon, image }) => {
     if (lookUpIcon(appIcon))
         icon = appIcon;
 
-    if (lookUpIcon(appId))
-        icon = appId;
+    if (lookUpIcon(appEntry))
+        icon = appEntry;
 
     return {
         type: 'box',
@@ -98,12 +98,12 @@ const _notification = ({ id, summary, body, actions, urgency, time, ...icon }) =
                 type: 'box',
                 className: 'actions',
                 connections: [['draw', widget => { widget.visible = actions.length > 0; }]],
-                children: actions.map(action => ({
+                children: actions.map(({ action, label }) => ({
                     className: 'action-button',
                     type: 'button',
-                    onClick: () => Notifications.invoke(id, action.id),
+                    onClick: () => Notifications.invoke(id, action),
                     hexpand: true,
-                    child: action.label,
+                    child: label,
                 })),
             }),
         ],
@@ -176,7 +176,7 @@ export function DNDIndicator({
 export function DNDToggle(props) {
     const button = Button({
         ...props,
-        onClick: Notifications.toggleDND,
+        onClick: () => { Notifications.dnd = !Notifications.dnd; },
     });
     Notifications.connect(button, () => button.toggleClassName(Notifications.dnd, 'on'));
     return button;

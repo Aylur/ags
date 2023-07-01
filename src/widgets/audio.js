@@ -37,11 +37,10 @@ export const SpeakerIndicator = ({ items, ...rest }) => {
         stream: 'speaker',
         widget: Dynamic({ items, ...rest }),
         callback: dynamic => dynamic.update(value => {
-            const volume = value <= Audio.speaker.volume*100;
             if (Audio.speaker.isMuted)
                 return value === 0;
 
-            return value <= volume;
+            return value <= (Audio.speaker.volume*100);
         }),
     });
 };
