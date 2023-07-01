@@ -1,4 +1,3 @@
-import Gdk from 'gi://Gdk?version=3.0';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
@@ -139,39 +138,12 @@ export function runCmd(cmd: string|((widget?: Gtk.Widget) => void), widget?: Gtk
 }
 
 export function getConfig(): Config|null {
-    let config: Config|null = null;
-
     try {
         imports.searchPath.push(CONFIG_DIR);
-        config = imports.config.config as Config;
+        return imports.config.config as Config;
     } catch (error) {
-        const configjson = readFile(CONFIG_DIR+'/config.json');
-        configjson
-            ? config = JSON.parse(configjson) as Config
-            : logError(error as Error);
+        return null;
     }
-
-    return config;
-}
-
-export function applyCss(path?: string) {
-    if (!path) {
-        print('No style was specified!');
-        return;
-    }
-
-    const cssProvider = new Gtk.CssProvider();
-    cssProvider.load_from_path(path);
-
-    const screen = Gdk.Screen.get_default();
-    if (!screen)
-        return;
-
-    Gtk.StyleContext.add_provider_for_screen(
-        screen,
-        cssProvider,
-        Gtk.STYLE_PROVIDER_PRIORITY_USER,
-    );
 }
 
 export function lookUpIcon(name: string|null, size = 16): Gtk.IconInfo|null {

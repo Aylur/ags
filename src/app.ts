@@ -1,9 +1,10 @@
 import Gtk from 'gi://Gtk?version=3.0';
+import Gdk from 'gi://Gdk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Window from './window.js';
-import { applyCss, error, warning, getConfig, timeout } from './utils.js';
+import { error, warning, getConfig, timeout } from './utils.js';
 
 const APP_BUS = 'com.github.Aylur.'+pkg.name;
 
@@ -54,6 +55,21 @@ export default class App extends Gtk.Application {
         App._instance.quit();
     }
 
+    static applyCss(path: string) {
+        const cssProvider = new Gtk.CssProvider();
+        cssProvider.load_from_path(path);
+
+        const screen = Gdk.Screen.get_default();
+        if (!screen)
+            return;
+
+        Gtk.StyleContext.add_provider_for_screen(
+            screen,
+            cssProvider,
+            Gtk.STYLE_PROVIDER_PRIORITY_USER,
+        );
+    }
+
     constructor() {
         super({
             application_id: APP_BUS,
@@ -83,7 +99,10 @@ export default class App extends Gtk.Application {
         }
 
         this._closeDelay = config.closeWindowDelay || {};
-        applyCss(config.style);
+
+        if (config.style)
+            App.applyCss(config.style);
+
         config.windows?.forEach(window => {
             const w = Window(window);
 
