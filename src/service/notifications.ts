@@ -251,6 +251,7 @@ export default class Notifications {
     static { Service.export(this, 'Notifications'); }
     static _instance: NotificationsService;
 
+    static disconnect(id: number) { Notifications._instance.disconnect(id); }
     static connect(widget: Gtk.Widget, callback: () => void) {
         Service.ensureInstance(Notifications, NotificationsService);
         Notifications._instance.listen(widget, callback);

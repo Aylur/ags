@@ -243,6 +243,7 @@ export default class Hyprland {
     static { Service.export(this, 'Hyprland'); }
     static _instance: HyprlandService;
 
+    static disconnect(id: number) { Hyprland._instance.disconnect(id); }
     static connect(widget: Gtk.Widget, callback: () => void) {
         Service.ensureInstance(Hyprland, HyprlandService);
         Hyprland._instance.listen(widget, callback);

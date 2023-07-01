@@ -141,6 +141,7 @@ export default class Bluetooth {
     static { Service.export(this, 'Bluetooth'); }
     static _instance: BluetoothService;
 
+    static disconnect(id: number) { Bluetooth._instance.disconnect(id); }
     static connect(widget: Gtk.Widget, callback: () => void) {
         Service.ensureInstance(Bluetooth, BluetoothService);
         Bluetooth._instance.listen(widget, callback);

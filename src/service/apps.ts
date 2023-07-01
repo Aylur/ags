@@ -91,6 +91,7 @@ export default class Applications {
         return Applications._instance.query(term);
     }
 
+    static disconnect(id: number) { Applications._instance.disconnect(id); }
     static connect(widget: Gtk.Widget, callback: () => void) {
         Service.ensureInstance(Applications, ApplicationsService);
         Applications._instance.listen(widget, callback);

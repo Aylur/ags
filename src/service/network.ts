@@ -178,6 +178,7 @@ export default class Network {
     static { Service.export(this, 'Network'); }
     static _instance: NetworkService;
 
+    static disconnect(id: number) { Network._instance.disconnect(id); }
     static connect(widget: Gtk.Widget, callback: () => void) {
         Service.ensureInstance(Network, NetworkService);
         Network._instance.listen(widget, callback);

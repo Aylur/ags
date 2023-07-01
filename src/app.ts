@@ -24,6 +24,7 @@ export default class App extends Gtk.Application {
         }, this);
     }
 
+    static disconnect(id: number)  { App._instance.disconnect(id); }
     static connect(event: string, callback: () => void): number {
         return App._instance.connect(event, callback);
     }

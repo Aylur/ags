@@ -144,6 +144,7 @@ export default class Audio {
     static { Service.export(this, 'Audio'); }
     static _instance: AudioService;
 
+    static disconnect(id: number) { Audio._instance.disconnect(id); }
     static connect(widget: Gtk.Widget, callback: () => void) {
         Service.ensureInstance(Audio, AudioService);
         Audio._instance.listen(widget, callback);
