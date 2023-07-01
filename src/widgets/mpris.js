@@ -19,7 +19,7 @@ export function Box({ player, ...props }) {
 export function CoverArt({ player, ...props }) {
     const box = Basic.Box(props);
     Mpris.connect(box, () => {
-        const url = Mpris.getPlayer(player)?.state?.coverPath;
+        const url = Mpris.getPlayer(player)?.coverPath;
         if (!url)
             return;
 
@@ -32,7 +32,7 @@ export function CoverArt({ player, ...props }) {
 export function TitleLabel({ player, ...props }) {
     const label = Basic.Label(props);
     Mpris.connect(label, () => {
-        label.label = Mpris.getPlayer(player)?.state?.trackTitle || '';
+        label.label = Mpris.getPlayer(player)?.trackTitle || '';
     });
 
     return label;
@@ -41,7 +41,7 @@ export function TitleLabel({ player, ...props }) {
 export function ArtistLabel({ player, ...props }) {
     const label = Basic.Label(props);
     Mpris.connect(label, () => {
-        label.label = Mpris.getPlayer(player)?.state?.trackArtists.join(', ') || '';
+        label.label = Mpris.getPlayer(player)?.trackArtists.join(', ') || '';
     });
 
     return label;
@@ -78,8 +78,8 @@ export function VolumeSlider({ type, player, ...props }) {
         type, ...props,
         onChange: value => {
             const mpris = Mpris.getPlayer(player);
-            if (mpris.state.volume >= 0)
-                Mpris.getPlayer(player).setVolume(value);
+            if (mpris && mpris.volume >= 0)
+                Mpris.getPlayer(player).volume = value;
         },
     });
 
@@ -90,8 +90,8 @@ export function VolumeSlider({ type, player, ...props }) {
         const mpris = Mpris.getPlayer(player);
         slider.visible = mpris;
         if (mpris) {
-            slider.visible = mpris.state.volume >= 0;
-            slider.adjustment.value = mpris.state.volume;
+            slider.visible = mpris.volume >= 0;
+            slider.adjustment.value = mpris.volume;
         }
     };
     Mpris.connect(slider, update);
@@ -110,9 +110,9 @@ export function VolumeIcon({ type, player, items }) {
     const icon = Basic.Dynamic({ type, items });
     Mpris.connect(icon, () => {
         const mpris = Mpris.getPlayer(player);
-        icon.visible = mpris?.state.volume >= 0;
-        const value = mpris?.state.volume || 0;
-        icon.update(threshold => threshold <= value);
+        icon.visible = mpris?.volume >= 0;
+        const value = mpris?.volume || 0;
+        icon.update(threshold => threshold <= value*100);
     });
 
     return icon;
@@ -126,8 +126,8 @@ export function PositionSlider({ type, player, interval, ...props }) {
         type, ...props,
         onChange: value => {
             const mpris = Mpris.getPlayer(player);
-            if (mpris.state.length >= 0)
-                Mpris.getPlayer(player).setPosition(mpris.state.length*value/100);
+            if (mpris && mpris.length >= 0)
+                Mpris.getPlayer(player).position = mpris.length*value;
         },
     });
 
@@ -136,12 +136,9 @@ export function PositionSlider({ type, player, interval, ...props }) {
             return;
 
         const mpris = Mpris.getPlayer(player);
-        slider.visible = mpris?.state.length > 0;
-        if (mpris && mpris.state.length > 0) {
-            const pos = mpris.getPosition();
-            const max = mpris.state.length;
-            slider.adjustment.value = pos/max*100;
-        }
+        slider.visible = mpris?.length > 0;
+        if (mpris && mpris.length > 0)
+            slider.adjustment.value = mpris.position/mpris.length;
     };
     Utils.interval(slider, interval, update);
     Mpris.connect(slider, update);
@@ -178,8 +175,8 @@ export function PositionLabel({ type, player, interval, ...props }) {
     const update = () => {
         const mpris = Mpris.getPlayer(player);
         connect(mpris);
-        mpris && mpris.state.length > 0
-            ? label.label = _lengthStr(mpris.getPosition())
+        mpris && mpris.length > 0
+            ? label.label = _lengthStr(mpris.position)
             : label.visible = mpris;
 
         return true;
@@ -194,8 +191,8 @@ export function LengthLabel({ player, ...props }) {
     const label = Basic.Label(props);
     Mpris.connect(label, () => {
         const mpris = Mpris.getPlayer(player);
-        mpris && mpris.state.length > 0
-            ? label.label = _lengthStr(mpris.state.length)
+        mpris && mpris.length > 0
+            ? label.label = _lengthStr(mpris.length)
             : label.visible = mpris;
     });
     return label;
@@ -215,11 +212,11 @@ const _playerButton = ({ player, items, onClick, prop, canProp, cantValue }) => 
     });
     Mpris.connect(button, () => {
         const mpris = Mpris.getPlayer(player);
-        if (!mpris || mpris.state[canProp] === cantValue)
+        if (!mpris || mpris[canProp] === cantValue)
             return button.hide();
 
         button.show();
-        dynamic.update(value => value === mpris.state[prop]);
+        dynamic.update(value => value === mpris[prop]);
     });
 
     return button;
@@ -236,8 +233,8 @@ export function ShuffleButton({ type, player, enabled, disabled, ...rest }) {
             { value: false, widget: disabled },
         ],
         onClick: 'shuffle',
-        prop: 'shuffle',
-        canProp: 'shuffle',
+        prop: 'shuffleStatus',
+        canProp: 'shuffleStatus',
         cantValue: null,
     });
 }

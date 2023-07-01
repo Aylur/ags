@@ -10,22 +10,6 @@ import { MEDIA_CACHE_PATH } from '../utils.js';
 
 type PlaybackStatus = 'Playing'|'Paused'|'Stopped';
 type LoopStatus = 'None'|'Track'|'Playlist';
-type PlayerState = {
-    trackid: string
-    trackArtists: string[]
-    trackTitle: string
-    trackCoverUrl: string
-    coverPath: string
-    playBackStatus: PlaybackStatus
-    canGoNext: boolean
-    canGoPrev: boolean
-    canPlay: boolean
-    shuffle?: boolean
-    loopStatus?: LoopStatus
-    volume: number
-    length: number
-}
-
 class MprisPlayer extends GObject.Object {
     static {
         GObject.registerClass({
@@ -37,22 +21,35 @@ class MprisPlayer extends GObject.Object {
         }, this);
     }
 
+    busName: string;
+    name: string;
+    entry!: string;
+    identity!: string;
+
+    trackid!: string;
+    trackArtists!: string[];
+    trackTitle!: string;
+    trackCoverUrl!: string;
+    coverPath!: string;
+    playBackStatus!: PlaybackStatus;
+    canGoNext!: boolean;
+    canGoPrev!: boolean;
+    canPlay!: boolean;
+    shuffleStatus!: boolean;
+    loopStatus!: LoopStatus;
+    length!: number;
+
     _binding: { mpris: number, player: number };
-    _busName: string;
-    _name: string;
-    _entry!: string;
-    _identity!: string;
-    _state!: PlayerState;
     _mprisProxy: TMprisProxy;
     _playerProxy: TPlayerProxy;
 
     constructor(busName: string) {
         super();
 
-        this._binding = { mpris: -1, player: -1 };
-        this._busName = busName;
-        this._name = busName.substring(23).split('.')[0];
+        this.busName = busName;
+        this.name = busName.substring(23).split('.')[0];
 
+        this._binding = { mpris: 0, player: 0 };
         this._mprisProxy = new MprisProxy(
             Gio.DBus.session, busName,
             '/org/mpris/MediaPlayer2');
@@ -66,11 +63,6 @@ class MprisPlayer extends GObject.Object {
 
         timeout(100, this._updateState.bind(this));
     }
-
-    get entry() { return this._entry; }
-    get identity() { return this._identity; }
-    get name() { return this._name; }
-    get state() { return this._state; }
 
     close() {
         this._mprisProxy?.disconnect(this._binding.mpris);
@@ -86,8 +78,8 @@ class MprisPlayer extends GObject.Object {
                     this.close();
             });
 
-        this._identity = this._mprisProxy.Identity;
-        this._entry = this._mprisProxy.DesktopEntry;
+        this.identity = this._mprisProxy.Identity;
+        this.entry = this._mprisProxy.DesktopEntry;
         if (!this._mprisProxy.g_name_owner)
             this.close();
     }
@@ -122,47 +114,30 @@ class MprisPlayer extends GObject.Object {
             ? -1
             : Number.parseInt(`${length}`.substring(0, 3));
 
-        const playBackStatus = this._playerProxy.PlaybackStatus as PlaybackStatus;
-        const canGoNext = this._playerProxy.CanGoNext;
-        const canGoPrev = this._playerProxy.CanGoPrevious;
-        const canPlay = this._playerProxy.CanPlay;
-
-        const shuffle = this._playerProxy.Shuffle;
-        const loopStatus = this._playerProxy.LoopStatus as LoopStatus;
-
-        let volume = this._playerProxy.Volume;
-        if (typeof volume !== 'number')
-            volume = -1;
-
-        this._state = {
-            trackid: metadata['mpris:trackid'],
-            trackArtists,
-            trackTitle,
-            trackCoverUrl,
-            coverPath: '',
-            playBackStatus,
-            canGoNext,
-            canGoPrev,
-            canPlay,
-            shuffle,
-            loopStatus,
-            volume: volume >= 0 ? volume*100 : -1,
-            length,
-        };
-
+        this.playBackStatus = this._playerProxy.PlaybackStatus as PlaybackStatus;
+        this.canGoNext = this._playerProxy.CanGoNext;
+        this.canGoPrev = this._playerProxy.CanGoPrevious;
+        this.canPlay = this._playerProxy.CanPlay;
+        this.shuffleStatus = this._playerProxy.Shuffle || false;
+        this.loopStatus = this._playerProxy.LoopStatus as LoopStatus;
+        this.trackid = metadata['mpris:trackid'];
+        this.trackArtists = trackArtists;
+        this.trackTitle = trackTitle;
+        this.trackCoverUrl = trackCoverUrl;
+        this.length = length;
         this._cacheCoverArt();
         this.emit('changed');
     }
 
     _cacheCoverArt(){
-        this._state.coverPath = MEDIA_CACHE_PATH + '/' +
-            `${this._state.trackArtists.join(', ')}_${this._state.trackTitle}`
+        this.coverPath = MEDIA_CACHE_PATH + '/' +
+            `${this.trackArtists.join(', ')}_${this.trackTitle}`
             .replace(/[\,\*\?\"\<\>\|\#\:\?\/\'\(\)]/g, '');
 
-        if (this._state.coverPath.length > 50)
-            this._state.coverPath = this._state.coverPath.slice(0, 50);
+        if (this.coverPath.length > 50)
+            this.coverPath = this.coverPath.slice(0, 50);
 
-        const { trackCoverUrl, coverPath } = this._state;
+        const { trackCoverUrl, coverPath } = this;
         if (trackCoverUrl === '' || coverPath === '')
             return;
 
@@ -191,12 +166,24 @@ class MprisPlayer extends GObject.Object {
         );
     }
 
-    getPosition() {
+    get volume() {
+        let volume = this._playerProxy.Volume;
+        if (typeof volume !== 'number')
+            volume = -1;
+
+        return volume;
+    }
+
+    set volume(value) {
+        this._playerProxy.Volume = value;
+    }
+
+    get position() {
         const proxy = Gio.DBusProxy.new_for_bus_sync(
             Gio.BusType.SESSION,
             Gio.DBusProxyFlags.NONE,
             null,
-            this._busName,
+            this.busName,
             '/org/mpris/MediaPlayer2',
             'org.mpris.MediaPlayer2.Player',
             null,
@@ -206,13 +193,11 @@ class MprisPlayer extends GObject.Object {
         return pos ? pos/1_000_000 : -1;
     }
 
-    setPosition(time: number) {
+    set position(time: number) {
         const micro = Math.floor(time*1_000_000);
-        this._playerProxy.SetPositionAsync(this._state.trackid, micro);
+        this._playerProxy.SetPositionAsync(this.trackid, micro);
         this.emit('position', time);
     }
-
-    setVolume(value: number){ this._playerProxy.Volume = value/100; }
 
     playPause() { this._playerProxy.PlayPauseAsync().catch(logError); }
     play() { this._playerProxy.PlayAsync().catch(logError); }
@@ -240,7 +225,6 @@ class MprisPlayer extends GObject.Object {
 }
 
 type Players = Map<string, MprisPlayer>;
-
 class MprisService extends Service{
     static {
         Service.register(this, {
@@ -307,7 +291,7 @@ class MprisService extends Service{
     getPlayer(name: string|((players: Players) => MprisPlayer) = '') {
         if (typeof name === 'function')
             // @ts-ignore
-            return name(new Map(this._players));
+            return name(new Map(this._players)) || null;
 
         for (const [busName, player] of this._players) {
             if (busName.includes(name))
