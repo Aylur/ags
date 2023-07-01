@@ -1,3 +1,4 @@
+import GLib from 'gi://GLib';
 import Notifications from '../service/notifications.js';
 import { lookUpIcon, restcheck, timeout, typecheck } from '../utils.js';
 import Widget from '../widget.js';
@@ -69,7 +70,7 @@ const _notification = ({ id, summary, body, actions, urgency, time, ...icon }) =
                                         className: 'time',
                                         valign: 'start',
                                         type: 'label',
-                                        label: time.format('%H:%M'),
+                                        label: GLib.DateTime.new_from_unix_local(time).format('%H:%M'),
                                     }),
                                     Widget({
                                         className: 'close-button',

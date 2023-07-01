@@ -26,7 +26,7 @@ type Notification = {
     body: string
     actions: action[]
     urgency: string
-    time: GLib.DateTime,
+    time: number // GLib.DateTime.to_unix,
     image: string|null
 }
 
@@ -104,7 +104,7 @@ class NotificationsService extends Service{
             body,
             actions: acts,
             urgency,
-            time: GLib.DateTime.new_now_local(),
+            time: GLib.DateTime.new_now_local().to_unix(),
             image:
                 this._parseImage(`${summary}${id}`, hints['image-data']) ||
                 this._isFile(app_icon),
