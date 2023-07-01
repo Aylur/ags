@@ -268,10 +268,6 @@ export default class Hyprland {
         return Hyprland._instance._state.clients;
     }
 
-    static Hyprctl(cmd: string) {
-        execAsync(`hyprctl ${cmd}`);
-    }
-
     static HyprctlGet(cmd: string): unknown|object {
         const [success, out, err] =
             GLib.spawn_command_line_sync(`hyprctl -j ${cmd}`);

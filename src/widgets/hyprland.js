@@ -1,7 +1,7 @@
 import { Box, Icon, Label } from './basic.js';
 import Hyprland from '../service/hyprland.js';
 import Widget from '../widget.js';
-import { typecheck, error, warning } from '../utils.js';
+import { typecheck, error, warning, execAsync } from '../utils.js';
 import { lookUpIcon } from '../utils.js';
 import Applications from '../service/apps.js';
 
@@ -26,7 +26,7 @@ export function Workpsaces({ type, monitors, fixed, active, empty, occupied, ...
 
         return Widget({
             type: 'button',
-            onClick: () => Hyprland.Hyprctl(`dispatch workspace ${i}`),
+            onClick: () => execAsync(`hyprctl dispatch workspace ${i}`),
             className,
             child: child ? Widget(child) : `${workspaces.get(i)?.name || i}`,
         });
@@ -132,7 +132,7 @@ const _item = ({ iconName }, { address, title }) => ({
     child: { type: 'icon', icon: iconName },
     tooltip: title,
     className: Hyprland.active.client.address === address.substring(2) ? 'focused' : 'nonfocused',
-    onClick: () => Hyprland.Hyprctl(`dispatch focuswindow address:${address}`),
+    onClick: () => execAsync(`hyprctl dispatch focuswindow address:${address}`),
 });
 
 export function Taskbar({ type, item, ...props }) {
