@@ -69,7 +69,7 @@ const _notification = ({ id, summary, body, actions, urgency, time, ...icon }) =
                                         className: 'time',
                                         valign: 'start',
                                         type: 'label',
-                                        label: `${time.hour}:${time.minute < 10 ? `0${time.minute}` : time.minute}`,
+                                        label: time.format('%H:%M'),
                                     }),
                                     Widget({
                                         className: 'close-button',

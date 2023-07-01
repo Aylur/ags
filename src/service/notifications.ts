@@ -26,7 +26,7 @@ type Notification = {
     body: string
     actions: action[]
     urgency: string
-    time: { hour: number, minute :number }
+    time: GLib.DateTime,
     image: string|null
 }
 
@@ -95,7 +95,6 @@ class NotificationsService extends Service{
 
         const id = replaces_id || this._idCount++;
         const urgency = _URGENCY[hints['urgency']?.unpack() || 1];
-        const date = new Date();
         const notification: Notification = {
             id,
             appName: app_name,
@@ -105,7 +104,7 @@ class NotificationsService extends Service{
             body,
             actions: acts,
             urgency,
-            time: { hour: date.getHours(), minute: date.getMinutes() },
+            time: GLib.DateTime.new_now_local(),
             image:
                 this._parseImage(`${summary}${id}`, hints['image-data']) ||
                 this._isFile(app_icon),
