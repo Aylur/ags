@@ -5,18 +5,8 @@
     <file>app.js</file>
     <file>utils.js</file>
     <file>widget.js</file>
+    <file>widgets.js</file>
     <file>window.js</file>
-
-    <file>widgets/apps.js</file>
-    <file>widgets/audio.js</file>
-    <file>widgets/basic.js</file>
-    <file>widgets/battery.js</file>
-    <file>widgets/bluetooth.js</file>
-    <file>widgets/clock.js</file>
-    <file>widgets/hyprland.js</file>
-    <file>widgets/mpris.js</file>
-    <file>widgets/network.js</file>
-    <file>widgets/notifications.js</file>
 
     <file>service/service.js</file>
     <file>service/apps.js</file>

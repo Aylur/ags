@@ -1,7 +1,7 @@
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Widget from '../widget.js';
-import { typecheck, error, runCmd, restcheck, warning, getConfig } from '../utils.js';
+import Widget from './widget.js';
+import { typecheck, error, runCmd, restcheck, warning, getConfig } from './utils.js';
 
 function _orientation(str) {
     if (str === 'v')

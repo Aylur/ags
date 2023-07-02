@@ -1,15 +1,6 @@
 import Gtk from 'gi://Gtk?version=3.0';
 import { typecheck, error, warning } from './utils.js';
-import * as Basic from './widgets/basic.js';
-import { AppLauncher } from './widgets/apps.js';
-import { Clock } from './widgets/clock.js';
-import * as Hyprland from './widgets/hyprland.js';
-import * as Mpris from './widgets/mpris.js';
-import * as Network from './widgets/network.js';
-import * as Battery from './widgets/battery.js';
-import * as Audio from './widgets/audio.js';
-import * as Bluetooth from './widgets/bluetooth.js';
-import * as Notifications from './widgets/notifications.js';
+import * as Basic from './widgets.js';
 
 interface ServiceAPI {
   _instance: any
@@ -29,15 +20,10 @@ interface Widget {
   tooltip?: string
   visible?: boolean
   connections?: ([s: string|ServiceAPI, callback: (...args: any[]) => any] | [ServiceAPI, number])[]
-  [key: string]: any
   properties?: [any, any][]
 }
 
-interface Widgets {
-    [key: string]: (props: any) => Gtk.Widget
-}
-
-const widgets: Widgets = {
+const widgets: { [key: string]: (props: any) => Gtk.Widget } = {
     'box': Basic.Box,
     'button': Basic.Button,
     'centerbox': Basic.CenterBox,
@@ -51,58 +37,6 @@ const widgets: Widgets = {
     'revealer': Basic.Revealer,
     'scrollable': Basic.Scrollable,
     'slider': Basic.Slider,
-
-    'app-launcher': AppLauncher,
-    'clock': Clock,
-
-    'hyprland/workspaces': Hyprland.Workpsaces,
-    'hyprland/window-label': Hyprland.WindowLabel,
-    'hyprland/window-icon': Hyprland.WindowIcon,
-    'hyprland/taskbar': Hyprland.Taskbar,
-
-    'mpris/box': Mpris.Box,
-    'mpris/cover-art': Mpris.CoverArt,
-    'mpris/title-label': Mpris.TitleLabel,
-    'mpris/artist-label': Mpris.ArtistLabel,
-    'mpris/player-icon': Mpris.PlayerIcon,
-    'mpris/player-label': Mpris.PlayerLabel,
-    'mpris/volume-slider': Mpris.VolumeSlider,
-    'mpris/volume-icon': Mpris.VolumeIcon,
-    'mpris/position-slider': Mpris.PositionSlider,
-    'mpris/position-label': Mpris.PositionLabel,
-    'mpris/length-label': Mpris.LengthLabel,
-    'mpris/shuffle-button': Mpris.ShuffleButton,
-    'mpris/loop-button': Mpris.LoopButton,
-    'mpris/previous-button': Mpris.PreviusButton,
-    'mpris/play-pause-button': Mpris.PlayPauseButton,
-    'mpris/next-button': Mpris.NextButton,
-
-    'network/ssid-label': Network.SSIDLabel,
-    'network/wifi-strength-label': Network.WifiStrengthLabel,
-    'network/wired-indicator': Network.WiredIndicator,
-    'network/wifi-indicator': Network.WifiIndicator,
-    'network/indicator': Network.Indicator,
-    'network/wifi-toggle': Network.WifiToggle,
-
-    'battery/indicator': Battery.Indicator,
-    'battery/level-label': Battery.LevelLabel,
-
-    'audio/speaker-indicator': Audio.SpeakerIndicator,
-    'audio/speaker-label': Audio.SpeakerLabel,
-    'audio/speaker-slider': Audio.SpeakerSlider,
-    'audio/microphone-mute-indicator': Audio.MicMuteIndicator,
-    'audio/microphone-mute-toggle': Audio.MicMuteToggle,
-    'audio/app-mixer': Audio.AppMixer,
-
-    'bluetooth/indicator': Bluetooth.Indicator,
-    'bluetooth/toggle': Bluetooth.Toggle,
-
-    'notifications/notification-list': Notifications.NotificationList,
-    'notifications/popup-list': Notifications.NotificationPopups,
-    'notifications/placeholder': Notifications.Placeholder,
-    'notifications/clear-button': Notifications.ClearButton,
-    'notifications/dnd-toggle': Notifications.DNDToggle,
-    'notifications/dnd-indicator': Notifications.DNDIndicator,
 };
 
 function parseParams(widget: Gtk.Widget, {
