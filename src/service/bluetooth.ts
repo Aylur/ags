@@ -147,14 +147,13 @@ export default class Bluetooth {
         Bluetooth._instance.listen(widget, callback);
     }
 
-    static toggle() {
-        Service.ensureInstance(Bluetooth, BluetoothService);
-        Bluetooth._instance.toggle();
-    }
-
     static get enabled() {
         Service.ensureInstance(Bluetooth, BluetoothService);
         return Bluetooth._instance._state.enabled;
+    }
+
+    static set enabled(enable: boolean) {
+        Bluetooth._instance._client.default_adapter_powered = enable;
     }
 
     static get devices() {

@@ -67,9 +67,7 @@ class ApplicationsService extends Service {
 
     constructor() {
         super();
-        Gio.AppInfoMonitor.get()
-            .connect('changed', this._sync.bind(this));
-
+        Gio.AppInfoMonitor.get().connect('changed', this._sync.bind(this));
         this._sync();
     }
 

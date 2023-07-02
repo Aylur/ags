@@ -35,8 +35,8 @@ class MprisPlayer extends GObject.Object {
     canGoNext!: boolean;
     canGoPrev!: boolean;
     canPlay!: boolean;
-    shuffleStatus!: boolean;
-    loopStatus!: LoopStatus;
+    shuffleStatus!: boolean|null;
+    loopStatus!: LoopStatus|null;
     length!: number;
 
     _binding: { mpris: number, player: number };
@@ -118,8 +118,8 @@ class MprisPlayer extends GObject.Object {
         this.canGoNext = this._playerProxy.CanGoNext;
         this.canGoPrev = this._playerProxy.CanGoPrevious;
         this.canPlay = this._playerProxy.CanPlay;
-        this.shuffleStatus = this._playerProxy.Shuffle || false;
-        this.loopStatus = this._playerProxy.LoopStatus as LoopStatus;
+        this.shuffleStatus = this._playerProxy.Shuffle || null;
+        this.loopStatus = this._playerProxy.LoopStatus as LoopStatus || null;
         this.trackid = metadata['mpris:trackid'];
         this.trackArtists = trackArtists;
         this.trackTitle = trackTitle;
