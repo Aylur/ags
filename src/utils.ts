@@ -110,13 +110,16 @@ export function bulkDisconnect(service: GObject.Object, ids: number[]) {
         service.disconnect(id);
 }
 
-export function interval(widget: Gtk.Widget|null, interval: number, callback: () => void) {
+export function interval(widget: Gtk.Widget|null, interval: number, callback: (widget: Gtk.Widget|null) => void) {
+    callback(widget);
     const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, interval, () => {
-        callback();
+        callback(widget);
         return true;
     });
-    if (widget)
+    if (widget) {
         widget.connect('destroy', () => GLib.source_remove(id));
+        return widget;
+    }
 }
 
 export function timeout(ms: number, callback: () => void) {
@@ -142,6 +145,7 @@ export function getConfig(): Config|null {
         imports.searchPath.push(CONFIG_DIR);
         return imports.config.config as Config;
     } catch (error) {
+        logError(error as Error);
         return null;
     }
 }
