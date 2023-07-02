@@ -123,9 +123,8 @@ export function Icon({ type, icon, size, ...rest } = {}) {
     return img;
 }
 
-export function Label({ type, label, maxWidth, markup, wrap, angle, justify, xalign, yalign, ...rest } = {}) {
+export function Label({ type, label, markup, wrap, angle, justify, xalign, yalign, ...rest } = {}) {
     label ||= '';
-    maxWidth ||= 0;
     markup ||= false;
     wrap ||= false;
     angle ||= 0;
@@ -133,7 +132,6 @@ export function Label({ type, label, maxWidth, markup, wrap, angle, justify, xal
     xalign ||= xalign === 0 ? 0 : 0.5;
     yalign ||= yalign === 0 ? 0 : 0.5;
     typecheck('label', label, 'string', type);
-    typecheck('maxWidth', maxWidth || 0, 'number', type);
     typecheck('markup', markup || false, 'boolean', type);
     typecheck('wrap', wrap || false, 'boolean', type);
     typecheck('angle', angle || 0, 'number', type);
@@ -153,7 +151,6 @@ export function Label({ type, label, maxWidth, markup, wrap, angle, justify, xal
         label,
         angle,
         justify: _justify,
-        max_width_chars: maxWidth,
         use_markup: markup,
         wrap,
         xalign,
@@ -289,11 +286,13 @@ export function Dynamic({ type, items, ...rest } = {}) {
     return box;
 }
 
-export function Entry({ type, placeholder, onChange, onAccept, password, ...rest }) {
+export function Entry({ type, text, placeholder, onChange, onAccept, password, ...rest }) {
     placeholder ||= '';
+    text ||= '';
     onChange ||= '';
     onAccept ||= '';
     password ||= false;
+    typecheck('text', text, 'string', type);
     typecheck('placeholder', placeholder, 'string', type);
     typecheck('onChange', onChange, ['string', 'function'], type);
     typecheck('onAccept', onAccept, ['string', 'function'], type);
@@ -303,6 +302,7 @@ export function Entry({ type, placeholder, onChange, onAccept, password, ...rest
     const entry = new Gtk.Entry({
         placeholder_text: placeholder,
         visibility: !password,
+        text,
     });
 
     if (onAccept) {
