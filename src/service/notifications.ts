@@ -4,7 +4,7 @@ import GLib from 'gi://GLib';
 import Gtk from 'gi://Gtk?version=3.0';
 import Service from './service.js';
 import { NotificationIFace } from '../dbus/notifications.js';
-import { NOTIFICATIONS_CACHE_PATH, ensureCache, getConfig, timeout, writeFile } from '../utils.js';
+import { NOTIFICATIONS_CACHE_PATH, ensureCache, getConfig, readFile, timeout, writeFile } from '../utils.js';
 
 type action = {
     action: string
@@ -189,19 +189,17 @@ class NotificationsService extends Service{
     }
 
     _readFromFile() {
-        try {
-            const file = Gio.File.new_for_path(NOTIFICATIONS_CACHE_PATH+'/notifications.json');
-            const [, contents] = file.load_contents(null);
-            const json = JSON.parse(new TextDecoder('utf-8').decode(contents)) as { notifications: Notification[] };
-            json.notifications.forEach(n => {
-                if (n.id > this._idCount)
-                    this._idCount = n.id+1;
+        const file = readFile(NOTIFICATIONS_CACHE_PATH+'/notifications.json');
+        if (!file)
+            return;
 
-                this._notifications.set(n.id, n);
-            });
-        } catch (error) {
-            print('There were no cached notifications found');
-        }
+        const json = JSON.parse(file) as { notifications: Notification[] };
+        json.notifications.forEach(n => {
+            if (n.id > this._idCount)
+                this._idCount = n.id+1;
+
+            this._notifications.set(n.id, n);
+        });
     }
 
     _isFile(path: string) {
