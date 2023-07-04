@@ -89,7 +89,7 @@ function parseParams(widget: Gtk.Widget, {
     };
 
     // @ts-ignore
-    widget.toggleClassName = (condition: boolean, className: string) => {
+    widget.toggleClassName = (className: string, condition = true) => {
         condition
             ? widget.get_style_context().add_class(className)
             : widget.get_style_context().remove_class(className);
