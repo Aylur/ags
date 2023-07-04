@@ -1,10 +1,9 @@
 import Gio from 'gi://Gio';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import GLib from 'gi://GLib';
-import Gtk from 'gi://Gtk?version=3.0';
 import Service from './service.js';
 import { NotificationIFace } from '../dbus/notifications.js';
-import { NOTIFICATIONS_CACHE_PATH, ensureCache, getConfig, readFile, timeout, writeFile } from '../utils.js';
+import { NOTIFICATIONS_CACHE_PATH, ensureDirectory, getConfig, readFile, timeout, writeFile } from '../utils.js';
 
 type action = {
     action: string
@@ -210,7 +209,7 @@ class NotificationsService extends Service{
         if (!image_data)
             return null;
 
-        ensureCache();
+        ensureDirectory();
         const fileName = this._filterName(name);
         const image = image_data.recursiveUnpack();
         const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
@@ -238,7 +237,7 @@ class NotificationsService extends Service{
         for (const [, notification] of this._notifications)
             notifications.push(notification);
 
-        ensureCache();
+        ensureDirectory();
         writeFile(JSON.stringify({ notifications }, null, 2), NOTIFICATIONS_CACHE_PATH+'/notifications.json');
         this.emit('changed');
     }

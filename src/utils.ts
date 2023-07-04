@@ -131,6 +131,7 @@ export function interval(widget: Gtk.Widget|null, interval: number, callback: (w
         widget.connect('destroy', () => GLib.source_remove(id));
         return widget;
     }
+    return id;
 }
 
 export function timeout(ms: number, callback: () => void) {
@@ -183,15 +184,20 @@ COMMANDS:
     run-js string\tRuns string as a js function
     inspector\t\tOpen debugger`;
 
-export function ensureCache() {
-    [
-        MEDIA_CACHE_PATH,
-        NOTIFICATIONS_CACHE_PATH,
-    ]
-    .forEach(path => {
-        if (!GLib.file_test(path, GLib.FileTest.EXISTS))
-            Gio.File.new_for_path(path).make_directory_with_parents(null);
-    });
+export function ensureDirectory(path?: string) {
+    if (path && !GLib.file_test(path, GLib.FileTest.EXISTS)) {
+        Gio.File.new_for_path(path).make_directory_with_parents(null);
+    }
+    else {
+        [
+            MEDIA_CACHE_PATH,
+            NOTIFICATIONS_CACHE_PATH,
+        ]
+        .forEach(path => {
+            if (!GLib.file_test(path, GLib.FileTest.EXISTS))
+                Gio.File.new_for_path(path).make_directory_with_parents(null);
+        });
+    }
 }
 
 export function isRunning(dbusName: string): boolean {

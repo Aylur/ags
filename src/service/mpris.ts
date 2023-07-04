@@ -1,9 +1,8 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
-import Gtk from 'gi://Gtk?version=3.0';
 import Service from './service.js';
-import { ensureCache, timeout } from '../utils.js';
+import { ensureDirectory, timeout } from '../utils.js';
 import { MprisPlayerProxy, MprisProxy, TMprisProxy, TPlayerProxy, MprisMetadata } from '../dbus/mpris.js';
 import { DBusProxy, TDBusProxy } from '../dbus/dbus.js';
 import { MEDIA_CACHE_PATH } from '../utils.js';
@@ -144,7 +143,7 @@ class MprisPlayer extends GObject.Object {
         if (GLib.file_test(coverPath, GLib.FileTest.EXISTS))
             return;
 
-        ensureCache();
+        ensureDirectory();
 
         Gio.File.new_for_uri(trackCoverUrl).copy_async(
             Gio.File.new_for_path(coverPath),
