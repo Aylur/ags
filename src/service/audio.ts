@@ -144,24 +144,20 @@ export default class Audio {
     static { Service.export(this, 'Audio'); }
     static _instance: AudioService;
 
-    static disconnect(id: number) { Audio._instance.disconnect(id); }
-    static connect(widget: Gtk.Widget, callback: () => void) {
+    static get instance() {
         Service.ensureInstance(Audio, AudioService);
-        Audio._instance.listen(widget, callback);
+        return Audio._instance;
     }
 
     static get speaker() {
-        Service.ensureInstance(Audio, AudioService);
-        return Audio._instance._speaker;
+        return Audio.instance._speaker;
     }
 
     static get microphone() {
-        Service.ensureInstance(Audio, AudioService);
-        return Audio._instance._mic;
+        return Audio.instance._mic;
     }
 
     static get apps() {
-        Service.ensureInstance(Audio, AudioService);
-        return Audio._instance._streams;
+        return Audio.instance._streams;
     }
 }

@@ -1,6 +1,6 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import { timeout } from '../utils.js';
+import { connect } from '../utils.js';
 
 export default class Service extends GObject.Object {
     static {
@@ -34,9 +34,7 @@ export default class Service extends GObject.Object {
         (Service as { [key: string]: any })[name] = api;
     }
 
-    listen(widget: Gtk.Widget, callback: (widget: Gtk.Widget) => void) {
-        const bind = this.connect('changed', () => callback(widget));
-        widget.connect('destroy', () => this.disconnect(bind));
-        timeout(10, () => callback(widget));
+    connectWidget(widget: Gtk.Widget, callback: (widget: Gtk.Widget, ...args: any[]) => void, event = 'changed') {
+        connect(this, widget, callback, event);
     }
 }

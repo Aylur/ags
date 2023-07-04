@@ -84,14 +84,12 @@ export default class Applications {
     static { Service.export(this, 'Applications'); }
     static _instance: ApplicationsService;
 
-    static query(term: string) {
+    static get instance() {
         Service.ensureInstance(Applications, ApplicationsService);
-        return Applications._instance.query(term);
+        return Applications._instance;
     }
 
-    static disconnect(id: number) { Applications._instance.disconnect(id); }
-    static connect(widget: Gtk.Widget, callback: () => void) {
-        Service.ensureInstance(Applications, ApplicationsService);
-        Applications._instance.listen(widget, callback);
+    static query(term: string) {
+        return Applications.instance.query(term);
     }
 }

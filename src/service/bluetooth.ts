@@ -141,28 +141,24 @@ export default class Bluetooth {
     static { Service.export(this, 'Bluetooth'); }
     static _instance: BluetoothService;
 
-    static disconnect(id: number) { Bluetooth._instance.disconnect(id); }
-    static connect(widget: Gtk.Widget, callback: () => void) {
+    static get instance() {
         Service.ensureInstance(Bluetooth, BluetoothService);
-        Bluetooth._instance.listen(widget, callback);
+        return Bluetooth._instance;
     }
 
     static get enabled() {
-        Service.ensureInstance(Bluetooth, BluetoothService);
-        return Bluetooth._instance._state.enabled;
+        return Bluetooth.instance._state.enabled;
     }
 
     static set enabled(enable: boolean) {
-        Bluetooth._instance._client.default_adapter_powered = enable;
+        Bluetooth.instance._client.default_adapter_powered = enable;
     }
 
     static get devices() {
-        Service.ensureInstance(Bluetooth, BluetoothService);
-        return Bluetooth._instance._state.devices;
+        return Bluetooth.instance._state.devices;
     }
 
     static get connectedDevices() {
-        Service.ensureInstance(Bluetooth, BluetoothService);
-        return Bluetooth._instance._state.connectedDevices;
+        return Bluetooth.instance._state.connectedDevices;
     }
 }

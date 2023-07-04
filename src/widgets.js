@@ -123,10 +123,11 @@ export function Icon({ type, icon, size, ...rest } = {}) {
     return img;
 }
 
-export function Label({ type, label, markup, wrap, angle, justify, xalign, yalign, ...rest } = {}) {
+export function Label({ type, label, markup, wrap, maxWidth, angle, justify, xalign, yalign, ...rest } = {}) {
     label ||= '';
     markup ||= false;
     wrap ||= false;
+    maxWidth ||= -1;
     angle ||= 0;
     justify ||= 'center';
     xalign ||= xalign === 0 ? 0 : 0.5;
@@ -152,6 +153,7 @@ export function Label({ type, label, markup, wrap, angle, justify, xalign, yalig
         angle,
         justify: _justify,
         use_markup: markup,
+        max_width_chars: maxWidth,
         wrap,
         xalign,
         yalign,

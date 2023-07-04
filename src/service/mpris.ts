@@ -305,14 +305,12 @@ export default class Mpris {
     static { Service.export(this, 'Mpris'); }
     static _instance: MprisService;
 
-    static disconnect(id: number) { Mpris._instance.disconnect(id); }
-    static connect(widget: Gtk.Widget, callback: () => void) {
+    static get instance() {
         Service.ensureInstance(Mpris, MprisService);
-        Mpris._instance.listen(widget, callback);
+        return Mpris._instance;
     }
 
     static getPlayer(name: string|((players: Players) => MprisPlayer)): MprisPlayer|null {
-        Service.ensureInstance(Mpris, MprisService);
         return Mpris._instance.getPlayer(name);
     }
 }

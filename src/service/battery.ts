@@ -68,29 +68,24 @@ export default class Battery {
     static { Service.export(this, 'Battery'); }
     static _instance: BatteryService;
 
-    static disconnect(id: number) { Battery._instance.disconnect(id); }
-    static connect(widget: Gtk.Widget, callback: () => void) {
+    static get instance() {
         Service.ensureInstance(Battery, BatteryService);
-        Battery._instance.listen(widget, callback);
+        return Battery._instance;
     }
 
     static get available() {
-        Service.ensureInstance(Battery, BatteryService);
-        return Battery._instance._state.available;
+        return Battery.instance._state.available;
     }
 
     static get percent() {
-        Service.ensureInstance(Battery, BatteryService);
-        return Battery._instance._state.percent;
+        return Battery.instance._state.percent;
     }
 
     static get charging() {
-        Service.ensureInstance(Battery, BatteryService);
-        return Battery._instance._state.charging;
+        return Battery.instance._state.charging;
     }
 
     static get charged() {
-        Service.ensureInstance(Battery, BatteryService);
-        return Battery._instance._state.charged;
+        return Battery.instance._state.charged;
     }
 }

@@ -161,11 +161,11 @@ class NetworkService extends Service{
                 ssid: this._ap && NM.utils_ssid_to_utf8(
                     this._ap.get_ssid().get_data() || new Uint8Array()) || 'Unknown',
                 strength: this._ap?.strength || -1,
-                internet: _INTERNET(this._wifi.active_connection),
+                internet: _INTERNET(this._wifi?.active_connection),
                 enabled: this._client.wireless_enabled,
             },
             wired: {
-                internet: _INTERNET(this._wired.active_connection),
+                internet: _INTERNET(this._wired?.active_connection),
                 state: _STATE(this._wired?.state),
             },
         };
@@ -178,34 +178,28 @@ export default class Network {
     static { Service.export(this, 'Network'); }
     static _instance: NetworkService;
 
-    static disconnect(id: number) { Network._instance.disconnect(id); }
-    static connect(widget: Gtk.Widget, callback: () => void) {
+    static get instance() {
         Service.ensureInstance(Network, NetworkService);
-        Network._instance.listen(widget, callback);
+        return Network._instance;
     }
 
     static toggleWifi() {
-        Service.ensureInstance(Network, NetworkService);
-        Network._instance.toggleWifi();
+        Network.instance.toggleWifi();
     }
 
     static get connectivity() {
-        Service.ensureInstance(Network, NetworkService);
-        return Network._instance._state.connectivity;
+        return Network.instance._state.connectivity;
     }
 
     static get primary() {
-        Service.ensureInstance(Network, NetworkService);
-        return Network._instance._state.primary;
+        return Network.instance._state.primary;
     }
 
     static get wifi() {
-        Service.ensureInstance(Network, NetworkService);
-        return Network._instance._state.wifi;
+        return Network.instance._state.wifi;
     }
 
     static get wired() {
-        Service.ensureInstance(Network, NetworkService);
-        return Network._instance._state.wired;
+        return Network.instance._state.wired;
     }
 }

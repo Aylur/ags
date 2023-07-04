@@ -110,6 +110,17 @@ export function bulkDisconnect(service: GObject.Object, ids: number[]) {
         service.disconnect(id);
 }
 
+export function connect(
+    service: GObject.Object,
+    widget: Gtk.Widget,
+    callback: (widget: Gtk.Widget, ...args: any[]) => void,
+    event = 'changed',
+) {
+    const bind = service.connect(event, (_s: GObject.Object, ...args: any[]) => callback(widget, ...args));
+    widget.connect('destroy', () => service.disconnect(bind));
+    timeout(10, () => callback(widget));
+}
+
 export function interval(widget: Gtk.Widget|null, interval: number, callback: (widget: Gtk.Widget|null) => void) {
     callback(widget);
     const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, interval, () => {

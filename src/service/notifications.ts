@@ -248,49 +248,40 @@ export default class Notifications {
     static { Service.export(this, 'Notifications'); }
     static _instance: NotificationsService;
 
-    static disconnect(id: number) { Notifications._instance.disconnect(id); }
-    static connect(widget: Gtk.Widget, callback: () => void) {
+    static get instance() {
         Service.ensureInstance(Notifications, NotificationsService);
-        Notifications._instance.listen(widget, callback);
+        return Notifications._instance;
     }
 
     static clear() {
-        Service.ensureInstance(Notifications, NotificationsService);
-        Notifications._instance.Clear();
+        Notifications.instance.Clear();
     }
 
     static invoke(id: number, action: string) {
-        Service.ensureInstance(Notifications, NotificationsService);
-        Notifications._instance.InvokeAction(id, action);
+        Notifications.instance.InvokeAction(id, action);
     }
 
     static close(id: number) {
-        Service.ensureInstance(Notifications, NotificationsService);
-        Notifications._instance.CloseNotification(id);
+        Notifications.instance.CloseNotification(id);
     }
 
     static dismiss(id: number) {
-        Service.ensureInstance(Notifications, NotificationsService);
-        Notifications._instance.dismiss(id);
+        Notifications.instance.dismiss(id);
     }
 
     static get dnd() {
-        Service.ensureInstance(Notifications, NotificationsService);
-        return Notifications._instance._dnd;
+        return Notifications.instance._dnd;
     }
 
     static set dnd(value: boolean) {
-        Service.ensureInstance(Notifications, NotificationsService);
-        Notifications._instance.dnd = value;
+        Notifications.instance.dnd = value;
     }
 
     static get popups() {
-        Service.ensureInstance(Notifications, NotificationsService);
-        return Notifications._instance._popups;
+        return Notifications.instance._popups;
     }
 
     static get notifications() {
-        Service.ensureInstance(Notifications, NotificationsService);
-        return Notifications._instance._notifications;
+        return Notifications.instance._notifications;
     }
 }

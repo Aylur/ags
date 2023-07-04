@@ -243,30 +243,25 @@ export default class Hyprland {
     static { Service.export(this, 'Hyprland'); }
     static _instance: HyprlandService;
 
-    static disconnect(id: number) { Hyprland._instance.disconnect(id); }
-    static connect(widget: Gtk.Widget, callback: () => void) {
+    static get instance() {
         Service.ensureInstance(Hyprland, HyprlandService);
-        Hyprland._instance.listen(widget, callback);
+        return Hyprland._instance;
     }
 
     static get active() {
-        Service.ensureInstance(Hyprland, HyprlandService);
-        return Hyprland._instance._state.active;
+        return Hyprland.instance._state.active;
     }
 
     static get monitors() {
-        Service.ensureInstance(Hyprland, HyprlandService);
-        return Hyprland._instance._state.monitors;
+        return Hyprland.instance._state.monitors;
     }
 
     static get workspaces() {
-        Service.ensureInstance(Hyprland, HyprlandService);
-        return Hyprland._instance._state.workspaces;
+        return Hyprland.instance._state.workspaces;
     }
 
     static get clients() {
-        Service.ensureInstance(Hyprland, HyprlandService);
-        return Hyprland._instance._state.clients;
+        return Hyprland.instance._state.clients;
     }
 
     static HyprctlGet(cmd: string): unknown|object {

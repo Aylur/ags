@@ -3,9 +3,9 @@ import { typecheck, error, warning } from './utils.js';
 import * as Basic from './widgets.js';
 
 interface ServiceAPI {
-  _instance: any
-  connect(widget: Gtk.Widget, callback: () => void): void
-  disconnect(id: number): void
+  instance: {
+      connectWidget: (widget: Gtk.Widget, callback: (widget: Gtk.Widget, ...args: any[]) => void, event?: string) => void
+  }
 }
 
 interface Widget {
@@ -19,8 +19,9 @@ interface Widget {
   sensitive?: boolean
   tooltip?: string
   visible?: boolean
-  connections?: ([s: string|ServiceAPI, callback: (...args: any[]) => any] | [ServiceAPI, number])[]
+  connections?: ([string, (...args: any[]) => any] | [ServiceAPI, (...args: any[]) => any, string])[]
   properties?: [any, any][]
+  setup?: (widget: Gtk.Widget) => void
 }
 
 const widgets: { [key: string]: (props: any) => Gtk.Widget } = {
@@ -42,7 +43,7 @@ const widgets: { [key: string]: (props: any) => Gtk.Widget } = {
 function parseParams(widget: Gtk.Widget, {
     type, className, style, sensitive, tooltip,  connections, properties,
     halign = 'fill', valign = 'fill',
-    hexpand = false, vexpand = false, visible = true,
+    hexpand = false, vexpand = false, visible = true, setup,
 }: Widget) {
     type = type.toString();
     typecheck('className', className, ['string', 'undefined'], type);
@@ -101,25 +102,23 @@ function parseParams(widget: Gtk.Widget, {
     if (!visible)
         widget.hide();
 
-    if (connections) {
-        connections.forEach(([s, callback]) => {
-            if (typeof callback === 'number') {
-                widget.connect('destroy', () => (s as ServiceAPI).disconnect(callback));
-                return;
-            }
-
-            if (typeof s === 'string')
-                widget.connect(s, callback);
-
-            else if (typeof s?.connect === 'function')
-                s.connect(widget, callback);
-        });
-    }
-
     if (properties) {
         properties.forEach(([key, value]) => {
             // @ts-ignore
             widget[`_${key}`] = value;
+        });
+    }
+
+    if (setup)
+        setup(widget);
+
+    if (connections) {
+        connections.forEach(([s, callback, event]) => {
+            if (typeof s === 'string')
+                widget.connect(s, callback);
+
+            else
+                s.instance.connectWidget(widget, callback, event);
         });
     }
 }
@@ -141,7 +140,7 @@ export default function Widget(params: null|Widget|string|(() => Gtk.Widget)|Gtk
 
     const {
         type, className, style, halign, valign, connections, properties,
-        hexpand, vexpand, sensitive, tooltip, visible,
+        hexpand, vexpand, sensitive, tooltip, visible, setup,
         ...props
     }: Widget = params;
 
@@ -159,7 +158,7 @@ export default function Widget(params: null|Widget|string|(() => Gtk.Widget)|Gtk
 
     parseParams(widget, {
         type, className, style, halign, valign, connections, properties,
-        hexpand, vexpand, sensitive, tooltip, visible,
+        hexpand, vexpand, sensitive, tooltip, visible, setup,
     });
 
     return widget;

@@ -4,7 +4,7 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Window from './window.js';
-import { error, warning, getConfig, timeout } from './utils.js';
+import { error, warning, getConfig, timeout, connect } from './utils.js';
 
 const APP_BUS = 'com.github.Aylur.'+pkg.name;
 
@@ -12,7 +12,7 @@ export default class App extends Gtk.Application {
     private _windows: Map<string, Gtk.Window>;
     private _closeDelay!: { [key: string]: number };
 
-    static _instance: App;
+    static instance: App;
 
     static {
         GObject.registerClass({
@@ -24,27 +24,22 @@ export default class App extends Gtk.Application {
         }, this);
     }
 
-    static disconnect(id: number)  { App._instance.disconnect(id); }
-    static connect(event: string, callback: () => void): number {
-        return App._instance.connect(event, callback);
-    }
-
-    static getWindow(name: string): Gtk.Window | undefined {
-        return App._instance._windows.get(name);
+    static getWindow(name: string) {
+        return App.instance._windows.get(name);
     }
 
     static toggleWindow(name: string) {
-        const window = App.getWindow(name);
+        const w = App.getWindow(name);
 
-        if (window) {
-            const delay = App._instance._closeDelay[name];
-            if (delay && window.visible) {
-                timeout(delay, () => window.hide());
-                App._instance.emit('window-toggled', name, false);
+        if (w) {
+            const delay = App.instance._closeDelay[name];
+            if (delay && w.visible) {
+                timeout(delay, () => w.hide());
+                App.instance.emit('window-toggled', name, false);
             }
             else {
-                window.visible = !window.visible;
-                App._instance.emit('window-toggled', name, window.visible);
+                w.visible = !w.visible;
+                App.instance.emit('window-toggled', name, w.visible);
             }
             return;
         }
@@ -53,7 +48,7 @@ export default class App extends Gtk.Application {
     }
 
     static quit() {
-        App._instance.quit();
+        App.instance.quit();
     }
 
     static applyCss(path: string) {
@@ -71,6 +66,14 @@ export default class App extends Gtk.Application {
         );
     }
 
+    connectWidget(
+        widget: Gtk.Widget,
+        callback: (widget: Gtk.Widget, ...args: any[]) => void,
+        event = 'window-toggled',
+    ) {
+        connect(this, widget, callback, event);
+    }
+
     constructor() {
         super({
             application_id: APP_BUS,
@@ -78,7 +81,7 @@ export default class App extends Gtk.Application {
         });
 
         this._windows = new Map();
-        App._instance = this;
+        App.instance = this;
     }
 
     vfunc_activate() {
