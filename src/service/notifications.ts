@@ -146,8 +146,7 @@ class NotificationsService extends Service{
             return;
 
         this._dbus.emit_signal('ActionInvoked', GLib.Variant.new('(us)', [id, actionId]));
-        this._notifications.delete(id);
-        this._popups.delete(id);
+        this.CloseNotification(id);
         this._sync();
     }
 
