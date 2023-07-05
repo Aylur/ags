@@ -46,8 +46,8 @@ class Stream extends GObject.Object{
     }
 
     set volume(value) { // 0..100
-        if (value > 150)
-            value = 150;
+        if (value > 1.5)
+            value = 1.5;
 
         if (value < 0)
             value = 0;
