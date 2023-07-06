@@ -117,8 +117,8 @@ class MprisPlayer extends GObject.Object {
         this.canGoNext = this._playerProxy.CanGoNext;
         this.canGoPrev = this._playerProxy.CanGoPrevious;
         this.canPlay = this._playerProxy.CanPlay;
-        this.shuffleStatus = this._playerProxy.Shuffle || null;
-        this.loopStatus = this._playerProxy.LoopStatus as LoopStatus || null;
+        this.shuffleStatus = this._playerProxy.Shuffle;
+        this.loopStatus = this._playerProxy.LoopStatus as LoopStatus;
         this.trackid = metadata['mpris:trackid'];
         this.trackArtists = trackArtists;
         this.trackTitle = trackTitle;

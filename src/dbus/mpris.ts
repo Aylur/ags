@@ -62,8 +62,8 @@ export interface TPlayerProxy extends Proxy {
     CanPause: boolean
     Metadata: { [key: string]: GLib.Variant }
     PlaybackStatus: string
-    Shuffle?: boolean
-    LoopStatus?: string
+    Shuffle: boolean|null
+    LoopStatus: string|null
     Volume: number
     Position: number
     SetPositionAsync: (trackid: string, position: number) => void
