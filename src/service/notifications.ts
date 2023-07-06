@@ -233,8 +233,10 @@ class NotificationsService extends Service{
 
     _sync() {
         const notifications = [];
-        for (const [, notification] of this._notifications)
+        for (const [, notification] of this._notifications) {
+            notification.actions = [];
             notifications.push(notification);
+        }
 
         ensureDirectory();
         writeFile(JSON.stringify({ notifications }, null, 2), NOTIFICATIONS_CACHE_PATH+'/notifications.json');
