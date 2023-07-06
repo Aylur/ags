@@ -234,8 +234,8 @@ class NotificationsService extends Service{
     _sync() {
         const notifications = [];
         for (const [, notification] of this._notifications) {
-            notification.actions = [];
-            notifications.push(notification);
+            const n = { ...notification, action: [] };
+            notifications.push(n);
         }
 
         ensureDirectory();
