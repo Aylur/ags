@@ -1,5 +1,5 @@
 import Gtk from 'gi://Gtk?version=3.0';
-import { typecheck, error, warning } from './utils.js';
+import { typecheck, error, warning, interval } from './utils.js';
 import * as Basic from './widgets.js';
 
 interface ServiceAPI {
@@ -19,7 +19,7 @@ interface Widget {
   sensitive?: boolean
   tooltip?: string
   visible?: boolean
-  connections?: ([string, (...args: any[]) => any] | [ServiceAPI, (...args: any[]) => any, string])[]
+  connections?: ([string, (...args: any[]) => any] | [number, (...args: any[]) => any] | [ServiceAPI, (...args: any[]) => any, string])[]
   properties?: [any, any][]
   setup?: (widget: Gtk.Widget) => void
 }
@@ -38,22 +38,22 @@ const widgets: { [key: string]: (props: any) => Gtk.Widget } = {
     'revealer': Basic.Revealer,
     'scrollable': Basic.Scrollable,
     'slider': Basic.Slider,
+    'switch': Basic.Switch,
 };
 
 function parseParams(widget: Gtk.Widget, {
-    type, className, style, sensitive, tooltip,  connections, properties,
-    halign = 'fill', valign = 'fill',
-    hexpand = false, vexpand = false, visible = true, setup,
+    type, className, style, sensitive, tooltip, connections, properties, setup,
+    halign, valign, hexpand, vexpand, visible = true,
 }: Widget) {
     type = type.toString();
     typecheck('className', className, ['string', 'undefined'], type);
     typecheck('style', style, ['string', 'undefined'], type);
     typecheck('sensitive', sensitive, ['boolean', 'undefined'], type);
     typecheck('tooltip', tooltip, ['string', 'undefined'], type);
-    typecheck('halign', halign, 'string', type);
-    typecheck('valign', valign, 'string', type);
-    typecheck('hexpand', hexpand, 'boolean', type);
-    typecheck('vexpand', vexpand, 'boolean', type);
+    typecheck('halign', halign, ['string', 'undefined'], type);
+    typecheck('valign', valign, ['string', 'undefined'], type);
+    typecheck('hexpand', hexpand, ['boolean', 'undefined'], type);
+    typecheck('vexpand', vexpand, ['boolean', 'undefined'], type);
     typecheck('visible', visible, 'boolean', type);
 
     if (className) {
@@ -62,17 +62,29 @@ function parseParams(widget: Gtk.Widget, {
         });
     }
 
-    try {
-        // @ts-ignore
-        widget.halign = Gtk.Align[halign.toUpperCase()];
-        // @ts-ignore
-        widget.valign = Gtk.Align[valign.toUpperCase()];
-    } catch (err) {
-        warning('wrong align value');
+    if (halign) {
+        try {
+            // @ts-ignore
+            widget.halign = Gtk.Align[halign.toUpperCase()];
+        } catch (err) {
+            warning('wrong halign value');
+        }
     }
 
-    widget.hexpand = hexpand;
-    widget.vexpand = vexpand;
+    if (valign) {
+        try {
+            // @ts-ignore
+            widget.valign = Gtk.Align[valign.toUpperCase()];
+        } catch (err) {
+            warning('wrong valign value');
+        }
+    }
+
+    if (typeof hexpand === 'boolean')
+        widget.hexpand = hexpand;
+
+    if (typeof vexpand === 'boolean')
+        widget.vexpand = vexpand;
 
     if (sensitive !== undefined)
         widget.sensitive = sensitive;
@@ -109,18 +121,21 @@ function parseParams(widget: Gtk.Widget, {
         });
     }
 
-    if (setup)
-        setup(widget);
-
     if (connections) {
         connections.forEach(([s, callback, event]) => {
             if (typeof s === 'string')
                 widget.connect(s, callback);
 
+            else if (typeof s === 'number')
+                interval(s, () => callback(widget), widget);
+
             else
                 s.instance.connectWidget(widget, callback, event);
         });
     }
+
+    if (setup)
+        setup(widget);
 }
 
 export default function Widget(params: null|Widget|string|(() => Gtk.Widget)|Gtk.Widget ): Gtk.Widget {

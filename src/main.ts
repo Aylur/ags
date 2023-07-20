@@ -32,7 +32,7 @@ export function main(args: string[]) {
         return;
 
     case 'clear-cache':
-        Utils.exec(`rm -r ${Utils.CACHE}`);
+        Utils.exec(`rm -r ${Utils.CACHE_DIR}`);
         return;
 
     default:

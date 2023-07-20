@@ -1,89 +1,111 @@
-// @ts-nocheck
-import Gtk from 'gi://Gtk?version=3.0';
+import NM from 'gi://NM';
 import Service from './service.js';
+import { bulkConnect } from '../utils.js';
 
-// I don't know yet how to import it without compiling
-// import NM from '@girs/nm-1.0';
-imports.gi.versions.NM = '1.0';
-const { NM } = imports.gi;
-
-type Internet = 'connected'|'connecting'|'disconnected';
-type DeviceState = 'disabled'|'enabled'|'unknown';
-type Connectivity = 'unknown'|'none'|'portal'|'limited'|'full';
-
-function _CONNECTIVITY(state: NM.ConnectivityState): Connectivity {
-    switch (state) {
-    case NM.ConnectivityState.UNKNOWN: return 'unknown';
-    case NM.ConnectivityState.NONE: return 'none';
-    case NM.ConnectivityState.PORTAL: return 'portal';
-    case NM.ConnectivityState.LIMITED: return 'limited';
-    case NM.ConnectivityState.FULL: return 'full';
-    }
-}
-
-function _INTERNET(state: NM.ActiveConnection): Internet {
-    switch (state?.state) {
+const _INTERNET = (device: NM.Device) => {
+    switch (device.active_connection?.state) {
     case NM.ActiveConnectionState.ACTIVATED: return 'connected';
     case NM.ActiveConnectionState.ACTIVATING: return 'connecting';
+    case NM.ActiveConnectionState.DEACTIVATING:
+    case NM.ActiveConnectionState.DEACTIVATED:
     default: return 'disconnected';
     }
-}
+};
 
-function _STATE(state: NM.DeviceState): DeviceState {
-    switch (state) {
-    case NM.DeviceState.DISCONNECTED:
-    case NM.DeviceState.UNAVAILABLE: return 'disabled';
-    case NM.DeviceState.ACTIVATED: return 'enabled';
-    default: return 'unknown';
+class Wifi extends Service{
+    static { Service.register(this); }
+
+    _client: NM.Client;
+    _device: NM.DeviceWifi;
+    _ap!: NM.AccessPoint;
+    _apBind!: number;
+
+    constructor(client: NM.Client, device: NM.DeviceWifi) {
+        super();
+        this._client = client;
+        this._device = device;
+
+        if (this._device) {
+            bulkConnect((this._device as unknown) as Service, [
+                ['notify::active-access-point', this._activeAp.bind(this)],
+                ['access-point-added', () => this.emit('changed')],
+                ['access-point-removed', () => this.emit('changed')],
+            ]);
+            this._activeAp();
+        }
+    }
+
+    scan() {
+        this._device.request_scan_async(null, (device, res) => {
+            device.request_scan_finish(res);
+            this.emit('changed');
+        });
+    }
+
+    _activeAp() {
+        if (this._ap)
+            this._ap.disconnect(this._apBind);
+
+        this._ap = this._device.get_active_access_point();
+        if (!this._ap)
+            return;
+
+        this._apBind = this._ap.connect('notify::strength', () => this.emit('changed'));
+    }
+
+    get accessPoints() {
+        return this._device.get_access_points().map(ap => ({
+            bssid: ap.bssid,
+            address: ap.hw_address,
+            lastSeen: ap.last_seen,
+            ssid: NM.utils_ssid_to_utf8(ap.ssid.get_data() || new Uint8Array),
+            active: ap === this._ap,
+            strength: ap.strength,
+        }));
+    }
+
+    get enabled() { return this._client.wireless_enabled; }
+    set enabled(v) { this._client.wireless_enabled = v; }
+
+    get strength() { return this._ap?.strength || -1; }
+    get internet() { return _INTERNET(this._device); }
+    get ssid() {
+        if (!this._ap)
+            return '';
+
+        const ssid = this._ap.get_ssid().get_data();
+        if (!ssid)
+            return 'Unknown';
+
+        return NM.utils_ssid_to_utf8(ssid);
     }
 }
 
-type WifiState = {
-    ssid: string
-    strength: number
-    internet: Internet
-    enabled: boolean
-}
+class Wired extends Service{
+    static { Service.register(this); }
 
-type WiredState = {
-    internet: Internet
-    state: DeviceState
-}
+    _device: NM.DeviceEthernet;
 
-type NetworkState = {
-    connectivity: Connectivity
-    primary: string
-    wifi: WifiState
-    wired: WiredState
+    constructor(device: NM.DeviceEthernet) {
+        super();
+        this._device = device;
+    }
+
+    get speed() { return this._device.get_speed(); }
+    get internet() { return _INTERNET(this._device); }
 }
 
 class NetworkService extends Service{
     static { Service.register(this); }
 
-    _state!: NetworkState;
     _client!: NM.Client;
-    _wifi!: NM.DeviceWifi;
-    _wired!: NM.DeviceEthernet;
-    _ap?: NM.AccessPoint;
-    _apBind!: number;
+    _wifi!: Wifi;
+    _wired!: Wired;
+    _primary?: string;
+    _connectivity!: string;
 
     constructor() {
         super();
-
-        this._state = {
-            connectivity: 'unknown',
-            primary: '',
-            wifi: {
-                ssid: 'Unknown',
-                strength: -1,
-                internet: 'disconnected',
-                enabled: false,
-            },
-            wired: {
-                internet: 'disconnected',
-                state: 'unknown',
-            },
-        };
         NM.Client.new_async(null, (_s, result) => {
             try {
                 this._client = NM.Client.new_finish(result);
@@ -111,36 +133,12 @@ class NetworkService extends Service{
         this._client.connect('notify::primary-connection',    this._sync.bind(this));
         this._client.connect('notify::activating-connection', this._sync.bind(this));
 
-        this._wifi = this._getDevice(NM.DeviceType.WIFI) as NM.DeviceWifi;
-        if (this._wifi)
-            this._wifi.connect('notify::active-access-point', this._activeAp.bind(this));
-            // this._wifi.connect('access-point-added', (_, ap) => this._apAdded(ap));
-            // this._wifi.connect('access-point-removed', (_, ap) => this._apRemoved(ap));
+        this._wifi = new Wifi(this._client, this._getDevice(NM.DeviceType.WIFI) as NM.DeviceWifi);
+        this._wifi.connect('changed', this._sync.bind(this));
 
-        this._wired = this._getDevice(NM.DeviceType.ETHERNET) as NM.DeviceEthernet;
+        this._wired = new Wired(this._getDevice(NM.DeviceType.ETHERNET) as NM.DeviceEthernet);
+        this._wired.connect('changed', this._sync.bind(this));
 
-        this._activeAp();
-        this._sync();
-    }
-
-    // _apAdded(_ap) {
-    //     //TODO
-    // }
-    //
-    // _apRemoved(_ap) {
-    //     //TODO
-    // }
-
-    _activeAp() {
-        if (this._ap)
-            this._ap.disconnect(this._apBind);
-
-        this._ap = this._wifi?.get_active_access_point();
-
-        if (!this._ap)
-            return;
-
-        this._apBind = this._ap.connect('notify::strength', this._sync.bind(this));
         this._sync();
     }
 
@@ -149,26 +147,18 @@ class NetworkService extends Service{
             this._client.get_primary_connection() ||
             this._client.get_activating_connection();
 
-        const primary = mainConnection?.type || 'unknown'; // 802-11-wireless ; 802-3-ethernet
+        const primary = mainConnection?.type;
+        this._primary = {
+            '802-11-wireless': 'wifi',
+            '802-3-ethernet': 'wired',
+        }[primary || ''],
 
-        this._state = {
-            connectivity: _CONNECTIVITY(this._client.connectivity),
-            primary: {
-                '802-11-wireless': 'wifi',
-                '802-3-ethernet': 'wired',
-            }[primary] || '',
-            wifi: {
-                ssid: this._ap && NM.utils_ssid_to_utf8(
-                    this._ap.get_ssid().get_data() || new Uint8Array()) || 'Unknown',
-                strength: this._ap?.strength || -1,
-                internet: _INTERNET(this._wifi?.active_connection),
-                enabled: this._client.wireless_enabled,
-            },
-            wired: {
-                internet: _INTERNET(this._wired?.active_connection),
-                state: _STATE(this._wired?.state),
-            },
-        };
+        this._connectivity = {
+            [NM.ConnectivityState.NONE]: 'none',
+            [NM.ConnectivityState.PORTAL]: 'portal',
+            [NM.ConnectivityState.LIMITED]: 'limited',
+            [NM.ConnectivityState.FULL]: 'full',
+        }[this._client.connectivity] || 'unknown';
 
         this.emit('changed');
     }
@@ -183,23 +173,9 @@ export default class Network {
         return Network._instance;
     }
 
-    static toggleWifi() {
-        Network.instance.toggleWifi();
-    }
-
-    static get connectivity() {
-        return Network.instance._state.connectivity;
-    }
-
-    static get primary() {
-        return Network.instance._state.primary;
-    }
-
-    static get wifi() {
-        return Network.instance._state.wifi;
-    }
-
-    static get wired() {
-        return Network.instance._state.wired;
-    }
+    static toggleWifi() { Network.instance.toggleWifi(); }
+    static get connectivity() { return Network.instance._connectivity; }
+    static get primary() { return Network.instance._primary; }
+    static get wifi() { return Network.instance._wifi; }
+    static get wired() { return Network.instance._wired; }
 }

@@ -2,21 +2,24 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import { restcheck, typecheck, warning } from './utils.js';
 import Widget from './widget.js';
+import App from './app.js';
 
 imports.gi.versions.GtkLayerShell = '0.1';
 const { GtkLayerShell: GtkLayerShell } = imports.gi;
 
 export interface Window {
-  name?: string
   anchor?: string[]
-  margin?: number[]
-  layer?: string
-  exclusive?: boolean
-  popup?: boolean
-  focusable?: boolean
-  monitor?: number
   child?: { type: string }|Gtk.Widget|null
   className?: string
+  exclusive?: boolean
+  focusable?: boolean
+  layer?: string
+  margin?: number[]
+  monitor?: number
+  name?: string
+  popup?: boolean
+  style?: string
+  visible?: boolean
 }
 
 export default function Window({
@@ -29,7 +32,9 @@ export default function Window({
     focusable = false,
     child = null,
     className = '',
+    style = '',
     monitor,
+    visible = true,
     ...rest
 }: Window): Gtk.Window {
     typecheck('name', name, 'string', 'window');
@@ -46,8 +51,22 @@ export default function Window({
 
     const win = new Gtk.Window({ name });
     GtkLayerShell.init_for_window(win);
-
     GtkLayerShell.set_namespace(win, name);
+
+    // @ts-ignore
+    win.setStyle = (css: string) => {
+        const provider = new Gtk.CssProvider();
+        provider.load_from_data(`* { ${css} }`);
+        win.reset_style();
+        win.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+    };
+
+    // @ts-ignore
+    win.toggleClassName = (className: string, condition = true) => {
+        condition
+            ? win.get_style_context().add_class(className)
+            : win.get_style_context().remove_class(className);
+    };
 
     if (anchor) {
         anchor.forEach(side => GtkLayerShell
@@ -103,20 +122,28 @@ export default function Window({
         });
     }
 
+    if (style)
+        // @ts-ignore
+        win.setStyle(style);
+
     if (child)
         win.add(Widget(child));
+
+    if (popup) {
+        win.connect('key-press-event', (_, event) => {
+            if (event.get_keyval()[1] === Gdk.KEY_Escape)
+                App.getWindow(name) ? App.closeWindow(name) : win.hide();
+        });
+
+        visible = false;
+    }
 
     if (focusable)
         GtkLayerShell.set_keyboard_mode(win, GtkLayerShell.KeyboardMode.ON_DEMAND);
 
     win.show_all();
-    if (popup) {
+    if (!visible)
         win.hide();
-        win.connect('key-press-event', (_, event) => {
-            if (event.get_keyval()[1] === Gdk.KEY_Escape)
-                win.hide();
-        });
-    }
 
     return win;
 }

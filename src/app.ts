@@ -20,31 +20,45 @@ export default class App extends Gtk.Application {
                 'window-toggled': {
                     param_types: [GObject.TYPE_STRING, GObject.TYPE_BOOLEAN],
                 },
+                'config-parsed': {},
             },
         }, this);
     }
 
+    static get windows() {
+        return App.instance._windows;
+    }
+
     static getWindow(name: string) {
-        return App.instance._windows.get(name);
+        const w = App.instance._windows.get(name);
+        return w ? w : warning(`There is no window named ${name}`);
+    }
+
+    static closeWindow(name: string) {
+        const w = App.getWindow(name);
+        if (!w || !w.visible)
+            return;
+
+        const delay = App.instance._closeDelay[name];
+        if (delay && w.visible) {
+            timeout(delay, () => w.hide());
+            App.instance.emit('window-toggled', name, false);
+        }
+        else {
+            w.hide();
+        }
+    }
+
+    static openWindow(name: string) {
+        App.getWindow(name)?.show();
     }
 
     static toggleWindow(name: string) {
         const w = App.getWindow(name);
-
-        if (w) {
-            const delay = App.instance._closeDelay[name];
-            if (delay && w.visible) {
-                timeout(delay, () => w.hide());
-                App.instance.emit('window-toggled', name, false);
-            }
-            else {
-                w.visible = !w.visible;
-                App.instance.emit('window-toggled', name, w.visible);
-            }
+        if (!w)
             return;
-        }
 
-        warning(`There is no window named ${name}`);
+        w.visible ? App.closeWindow(name) : App.openWindow(name);
     }
 
     static quit() {
@@ -109,6 +123,7 @@ export default class App extends Gtk.Application {
 
         config.windows?.forEach(window => {
             const w = Window(window);
+            w.connect('notify::visible', () => this.emit('window-toggled', w.name, w.visible));
 
             if (this._windows.has(w.name)) {
                 error('name of window has to be unique!');
@@ -117,6 +132,8 @@ export default class App extends Gtk.Application {
 
             this._windows.set(w.name, w);
         });
+
+        this.emit('config-parsed');
     }
 
     _addAction(

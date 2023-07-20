@@ -1,10 +1,8 @@
 import Gio from 'gi://Gio';
-import Gtk from 'gi://Gtk?version=3.0';
 import Service from './service.js';
 import { PowerManagerProxy, BatteryProxy } from '../dbus/upower.js';
 import { timeout } from '../utils.js';
 
-// from UPowerGlib
 const DeviceState = {
     CHARGING: 1,
     FULLY_CHARGED: 4,
@@ -73,19 +71,8 @@ export default class Battery {
         return Battery._instance;
     }
 
-    static get available() {
-        return Battery.instance._state.available;
-    }
-
-    static get percent() {
-        return Battery.instance._state.percent;
-    }
-
-    static get charging() {
-        return Battery.instance._state.charging;
-    }
-
-    static get charged() {
-        return Battery.instance._state.charged;
-    }
+    static get available() { return Battery.instance._state.available; }
+    static get percent() { return Battery.instance._state.percent; }
+    static get charging() { return Battery.instance._state.charging; }
+    static get charged() { return Battery.instance._state.charged; }
 }

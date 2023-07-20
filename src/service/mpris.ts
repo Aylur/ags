@@ -9,6 +9,7 @@ import { MEDIA_CACHE_PATH } from '../utils.js';
 
 type PlaybackStatus = 'Playing'|'Paused'|'Stopped';
 type LoopStatus = 'None'|'Track'|'Playlist';
+
 class MprisPlayer extends GObject.Object {
     static {
         GObject.registerClass({
@@ -130,11 +131,11 @@ class MprisPlayer extends GObject.Object {
 
     _cacheCoverArt(){
         this.coverPath = MEDIA_CACHE_PATH + '/' +
-            `${this.trackArtists.join(', ')}_${this.trackTitle}`
+            `${this.trackArtists.join(', ')} - ${this.trackTitle}`
             .replace(/[\,\*\?\"\<\>\|\#\:\?\/\'\(\)]/g, '');
 
-        if (this.coverPath.length > 50)
-            this.coverPath = this.coverPath.slice(0, 50);
+        if (this.coverPath.length > 255)
+            this.coverPath = this.coverPath.substring(0, 255);
 
         const { trackCoverUrl, coverPath } = this;
         if (trackCoverUrl === '' || coverPath === '')
@@ -225,15 +226,7 @@ class MprisPlayer extends GObject.Object {
 
 type Players = Map<string, MprisPlayer>;
 class MprisService extends Service{
-    static {
-        Service.register(this, {
-            'position': [
-                GObject.TYPE_STRING,
-                GObject.TYPE_INT,
-                GObject.TYPE_INT,
-            ],
-        });
-    }
+    static { Service.register(this); }
 
     _players!: Players;
     _proxy: TDBusProxy;

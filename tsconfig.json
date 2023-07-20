@@ -23,7 +23,6 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "@girs/*",
     "gi-types/gi.d.ts",
     "types/*",
     "src/*"

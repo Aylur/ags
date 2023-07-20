@@ -15,9 +15,10 @@ interface Config {
     closeWindowDelay: { [key: string]: number }
 }
 
-export const CACHE = `${GLib.get_user_cache_dir()}/${pkg.name}`;
-export const MEDIA_CACHE_PATH = `${CACHE}/media`;
-export const NOTIFICATIONS_CACHE_PATH = `${CACHE}/notifications`;
+export const USER = GLib.get_user_name();
+export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name}`;
+export const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
+export const NOTIFICATIONS_CACHE_PATH = `${CACHE_DIR}/notifications`;
 export const CONFIG_DIR = `${GLib.get_user_config_dir()}/${pkg.name}`;
 
 export function error(message: string) {
@@ -45,7 +46,7 @@ export function typecheck(key: string, value: unknown, type: string|string[], wi
                 return true;
         }
 
-        warning(`"${key}" has to be one of ${type.join('or ')} on ${widget}`);
+        warning(`"${key}" has to be one of ${type.join(' or ')} on ${widget}`);
         return false;
     }
 
@@ -96,8 +97,7 @@ export function writeFile(string: string, path: string) {
     );
 }
 
-type Events = [event: string, callback: (...args: any[]) => void][];
-export function bulkConnect(service: { connect: (...args: any[]) => number }, list: Events) {
+export function bulkConnect(service: GObject.Object, list: [event: string, callback: (...args: any[]) => void][]) {
     const ids = [];
     for (const [event, callback] of list)
         ids.push(service.connect(event, callback));
@@ -121,10 +121,10 @@ export function connect(
     timeout(10, () => callback(widget));
 }
 
-export function interval(widget: Gtk.Widget|null, interval: number, callback: (widget: Gtk.Widget|null) => void) {
-    callback(widget);
+export function interval(interval: number, callback: () => void, widget: Gtk.Widget) {
+    callback();
     const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, interval, () => {
-        callback(widget);
+        callback();
         return true;
     });
     if (widget) {
@@ -179,7 +179,7 @@ export const help = (bin: string) => `USAGE:
 COMMANDS:
     help\t\tPrint this help
     version\t\tPrint version
-    clear-cache\t\tRemoves ${CACHE}
+    clear-cache\t\tRemoves ${CACHE_DIR}
     toggle-window name\tToggle window
     run-js string\tRuns string as a js function
     inspector\t\tOpen debugger`;

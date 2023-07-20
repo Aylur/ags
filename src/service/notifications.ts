@@ -5,53 +5,58 @@ import Service from './service.js';
 import { NotificationIFace } from '../dbus/notifications.js';
 import { NOTIFICATIONS_CACHE_PATH, ensureDirectory, getConfig, readFile, timeout, writeFile } from '../utils.js';
 
-type action = {
-    action: string
+interface action {
+    id: string
     label: string
 }
 
-type Hints = {
+interface Hints {
     'image-data'?: GLib.Variant<'(iiibiiay)'>
     'desktop-entry'?: GLib.Variant<'s'>
     'urgency'?: GLib.Variant<'y'>
 }
 
-type Notification = {
+const _URGENCY = ['low', 'normal', 'critical'];
+
+interface Notification {
     id: number
     appName: string
-    appEntry: string
+    appEntry?: string
     appIcon: string
     summary: string
     body: string
     actions: action[]
     urgency: string
-    time: number // GLib.DateTime.to_unix,
+    time: number
     image: string|null
+    popup: boolean
 }
 
-const _URGENCY = ['low', 'normal', 'critical'];
-
 class NotificationsService extends Service{
-    static { Service.register(this); }
+    static {
+        Service.register(this, {
+            'dismissed': ['int'],
+            'notified': ['int'],
+            'closed': ['int'],
+        });
+    }
 
-    _notifications: Map<number, Notification>;
-    _popups: Map<number, Notification>;
-    _dnd: boolean;
-    _idCount: number;
-    _timeout: number;
     _dbus!: Gio.DBusExportedObject;
+    _notifications: Map<number, Notification>;
+    _dnd = false;
+    _idCount = 0;
+    _timeout = getConfig()?.notificationPopupTimeout || 3000;
 
     constructor() {
         super();
 
-        this._timeout = getConfig()?.notificationPopupTimeout || 5000;
-        this._dnd = false;
-        this._idCount = 1;
         this._notifications = new Map();
-        this._popups = new Map();
         this._readFromFile();
         this._register();
-        this._sync();
+    }
+
+    get dnd() {
+        return this._dnd;
     }
 
     set dnd(value: boolean) {
@@ -59,86 +64,82 @@ class NotificationsService extends Service{
         this.emit('changed');
     }
 
-    dismiss(id: number) {
-        if (!this._popups.has(id))
-            return;
-
-        this._popups.delete(id);
-        this._sync();
+    get popups() {
+        const map: Map<number, Notification> = new Map();
+        for (const [id, notification] of this._notifications) {
+            if (notification.popup)
+                map.set(id, notification);
+        }
+        return map;
     }
 
     Clear() {
-        for (const [, notification] of this._notifications)
-            this.CloseNotification(notification.id);
+        for (const [id] of this._notifications)
+            this.CloseNotification(id);
     }
 
     Notify(
-        app_name: string,
-        replaces_id: number,
-        app_icon: string,
+        appName: string,
+        replacesId: number,
+        appIcon: string,
         summary: string,
         body: string,
-        actions: string[],
+        acts: string[],
         hints: Hints,
-        time_out: number,
     ) {
-        const acts: action[] = [];
-        for (let i=0; i<actions.length; i+=2) {
-            if (actions[i+1] !== '') {
-                acts.push({
-                    label: actions[i+1],
-                    action: actions[i],
+        const actions: action[] = [];
+        for (let i=0; i<acts.length; i+=2) {
+            if (acts[i+1] !== '') {
+                actions.push({
+                    label: acts[i+1],
+                    id: acts[i],
                 });
             }
         }
 
-        const id = replaces_id || this._idCount++;
+        const id = replacesId || this._idCount++;
         const urgency = _URGENCY[hints['urgency']?.unpack() || 1];
-        const notification: Notification = {
+        this._notifications.set(id, {
             id,
-            appName: app_name,
-            appEntry: hints['desktop-entry']?.unpack() || '',
-            appIcon: app_icon,
+            appName,
+            appEntry: hints['desktop-entry']?.unpack(),
+            appIcon,
             summary,
             body,
-            actions: acts,
+            actions,
             urgency,
             time: GLib.DateTime.new_now_local().to_unix(),
-            image:
-                this._parseImage(`${summary}${id}`, hints['image-data']) ||
-                this._isFile(app_icon),
-        };
+            image: this._parseImage(`${summary}${id}`, hints['image-data']) || this._isFile(appIcon),
+            popup: !this._dnd,
+        });
 
-        this._notifications.set(notification.id, notification);
+        timeout(this._timeout, () => this.DismissNotification(id));
 
-        if (!this._dnd) {
-            this._popups.set(notification.id, notification);
-            if (urgency !== 'critical') {
-                timeout(
-                    time_out > 0 ? time_out : this._timeout,
-                    () => {
-                        if (!this._popups.has(id))
-                            return;
+        this._cache();
+        this.emit('notified', id);
+        this.emit('changed');
+        return id;
+    }
 
-                        this._popups.delete(notification.id);
-                        this._sync();
-                    },
-                );
-            }
-        }
+    DismissNotification(id: number) {
+        const n = this._notifications.get(id);
+        if (!n)
+            return;
 
-        this._sync();
-        return notification.id;
+        n.popup = false;
+        this.emit('dismissed', id);
+        this.emit('changed');
     }
 
     CloseNotification(id: number) {
         if (!this._notifications.has(id))
             return;
 
-        this._dbus.emit_signal('NotificationClosed', GLib.Variant.new('(uu)', [id, 2]));
+        this._dbus.emit_signal('NotificationClosed', GLib.Variant.new('(uu)', [id, 3]));
         this._notifications.delete(id);
-        this._popups.delete(id);
-        this._sync();
+        this.emit('closed', id);
+        this.emit('changed');
+        this._cache();
     }
 
     InvokeAction(id: number, actionId: string) {
@@ -147,7 +148,7 @@ class NotificationsService extends Service{
 
         this._dbus.emit_signal('ActionInvoked', GLib.Variant.new('(us)', [id, actionId]));
         this.CloseNotification(id);
-        this._sync();
+        this._cache();
     }
 
     GetCapabilities() {
@@ -174,7 +175,7 @@ class NotificationsService extends Service{
             },
             null,
             () => {
-                print('Another Notification Daemon is already running!');
+                print('Another notification daemon is already running, make sure you stop Dunst or any other daemon you have running');
             },
         );
     }
@@ -191,13 +192,15 @@ class NotificationsService extends Service{
         if (!file)
             return;
 
-        const json = JSON.parse(file) as { notifications: Notification[] };
-        json.notifications.forEach(n => {
+        const notifications = JSON.parse(file) as Notification[];
+        notifications.forEach(n => {
             if (n.id > this._idCount)
                 this._idCount = n.id+1;
 
             this._notifications.set(n.id, n);
         });
+
+        this.emit('changed');
     }
 
     _isFile(path: string) {
@@ -231,16 +234,15 @@ class NotificationsService extends Service{
         return fileName;
     }
 
-    _sync() {
+    _cache() {
         const notifications = [];
         for (const [, notification] of this._notifications) {
-            const n = { ...notification, action: [] };
+            const n = { ...notification, action: [], popup: false };
             notifications.push(n);
         }
 
         ensureDirectory();
-        writeFile(JSON.stringify({ notifications }, null, 2), NOTIFICATIONS_CACHE_PATH+'/notifications.json');
-        this.emit('changed');
+        writeFile(JSON.stringify(notifications, null, 2), NOTIFICATIONS_CACHE_PATH+'/notifications.json');
     }
 }
 
@@ -253,35 +255,12 @@ export default class Notifications {
         return Notifications._instance;
     }
 
-    static clear() {
-        Notifications.instance.Clear();
-    }
-
-    static invoke(id: number, action: string) {
-        Notifications.instance.InvokeAction(id, action);
-    }
-
-    static close(id: number) {
-        Notifications.instance.CloseNotification(id);
-    }
-
-    static dismiss(id: number) {
-        Notifications.instance.dismiss(id);
-    }
-
-    static get dnd() {
-        return Notifications.instance._dnd;
-    }
-
-    static set dnd(value: boolean) {
-        Notifications.instance.dnd = value;
-    }
-
-    static get popups() {
-        return Notifications.instance._popups;
-    }
-
-    static get notifications() {
-        return Notifications.instance._notifications;
-    }
+    static clear() { Notifications.instance.Clear(); }
+    static close(id: number) { Notifications.instance.CloseNotification(id); }
+    static dismiss(id: number) { Notifications.instance.DismissNotification(id); }
+    static invoke(id: number, actionId: string) { Notifications.instance.InvokeAction(id, actionId); }
+    static get dnd() { return Notifications.instance.dnd; }
+    static set dnd(value: boolean) { Notifications.instance.dnd = value; }
+    static get popups() { return Notifications.instance.popups; }
+    static get notifications() { return Notifications.instance._notifications; }
 }

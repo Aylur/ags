@@ -1,7 +1,5 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import GObject from 'gi://GObject';
-import Gtk from 'gi://Gtk?version=3.0';
 import Service from './service.js';
 import { error, execAsync, warning } from '../utils.js';
 
@@ -56,8 +54,8 @@ type HyprlandState = {
 class HyprlandService extends Service {
     static {
         Service.register(this, {
-            'urgent-window': [GObject.TYPE_INT],
-            'keyboard-layout': [GObject.TYPE_STRING, GObject.TYPE_STRING],
+            'urgent-window': ['int'],
+            'keyboard-layout': ['string', 'string'],
         });
     }
 
@@ -248,21 +246,10 @@ export default class Hyprland {
         return Hyprland._instance;
     }
 
-    static get active() {
-        return Hyprland.instance._state.active;
-    }
-
-    static get monitors() {
-        return Hyprland.instance._state.monitors;
-    }
-
-    static get workspaces() {
-        return Hyprland.instance._state.workspaces;
-    }
-
-    static get clients() {
-        return Hyprland.instance._state.clients;
-    }
+    static get active() { return Hyprland.instance._state.active; }
+    static get monitors() { return Hyprland.instance._state.monitors; }
+    static get workspaces() { return Hyprland.instance._state.workspaces; }
+    static get clients() { return Hyprland.instance._state.clients; }
 
     static HyprctlGet(cmd: string): unknown|object {
         const [success, out, err] =

@@ -14,15 +14,16 @@ export default class Service extends GObject.Object {
             api._instance = new service();
     }
 
-    static register(service: any, signals?: { [signal: string]: GObject.GType<unknown>[] }) {
+    static register(service: any, signals?: { [signal: string]: string[] }) {
         const Signals: {
-            [signal: string]: { param_types: any[] }
+            [signal: string]: { param_types: GObject.GType<unknown>[] }
         } = {};
 
         if (signals) {
             Object.keys(signals).forEach(signal =>
                 Signals[signal] = {
-                    param_types: signals[signal],
+                    // @ts-ignore
+                    param_types: signals[signal].map(t => GObject[`TYPE_${t.toUpperCase()}`]),
                 },
             );
         }

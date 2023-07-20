@@ -1,7 +1,9 @@
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
+import GLib from 'gi://GLib';
+import GdkPixbuf from 'gi://GdkPixbuf';
 import Widget from './widget.js';
-import { typecheck, error, runCmd, restcheck, warning, getConfig } from './utils.js';
+import { typecheck, error, runCmd, restcheck, warning, getConfig, execAsync } from './utils.js';
 
 function _orientation(str) {
     if (str === 'v')
@@ -19,10 +21,12 @@ function _orientation(str) {
     return Gtk.Orientation.HORIZONTAL;
 }
 
-export function Box({ type, orientation, homogeneous, children, ...rest } = {}) {
-    orientation ||= 'horizontal';
-    homogeneous ||= false;
-    children ||= [];
+export function Box({ type,
+    orientation = 'horizontal',
+    homogeneous = false,
+    children = [],
+    ...rest
+}) {
     typecheck('orientation', orientation, 'string', type);
     typecheck('homogeneous', homogeneous, 'boolean', type);
     typecheck('children', children, 'array', type);
@@ -95,8 +99,7 @@ export function EventBox({ type,
     return box;
 }
 
-export function CenterBox({ type, children, ...props } = {}) {
-    children ||= [];
+export function CenterBox({ type, children = [], ...props }) {
     typecheck('children', children, 'array', type);
 
     if (children.length !== 3)
@@ -111,27 +114,37 @@ export function CenterBox({ type, children, ...props } = {}) {
     return box;
 }
 
-export function Icon({ type, icon, size, ...rest } = {}) {
-    icon ||= '';
-    size ||= getConfig()?.baseIconSize || 16;
+export function Icon({ type,
+    icon = '',
+    size = getConfig()?.baseIconSize || 16,
+    ...rest
+}) {
     typecheck('icon', icon, 'string', type);
     typecheck('icon', size, 'number', type);
     restcheck(rest, type);
 
-    const img = Gtk.Image.new_from_icon_name(icon || '', 1);
-    img.pixel_size = size;
-    return img;
+    return GLib.file_test(icon, GLib.FileTest.EXISTS)
+        ? Gtk.Image.new_from_pixbuf(
+            GdkPixbuf.Pixbuf.new_from_file_at_size(icon, size, size),
+        )
+        : new Gtk.Image({
+            icon_name: icon,
+            icon_size: 1,
+            pixel_size: size,
+        });
 }
 
-export function Label({ type, label, markup, wrap, maxWidth, angle, justify, xalign, yalign, ...rest } = {}) {
-    label ||= '';
-    markup ||= false;
-    wrap ||= false;
-    maxWidth ||= -1;
-    angle ||= 0;
-    justify ||= 'center';
-    xalign ||= xalign === 0 ? 0 : 0.5;
-    yalign ||= yalign === 0 ? 0 : 0.5;
+export function Label({ type,
+    label = '',
+    markup = false,
+    wrap = false,
+    maxWidth = -1,
+    angle = 0,
+    justify = 'center',
+    xalign = 0.5,
+    yalign = 0.5,
+    ...rest
+}) {
     typecheck('label', label, 'string', type);
     typecheck('markup', markup || false, 'boolean', type);
     typecheck('wrap', wrap || false, 'boolean', type);
@@ -162,11 +175,14 @@ export function Label({ type, label, markup, wrap, maxWidth, angle, justify, xal
     return lbl;
 }
 
-export function Button({ type, child, onClick, onSecondaryClick, onScrollUp, onScrollDown, ...rest } = {}) {
-    onClick ||= '';
-    onSecondaryClick ||= '';
-    onScrollUp ||= '';
-    onScrollDown ||= '';
+export function Button({ type,
+    child,
+    onClick = '',
+    onSecondaryClick = '',
+    onScrollUp = '',
+    onScrollDown = '',
+    ...rest
+}) {
     typecheck('onClick', onClick, ['string', 'function'], type);
     typecheck('onSecondaryClick', onSecondaryClick, ['string', 'function'], type);
     typecheck('onScrollUp', onScrollUp, ['string', 'function'], type);
@@ -197,14 +213,16 @@ export function Button({ type, child, onClick, onSecondaryClick, onScrollUp, onS
     return btn;
 }
 
-export function Slider({ type, inverted, orientation, min, max, value, onChange, drawValue, ...rest } = {}) {
-    inverted ||= false;
-    orientation ||= 'horizontal';
-    min ||= 0;
-    max ||= 1;
-    value ||= 0;
-    onChange ||= '';
-    drawValue ||= false;
+export function Slider({ type,
+    inverted = false,
+    orientation = 'horizontal',
+    min = 0,
+    max = 1,
+    value = 0,
+    onChange = '',
+    drawValue = false,
+    ...rest
+}) {
     typecheck('inverted', inverted, 'boolean', type);
     typecheck('orientation', orientation, 'string', type);
     typecheck('min', min, 'number', type);
@@ -247,16 +265,15 @@ export function Slider({ type, inverted, orientation, min, max, value, onChange,
                 return;
 
             typeof onChange === 'function'
-                ? onChange(value)
-                : runCmd(onChange.replace(/\{\}/g, value), slider);
+                ? onChange(value, slider)
+                : execAsync(onChange.replace(/\{\}/g, value));
         });
     }
 
     return slider;
 }
 
-export function Dynamic({ type, items, ...rest } = {}) {
-    items ||= [];
+export function Dynamic({ type, items = [], ...rest } = {}) {
     typecheck('items', items, 'array', type);
     restcheck(rest, type);
 
@@ -288,12 +305,14 @@ export function Dynamic({ type, items, ...rest } = {}) {
     return box;
 }
 
-export function Entry({ type, text, placeholder, onChange, onAccept, password, ...rest }) {
-    placeholder ||= '';
-    text ||= '';
-    onChange ||= '';
-    onAccept ||= '';
-    password ||= false;
+export function Entry({ type,
+    text = '',
+    placeholder = '',
+    onChange = '',
+    onAccept = '',
+    password = false,
+    ...rest
+}) {
     typecheck('text', text, 'string', type);
     typecheck('placeholder', placeholder, 'string', type);
     typecheck('onChange', onChange, ['string', 'function'], type);
@@ -310,25 +329,28 @@ export function Entry({ type, text, placeholder, onChange, onAccept, password, .
     if (onAccept) {
         entry.connect('activate', () => {
             typeof onAccept === 'function'
-                ? onAccept(entry.text)
-                : runCmd(onAccept.replace(/\{\}/g, entry.text), entry);
+                ? onAccept(entry.text, entry)
+                : execAsync(onAccept.replace(/\{\}/g, entry.text));
         });
     }
 
     if (onChange) {
         entry.connect('notify::text', () => {
             typeof onAccept === 'function'
-                ? onChange(entry.text)
-                : runCmd(onChange.replace(/\{\}/g, entry.text), entry);
+                ? onChange(entry.text, entry)
+                : execAsync(onChange.replace(/\{\}/g, entry.text));
         });
     }
 
     return entry;
 }
 
-export function Scrollable({ type, child, hscroll, vscroll, ...rest }) {
-    hscroll ||= 'automatic';
-    vscroll ||= 'automatic';
+export function Scrollable({ type,
+    child,
+    hscroll = 'automatic',
+    vscroll = 'automatic',
+    ...rest
+}) {
     typecheck('hscroll', hscroll, 'string', type);
     typecheck('vscroll', vscroll, 'string', type);
     restcheck(rest, type);
@@ -348,9 +370,12 @@ export function Scrollable({ type, child, hscroll, vscroll, ...rest }) {
     return scrollable;
 }
 
-export function Revealer({ type, transition, duration, child, ...rest }) {
-    transition ||= 'crossfade';
-    duration ||= 300;
+export function Revealer({ type,
+    transition = 'crossfade',
+    duration = 250,
+    child,
+    ...rest
+}) {
     typecheck('transition', transition, 'string', type);
     typecheck('duration', duration, 'number', type);
     restcheck(rest, type);
@@ -373,7 +398,7 @@ export function Revealer({ type, transition, duration, child, ...rest }) {
     return revealer;
 }
 
-export function Overlay({ type, children = [], ...rest }) {
+export function Overlay({ type, children = [], passthrough = true, ...rest }) {
     restcheck(rest, type);
 
     const overlay = new Gtk.Overlay();
@@ -383,13 +408,18 @@ export function Overlay({ type, children = [], ...rest }) {
         children.splice(1).forEach(ch => overlay.add_overlay(Widget(ch)));
     }
 
+    if (passthrough)
+        overlay.get_children().forEach(ch => overlay.set_overlay_pass_through(ch, true));
+
     return overlay;
 }
 
-export function ProgressBar({ type, value, inverted, orientation, ...rest }) {
-    inverted ||= false;
-    orientation ||= 'horizontal';
-    value ||= 0;
+export function ProgressBar({ type,
+    value = 0,
+    inverted = false,
+    orientation = 'horizontal',
+    ...rest
+}) {
     typecheck('inverted', inverted, 'boolean', type);
     typecheck('orientation', orientation, 'string', type);
     typecheck('value', value, 'number', type);
@@ -403,4 +433,25 @@ export function ProgressBar({ type, value, inverted, orientation, ...rest }) {
     bar.setValue = v => bar.set_fraction(v);
     bar.setValue(value);
     return bar;
+}
+
+export function Switch({ type,
+    active = false,
+    onActivate = '',
+    ...rest
+}) {
+    typecheck('active', active, 'boolean', type);
+    typecheck('onActivate', onActivate, ['string', 'function'], type);
+    restcheck(rest, type);
+
+    const gtkswitch = new Gtk.Switch({ active });
+    if (onActivate) {
+        gtkswitch.connect('notify::active', () => {
+            typeof onActivate === 'function'
+                ? onActivate(gtkswitch.active, gtkswitch)
+                : runCmd(onActivate.replace(/\{\}/g, gtkswitch.activate));
+        });
+    }
+
+    return gtkswitch;
 }

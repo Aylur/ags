@@ -1,88 +1,24 @@
-import Gtk from 'gi://Gtk?version=3.0';
+import GObject from 'gi://GObject';
 import Service from './service.js';
-
-imports.gi.versions.GnomeBluetooth = '3.0';
+import { bulkConnect, bulkDisconnect } from '../utils.js';
 const { GnomeBluetooth } = imports.gi;
 
-const _ENABLED = {
-    [GnomeBluetooth.AdapterState.ABSENT]: false,
-    [GnomeBluetooth.AdapterState.ON]: true,
-    [GnomeBluetooth.AdapterState.TURNING_ON]: true,
-    [GnomeBluetooth.AdapterState.OFF]: false,
-    [GnomeBluetooth.AdapterState.TURNING_OFF]: false,
-};
+class Device extends GObject.Object {
+    static {
+        GObject.registerClass({
+            Signals: { 'changed': {} },
+        }, this);
+    }
 
-type BluetoothDevice = {
-    address: string
-    batteryLevel: number
-    batteryPercentage: number
-    connected: boolean
-    iconName: string
-    alias: string
-    name: string
-    trusted: boolean
-    paired: boolean
-}
+    _device: any;
+    _ids: number[];
+    _connecting = false;
 
-type BluetoothState = {
-    enabled: boolean
-    connectedDevices: BluetoothDevice[]
-    devices: BluetoothDevice[]
-}
-
-interface Device extends BluetoothDevice {
-    battery_level: number
-    battery_percentage: number
-    icon: string
-    connect: (event: string, callback: () => void) => number
-    disconnect: (id: number) => void
-}
-
-class BluetoothService extends Service{
-    static { Service.register(this); }
-
-    _state!: BluetoothState;
-    _devices: Map<string, Device>;
-    _connections: Map<string, number[]>;
-    // @ts-ignore
-    _client: GnomeBluetooth.Client;
-
-    constructor() {
+    constructor(device: any) {
         super();
 
-        this._devices = new Map();
-        this._connections = new Map();
-        this._client = new GnomeBluetooth.Client();
-        this._client.connect('notify::default-adapter-state', this._sync.bind(this));
-        this._client.connect('device-added', this._deviceAdded.bind(this));
-        this._client.connect('device-removed', this._deviceRemoved.bind(this));
-        this._getDevices().forEach(device => this._deviceAdded(this, device));
-        this._sync();
-    }
-
-    toggle() {
-        this._client.default_adapter_powered = !this._client.default_adapter_powered;
-    }
-
-    _getDevices() {
-        const devices: Device[] = [];
-        const deviceStore = this._client.get_devices();
-
-        for (let i=0; i<deviceStore.get_n_items(); ++i) {
-            const device = deviceStore.get_item(i);
-
-            if (device.paired || device.trusted)
-                devices.push(device as Device);
-        }
-
-        return devices;
-    }
-
-    _deviceAdded(_c: unknown, device: Device) {
-        if (this._devices.has(device.address))
-            return;
-
-        const connections = [
+        this._device = device;
+        this._ids = [
             'address',
             'alias',
             'battery-level',
@@ -92,48 +28,131 @@ class BluetoothService extends Service{
             'name',
             'paired',
             'trusted',
-        ].map(prop => device.connect(`notify::${prop}`, this._sync.bind(this)));
-        this._connections.set(device.address, connections);
+        ].map(prop => device.connect(`notify::${prop}`, () => this.emit('changed')));
+    }
 
-        this._devices.set(device.address, device);
-        this._sync();
+    close() {
+        bulkDisconnect(this._device, this._ids);
+    }
+
+    get address() { return this._device.address; }
+    get alias() { return this._device.alias; }
+    get connected() { return this._device.connected; }
+    get batteryLevel() { return this._device.battery_level; }
+    get batteryPercentage() { return this._device.battery_percentage; }
+    get iconName() { return this._device.icon; }
+    get name() { return this._device.name; }
+    get paired() { return this._device.paired; }
+    get trusted() { return this._device.trusted; }
+    get type() { return GnomeBluetooth.type_to_string(this._device.type); }
+
+    setConnection(connect: boolean) {
+        this._connecting = true;
+        Bluetooth.instance.connectDevice(this, connect, () => {
+            this._connecting = false;
+            this.emit('changed');
+        });
+        this.emit('changed');
+    }
+}
+
+class BluetoothService extends Service{
+    static { Service.register(this); }
+
+    // @ts-ignore
+    _client: GnomeBluetooth.Client;
+    _devices: Map<string, Device>;
+    _connections: Map<string, number[]>;
+
+    constructor() {
+        super();
+
+        this._devices = new Map();
+        this._connections = new Map();
+        this._client = new GnomeBluetooth.Client();
+        bulkConnect(this._client, [
+            ['notify::default-adapter-state', () => this.emit('changed')],
+            ['device-added', this._deviceAdded.bind(this)],
+            ['device-removed', this._deviceRemoved.bind(this)],
+        ]);
+        this._getDevices().forEach(device => this._deviceAdded(this, device));
+    }
+
+    toggle() {
+        this._client.default_adapter_powered = !this._client.default_adapter_powered;
+    }
+
+    _getDevices() {
+        const devices = [];
+        const deviceStore = this._client.get_devices();
+
+        for (let i=0; i<deviceStore.get_n_items(); ++i) {
+            const device = deviceStore.get_item(i);
+
+            if (device.paired || device.trusted)
+                devices.push(device);
+        }
+
+        return devices;
+    }
+
+    _deviceAdded(_c: unknown, device: any) {
+        if (this._devices.has(device.address))
+            return;
+
+        const d = new Device(device);
+        d._ids.push(d.connect('changed', () => this.emit('changed')));
+        this._devices.set(device.address, d);
+        this.emit('changed');
     }
 
     _deviceRemoved(_c: unknown, device: Device) {
         if (!this._devices.has(device.address))
             return;
 
-        this._connections.get(device.address)?.forEach(id => device.disconnect(id));
-        this._connections.delete(device.address);
+        this._devices.get(device.address)?.close();
         this._devices.delete(device.address);
-        this._sync();
+        this.emit('changed');
     }
 
-    _sync() {
-        this._state = {
-            enabled: _ENABLED[this._client.default_adapter_state],
-            connectedDevices: [],
-            devices: [],
-        };
+    connectDevice(device: Device, connect: boolean, callback: (s: boolean) => void) {
+        this._client.connect_service(
+            device._device.get_object_path(),
+            connect,
+            null,
+            (client: any, res: any) => {
+                try {
+                    const s = client.connect_service_finish(res);
+                    callback(s);
+                } catch (error) {
+                    logError(error as Error);
+                    callback(false);
+                }
+            },
+        );
+    }
 
-        for (const [, device] of this._devices) {
-            const item: BluetoothDevice = {
-                address: device.address,
-                alias: device.alias,
-                batteryLevel: device.battery_level,
-                batteryPercentage: device.battery_percentage,
-                connected: device.connected,
-                name: device.name,
-                iconName: device.icon,
-                paired: device.paired,
-                trusted: device.trusted,
-            };
-            this._state.devices.push(item);
-            if (device.connected)
-                this._state.connectedDevices.push(item);
+    set enabled(v) { this._client.default_adapter_powered = v; }
+    get enabled() { return this.state === 'on' || this.state === 'turning-on'; }
+
+    get state() {
+        switch (this._client.default_adapter_state) {
+        case GnomeBluetooth.AdapterState.ON: return 'on';
+        case GnomeBluetooth.AdapterState.TURNING_ONON: return 'turning-on';
+        case GnomeBluetooth.AdapterState.OFF: return 'off';
+        case GnomeBluetooth.AdapterState.TURNING_OFF: return 'turning-off';
+        default: return 'absent';
         }
+    }
 
-        this.emit('changed');
+    get devices() { return this._devices; }
+    get connectedDevices() {
+        const map = new Map();
+        for (const [address, device] of this._devices) {
+            if (device.connected)
+                map.set(address, device);
+        }
+        return map;
     }
 }
 
@@ -146,19 +165,8 @@ export default class Bluetooth {
         return Bluetooth._instance;
     }
 
-    static get enabled() {
-        return Bluetooth.instance._state.enabled;
-    }
-
-    static set enabled(enable: boolean) {
-        Bluetooth.instance._client.default_adapter_powered = enable;
-    }
-
-    static get devices() {
-        return Bluetooth.instance._state.devices;
-    }
-
-    static get connectedDevices() {
-        return Bluetooth.instance._state.connectedDevices;
-    }
+    static get enabled() { return Bluetooth.instance.enabled; }
+    static set enabled(enable: boolean) { Bluetooth.instance.enabled = enable; }
+    static get devices() { return Bluetooth.instance.devices; }
+    static get connectedDevices() { return Bluetooth.instance.connectedDevices; }
 }

@@ -1,20 +1,12 @@
-// @ts-nocheck
 import Service from './service.js';
 import GObject from 'gi://GObject';
-import Gtk from 'gi://Gtk?version=3.0';
+import Gvc from 'gi://Gvc';
 import { bulkConnect, bulkDisconnect } from '../utils.js';
-
-// I don't know yet how to import it without compiling
-// import Gvc from '@girs/gvc-1.0';
-const { Gvc } = imports.gi;
 
 class Stream extends GObject.Object{
     static {
         GObject.registerClass({
-            Signals: {
-                'changed': {},
-                'closed': {},
-            },
+            Signals: { 'changed': {}, 'closed': {} },
         }, this);
     }
 
@@ -25,14 +17,14 @@ class Stream extends GObject.Object{
         super();
 
         this._stream = stream;
-        this._ids = bulkConnect(this._stream, [
-            ['notify::description', () => this.emit('changed')],
-            ['notify::is-muted',    () => this.emit('changed')],
-            ['notify::volume',      () => this.emit('changed')],
-            ['notify::icon-name',   () => this.emit('changed')],
-            ['notify::id',          () => this.emit('changed')],
-            ['notify::state',       () => this.emit('changed')],
-        ]);
+        this._ids = [
+            'description',
+            'is-muted',
+            'volume',
+            'icon-name',
+            'id',
+            'state',
+        ].map(prop => stream.connect(`notify::${prop}`, () => this.emit('changed')));
         this.emit('changed');
     }
 
@@ -57,7 +49,7 @@ class Stream extends GObject.Object{
     }
 
     set isMuted(muted) {
-        this._stream.is_muted = muted;
+        this._stream.set_is_muted(muted);
     }
 
     get isMuted() {
@@ -71,21 +63,28 @@ class Stream extends GObject.Object{
 }
 
 class AudioService extends Service{
-    static { Service.register(this); }
+    static {
+        Service.register(this, {
+            'speaker-changed': [],
+            'microphone-changed': [],
+        });
+    }
 
     _control: Gvc.MixerControl;
     _streams: Map<number, Stream>;
     _speaker!: Stream;
-    _mic!: Stream;
+    _microphone!: Stream;
+    _speakerID!: number;
+    _microphoneID!: number;
 
     constructor() {
         super();
         this._control = new Gvc.MixerControl({ name: `${pkg.name} mixer control` });
         this._streams = new Map();
 
-        bulkConnect(this._control, [
-            ['default-sink-changed', this._sinkChanged.bind(this)],
-            ['default-source-changed', this._sourceChanged.bind(this)],
+        bulkConnect((this._control as unknown) as GObject.Object, [
+            ['default-sink-changed', (_c, id: number) => this._defaultChanged(id, 'speaker')],
+            ['default-source-changed', (_c, id: number) => this._defaultChanged(id, 'microphone')],
             ['stream-added', this._streamAdded.bind(this)],
             ['stream-removed', this._streamRemoved.bind(this)],
         ]);
@@ -93,27 +92,17 @@ class AudioService extends Service{
         this._control.open();
     }
 
-    _sinkChanged(_c: Gvc.MixerControl, id: number) {
-        if (this._speaker)
-            this._speaker.close();
+    _defaultChanged(id: number, type: 'speaker'|'microphone') {
+        if (this[`_${type}`])
+            this[`_${type}`].disconnect(this[`_${type}ID`]);
 
-        const stream = this._control.lookup_stream_id(id);
+        const stream = this._streams.get(id);
         if (!stream)
             return;
 
-        this._speaker = new Stream(stream);
-        this.emit('changed');
-    }
-
-    _sourceChanged(_c: Gvc.MixerControl, id: number) {
-        if (this._mic)
-            this._mic.close();
-
-        const stream = this._control.lookup_stream_id(id);
-        if (!stream)
-            return;
-
-        this._mic = new Stream(stream);
+        this[`_${type}ID`] = stream.connect('changed', () => this.emit(`${type}-changed`));
+        this[`_${type}`] = stream;
+        this.emit(`${type}-changed`);
         this.emit('changed');
     }
 
@@ -122,11 +111,8 @@ class AudioService extends Service{
             return;
 
         const stream = this._control.lookup_stream_id(id);
-        if (stream.is_event_stream || !(stream instanceof Gvc.MixerSinkInput))
-            return;
 
-        const streamWrapper = new Stream(stream);
-        this._streams.set(id, streamWrapper);
+        this._streams.set(id, new Stream(stream));
         this.emit('changed');
     }
 
@@ -137,6 +123,23 @@ class AudioService extends Service{
         this._streams.get(id)?.close();
         this._streams.delete(id);
         this.emit('changed');
+    }
+
+    getStreams(filter: any) {
+        const map = new Map();
+        for (const [id, stream] of this._streams) {
+            if (stream._stream instanceof filter)
+                map.set(id, stream);
+        }
+        return map;
+    }
+
+    setSpeaker(stream: Stream) {
+        this._control.set_default_sink(stream._stream);
+    }
+
+    setMicrophone(stream: Stream) {
+        this._control.set_default_source(stream._stream);
     }
 }
 
@@ -149,15 +152,13 @@ export default class Audio {
         return Audio._instance;
     }
 
-    static get speaker() {
-        return Audio.instance._speaker;
-    }
+    static get apps() { return Audio.instance.getStreams(Gvc.MixerSinkInput); }
+    static get speakers() { return Audio.instance.getStreams(Gvc.MixerSink); }
+    static get microphones() { return Audio.instance.getStreams(Gvc.MixerSource); }
 
-    static get microphone() {
-        return Audio.instance._mic;
-    }
+    static get speaker() { return Audio.instance._speaker; }
+    static set speaker(stream: Stream) { Audio.instance.setSpeaker(stream); }
 
-    static get apps() {
-        return Audio.instance._streams;
-    }
+    static get microphone() { return Audio.instance._microphone; }
+    static set microphone(stream: Stream) { Audio.instance.setMicrophone(stream); }
 }
