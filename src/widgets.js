@@ -428,10 +428,10 @@ export function ProgressBar({ type,
     const bar = new Gtk.ProgressBar({
         orientation: _orientation(orientation),
         inverted,
+        fraction: value,
     });
 
     bar.setValue = v => bar.set_fraction(v);
-    bar.setValue(value);
     return bar;
 }
 
