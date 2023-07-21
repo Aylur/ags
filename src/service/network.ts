@@ -3,12 +3,30 @@ import Service from './service.js';
 import { bulkConnect } from '../utils.js';
 
 const _INTERNET = (device: NM.Device) => {
-    switch (device.active_connection?.state) {
+    switch (device?.active_connection?.state) {
     case NM.ActiveConnectionState.ACTIVATED: return 'connected';
     case NM.ActiveConnectionState.ACTIVATING: return 'connecting';
     case NM.ActiveConnectionState.DEACTIVATING:
     case NM.ActiveConnectionState.DEACTIVATED:
     default: return 'disconnected';
+    }
+};
+
+const _DEVICE_STATE = (device: NM.Device) => {
+    switch (device?.state) {
+    case NM.DeviceState.UNMANAGED: return 'unmanaged';
+    case NM.DeviceState.UNAVAILABLE: return 'unavailable';
+    case NM.DeviceState.DISCONNECTED: return 'disconnected';
+    case NM.DeviceState.PREPARE: return 'prepare';
+    case NM.DeviceState.CONFIG: return 'config';
+    case NM.DeviceState.NEED_AUTH: return 'need_auth';
+    case NM.DeviceState.IP_CONFIG: return 'ip_config';
+    case NM.DeviceState.IP_CHECK: return 'ip_check';
+    case NM.DeviceState.SECONDARIES: return 'secondaries';
+    case NM.DeviceState.ACTIVATED: return 'activated';
+    case NM.DeviceState.DEACTIVATING: return 'deactivating';
+    case NM.DeviceState.FAILED: return 'failed';
+    default: return 'unknown';
     }
 };
 
@@ -79,6 +97,8 @@ class Wifi extends Service{
 
         return NM.utils_ssid_to_utf8(ssid);
     }
+
+    get state() { return _DEVICE_STATE(this._device); }
 }
 
 class Wired extends Service{
@@ -93,6 +113,7 @@ class Wired extends Service{
 
     get speed() { return this._device.get_speed(); }
     get internet() { return _INTERNET(this._device); }
+    get state() { return _DEVICE_STATE(this._device); }
 }
 
 class NetworkService extends Service{
