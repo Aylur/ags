@@ -76,7 +76,9 @@ class Wifi extends Service{
             bssid: ap.bssid,
             address: ap.hw_address,
             lastSeen: ap.last_seen,
-            ssid: NM.utils_ssid_to_utf8(ap.ssid.get_data() || new Uint8Array),
+            ssid: ap.ssid
+                ? NM.utils_ssid_to_utf8(ap.ssid.get_data() || new Uint8Array)
+                : 'Unknown',
             active: ap === this._ap,
             strength: ap.strength,
         }));
