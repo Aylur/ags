@@ -1,0 +1,26 @@
+diff --git a/meson.build b/meson.build
+index 63b3e6d..62fc8b8 100644
+--- a/meson.build
++++ b/meson.build
+@@ -16,7 +16,7 @@ subproject('gvc',
+   default_options: [
+     'package_name=' + APP,
+     'pkgdatadir=' + get_option('datadir') / APP,
+-    'pkglibdir=' + get_option('libdir') / APP,
++    'pkglibdir=' + get_option('libdir'),
+     'static=false',
+     'introspection=true',
+     'alsa=false'
+diff --git a/src/meson.build b/src/meson.build
+index 44ee0a5..d96615a 100644
+--- a/src/meson.build
++++ b/src/meson.build
+@@ -27,7 +27,7 @@ app_launcher = configure_file(
+   output : APP,
+   configuration: {
+     'GJS': find_program('gjs').full_path(),
+-    'GVC_GIR': get_option('prefix') / get_option('libdir') / APP,
++    'GVC_GIR': get_option('prefix') / get_option('libdir'),
+     'PACKAGE_NAME': APP,
+     'PACKAGE_VERSION': meson.project_version(),
+     'PREFIX': get_option('prefix'),
