@@ -23,13 +23,7 @@ stdenv.mkDerivation {
 
   src = buildNpmPackage {
     name = "ags";
-    src = fetchFromGitHub {
-      owner = "Aylur";
-      repo = "ags";
-      rev = "refs/heads/main";
-      sha256 = "sha256-ht9kA5uNOH09xWnsnpUOZ+F2SXps605zxxip54WE420=";
-      fetchSubmodules = true;
-    };
+    src = ../.;
 
     dontBuild = true;
 
