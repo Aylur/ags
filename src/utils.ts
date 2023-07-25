@@ -141,7 +141,7 @@ export function timeout(ms: number, callback: () => void) {
     });
 }
 
-export function runCmd(cmd: string | ((args: any[]) => void), ...args: any[]) {
+export function runCmd(cmd: string | ((...args: any[]) => void), ...args: any[]) {
     if (!cmd)
         return;
 
@@ -149,7 +149,7 @@ export function runCmd(cmd: string | ((args: any[]) => void), ...args: any[]) {
         return GLib.spawn_command_line_async(cmd);
 
     if (typeof cmd === 'function')
-        return cmd(args);
+        return cmd(...args);
 }
 
 export function getConfig() {

@@ -3,7 +3,7 @@ import Gdk from 'gi://Gdk?version=3.0';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import Widget from './widget.js';
-import { typecheck, error, runCmd, restcheck, warning, getConfig, execAsync } from './utils.js';
+import { typecheck, error, runCmd, restcheck, warning, getConfig } from './utils.js';
 
 function _orientation(str) {
     if (str === 'v')
@@ -59,12 +59,12 @@ export function EventBox({ type,
 
     const box = new Gtk.EventBox();
 
-    box.connect('enter-notify-event', () => {
+    box.connect('enter-notify-event', box => {
         box.set_state_flags(Gtk.StateFlags.PRELIGHT, false);
         runCmd(onHover, box);
     });
 
-    box.connect('leave-notify-event', () => {
+    box.connect('leave-notify-event', box => {
         box.unset_state_flags(Gtk.StateFlags.PRELIGHT);
         runCmd(onHoverLost, box);
     });
@@ -85,7 +85,7 @@ export function EventBox({ type,
 
     if (onScrollUp || onScrollDown) {
         box.add_events(Gdk.EventMask.SCROLL_MASK);
-        box.connect('scroll-event', (_w, event) => {
+        box.connect('scroll-event', (box, event) => {
             if (event.get_scroll_direction()[1] === Gdk.ScrollDirection.UP)
                 runCmd(onScrollUp, box);
             else if (event.get_scroll_direction()[1] === Gdk.ScrollDirection.DOWN)
@@ -247,8 +247,7 @@ export function Slider({ type,
     slider.connect('button-press-event', () => { slider._dragging = true; });
     slider.connect('button-release-event', () => { slider._dragging = false; });
 
-    slider.connect('scroll-event', (_w, event) => {
-        const { adjustment } = slider;
+    slider.connect('scroll-event', ({ adjustment }, event) => {
         const [, , y] = event.get_scroll_deltas();
 
         slider._dragging = true;
@@ -265,7 +264,7 @@ export function Slider({ type,
                 return;
 
             typeof onChange === 'function'
-                ? onChange(value, slider)
+                ? onChange(slider, value)
                 : runCmd(onChange.replace(/\{\}/g, value));
         });
     }
@@ -327,18 +326,18 @@ export function Entry({ type,
     });
 
     if (onAccept) {
-        entry.connect('activate', () => {
+        entry.connect('activate', ({ text }) => {
             typeof onAccept === 'function'
-                ? onAccept(entry.text, entry)
-                : runCmd(onAccept.replace(/\{\}/g, entry.text));
+                ? onAccept(entry, text)
+                : runCmd(onAccept.replace(/\{\}/g, text));
         });
     }
 
     if (onChange) {
-        entry.connect('notify::text', () => {
+        entry.connect('notify::text', ({ text }) => {
             typeof onAccept === 'function'
-                ? onChange(entry.text, entry)
-                : runCmd(onChange.replace(/\{\}/g, entry.text));
+                ? onChange(entry, text)
+                : runCmd(onChange.replace(/\{\}/g, text));
         });
     }
 
@@ -446,10 +445,10 @@ export function Switch({ type,
 
     const gtkswitch = new Gtk.Switch({ active });
     if (onActivate) {
-        gtkswitch.connect('notify::active', () => {
+        gtkswitch.connect('notify::active', ({ active }) => {
             typeof onActivate === 'function'
-                ? onActivate(gtkswitch.active, gtkswitch)
-                : runCmd(onActivate.replace(/\{\}/g, gtkswitch.activate));
+                ? onActivate(gtkswitch, active)
+                : runCmd(onActivate.replace(/\{\}/g, active));
         });
     }
 
