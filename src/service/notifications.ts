@@ -28,11 +28,11 @@ interface Notification {
     actions: action[]
     urgency: string
     time: number
-    image: string|null
+    image: string | null
     popup: boolean
 }
 
-class NotificationsService extends Service{
+class NotificationsService extends Service {
     static {
         Service.register(this, {
             'dismissed': ['int'],
@@ -88,10 +88,10 @@ class NotificationsService extends Service{
         hints: Hints,
     ) {
         const actions: action[] = [];
-        for (let i=0; i<acts.length; i+=2) {
-            if (acts[i+1] !== '') {
+        for (let i = 0; i < acts.length; i += 2) {
+            if (acts[i + 1] !== '') {
                 actions.push({
-                    label: acts[i+1],
+                    label: acts[i + 1],
                     id: acts[i],
                 });
             }
@@ -188,14 +188,14 @@ class NotificationsService extends Service{
     }
 
     _readFromFile() {
-        const file = readFile(NOTIFICATIONS_CACHE_PATH+'/notifications.json');
+        const file = readFile(NOTIFICATIONS_CACHE_PATH + '/notifications.json');
         if (!file)
             return;
 
         const notifications = JSON.parse(file) as Notification[];
         notifications.forEach(n => {
             if (n.id > this._idCount)
-                this._idCount = n.id+1;
+                this._idCount = n.id + 1;
 
             this._notifications.set(n.id, n);
         });
@@ -226,7 +226,7 @@ class NotificationsService extends Service{
 
         const output_stream =
             Gio.File.new_for_path(fileName)
-            .replace(null, false, Gio.FileCreateFlags.NONE, null);
+                .replace(null, false, Gio.FileCreateFlags.NONE, null);
 
         pixbuf.save_to_streamv(output_stream, 'png', null, null, null);
         output_stream.close(null);
@@ -242,7 +242,7 @@ class NotificationsService extends Service{
         }
 
         ensureDirectory();
-        writeFile(JSON.stringify(notifications, null, 2), NOTIFICATIONS_CACHE_PATH+'/notifications.json');
+        writeFile(JSON.stringify(notifications, null, 2), NOTIFICATIONS_CACHE_PATH + '/notifications.json');
     }
 }
 

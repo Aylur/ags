@@ -3,23 +3,25 @@ import Gdk from 'gi://Gdk?version=3.0';
 import { restcheck, typecheck, warning } from './utils.js';
 import Widget from './widget.js';
 import App from './app.js';
+import { setStyle, toggleClassName } from './widget.js';
 
 imports.gi.versions.GtkLayerShell = '0.1';
 const { GtkLayerShell: GtkLayerShell } = imports.gi;
 
 export interface Window {
-  anchor?: string[]
-  child?: { type: string }|Gtk.Widget|null
-  className?: string
-  exclusive?: boolean
-  focusable?: boolean
-  layer?: string
-  margin?: number[]
-  monitor?: number
-  name?: string
-  popup?: boolean
-  style?: string
-  visible?: boolean
+    anchor?: string[]
+    child?: { type: string } | Gtk.Widget | null
+    className?: string
+    exclusive?: boolean
+    focusable?: boolean
+    layer?: string
+    margin?: number[] | number
+    monitor?: number
+    name?: string
+    popup?: boolean
+    style?: string
+    visible?: boolean
+    setup?: (win: Gtk.Window) => void,
 }
 
 export default function Window({
@@ -35,6 +37,7 @@ export default function Window({
     style = '',
     monitor,
     visible = true,
+    setup,
     ...rest
 }: Window): Gtk.Window {
     typecheck('name', name, 'string', 'window');
@@ -44,7 +47,6 @@ export default function Window({
     typecheck('exclusive', exclusive, 'boolean', 'window');
     typecheck('popup', popup, 'boolean', 'window');
     typecheck('focusable', focusable, 'boolean', 'window');
-    typecheck('child', child, 'object', 'window');
     typecheck('className', className, 'string', 'window');
     typecheck('monitor', monitor, ['number', 'undefined'], 'window');
     restcheck(rest, `window: ${name}`);
@@ -54,19 +56,10 @@ export default function Window({
     GtkLayerShell.set_namespace(win, name);
 
     // @ts-ignore
-    win.setStyle = (css: string) => {
-        const provider = new Gtk.CssProvider();
-        provider.load_from_data(`* { ${css} }`);
-        win.reset_style();
-        win.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
-    };
+    win.setStyle = (css: string) => setStyle(win, css);
 
     // @ts-ignore
-    win.toggleClassName = (className: string, condition = true) => {
-        condition
-            ? win.get_style_context().add_class(className)
-            : win.get_style_context().remove_class(className);
-    };
+    win.toggleClassName = (className: string, condition) => toggleClassName(win, className, condition);
 
     if (anchor) {
         anchor.forEach(side => GtkLayerShell
@@ -99,8 +92,9 @@ export default function Window({
         default:
             break;
         }
+
         margins.forEach(([side, i]) =>
-            GtkLayerShell.set_margin(win, GtkLayerShell.Edge[side], margin[i]),
+            GtkLayerShell.set_margin(win, GtkLayerShell.Edge[side], (margin as number[])[i]),
         );
     }
 
@@ -109,11 +103,11 @@ export default function Window({
     if (exclusive)
         GtkLayerShell.auto_exclusive_zone_enable(win);
 
-    if (monitor || monitor === 0) {
+    if (typeof monitor === 'number') {
         const display = Gdk.Display.get_default();
         display
             ? GtkLayerShell.set_monitor(win, display.get_monitor(monitor))
-            : warning(`Coulnd not find monitor ${monitor}`);
+            : warning(`Could not find monitor with id: ${monitor}`);
     }
 
     if (className) {
@@ -123,8 +117,7 @@ export default function Window({
     }
 
     if (style)
-        // @ts-ignore
-        win.setStyle(style);
+        setStyle(win, style);
 
     if (child)
         win.add(Widget(child));
@@ -142,8 +135,11 @@ export default function Window({
         GtkLayerShell.set_keyboard_mode(win, GtkLayerShell.KeyboardMode.ON_DEMAND);
 
     win.show_all();
-    if (!visible)
-        win.hide();
+    if (typeof visible === 'boolean')
+        win.visible = visible;
+
+    if (setup)
+        setup(win);
 
     return win;
 }

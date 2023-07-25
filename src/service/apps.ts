@@ -4,8 +4,8 @@ import Service from './service.js';
 interface App {
     app: Gio.AppInfo
     name: string
-    desktop: string|null
-    description: string|null
+    desktop: string | null
+    description: string | null
     executable: string
     iconName: string
     launch: () => void
@@ -23,7 +23,7 @@ function _appIconName(app: any): string {
     return name || '';
 }
 
-function _match(prop: string|null, search: string): boolean {
+function _match(prop: string | null, search: string): boolean {
     if (!prop)
         return false;
 
@@ -35,10 +35,10 @@ function _match(prop: string|null, search: string): boolean {
 
 function _search(app: App, search: string): boolean {
     const { name, desktop, description, executable } = app;
-    return  _match(name, search) ||
-            _match(desktop, search) ||
-            _match(executable, search) ||
-            _match(description, search);
+    return _match(name, search) ||
+        _match(desktop, search) ||
+        _match(executable, search) ||
+        _match(description, search);
 }
 
 const _wrapper = (app: Gio.AppInfo): App => ({

@@ -238,7 +238,7 @@ export function Slider({ type,
             value: min,
             lower: min,
             upper: max,
-            step_increment: (max-min) /100,
+            step_increment: (max - min) / 100,
         }),
         draw_value: drawValue,
         inverted: inverted,
@@ -249,7 +249,7 @@ export function Slider({ type,
 
     slider.connect('scroll-event', (_w, event) => {
         const { adjustment } = slider;
-        const [,, y] = event.get_scroll_deltas();
+        const [, , y] = event.get_scroll_deltas();
 
         slider._dragging = true;
         y > 0
@@ -266,7 +266,7 @@ export function Slider({ type,
 
             typeof onChange === 'function'
                 ? onChange(value, slider)
-                : execAsync(onChange.replace(/\{\}/g, value));
+                : runCmd(onChange.replace(/\{\}/g, value));
         });
     }
 
@@ -330,7 +330,7 @@ export function Entry({ type,
         entry.connect('activate', () => {
             typeof onAccept === 'function'
                 ? onAccept(entry.text, entry)
-                : execAsync(onAccept.replace(/\{\}/g, entry.text));
+                : runCmd(onAccept.replace(/\{\}/g, entry.text));
         });
     }
 
@@ -338,7 +338,7 @@ export function Entry({ type,
         entry.connect('notify::text', () => {
             typeof onAccept === 'function'
                 ? onChange(entry.text, entry)
-                : execAsync(onChange.replace(/\{\}/g, entry.text));
+                : runCmd(onChange.replace(/\{\}/g, entry.text));
         });
     }
 

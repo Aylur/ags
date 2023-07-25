@@ -14,8 +14,8 @@ import './service/mpris.js';
 import './service/network.js';
 import './service/notifications.js';
 
-const APP_BUS = 'com.github.Aylur.'+pkg.name;
-const APP_PATH = '/com/github/Aylur/'+pkg.name;
+const APP_BUS = 'com.github.Aylur.' + pkg.name;
+const APP_PATH = '/com/github/Aylur/' + pkg.name;
 
 export function main(args: string[]) {
     switch (args[1]) {

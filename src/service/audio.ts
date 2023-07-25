@@ -3,7 +3,7 @@ import GObject from 'gi://GObject';
 import Gvc from 'gi://Gvc';
 import { bulkConnect, bulkDisconnect } from '../utils.js';
 
-class Stream extends GObject.Object{
+class Stream extends GObject.Object {
     static {
         GObject.registerClass({
             Signals: { 'changed': {}, 'closed': {} },
@@ -62,7 +62,7 @@ class Stream extends GObject.Object{
     }
 }
 
-class AudioService extends Service{
+class AudioService extends Service {
     static {
         Service.register(this, {
             'speaker-changed': [],
@@ -92,7 +92,7 @@ class AudioService extends Service{
         this._control.open();
     }
 
-    _defaultChanged(id: number, type: 'speaker'|'microphone') {
+    _defaultChanged(id: number, type: 'speaker' | 'microphone') {
         if (this[`_${type}`])
             this[`_${type}`].disconnect(this[`_${type}ID`]);
 

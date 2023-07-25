@@ -36,7 +36,7 @@ export function warning(message: string) {
         : log(`WARNING: ${message}`);
 }
 
-export function typecheck(key: string, value: unknown, type: string|string[], widget: string ) {
+export function typecheck(key: string, value: unknown, type: string | string[], widget: string) {
     if (Array.isArray(type)) {
         for (const t of type) {
             if (t === 'array' && Array.isArray(value))
@@ -141,18 +141,18 @@ export function timeout(ms: number, callback: () => void) {
     });
 }
 
-export function runCmd(cmd: string|((widget?: Gtk.Widget) => void), widget?: Gtk.Widget) {
+export function runCmd(cmd: string | ((args: any[]) => void), ...args: any[]) {
     if (!cmd)
         return;
 
     if (typeof cmd === 'string')
-        return execAsync(cmd);
+        return GLib.spawn_command_line_async(cmd);
 
     if (typeof cmd === 'function')
-        return cmd(widget);
+        return cmd(args);
 }
 
-export function getConfig(): Config|null {
+export function getConfig() {
     try {
         imports.searchPath.push(CONFIG_DIR);
         return imports.config.config as Config;
@@ -162,7 +162,7 @@ export function getConfig(): Config|null {
     }
 }
 
-export function lookUpIcon(name: string|null, size = 16): Gtk.IconInfo|null {
+export function lookUpIcon(name?: string, size = 16) {
     if (!name)
         return null;
 
@@ -193,14 +193,14 @@ export function ensureDirectory(path?: string) {
             MEDIA_CACHE_PATH,
             NOTIFICATIONS_CACHE_PATH,
         ]
-        .forEach(path => {
-            if (!GLib.file_test(path, GLib.FileTest.EXISTS))
-                Gio.File.new_for_path(path).make_directory_with_parents(null);
-        });
+            .forEach(path => {
+                if (!GLib.file_test(path, GLib.FileTest.EXISTS))
+                    Gio.File.new_for_path(path).make_directory_with_parents(null);
+            });
     }
 }
 
-export function isRunning(dbusName: string): boolean {
+export function isRunning(dbusName: string) {
     return Gio.DBus.session.call_sync(
         'org.freedesktop.DBus',
         '/org/freedesktop/DBus',
@@ -220,7 +220,7 @@ export function isRunning(dbusName: string): boolean {
  * wont resolve for some reason and awaiting it just blocks forever
  */
 type execCallback = (out: string, proc: Gio.Subprocess) => void;
-export async function execAsync(cmd: string|string[], onSuccess?: execCallback, onFail?: execCallback) {
+export async function execAsync(cmd: string | string[], onSuccess?: execCallback, onFail?: execCallback) {
     if (typeof cmd === 'string')
         cmd = cmd.split(' ');
 

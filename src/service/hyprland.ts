@@ -251,7 +251,7 @@ export default class Hyprland {
     static get workspaces() { return Hyprland.instance._state.workspaces; }
     static get clients() { return Hyprland.instance._state.clients; }
 
-    static HyprctlGet(cmd: string): unknown|object {
+    static HyprctlGet(cmd: string): unknown | object {
         const [success, out, err] =
             GLib.spawn_command_line_sync(`hyprctl -j ${cmd}`);
 

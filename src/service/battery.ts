@@ -15,13 +15,13 @@ type BatteryState = {
     charged: boolean
 }
 
-class BatteryService extends Service{
+class BatteryService extends Service {
     static { Service.register(this); }
 
     _state!: BatteryState;
     _proxy: BatteryProxy;
 
-    constructor(){
+    constructor() {
         super();
 
         this._state = {
@@ -41,7 +41,7 @@ class BatteryService extends Service{
         timeout(100, this._sync.bind(this));
     }
 
-    _sync(){
+    _sync() {
         if (!this._proxy.IsPresent)
             return;
 

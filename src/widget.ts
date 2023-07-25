@@ -3,25 +3,25 @@ import { typecheck, error, warning, interval } from './utils.js';
 import * as Basic from './widgets.js';
 
 interface ServiceAPI {
-  instance: {
-      connectWidget: (widget: Gtk.Widget, callback: (widget: Gtk.Widget, ...args: any[]) => void, event?: string) => void
-  }
+    instance: {
+        connectWidget: (widget: Gtk.Widget, callback: (widget: Gtk.Widget, ...args: any[]) => void, event?: string) => void
+    }
 }
 
 interface Widget {
-  type: string|(() => Gtk.Widget)
-  className?: string
-  style?: string
-  halign?: 'start'|'center'|'end'|'fill'
-  valign?: 'start'|'center'|'end'|'fill'
-  hexpand?: boolean
-  vexpand?: boolean
-  sensitive?: boolean
-  tooltip?: string
-  visible?: boolean
-  connections?: ([string, (...args: any[]) => any] | [number, (...args: any[]) => any] | [ServiceAPI, (...args: any[]) => any, string])[]
-  properties?: [any, any][]
-  setup?: (widget: Gtk.Widget) => void
+    type: string | (() => Gtk.Widget)
+    className?: string
+    style?: string
+    halign?: 'start' | 'center' | 'end' | 'fill'
+    valign?: 'start' | 'center' | 'end' | 'fill'
+    hexpand?: boolean
+    vexpand?: boolean
+    sensitive?: boolean
+    tooltip?: string
+    visible?: boolean
+    connections?: ([string, (...args: any[]) => any] | [number, (...args: any[]) => any] | [ServiceAPI, (...args: any[]) => any, string])[]
+    properties?: [any, any][]
+    setup?: (widget: Gtk.Widget) => void
 }
 
 const widgets: { [key: string]: (props: any) => Gtk.Widget } = {
@@ -41,6 +41,19 @@ const widgets: { [key: string]: (props: any) => Gtk.Widget } = {
     'switch': Basic.Switch,
 };
 
+export function setStyle(widget: Gtk.Widget, css: string) {
+    const provider = new Gtk.CssProvider();
+    const style = `* { ${css} }`;
+    provider.load_from_data(style);
+    widget.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+}
+
+export function toggleClassName(widget: Gtk.Widget, className: string, condition = true) {
+    condition
+        ? widget.get_style_context().add_class(className)
+        : widget.get_style_context().remove_class(className);
+}
+
 function parseParams(widget: Gtk.Widget, {
     type, className, style, sensitive, tooltip, connections, properties, setup,
     halign, valign, hexpand, vexpand, visible = true,
@@ -56,13 +69,19 @@ function parseParams(widget: Gtk.Widget, {
     typecheck('vexpand', vexpand, ['boolean', 'undefined'], type);
     typecheck('visible', visible, 'boolean', type);
 
-    if (className) {
+    // @ts-ignore
+    widget.setStyle = (css: string) => setStyle(widget, css);
+
+    // @ts-ignore
+    widget.toggleClassName = (className: string, condition = true) => toggleClassName(widget, className, condition);
+
+    if (typeof className === 'string') {
         className.split(' ').forEach(cn => {
             widget.get_style_context().add_class(cn);
         });
     }
 
-    if (halign) {
+    if (typeof halign === 'string') {
         try {
             // @ts-ignore
             widget.halign = Gtk.Align[halign.toUpperCase()];
@@ -71,7 +90,7 @@ function parseParams(widget: Gtk.Widget, {
         }
     }
 
-    if (valign) {
+    if (typeof valign === 'string') {
         try {
             // @ts-ignore
             widget.valign = Gtk.Align[valign.toUpperCase()];
@@ -86,33 +105,17 @@ function parseParams(widget: Gtk.Widget, {
     if (typeof vexpand === 'boolean')
         widget.vexpand = vexpand;
 
-    if (sensitive !== undefined)
+    if (typeof sensitive === 'boolean')
         widget.sensitive = sensitive;
 
-    if (tooltip)
+    if (typeof tooltip === 'string')
         widget.set_tooltip_text(tooltip);
 
-    // @ts-ignore
-    widget.setStyle = (css: string) => {
-        const provider = new Gtk.CssProvider();
-        provider.load_from_data(`* { ${css} }`);
-        widget.reset_style();
-        widget.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
-    };
+    if (typeof style === 'string')
+        setStyle(widget, style);
 
-    // @ts-ignore
-    widget.toggleClassName = (className: string, condition = true) => {
-        condition
-            ? widget.get_style_context().add_class(className)
-            : widget.get_style_context().remove_class(className);
-    };
-
-    if (style)
-        // @ts-ignore
-        widget.setStyle(style);
-
-    if (!visible)
-        widget.hide();
+    if (typeof visible === 'boolean')
+        widget.visible = visible;
 
     if (properties) {
         properties.forEach(([key, value]) => {
@@ -134,14 +137,14 @@ function parseParams(widget: Gtk.Widget, {
         });
     }
 
-    if (setup)
+    if (typeof setup === 'function')
         setup(widget);
 }
 
-export default function Widget(params: null|Widget|string|(() => Gtk.Widget)|Gtk.Widget ): Gtk.Widget {
+export default function Widget(params: Widget | string | (() => Gtk.Widget) | Gtk.Widget): Gtk.Widget {
     if (!params) {
-        error('Widget from null');
-        return new Gtk.Label({ label: `Null error on ${params}` });
+        error('Widget from null/undefined');
+        return new Gtk.Label({ label: `error widget from: "${params}"` });
     }
 
     if (typeof params === 'string')
@@ -159,7 +162,7 @@ export default function Widget(params: null|Widget|string|(() => Gtk.Widget)|Gtk
         ...props
     }: Widget = params;
 
-    let widget: Gtk.Widget|null = null;
+    let widget: Gtk.Widget | null = null;
     if (typeof type === 'function')
         widget = type();
 

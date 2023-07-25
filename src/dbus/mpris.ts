@@ -54,7 +54,7 @@ export type MprisMetadata = {
 }
 
 export interface TPlayerProxy extends Proxy {
-    new (...args: any[]): TPlayerProxy
+    new(...args: any[]): TPlayerProxy
     CanControl: boolean
     CanGoNext: boolean
     CanGoPrevious: boolean
@@ -62,8 +62,8 @@ export interface TPlayerProxy extends Proxy {
     CanPause: boolean
     Metadata: { [key: string]: GLib.Variant }
     PlaybackStatus: string
-    Shuffle: boolean|null
-    LoopStatus: string|null
+    Shuffle: boolean | null
+    LoopStatus: string | null
     Volume: number
     Position: number
     SetPositionAsync: (trackid: string, position: number) => void
@@ -75,7 +75,7 @@ export interface TPlayerProxy extends Proxy {
 }
 
 export interface TMprisProxy extends Proxy {
-    new (...args: any[]): TMprisProxy
+    new(...args: any[]): TMprisProxy
     Raise: () => void
     Quit: () => void
     CanQuit: boolean

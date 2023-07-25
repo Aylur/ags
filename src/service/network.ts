@@ -30,7 +30,7 @@ const _DEVICE_STATE = (device: NM.Device) => {
     }
 };
 
-class Wifi extends Service{
+class Wifi extends Service {
     static { Service.register(this); }
 
     _client: NM.Client;
@@ -103,7 +103,7 @@ class Wifi extends Service{
     get state() { return _DEVICE_STATE(this._device); }
 }
 
-class Wired extends Service{
+class Wired extends Service {
     static { Service.register(this); }
 
     _device: NM.DeviceEthernet;
@@ -118,7 +118,7 @@ class Wired extends Service{
     get state() { return _DEVICE_STATE(this._device); }
 }
 
-class NetworkService extends Service{
+class NetworkService extends Service {
     static { Service.register(this); }
 
     _client!: NM.Client;
@@ -151,9 +151,9 @@ class NetworkService extends Service{
     }
 
     _clientReady() {
-        this._client.connect('notify::wireless-enabled',      this._sync.bind(this));
-        this._client.connect('notify::connectivity',          this._sync.bind(this));
-        this._client.connect('notify::primary-connection',    this._sync.bind(this));
+        this._client.connect('notify::wireless-enabled', this._sync.bind(this));
+        this._client.connect('notify::connectivity', this._sync.bind(this));
+        this._client.connect('notify::primary-connection', this._sync.bind(this));
         this._client.connect('notify::activating-connection', this._sync.bind(this));
 
         this._wifi = new Wifi(this._client, this._getDevice(NM.DeviceType.WIFI) as NM.DeviceWifi);

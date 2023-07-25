@@ -7,8 +7,8 @@ import { MprisPlayerProxy, MprisProxy, TMprisProxy, TPlayerProxy, MprisMetadata 
 import { DBusProxy, TDBusProxy } from '../dbus/dbus.js';
 import { MEDIA_CACHE_PATH } from '../utils.js';
 
-type PlaybackStatus = 'Playing'|'Paused'|'Stopped';
-type LoopStatus = 'None'|'Track'|'Playlist';
+type PlaybackStatus = 'Playing' | 'Paused' | 'Stopped';
+type LoopStatus = 'None' | 'Track' | 'Playlist';
 
 class MprisPlayer extends GObject.Object {
     static {
@@ -35,8 +35,8 @@ class MprisPlayer extends GObject.Object {
     canGoNext!: boolean;
     canGoPrev!: boolean;
     canPlay!: boolean;
-    shuffleStatus!: boolean|null;
-    loopStatus!: LoopStatus|null;
+    shuffleStatus!: boolean | null;
+    loopStatus!: LoopStatus | null;
     length!: number;
 
     _binding: { mpris: number, player: number };
@@ -99,7 +99,7 @@ class MprisPlayer extends GObject.Object {
         let trackArtists = metadata['xesam:artist'];
         if (!Array.isArray(trackArtists) ||
             !trackArtists.every(artist => typeof artist === 'string'))
-            trackArtists =  ['Unknown artist'];
+            trackArtists = ['Unknown artist'];
 
         let trackTitle = metadata['xesam:title'];
         if (typeof trackTitle !== 'string')
@@ -129,10 +129,10 @@ class MprisPlayer extends GObject.Object {
         this.emit('changed');
     }
 
-    _cacheCoverArt(){
+    _cacheCoverArt() {
         this.coverPath = MEDIA_CACHE_PATH + '/' +
             `${this.trackArtists.join(', ')} - ${this.trackTitle}`
-            .replace(/[\,\*\?\"\<\>\|\#\:\?\/\'\(\)]/g, '');
+                .replace(/[\,\*\?\"\<\>\|\#\:\?\/\'\(\)]/g, '');
 
         if (this.coverPath.length > 255)
             this.coverPath = this.coverPath.substring(0, 255);
@@ -190,11 +190,11 @@ class MprisPlayer extends GObject.Object {
         );
 
         const pos = proxy.get_cached_property('Position')?.unpack() as number;
-        return pos ? pos/1_000_000 : -1;
+        return pos ? pos / 1_000_000 : -1;
     }
 
     set position(time: number) {
-        const micro = Math.floor(time*1_000_000);
+        const micro = Math.floor(time * 1_000_000);
         this._playerProxy.SetPositionAsync(this.trackid, micro);
         this.emit('position', time);
     }
@@ -206,8 +206,8 @@ class MprisPlayer extends GObject.Object {
     next() { this._playerProxy.NextAsync().catch(logError); }
     previous() { this._playerProxy.PreviousAsync().catch(logError); }
 
-    shuffle(){ this._playerProxy.Shuffle = !this._playerProxy.Shuffle; }
-    loop(){
+    shuffle() { this._playerProxy.Shuffle = !this._playerProxy.Shuffle; }
+    loop() {
         switch (this._playerProxy.LoopStatus) {
         case 'None':
             this._playerProxy.LoopStatus = 'Track';
@@ -225,7 +225,7 @@ class MprisPlayer extends GObject.Object {
 }
 
 type Players = Map<string, MprisPlayer>;
-class MprisService extends Service{
+class MprisService extends Service {
     static { Service.register(this); }
 
     _players!: Players;
@@ -280,7 +280,7 @@ class MprisService extends Service{
             this._addPlayer(name);
     }
 
-    getPlayer(name: string|((players: Players) => MprisPlayer) = '') {
+    getPlayer(name: string | ((players: Players) => MprisPlayer) = '') {
         if (typeof name === 'function')
             // @ts-ignore
             return name(new Map(this._players)) || null;
@@ -302,7 +302,7 @@ export default class Mpris {
         return Mpris._instance;
     }
 
-    static getPlayer(name: string|((players: Players) => MprisPlayer)): MprisPlayer|null {
+    static getPlayer(name: string | ((players: Players) => MprisPlayer)): MprisPlayer | null {
         return Mpris._instance.getPlayer(name);
     }
 }

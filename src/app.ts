@@ -6,7 +6,7 @@ import GObject from 'gi://GObject';
 import Window from './window.js';
 import { error, warning, getConfig, timeout, connect } from './utils.js';
 
-const APP_BUS = 'com.github.Aylur.'+pkg.name;
+const APP_BUS = 'com.github.Aylur.' + pkg.name;
 
 export default class App extends Gtk.Application {
     private _windows: Map<string, Gtk.Window>;
