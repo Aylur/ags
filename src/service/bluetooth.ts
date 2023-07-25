@@ -1,6 +1,8 @@
 import GObject from 'gi://GObject';
 import Service from './service.js';
 import { bulkConnect, bulkDisconnect } from '../utils.js';
+
+imports.gi.versions.GnomeBluetooth = '3.0';
 const { GnomeBluetooth } = imports.gi;
 
 class Device extends GObject.Object {
@@ -56,7 +58,7 @@ class Device extends GObject.Object {
     }
 }
 
-class BluetoothService extends Service{
+class BluetoothService extends Service {
     static { Service.register(this); }
 
     // @ts-ignore
@@ -86,7 +88,7 @@ class BluetoothService extends Service{
         const devices = [];
         const deviceStore = this._client.get_devices();
 
-        for (let i=0; i<deviceStore.get_n_items(); ++i) {
+        for (let i = 0; i < deviceStore.get_n_items(); ++i) {
             const device = deviceStore.get_item(i);
 
             if (device.paired || device.trusted)
