@@ -226,7 +226,13 @@ class MprisPlayer extends GObject.Object {
 
 type Players = Map<string, MprisPlayer>;
 class MprisService extends Service {
-    static { Service.register(this); }
+    static {
+        Service.register(this, {
+            'player-changed': ['string'],
+            'player-closed': ['string'],
+            'player-added': ['string'],
+        });
+    }
 
     _players!: Players;
     _proxy: TDBusProxy;
@@ -250,13 +256,17 @@ class MprisService extends Service {
 
         player.connect('closed', () => {
             this._players.delete(busName);
+            this.emit('player-closed', busName);
             this.emit('changed');
         });
 
-        player.connect('changed', () =>
-            this.emit('changed'));
+        player.connect('changed', () => {
+            this.emit('player-changed', busName);
+            this.emit('changed');
+        });
 
         this._players.set(busName, player);
+        this.emit('player-added', busName);
     }
 
     _onProxyReady() {
