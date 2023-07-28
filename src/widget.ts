@@ -38,6 +38,7 @@ const widgets: { [key: string]: (props: any) => Gtk.Widget } = {
     'revealer': Basic.Revealer,
     'scrollable': Basic.Scrollable,
     'slider': Basic.Slider,
+    'stack': Basic.Stack,
     'switch': Basic.Switch,
 };
 

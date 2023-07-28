@@ -304,6 +304,51 @@ export function Dynamic({ type, items = [], ...rest } = {}) {
     return box;
 }
 
+export function Stack({ type,
+    items = [],
+    hhomogeneous = true,
+    vhomogeneous = true,
+    interpolateSize = false,
+    transition = 'none',
+    transitionDuration = 200,
+    ...rest
+}) {
+    typecheck('hhomogeneous', hhomogeneous, 'boolean', type);
+    typecheck('vhomogeneous', vhomogeneous, 'boolean', type);
+    typecheck('interpolateSize', interpolateSize, 'boolean', type);
+    typecheck('transition', transition, 'string', type);
+    typecheck('transitionDuration', transitionDuration, 'number', type);
+    typecheck('items', items, 'array', type);
+    restcheck(rest, type);
+
+    const stack = new Gtk.Stack({
+        hhomogeneous,
+        vhomogeneous,
+        interpolateSize,
+        transitionDuration,
+    });
+
+    try {
+        stack.transitionType = Gtk.StackTransitionType[transition.toUpperCase()];
+    } catch (error) {
+        error('wrong interpolate value');
+    }
+
+    items.forEach(([name, widget]) => {
+        if (widget)
+            stack.add_named(Widget(widget), name);
+    });
+
+    stack.showChild = name => {
+        const n = typeof name === 'function' ? name() : name;
+        stack.visible = true;
+        stack.get_child_by_name(n)
+            ? stack.set_visible_child_name(n)
+            : stack.visible = false;
+    };
+    return stack;
+}
+
 export function Entry({ type,
     text = '',
     placeholder = '',
