@@ -1,6 +1,6 @@
 import Gtk from 'gi://Gtk?version=3.0';
 import { typecheck, error, warning, interval } from './utils.js';
-import * as Basic from './widgets.js';
+import * as Widgets from './widgets.js';
 
 interface ServiceAPI {
     instance: {
@@ -25,21 +25,23 @@ interface Widget {
 }
 
 const widgets: { [key: string]: (props: any) => Gtk.Widget } = {
-    'box': Basic.Box,
-    'button': Basic.Button,
-    'centerbox': Basic.CenterBox,
-    'dynamic': Basic.Dynamic,
-    'entry': Basic.Entry,
-    'eventbox': Basic.EventBox,
-    'icon': Basic.Icon,
-    'label': Basic.Label,
-    'overlay': Basic.Overlay,
-    'progressbar': Basic.ProgressBar,
-    'revealer': Basic.Revealer,
-    'scrollable': Basic.Scrollable,
-    'slider': Basic.Slider,
-    'stack': Basic.Stack,
-    'switch': Basic.Switch,
+    'box': Widgets.Box,
+    'button': Widgets.Button,
+    'centerbox': Widgets.CenterBox,
+    'dynamic': Widgets.Dynamic,
+    'entry': Widgets.Entry,
+    'eventbox': Widgets.EventBox,
+    'icon': Widgets.Icon,
+    'label': Widgets.Label,
+    'overlay': Widgets.Overlay,
+    'progressbar': Widgets.ProgressBar,
+    'revealer': Widgets.Revealer,
+    'scrollable': Widgets.Scrollable,
+    'slider': Widgets.Slider,
+    'stack': Widgets.Stack,
+    'switch': Widgets.Switch,
+    'menubutton': Widgets.MenuButton,
+    'popover': Widgets.Popover,
 };
 
 export function setStyle(widget: Gtk.Widget, css: string) {
@@ -83,21 +85,19 @@ function parseParams(widget: Gtk.Widget, {
     }
 
     if (typeof halign === 'string') {
-        try {
-            // @ts-ignore
-            widget.halign = Gtk.Align[halign.toUpperCase()];
-        } catch (err) {
+        // @ts-ignore
+        const align = Gtk.Align[halign.toUpperCase()];
+        if (typeof align !== 'number')
             warning('wrong halign value');
-        }
+        widget.halign = align;
     }
 
     if (typeof valign === 'string') {
-        try {
-            // @ts-ignore
-            widget.valign = Gtk.Align[valign.toUpperCase()];
-        } catch (err) {
+        // @ts-ignore
+        const align = Gtk.Align[valign.toUpperCase()];
+        if (typeof align !== 'number')
             warning('wrong valign value');
-        }
+        widget.valign = align;
     }
 
     if (typeof hexpand === 'boolean')

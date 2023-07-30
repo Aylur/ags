@@ -3,25 +3,24 @@ import Gdk from 'gi://Gdk?version=3.0';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import Widget from './widget.js';
-import { typecheck, error, runCmd, restcheck, warning, getConfig } from './utils.js';
+import { typecheck, runCmd, restcheck, warning, getConfig } from './utils.js';
 
-function _orientation(str) {
+function _orientation(str = 'horizontal') {
     if (str === 'v')
         str = 'vertical';
 
     if (str === 'h')
         str = 'horizontal';
 
-    try {
-        return Gtk.Orientation[str.toUpperCase()];
-    } catch (error) {
+    const orientation = Gtk.Orientation[str.toUpperCase()];
+    if (typeof orientation !== 'number')
         warning('wrong orientation value');
-    }
 
-    return Gtk.Orientation.HORIZONTAL;
+    return orientation;
 }
 
-export function Box({ type,
+export function Box({
+    type,
     orientation = 'horizontal',
     homogeneous = false,
     children = [],
@@ -42,7 +41,8 @@ export function Box({ type,
     return box;
 }
 
-export function EventBox({ type,
+export function EventBox({
+    type,
     onClick = '', onSecondaryClick = '', onMiddleClick = '',
     onHover = '', onHoverLost = '',
     onScrollUp = '', onScrollDown = '',
@@ -72,11 +72,11 @@ export function EventBox({ type,
     box.connect('button-press-event', (box, e) => {
         box.set_state_flags(Gtk.StateFlags.ACTIVE, false);
         switch (e.get_button()[1]) {
-        case 1: runCmd(onClick, box); break;
-        case 2: runCmd(onMiddleClick, box); break;
-        case 3: runCmd(onSecondaryClick, box); break;
-        default:
-            break;
+            case 1: runCmd(onClick, box); break;
+            case 2: runCmd(onMiddleClick, box); break;
+            case 3: runCmd(onSecondaryClick, box); break;
+            default:
+                break;
         }
     });
 
@@ -103,7 +103,7 @@ export function CenterBox({ type, children = [], ...props }) {
     typecheck('children', children, 'array', type);
 
     if (children.length !== 3)
-        error(`${type} should have exactly 3 children!`);
+        warning(`${type} should have exactly 3 children!`);
 
     const box = Box({ type, ...props });
 
@@ -114,7 +114,8 @@ export function CenterBox({ type, children = [], ...props }) {
     return box;
 }
 
-export function Icon({ type,
+export function Icon({
+    type,
     icon = '',
     size = getConfig()?.baseIconSize || 16,
     ...rest
@@ -134,7 +135,8 @@ export function Icon({ type,
         });
 }
 
-export function Label({ type,
+export function Label({
+    type,
     label = '',
     markup = false,
     wrap = false,
@@ -154,12 +156,9 @@ export function Label({ type,
     typecheck('yalign', yalign, 'number', type);
     restcheck(rest, type);
 
-    let _justify;
-    try {
-        _justify = Gtk.Justification[justify.toUpperCase()];
-    } catch (error) {
+    const _justify = Gtk.Justification[justify.toUpperCase()];
+    if (typeof _justify !== 'number')
         warning('wrong justify value');
-    }
 
     const lbl = new Gtk.Label({
         label,
@@ -175,7 +174,8 @@ export function Label({ type,
     return lbl;
 }
 
-export function Button({ type,
+export function Button({
+    type,
     child,
     onClick = '',
     onSecondaryClick = '',
@@ -213,7 +213,8 @@ export function Button({ type,
     return btn;
 }
 
-export function Slider({ type,
+export function Slider({
+    type,
     inverted = false,
     orientation = 'horizontal',
     min = 0,
@@ -304,7 +305,8 @@ export function Dynamic({ type, items = [], ...rest } = {}) {
     return box;
 }
 
-export function Stack({ type,
+export function Stack({
+    type,
     items = [],
     hhomogeneous = true,
     vhomogeneous = true,
@@ -321,18 +323,17 @@ export function Stack({ type,
     typecheck('items', items, 'array', type);
     restcheck(rest, type);
 
+    const transitionType = Gtk.StackTransitionType[transition.toUpperCase()];
+    if (typeof transitionType !== 'number')
+        warning('wrong transition value');
+
     const stack = new Gtk.Stack({
         hhomogeneous,
         vhomogeneous,
         interpolateSize,
         transitionDuration,
+        transitionType,
     });
-
-    try {
-        stack.transitionType = Gtk.StackTransitionType[transition.toUpperCase()];
-    } catch (error) {
-        error('wrong interpolate value');
-    }
 
     items.forEach(([name, widget]) => {
         if (widget)
@@ -349,7 +350,8 @@ export function Stack({ type,
     return stack;
 }
 
-export function Entry({ type,
+export function Entry({
+    type,
     text = '',
     placeholder = '',
     onChange = '',
@@ -389,7 +391,8 @@ export function Entry({ type,
     return entry;
 }
 
-export function Scrollable({ type,
+export function Scrollable({
+    type,
     child,
     hscroll = 'automatic',
     vscroll = 'automatic',
@@ -414,7 +417,8 @@ export function Scrollable({ type,
     return scrollable;
 }
 
-export function Revealer({ type,
+export function Revealer({
+    type,
     transition = 'crossfade',
     duration = 250,
     child,
@@ -424,16 +428,13 @@ export function Revealer({ type,
     typecheck('duration', duration, 'number', type);
     restcheck(rest, type);
 
-    let transitionType;
-    try {
-        transitionType = Gtk.RevealerTransitionType[transition.toUpperCase()];
-    } catch (error) {
-        logError(error);
-    }
+    const transitionType = Gtk.RevealerTransitionType[transition.toUpperCase()];
+    if (typeof transitionType !== 'number')
+        warning('wrong transition type');
 
     const revealer = new Gtk.Revealer({
-        transition_type: transitionType,
-        transition_duration: duration,
+        transitionType,
+        transitionDuration: duration,
     });
 
     if (child)
@@ -443,6 +444,8 @@ export function Revealer({ type,
 }
 
 export function Overlay({ type, children = [], passthrough = true, ...rest }) {
+    typecheck('passthrough', passthrough, 'boolean', type);
+    typecheck('children', children, 'array', type);
     restcheck(rest, type);
 
     const overlay = new Gtk.Overlay();
@@ -458,7 +461,8 @@ export function Overlay({ type, children = [], passthrough = true, ...rest }) {
     return overlay;
 }
 
-export function ProgressBar({ type,
+export function ProgressBar({
+    type,
     value = 0,
     inverted = false,
     orientation = 'horizontal',
@@ -479,7 +483,8 @@ export function ProgressBar({ type,
     return bar;
 }
 
-export function Switch({ type,
+export function Switch({
+    type,
     active = false,
     onActivate = '',
     ...rest
@@ -498,4 +503,53 @@ export function Switch({ type,
     }
 
     return gtkswitch;
+}
+
+export function Popover({
+    type,
+    child,
+    position = 'bottom',
+    ...rest
+}) {
+    typecheck('position', position, 'string', type);
+    restcheck(rest, type);
+
+    const _position = Gtk.PositionType[position.toUpperCase()];
+    if (typeof _position !== 'number')
+        warning('wrong position value');
+
+    const popover = new Gtk.Popover({
+        position: _position,
+    });
+
+    if (child)
+        popover.add(Widget(child));
+
+    return popover;
+}
+
+export function MenuButton({
+    type,
+    child,
+    popover,
+    onToggled = '',
+    ...rest
+}) {
+    typecheck('onToggled', onToggled, ['string', 'function'], type);
+    restcheck(rest, type);
+
+    const button = new Gtk.MenuButton({
+        use_popover: true,
+    });
+
+    if (onToggled)
+        button.connect('toggled', () => runCmd(onToggled, button));
+
+    if (popover)
+        button.set_popover(Widget(popover));
+
+    if (child)
+        button.add(Widget(child));
+
+    return button;
 }
