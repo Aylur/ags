@@ -19,7 +19,11 @@ interface Widget {
     sensitive?: boolean
     tooltip?: string
     visible?: boolean
-    connections?: ([string, (...args: any[]) => any] | [number, (...args: any[]) => any] | [ServiceAPI, (...args: any[]) => any, string])[]
+    connections?: (
+        [string, (...args: any[]) => any] |
+        [number, (...args: any[]) => any] |
+        [ServiceAPI, (...args: any[]) => any, string]
+    )[]
     properties?: [any, any][]
     setup?: (widget: Gtk.Widget) => void
 }
