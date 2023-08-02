@@ -72,11 +72,11 @@ export function EventBox({
     box.connect('button-press-event', (box, e) => {
         box.set_state_flags(Gtk.StateFlags.ACTIVE, false);
         switch (e.get_button()[1]) {
-            case 1: runCmd(onClick, box); break;
-            case 2: runCmd(onMiddleClick, box); break;
-            case 3: runCmd(onSecondaryClick, box); break;
-            default:
-                break;
+        case 1: runCmd(onClick, box); break;
+        case 2: runCmd(onMiddleClick, box); break;
+        case 3: runCmd(onSecondaryClick, box); break;
+        default:
+            break;
         }
     });
 
@@ -421,11 +421,13 @@ export function Revealer({
     type,
     transition = 'crossfade',
     duration = 250,
+    revealChild = false,
     child,
     ...rest
 }) {
     typecheck('transition', transition, 'string', type);
     typecheck('duration', duration, 'number', type);
+    typecheck('revealChild', revealChild, 'boolean', type);
     restcheck(rest, type);
 
     const transitionType = Gtk.RevealerTransitionType[transition.toUpperCase()];
@@ -434,6 +436,7 @@ export function Revealer({
 
     const revealer = new Gtk.Revealer({
         transitionType,
+        revealChild,
         transitionDuration: duration,
     });
 
@@ -508,10 +511,15 @@ export function Switch({
 export function Popover({
     type,
     child,
+    modal = true,
     position = 'bottom',
+    pointingTo,
+    relativeTo,
     ...rest
 }) {
     typecheck('position', position, 'string', type);
+    typecheck('modal', modal, 'boolean', type);
+    typecheck('pointingTo', pointingTo, ['undefined', 'object'], type);
     restcheck(rest, type);
 
     const _position = Gtk.PositionType[position.toUpperCase()];
@@ -520,10 +528,17 @@ export function Popover({
 
     const popover = new Gtk.Popover({
         position: _position,
+        modal,
     });
 
     if (child)
         popover.add(Widget(child));
+
+    if (pointingTo)
+        popover.set_pointing_to(new Gdk.Rectangle(pointingTo));
+
+    if (relativeTo)
+        popover.set_relative_to(relativeTo);
 
     return popover;
 }
