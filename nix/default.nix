@@ -49,7 +49,7 @@ stdenv.mkDerivation {
     '';
   };
 
-  patchPhase = ''
+  prePatch = ''
     mkdir -p ./subprojects/gvc
     mkdir -p ./gi-types
     cp -r ${gvc-src}/* ./subprojects/gvc
