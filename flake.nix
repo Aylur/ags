@@ -1,5 +1,5 @@
 {
-  description = "A customizable and extensible shell for Hyprland";
+  description = "A customizable and extensible shell";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     dongsu8142-nur = {

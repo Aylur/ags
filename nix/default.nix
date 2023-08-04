@@ -15,7 +15,6 @@
 }:
 
 let
-  custom = ./custom;
   gvc-src = fetchFromGitLab {
     domain = "gitlab.gnome.org";
     owner = "GNOME";
@@ -75,7 +74,7 @@ stdenv.mkDerivation {
   ];
 
   meta = with lib; {
-    description = "A customizable and extensible shell for Hyprland";
+    description = "A customizable and extensible shell";
     homepage = "https://github.com/Aylur/ags";
     platforms = [ "x86_64-linux" "aarch64-linux" ];
     license = licenses.gpl3;
