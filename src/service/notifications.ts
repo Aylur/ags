@@ -205,7 +205,7 @@ class NotificationsService extends Service {
             return null;
 
         ensureDirectory();
-        const fileName = name.replace(/[^a-zA-Z0-9]/g, '');
+        const fileName = NOTIFICATIONS_CACHE_PATH + '/' + name.replace(/[^a-zA-Z0-9]/g, '');
         const image = image_data.recursiveUnpack();
         const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
             image[6],
