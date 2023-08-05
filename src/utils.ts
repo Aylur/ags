@@ -78,23 +78,31 @@ export function readFile(path: string) {
     }
 }
 
-export function writeFile(string: string, path: string) {
+export function writeFile(string: string, path: string, success?: () => void, err?: (msg: Error) => void) {
     const file = Gio.File.new_for_path(path);
 
-    file.replace_contents_bytes_async(
-        new GLib.Bytes(new TextEncoder().encode(string)),
-        null,
-        false,
-        Gio.FileCreateFlags.REPLACE_DESTINATION,
-        null,
-        (_file, result) => {
-            try {
-                file.replace_contents_finish(result);
-            } catch (e) {
-                logError(e as Error);
-            }
-        },
-    );
+    return new Promise((resolve, reject) => {
+        file.replace_contents_bytes_async(
+            new GLib.Bytes(new TextEncoder().encode(string)),
+            null,
+            false,
+            Gio.FileCreateFlags.REPLACE_DESTINATION,
+            null,
+            (_file, result) => {
+                try {
+                    file.replace_contents_finish(result);
+                    resolve(file);
+                    if (success)
+                        success();
+                } catch (e) {
+                    logError(e as Error);
+                    reject(e);
+                    if (err)
+                        err(e as Error);
+                }
+            },
+        );
+    });
 }
 
 export function bulkConnect(service: GObject.Object, list: [event: string, callback: (...args: any[]) => void][]) {
@@ -215,12 +223,8 @@ export function isRunning(dbusName: string) {
     ).deepUnpack()?.toString() === 'true' || false;
 }
 
-/**
- * the execution works, but the promise
- * wont resolve for some reason and awaiting it just blocks forever
- */
 type execCallback = (out: string, proc: Gio.Subprocess) => void;
-export async function execAsync(cmd: string | string[], onSuccess?: execCallback, onFail?: execCallback) {
+export function execAsync(cmd: string | string[], onSuccess?: execCallback, onFail?: execCallback) {
     if (typeof cmd === 'string')
         cmd = cmd.split(' ');
 
