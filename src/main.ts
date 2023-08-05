@@ -49,8 +49,7 @@ export function main(args: string[]) {
     };
 
     if (!Utils.isRunning(APP_BUS))
-        // @ts-ignore
-        return new App().runAsync(null);
+        return new App().run(null);
 
     const actions = Gio.DBusActionGroup.get(
         Gio.DBus.session, APP_BUS, APP_PATH,
