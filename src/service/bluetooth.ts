@@ -103,7 +103,7 @@ class BluetoothService extends Service {
             return;
 
         const d = new Device(device);
-        d._ids.push(d.connect('changed', () => this.emit('changed')));
+        d.connect('changed', () => this.emit('changed'));
         this._devices.set(device.address, d);
         this.emit('changed');
     }
