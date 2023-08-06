@@ -59,22 +59,22 @@ export function EventBox({
 
     const box = new Gtk.EventBox();
 
-    box.connect('enter-notify-event', box => {
+    box.connect('enter-notify-event', (box, event) => {
         box.set_state_flags(Gtk.StateFlags.PRELIGHT, false);
-        runCmd(onHover, box);
+        runCmd(onHover, box, event);
     });
 
-    box.connect('leave-notify-event', box => {
+    box.connect('leave-notify-event', (box, event) => {
         box.unset_state_flags(Gtk.StateFlags.PRELIGHT);
-        runCmd(onHoverLost, box);
+        runCmd(onHoverLost, box, event);
     });
 
     box.connect('button-press-event', (box, e) => {
         box.set_state_flags(Gtk.StateFlags.ACTIVE, false);
         switch (e.get_button()[1]) {
-        case 1: runCmd(onClick, box); break;
-        case 2: runCmd(onMiddleClick, box); break;
-        case 3: runCmd(onSecondaryClick, box); break;
+        case 1: runCmd(onClick, box, e); break;
+        case 2: runCmd(onMiddleClick, box, e); break;
+        case 3: runCmd(onSecondaryClick, box, e); break;
         default:
             break;
         }
@@ -87,9 +87,9 @@ export function EventBox({
         box.add_events(Gdk.EventMask.SCROLL_MASK);
         box.connect('scroll-event', (box, event) => {
             if (event.get_scroll_direction()[1] === Gdk.ScrollDirection.UP)
-                runCmd(onScrollUp, box);
+                runCmd(onScrollUp, box, event);
             else if (event.get_scroll_direction()[1] === Gdk.ScrollDirection.DOWN)
-                runCmd(onScrollDown, box);
+                runCmd(onScrollDown, box, event);
         });
     }
 
@@ -178,12 +178,14 @@ export function Button({
     type,
     child,
     onClick = '',
+    onMiddleClick = '',
     onSecondaryClick = '',
     onScrollUp = '',
     onScrollDown = '',
     ...rest
 }) {
     typecheck('onClick', onClick, ['string', 'function'], type);
+    typecheck('onMiddleClick', onMiddleClick, ['string', 'function'], type);
     typecheck('onSecondaryClick', onSecondaryClick, ['string', 'function'], type);
     typecheck('onScrollUp', onScrollUp, ['string', 'function'], type);
     typecheck('onScrollDown', onScrollDown, ['string', 'function'], type);
@@ -195,18 +197,22 @@ export function Button({
         btn.add(Widget(child));
 
     btn.connect('clicked', () => runCmd(onClick, btn));
-    btn.connect('button-press-event', (_w, event) => {
+    btn.connect('button-press-event', (btn, event) => {
         if (event.get_button()[1] === Gdk.BUTTON_SECONDARY)
-            runCmd(onSecondaryClick, btn);
+            runCmd(onSecondaryClick, btn, event);
+
+        else if (event.get_button()[1] === Gdk.BUTTON_MIDDLE)
+            runCmd(onMiddleClick, btn, event);
     });
 
     if (onScrollUp || onScrollDown) {
         btn.add_events(Gdk.EventMask.SCROLL_MASK);
-        btn.connect('scroll-event', (_w, event) => {
+        btn.connect('scroll-event', (btn, event) => {
             if (event.get_scroll_direction()[1] === Gdk.ScrollDirection.UP)
-                runCmd(onScrollUp, btn);
+                runCmd(onScrollUp, btn, event);
+
             else if (event.get_scroll_direction()[1] === Gdk.ScrollDirection.DOWN)
-                runCmd(onScrollDown, btn);
+                runCmd(onScrollDown, btn, event);
         });
     }
 
@@ -260,12 +266,12 @@ export function Slider({
     });
 
     if (onChange) {
-        slider.adjustment.connect('notify::value', ({ value }) => {
+        slider.adjustment.connect('notify::value', ({ value }, event) => {
             if (!slider._dragging)
                 return;
 
             typeof onChange === 'function'
-                ? onChange(slider, value)
+                ? onChange(slider, event, value)
                 : runCmd(onChange.replace(/\{\}/g, value));
         });
     }
@@ -373,17 +379,17 @@ export function Entry({
     });
 
     if (onAccept) {
-        entry.connect('activate', ({ text }) => {
+        entry.connect('activate', ({ text }, event) => {
             typeof onAccept === 'function'
-                ? onAccept(entry, text)
+                ? onAccept(entry, event, text)
                 : runCmd(onAccept.replace(/\{\}/g, text));
         });
     }
 
     if (onChange) {
-        entry.connect('notify::text', ({ text }) => {
+        entry.connect('notify::text', ({ text }, event) => {
             typeof onAccept === 'function'
-                ? onChange(entry, text)
+                ? onChange(entry, event, text)
                 : runCmd(onChange.replace(/\{\}/g, text));
         });
     }
@@ -498,9 +504,9 @@ export function Switch({
 
     const gtkswitch = new Gtk.Switch({ active });
     if (onActivate) {
-        gtkswitch.connect('notify::active', ({ active }) => {
+        gtkswitch.connect('notify::active', ({ active }, event) => {
             typeof onActivate === 'function'
-                ? onActivate(gtkswitch, active)
+                ? onActivate(gtkswitch, event, active)
                 : runCmd(onActivate.replace(/\{\}/g, active));
         });
     }
@@ -547,6 +553,7 @@ export function MenuButton({
     type,
     child,
     popover,
+    popup,
     onToggled = '',
     ...rest
 }) {
@@ -558,13 +565,87 @@ export function MenuButton({
     });
 
     if (onToggled)
-        button.connect('toggled', () => runCmd(onToggled, button));
+        button.connect('toggled', (...args) => runCmd(onToggled, ...args));
 
     if (popover)
         button.set_popover(Widget(popover));
+
+    if (popup)
+        button.set_popup(Widget(popup));
 
     if (child)
         button.add(Widget(child));
 
     return button;
+}
+
+export function Menu({
+    type,
+    children = [],
+    yOffset = 0,
+    xOffset = 0,
+    onPopup = '',
+    onMoveScroll = '',
+    attachTo,
+    ...rest
+}) {
+    typecheck('children', children, 'array', type);
+    typecheck('yOffset', yOffset, 'number', type);
+    typecheck('xOffset', xOffset, 'number', type);
+    typecheck('onPopup', onPopup, ['string', 'function'], type);
+    typecheck('onMoveScroll', onMoveScroll, ['string', 'function'], type);
+    restcheck(rest, type);
+
+    const menu = new Gtk.Menu({
+        rect_anchor_dx: xOffset,
+        rect_anchor_dy: yOffset,
+    });
+
+    children.forEach(item => {
+        menu.add(Widget(item));
+    });
+
+    if (attachTo)
+        menu.attach_widget = attachTo;
+
+    if (onPopup)
+        menu.connect('popped-up', (...args) => runCmd(onPopup, ...args));
+
+    if (onMoveScroll)
+        menu.connect('move-scroll', (...args) => runCmd(onMoveScroll, ...args));
+
+    menu.show_all();
+    menu.hide();
+    return menu;
+}
+
+export function MenutItem({
+    type,
+    child,
+    submenu,
+    onActivate = '',
+    onSelect = '',
+    onDeselect = '',
+    ...rest
+}) {
+    typecheck('onActivate', onActivate, ['string', 'function'], type);
+    typecheck('onSelect', onSelect, ['string', 'function'], type);
+    typecheck('onDeselect', onDeselect, ['string', 'function'], type);
+    restcheck(rest, type);
+
+    const item = new Gtk.MenuItem();
+
+    if (child)
+        item.add(Widget(child));
+
+    if (submenu)
+        item.submenu = Widget(submenu);
+
+    [[onActivate, 'activate'], [onSelect, 'select'], [onDeselect, 'deselect']]
+        .forEach(([handler, signal]) => {
+            if (handler)
+                item.connect(signal, (...args) => runCmd(handler, ...args));
+        });
+
+    return item;
 }
