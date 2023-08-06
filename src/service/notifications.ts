@@ -235,7 +235,7 @@ class NotificationsService extends Service {
         }
 
         ensureDirectory();
-        writeFile(JSON.stringify(notifications, null, 2), NOTIFICATIONS_CACHE_PATH + '/notifications.json');
+        writeFile(JSON.stringify(notifications, null, 2), NOTIFICATIONS_CACHE_PATH + '/notifications.json').catch();
     }
 }
 

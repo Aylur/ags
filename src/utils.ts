@@ -81,20 +81,23 @@ export function readFile(path: string) {
 export function writeFile(string: string, path: string) {
     const file = Gio.File.new_for_path(path);
 
-    file.replace_contents_bytes_async(
-        new GLib.Bytes(new TextEncoder().encode(string)),
-        null,
-        false,
-        Gio.FileCreateFlags.REPLACE_DESTINATION,
-        null,
-        (_file, result) => {
-            try {
-                file.replace_contents_finish(result);
-            } catch (e) {
-                logError(e as Error);
-            }
-        },
-    );
+    return new Promise((resolve, reject) => {
+        file.replace_contents_bytes_async(
+            new GLib.Bytes(new TextEncoder().encode(string)),
+            null,
+            false,
+            Gio.FileCreateFlags.REPLACE_DESTINATION,
+            null,
+            (_file, result) => {
+                try {
+                    file.replace_contents_finish(result);
+                    resolve(file);
+                } catch (e) {
+                    reject(e);
+                }
+            },
+        );
+    });
 }
 
 export function bulkConnect(service: GObject.Object, list: [event: string, callback: (...args: any[]) => void][]) {
@@ -215,12 +218,7 @@ export function isRunning(dbusName: string) {
     ).deepUnpack()?.toString() === 'true' || false;
 }
 
-/**
- * the execution works, but the promise
- * wont resolve for some reason and awaiting it just blocks forever
- */
-type execCallback = (out: string, proc: Gio.Subprocess) => void;
-export async function execAsync(cmd: string | string[], onSuccess?: execCallback, onFail?: execCallback) {
+export function execAsync(cmd: string | string[]) {
     if (typeof cmd === 'string')
         cmd = cmd.split(' ');
 
@@ -237,17 +235,9 @@ export async function execAsync(cmd: string | string[], onSuccess?: execCallback
                     return reject(null);
 
                 const [, stdout, stderr] = proc.communicate_utf8_finish(res);
-
-                if (proc.get_successful()) {
-                    resolve([stdout, proc]);
-                    if (onSuccess)
-                        onSuccess(stdout, proc);
-                }
-                else {
-                    reject([stderr, proc]);
-                    if (onFail)
-                        onFail(stderr, proc);
-                }
+                proc.get_successful()
+                    ? resolve(stdout.trim())
+                    : reject(stderr.trim());
             } catch (e) {
                 reject(e);
             }
@@ -261,7 +251,7 @@ export function exec(cmd: string) {
 
     const decoder = new TextDecoder();
     if (!success)
-        return decoder.decode(err);
+        return decoder.decode(err).trim();
 
-    return decoder.decode(out);
+    return decoder.decode(out).trim();
 }
