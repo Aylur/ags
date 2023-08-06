@@ -46,6 +46,8 @@ const widgets: { [key: string]: (props: any) => Gtk.Widget } = {
     'switch': Widgets.Switch,
     'menubutton': Widgets.MenuButton,
     'popover': Widgets.Popover,
+    'menu': Widgets.Menu,
+    'menuitem': Widgets.MenutItem,
 };
 
 export function setStyle(widget: Gtk.Widget, css: string) {
