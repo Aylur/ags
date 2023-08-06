@@ -78,7 +78,7 @@ export function readFile(path: string) {
     }
 }
 
-export function writeFile(string: string, path: string, success?: () => void, err?: (msg: Error) => void) {
+export function writeFile(string: string, path: string) {
     const file = Gio.File.new_for_path(path);
 
     return new Promise((resolve, reject) => {
@@ -92,13 +92,8 @@ export function writeFile(string: string, path: string, success?: () => void, er
                 try {
                     file.replace_contents_finish(result);
                     resolve(file);
-                    if (success)
-                        success();
                 } catch (e) {
-                    logError(e as Error);
                     reject(e);
-                    if (err)
-                        err(e as Error);
                 }
             },
         );
@@ -223,8 +218,7 @@ export function isRunning(dbusName: string) {
     ).deepUnpack()?.toString() === 'true' || false;
 }
 
-type execCallback = (out: string, proc: Gio.Subprocess) => void;
-export function execAsync(cmd: string | string[], onSuccess?: execCallback, onFail?: execCallback) {
+export function execAsync(cmd: string | string[]) {
     if (typeof cmd === 'string')
         cmd = cmd.split(' ');
 
@@ -241,17 +235,9 @@ export function execAsync(cmd: string | string[], onSuccess?: execCallback, onFa
                     return reject(null);
 
                 const [, stdout, stderr] = proc.communicate_utf8_finish(res);
-
-                if (proc.get_successful()) {
-                    resolve([stdout, proc]);
-                    if (onSuccess)
-                        onSuccess(stdout, proc);
-                }
-                else {
-                    reject([stderr, proc]);
-                    if (onFail)
-                        onFail(stderr, proc);
-                }
+                proc.get_successful()
+                    ? resolve(stdout.trim())
+                    : reject(stderr.trim());
             } catch (e) {
                 reject(e);
             }
@@ -265,7 +251,7 @@ export function exec(cmd: string) {
 
     const decoder = new TextDecoder();
     if (!success)
-        return decoder.decode(err);
+        return decoder.decode(err).trim();
 
-    return decoder.decode(out);
+    return decoder.decode(out).trim();
 }

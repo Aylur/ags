@@ -88,37 +88,27 @@ class HyprlandService extends Service {
         this._startSocat();
     }
 
-    _hyrpctlErrHandle(error: string) {
-        warning(`hyprctl ERROR: ${error}`);
-    }
-
-    _sync() {
-        execAsync('hyprctl -j monitors', out => {
-            const monitors = JSON.parse(out) as Monitor[];
+    async _sync() {
+        try {
+            const monitors = await execAsync('hyprctl -j monitors');
             this._state.monitors = new Map();
-            monitors.forEach(monitor => {
+            (JSON.parse(monitors as string) as Monitor[]).forEach(monitor => {
                 this._state.monitors.set(monitor.name, monitor);
                 if (monitor.focused) {
                     this._state.active.monitor = monitor.name;
                     this._state.active.workspace = monitor.activeWorkspace;
                 }
             });
-            this.emit('changed');
-        }, this._hyrpctlErrHandle.bind(this));
 
-        execAsync('hyprctl -j workspaces', out => {
-            const workspaces = JSON.parse(out) as Workspace[];
+            const workspaces = await execAsync('hyprctl -j workspaces');
             this._state.workspaces = new Map();
-            workspaces.forEach(ws => {
+            (JSON.parse(workspaces as string) as Workspace[]).forEach(ws => {
                 this._state.workspaces.set(ws.id, ws);
             });
-            this.emit('changed');
-        }, this._hyrpctlErrHandle.bind(this));
 
-        execAsync('hyprctl -j clients', out => {
-            const clients = JSON.parse(out) as Client[];
+            const clients = await execAsync('hyprctl -j clients');
             this._state.clients = new Map();
-            clients.forEach(c => {
+            (JSON.parse(clients as string) as Client[]).forEach(c => {
                 const {
                     address,
                     pid,
@@ -139,8 +129,11 @@ class HyprlandService extends Service {
                     floating,
                 });
             });
+
             this.emit('changed');
-        });
+        } catch (error) {
+            print(error);
+        }
     }
 
     _onEvent(event: string) {

@@ -19,7 +19,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { exit, programArgs } from "system";
+import { exit, programArgs, programInvocationName } from "system";
 
 imports.package.init({
     name: '@PACKAGE_NAME@',
@@ -33,5 +33,5 @@ Repository.prepend_search_path('@GVC_GIR@');
 Repository.prepend_library_path('@GVC_GIR@');
 
 const module = await import('resource:///@RESOURCE_PATH@/js/main.js');
-const exitCode = await module.main(programArgs);
+const exitCode = await module.main([programInvocationName, ...programArgs]);
 exit(exitCode);
