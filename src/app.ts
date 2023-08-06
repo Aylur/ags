@@ -11,6 +11,7 @@ const APP_BUS = 'com.github.Aylur.' + pkg.name;
 export default class App extends Gtk.Application {
     private _windows: Map<string, Gtk.Window>;
     private _closeDelay!: { [key: string]: number };
+    private _cssProviders: Gtk.CssProvider[] = [];
 
     static instance: App;
 
@@ -65,19 +66,37 @@ export default class App extends Gtk.Application {
         App.instance.quit();
     }
 
+    static resetCss() {
+        const screen = Gdk.Screen.get_default();
+        if (!screen) {
+            error("couldn't get screen");
+            return;
+        }
+
+        App.instance._cssProviders.forEach(provider => {
+            Gtk.StyleContext.remove_provider_for_screen(screen, provider);
+        });
+
+        App.instance._cssProviders = [];
+    }
+
     static applyCss(path: string) {
+        const screen = Gdk.Screen.get_default();
+        if (!screen) {
+            error("couldn't get screen");
+            return;
+        }
+
         const cssProvider = new Gtk.CssProvider();
         cssProvider.load_from_path(path);
-
-        const screen = Gdk.Screen.get_default();
-        if (!screen)
-            return;
 
         Gtk.StyleContext.add_provider_for_screen(
             screen,
             cssProvider,
             Gtk.STYLE_PROVIDER_PRIORITY_USER,
         );
+
+        App.instance._cssProviders.push(cssProvider);
     }
 
     connectWidget(
