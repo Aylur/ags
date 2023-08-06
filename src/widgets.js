@@ -72,11 +72,11 @@ export function EventBox({
     box.connect('button-press-event', (box, e) => {
         box.set_state_flags(Gtk.StateFlags.ACTIVE, false);
         switch (e.get_button()[1]) {
-        case 1: runCmd(onClick, box, e); break;
-        case 2: runCmd(onMiddleClick, box, e); break;
-        case 3: runCmd(onSecondaryClick, box, e); break;
-        default:
-            break;
+            case 1: runCmd(onClick, box, e); break;
+            case 2: runCmd(onMiddleClick, box, e); break;
+            case 3: runCmd(onSecondaryClick, box, e); break;
+            default:
+                break;
         }
     });
 
@@ -504,7 +504,7 @@ export function Switch({
 
     const gtkswitch = new Gtk.Switch({ active });
     if (onActivate) {
-        gtkswitch.connect('notify::active', ({ active }, event) => {
+        gtkswitch.connect('activate', ({ active }, event) => {
             typeof onActivate === 'function'
                 ? onActivate(gtkswitch, event, active)
                 : runCmd(onActivate.replace(/\{\}/g, active));
