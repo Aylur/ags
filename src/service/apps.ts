@@ -2,10 +2,11 @@ import Gio from 'gi://Gio';
 import Service from './service.js';
 
 interface App {
-    app: Gio.AppInfo
+    app: Gio.DesktopAppInfo
     name: string
     desktop: string | null
     description: string | null
+    wmClass: string | null
     executable: string
     iconName: string
     launch: () => void
@@ -41,13 +42,14 @@ function _search(app: App, search: string): boolean {
         _match(description, search);
 }
 
-const _wrapper = (app: Gio.AppInfo): App => ({
+const _wrapper = (app: Gio.DesktopAppInfo): App => ({
     app,
     name: app.get_name(),
     desktop: app.get_id(),
     executable: app.get_executable(),
     description: app.get_description(),
     iconName: _appIconName(app),
+    wmClass: app.get_startup_wm_class(),
     launch: () => app.launch([], null),
     match: (term: string) => _search(_wrapper(app), term),
 });
@@ -69,6 +71,8 @@ class ApplicationsService extends Service {
     _sync() {
         this._list = Gio.AppInfo.get_all()
             .filter(app => app.should_show())
+            .map(app => Gio.DesktopAppInfo.new(app.get_id() || ''))
+            .filter(app => app)
             .map(app => _wrapper(app));
 
         this.emit('changed');
