@@ -131,7 +131,7 @@ export default class App extends Gtk.Application {
 
         const config = getConfig();
         if (!config) {
-            error('No config was provided or there was an error');
+            this.quit();
             return;
         }
 

@@ -24,7 +24,7 @@ export const CONFIG_DIR = `${GLib.get_user_config_dir()}/${pkg.name}`;
 export function error(message: string) {
     getConfig()?.stackTraceOnError
         ? logError(new Error(message))
-        : log(`ERROR: ${message}`);
+        : print(`AGS ERROR: ${message}`);
 
     if (getConfig()?.exitOnError)
         App.quit();
@@ -33,7 +33,7 @@ export function error(message: string) {
 export function warning(message: string) {
     getConfig()?.stackTraceOnError
         ? logError(new Error(message))
-        : log(`WARNING: ${message}`);
+        : print(`AGS WARNING: ${message}`);
 }
 
 export function typecheck(key: string, value: unknown, type: string | string[], widget: string) {
@@ -159,8 +159,10 @@ export function getConfig() {
     try {
         imports.searchPath.push(CONFIG_DIR);
         return imports.config.config as Config;
-    } catch (error) {
-        logError(error as Error);
+    } catch (err) {
+        if (!GLib.file_test(CONFIG_DIR + '/config.js', GLib.FileTest.EXISTS))
+            print('No config was provided');
+
         return null;
     }
 }
