@@ -160,8 +160,9 @@ export function getConfig() {
         imports.searchPath.push(CONFIG_DIR);
         return imports.config.config as Config;
     } catch (err) {
-        if (!GLib.file_test(CONFIG_DIR + '/config.js', GLib.FileTest.EXISTS))
-            print('No config was provided');
+        GLib.file_test(CONFIG_DIR + '/config.js', GLib.FileTest.EXISTS)
+            ? logError(err as Error)
+            : print('No config was provided');
 
         return null;
     }
