@@ -131,8 +131,8 @@ class MprisPlayer extends GObject.Object {
 
     _cacheCoverArt() {
         this.coverPath = MEDIA_CACHE_PATH + '/' +
-            `${this.trackArtists.join(', ')}${this.trackTitle}`
-                .replace(/[^a-zA-Z0-9]/g, '');
+            `${this.trackArtists.join(', ')}-${this.trackTitle}`
+                .replace(/[\,\*\?\"\<\>\|\#\:\?\/\'\(\)]/g, '');
 
         if (this.coverPath.length > 255)
             this.coverPath = this.coverPath.substring(0, 255);
