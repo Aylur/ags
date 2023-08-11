@@ -43,14 +43,24 @@ export function Box({
 
 export function EventBox({
     type,
-    onClick = '', onSecondaryClick = '', onMiddleClick = '',
-    onHover = '', onHoverLost = '',
-    onScrollUp = '', onScrollDown = '',
+    onClick = '',
+    onSecondaryClick = '',
+    onMiddleClick = '',
+    onClickRelease = '',
+    onSecondaryClickRelease = '',
+    onMiddleClickRelease = '',
+    onHover = '',
+    onHoverLost = '',
+    onScrollUp = '',
+    onScrollDown = '',
     child, ...rest
 }) {
     typecheck('onClick', onClick, ['string', 'function'], type);
     typecheck('onSecondaryClick', onSecondaryClick, ['string', 'function'], type);
     typecheck('onMiddleClick', onMiddleClick, ['string', 'function'], type);
+    typecheck('onClickRelease', onClickRelease, ['string', 'function'], type);
+    typecheck('onMiddleClickRelease', onMiddleClickRelease, ['string', 'function'], type);
+    typecheck('onSecondaryClickRelease', onSecondaryClickRelease, ['string', 'function'], type);
     typecheck('onHover', onHover, ['string', 'function'], type);
     typecheck('onHoverLost', onHoverLost, ['string', 'function'], type);
     typecheck('onScrollUp', onScrollUp, ['string', 'function'], type);
@@ -69,19 +79,29 @@ export function EventBox({
         runCmd(onHoverLost, box, event);
     });
 
-    box.connect('button-press-event', (box, e) => {
+    box.connect('button-press-event', (box, event) => {
         box.set_state_flags(Gtk.StateFlags.ACTIVE, false);
-        switch (e.get_button()[1]) {
-        case 1: runCmd(onClick, box, e); break;
-        case 2: runCmd(onMiddleClick, box, e); break;
-        case 3: runCmd(onSecondaryClick, box, e); break;
-        default:
-            break;
-        }
+        if (event.get_button()[1] === Gdk.BUTTON_PRIMARY)
+            runCmd(onClick, box, event);
+
+        else if (event.get_button()[1] === Gdk.BUTTON_SECONDARY)
+            runCmd(onSecondaryClick, box, event);
+
+        else if (event.get_button()[1] === Gdk.BUTTON_MIDDLE)
+            runCmd(onMiddleClick, box, event);
     });
 
-    box.connect('button-release-event', () =>
-        box.unset_state_flags(Gtk.StateFlags.ACTIVE));
+    box.connect('button-release-event', (box, event) => {
+        box.unset_state_flags(Gtk.StateFlags.ACTIVE);
+        if (event.get_button()[1] === Gdk.BUTTON_PRIMARY)
+            runCmd(onClickRelease, box, event);
+
+        else if (event.get_button()[1] === Gdk.BUTTON_SECONDARY)
+            runCmd(onSecondaryClickRelease, box, event);
+
+        else if (event.get_button()[1] === Gdk.BUTTON_MIDDLE)
+            runCmd(onMiddleClickRelease, box, event);
+    });
 
     if (onScrollUp || onScrollDown) {
         box.add_events(Gdk.EventMask.SCROLL_MASK);
@@ -180,6 +200,9 @@ export function Button({
     onClick = '',
     onMiddleClick = '',
     onSecondaryClick = '',
+    onClickRelease = '',
+    onMiddleClickRelease = '',
+    onSecondaryClickRelease = '',
     onScrollUp = '',
     onScrollDown = '',
     ...rest
@@ -187,6 +210,9 @@ export function Button({
     typecheck('onClick', onClick, ['string', 'function'], type);
     typecheck('onMiddleClick', onMiddleClick, ['string', 'function'], type);
     typecheck('onSecondaryClick', onSecondaryClick, ['string', 'function'], type);
+    typecheck('onClickRelease', onClickRelease, ['string', 'function'], type);
+    typecheck('onMiddleClickRelease', onMiddleClickRelease, ['string', 'function'], type);
+    typecheck('onSecondaryClick', onSecondaryClickRelease, ['string', 'function'], type);
     typecheck('onScrollUp', onScrollUp, ['string', 'function'], type);
     typecheck('onScrollDown', onScrollDown, ['string', 'function'], type);
     restcheck(rest, type);
@@ -196,13 +222,26 @@ export function Button({
     if (child)
         btn.add(Widget(child));
 
-    btn.connect('clicked', () => runCmd(onClick, btn));
     btn.connect('button-press-event', (btn, event) => {
-        if (event.get_button()[1] === Gdk.BUTTON_SECONDARY)
+        if (event.get_button()[1] === Gdk.BUTTON_PRIMARY)
+            runCmd(onClick, btn, event);
+
+        else if (event.get_button()[1] === Gdk.BUTTON_SECONDARY)
             runCmd(onSecondaryClick, btn, event);
 
         else if (event.get_button()[1] === Gdk.BUTTON_MIDDLE)
             runCmd(onMiddleClick, btn, event);
+    });
+
+    btn.connect('button-release-event', (btn, event) => {
+        if (event.get_button()[1] === Gdk.BUTTON_PRIMARY)
+            runCmd(onClickRelease, btn, event);
+
+        else if (event.get_button()[1] === Gdk.BUTTON_SECONDARY)
+            runCmd(onSecondaryClickRelease, btn, event);
+
+        else if (event.get_button()[1] === Gdk.BUTTON_MIDDLE)
+            runCmd(onMiddleClickRelease, btn, event);
     });
 
     if (onScrollUp || onScrollDown) {
