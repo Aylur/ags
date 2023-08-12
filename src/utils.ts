@@ -222,11 +222,8 @@ export function isRunning(dbusName: string) {
 }
 
 export function execAsync(cmd: string | string[]) {
-    if (typeof cmd === 'string')
-        cmd = cmd.split(' ');
-
     const proc = Gio.Subprocess.new(
-        cmd,
+        typeof cmd === 'string' ? cmd.split(' ') : cmd,
         Gio.SubprocessFlags.STDOUT_PIPE |
         Gio.SubprocessFlags.STDERR_PIPE,
     );
@@ -257,4 +254,45 @@ export function exec(cmd: string) {
         return decoder.decode(err).trim();
 
     return decoder.decode(out).trim();
+}
+
+export function subprocess(
+    cmd: string | string[],
+    callback: (out: string) => void,
+    onError = logError,
+) {
+    try {
+        const read = (stdout: Gio.DataInputStream) => {
+            stdout.read_line_async(GLib.PRIORITY_LOW, null, (stdout, res) => {
+                try {
+                    const output = stdout?.read_line_finish_utf8(res)[0];
+                    if (output) {
+                        callback(output);
+                        read(stdout);
+                    }
+                } catch (e) {
+                    return onError(e as Error);
+                }
+            });
+        };
+
+        const proc = Gio.Subprocess.new(
+            typeof cmd === 'string' ? cmd.split(' ') : cmd,
+            Gio.SubprocessFlags.STDOUT_PIPE |
+            Gio.SubprocessFlags.STDERR_PIPE,
+        );
+
+        const pipe = proc.get_stdout_pipe();
+        if (!pipe)
+            return onError(new Error(`subprocess ${cmd} stdout pipe is null`));
+
+        const stdout = new Gio.DataInputStream({
+            base_stream: pipe,
+            close_base_stream: true,
+        });
+
+        read(stdout);
+    } catch (e) {
+        return onError(e as Error);
+    }
 }
