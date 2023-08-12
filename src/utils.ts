@@ -73,9 +73,27 @@ export function readFile(path: string) {
         const f = Gio.File.new_for_path(path);
         const [, bytes] = f.load_contents(null);
         return new TextDecoder().decode(bytes);
-    } catch (_) {
+    } catch (error) {
+        logError(error as Error);
         return null;
     }
+}
+
+export function readFileAsync(path: string): Promise<string | Error> {
+    const file = Gio.File.new_for_path(path);
+
+    return new Promise((resolve, reject) => {
+        file.load_contents_async(null, (_, res) => {
+            try {
+                const [success, bytes] = file.load_contents_finish(res);
+                return success
+                    ? resolve(new TextDecoder().decode(bytes))
+                    : reject(new Error(`reading file ${path} was unsuccessful`));
+            } catch (error) {
+                reject(error);
+            }
+        });
+    });
 }
 
 export function writeFile(string: string, path: string) {
@@ -88,12 +106,12 @@ export function writeFile(string: string, path: string) {
             false,
             Gio.FileCreateFlags.REPLACE_DESTINATION,
             null,
-            (_file, result) => {
+            (_, res) => {
                 try {
-                    file.replace_contents_finish(result);
+                    file.replace_contents_finish(res);
                     resolve(file);
-                } catch (e) {
-                    reject(e);
+                } catch (error) {
+                    reject(error);
                 }
             },
         );

@@ -3,7 +3,7 @@ import GdkPixbuf from 'gi://GdkPixbuf';
 import GLib from 'gi://GLib';
 import Service from './service.js';
 import { NotificationIFace } from '../dbus/notifications.js';
-import { NOTIFICATIONS_CACHE_PATH, ensureDirectory, getConfig, readFile, timeout, writeFile } from '../utils.js';
+import { NOTIFICATIONS_CACHE_PATH, ensureDirectory, getConfig, readFile, readFileAsync, timeout, writeFile } from '../utils.js';
 
 interface action {
     id: string
@@ -180,20 +180,22 @@ class NotificationsService extends Service {
         );
     }
 
-    _readFromFile() {
-        const file = readFile(NOTIFICATIONS_CACHE_PATH + '/notifications.json');
-        if (!file)
-            return;
+    async _readFromFile() {
+        try {
+            const path = NOTIFICATIONS_CACHE_PATH + '/notifications.json';
+            const file = await readFileAsync(path);
+            const notifications = JSON.parse(file as string) as Notification[];
+            notifications.forEach(n => {
+                if (n.id > this._idCount)
+                    this._idCount = n.id + 1;
 
-        const notifications = JSON.parse(file) as Notification[];
-        notifications.forEach(n => {
-            if (n.id > this._idCount)
-                this._idCount = n.id + 1;
+                this._notifications.set(n.id, n);
+            });
 
-            this._notifications.set(n.id, n);
-        });
-
-        this.emit('changed');
+            this.emit('changed');
+        } catch (_) {
+            // most likely there is no cache yet
+        }
     }
 
     _isFile(path: string) {
