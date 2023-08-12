@@ -47,6 +47,7 @@ class HyprlandService extends Service {
     static {
         Service.register(this, {
             'urgent-window': ['int'],
+            'submap': ['string'],
             'keyboard-layout': ['string', 'string'],
         });
     }
@@ -76,15 +77,19 @@ class HyprlandService extends Service {
         this._monitors = new Map();
         this._workspaces = new Map();
         this._clients = new Map();
-        this._sync();
+        this._syncMonitors();
+        this._syncWorkspaces();
+        this._syncClients();
 
+        // using Gio for socket reading sometimes misses events
+        // so for now the best solution I found was using socat
         const socat = `socat -U - UNIX-CONNECT:/tmp/hypr/${HIS}/.socket2.sock`;
         subprocess(['bash', '-c', socat], line => {
             this._onEvent(line);
         });
     }
 
-    async _sync() {
+    async _syncMonitors() {
         try {
             const monitors = await execAsync('hyprctl -j monitors');
             this._monitors = new Map();
@@ -95,13 +100,25 @@ class HyprlandService extends Service {
                     this._active.workspace = monitor.activeWorkspace;
                 }
             });
+        } catch (error) {
+            logError(error as Error);
+        }
+    }
 
+    async _syncWorkspaces() {
+        try {
             const workspaces = await execAsync('hyprctl -j workspaces');
             this._workspaces = new Map();
             (JSON.parse(workspaces as string) as Workspace[]).forEach(ws => {
                 this._workspaces.set(ws.id, ws);
             });
+        } catch (error) {
+            logError(error as Error);
+        }
+    }
 
+    async _syncClients() {
+        try {
             const clients = await execAsync('hyprctl -j clients');
             this._clients = new Map();
             (JSON.parse(clients as string) as Client[]).forEach(c => {
@@ -125,57 +142,85 @@ class HyprlandService extends Service {
                     floating,
                 });
             });
-
-            this.emit('changed');
         } catch (error) {
-            print(error);
+            logError(error as Error);
         }
     }
 
-    _onEvent(event: string) {
+    async _onEvent(event: string) {
         if (!event)
             return;
 
         const [e, params] = event.split('>>');
         const argv = params.split(',');
 
-        switch (e) {
-        case 'activewindow':
-            this._active.client.class = argv[0];
-            this._active.client.title = argv[1];
-            break;
+        try {
+            switch (e) {
+            case 'workspace':
+            case 'focusedmon':
+            case 'monitorremoved':
+            case 'monitoradded':
+                await this._syncMonitors();
+                break;
 
-        case 'activewindowv2':
-            this._active.client.address = argv[0];
-            break;
+            case 'createworkspace':
+            case 'destroyworkspace':
+                await this._syncWorkspaces();
+                break;
 
-        case 'closewindow':
-            this._active.client = {
-                class: '',
-                title: '',
-                address: '',
-            };
-            this._sync();
-            break;
+            case 'openwindow':
+            case 'movewindow':
+            case 'windowtitle':
+                await this._syncClients();
+                break;
 
-        case 'urgent':
-            this.emit('urgent-window', argv[0]);
-            break;
+            case 'moveworkspace':
+                await this._syncWorkspaces();
+                await this._syncMonitors();
+                break;
 
-        case 'activelayout': {
-            const [kbName, layoutName] = argv[0].split(',');
-            this.emit('keyboard-layout', `${kbName}`, `${layoutName}`);
-            break;
-        }
-        case 'changefloating': {
-            const client = this._clients.get(argv[0]);
-            if (client)
-                client.floating = argv[1] === '1';
-            break;
-        }
-        default:
-            this._sync();
-            break;
+            case 'activewindow':
+                this._active.client.class = argv[0];
+                this._active.client.title = argv[1];
+                break;
+
+            case 'activewindowv2':
+                this._active.client.address = argv[0];
+                break;
+
+            case 'closewindow':
+                this._active.client = {
+                    class: '',
+                    title: '',
+                    address: '',
+                };
+                await this._syncClients();
+                break;
+
+            case 'urgent':
+                this.emit('urgent-window', argv[0]);
+                break;
+
+            case 'activelayout': {
+                const [kbName, layoutName] = argv[0].split(',');
+                this.emit('keyboard-layout', `${kbName}`, `${layoutName}`);
+                break;
+            }
+            case 'changefloating': {
+                const client = this._clients.get(argv[0]);
+                if (client)
+                    client.floating = argv[1] === '1';
+                break;
+            }
+            case 'submap':
+                this.emit('submap', argv[0]);
+                break;
+
+            default:
+                break;
+            }
+        } catch (error) {
+            logError(error as Error);
         }
 
         this.emit('changed');

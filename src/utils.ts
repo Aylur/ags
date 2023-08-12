@@ -96,7 +96,7 @@ export function readFileAsync(path: string): Promise<string | Error> {
     });
 }
 
-export function writeFile(string: string, path: string) {
+export function writeFile(string: string, path: string): Promise<Gio.File> {
     const file = Gio.File.new_for_path(path);
 
     return new Promise((resolve, reject) => {
@@ -239,7 +239,7 @@ export function isRunning(dbusName: string) {
     ).deepUnpack()?.toString() === 'true' || false;
 }
 
-export function execAsync(cmd: string | string[]) {
+export function execAsync(cmd: string | string[]): Promise<string | Error> {
     const proc = Gio.Subprocess.new(
         typeof cmd === 'string' ? cmd.split(' ') : cmd,
         Gio.SubprocessFlags.STDOUT_PIPE |
