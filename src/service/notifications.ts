@@ -3,7 +3,7 @@ import GdkPixbuf from 'gi://GdkPixbuf';
 import GLib from 'gi://GLib';
 import Service from './service.js';
 import { NotificationIFace } from '../dbus/notifications.js';
-import { NOTIFICATIONS_CACHE_PATH, ensureDirectory, getConfig, readFile, readFileAsync, timeout, writeFile } from '../utils.js';
+import { NOTIFICATIONS_CACHE_PATH, ensureDirectory, getConfig, readFileAsync, timeout, writeFile } from '../utils.js';
 
 interface action {
     id: string
