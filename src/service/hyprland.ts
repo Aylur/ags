@@ -4,43 +4,17 @@ import { error, execAsync, subprocess } from '../utils.js';
 
 const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
 
-type ActiveWorkspace = {
-    id: number
-    name: string
-}
-
-type Monitor = {
-    id: number
-    name: string
-    focused: boolean
-    activeWorkspace: ActiveWorkspace
-}
-
-type Workspace = {
-    id: number
-    name: string
-    windows: number
-    monitor: string
-}
-
-type Client = {
-    address: string
-    pid: number
-    workspace: ActiveWorkspace
-    monitor: number
-    class: string
-    title: string
-    floating: boolean
-}
-
-type Active = {
+interface Active {
     client: {
         address: string
         title: string
         class: string
     }
     monitor: string
-    workspace: ActiveWorkspace
+    workspace: {
+        id: number
+        name: string
+    }
 }
 
 class HyprlandService extends Service {
@@ -53,9 +27,9 @@ class HyprlandService extends Service {
     }
 
     _active: Active;
-    _monitors: Map<string, Monitor>;
-    _workspaces: Map<number, Workspace>;
-    _clients: Map<string, Client>;
+    _monitors: Map<string, object>;
+    _workspaces: Map<number, object>;
+    _clients: Map<string, object>;
 
     constructor() {
         if (!HIS)
@@ -93,7 +67,7 @@ class HyprlandService extends Service {
         try {
             const monitors = await execAsync('hyprctl -j monitors');
             this._monitors = new Map();
-            (JSON.parse(monitors as string) as Monitor[]).forEach(monitor => {
+            (JSON.parse(monitors) as { [key: string]: any }[]).forEach(monitor => {
                 this._monitors.set(monitor.name, monitor);
                 if (monitor.focused) {
                     this._active.monitor = monitor.name;
@@ -109,7 +83,7 @@ class HyprlandService extends Service {
         try {
             const workspaces = await execAsync('hyprctl -j workspaces');
             this._workspaces = new Map();
-            (JSON.parse(workspaces as string) as Workspace[]).forEach(ws => {
+            (JSON.parse(workspaces) as { [key: string]: any }[]).forEach(ws => {
                 this._workspaces.set(ws.id, ws);
             });
         } catch (error) {
@@ -121,26 +95,8 @@ class HyprlandService extends Service {
         try {
             const clients = await execAsync('hyprctl -j clients');
             this._clients = new Map();
-            (JSON.parse(clients as string) as Client[]).forEach(c => {
-                const {
-                    address,
-                    pid,
-                    workspace,
-                    monitor,
-                    class: cClass,
-                    title,
-                    floating,
-                } = c;
-
-                this._clients.set(address.substring(2), {
-                    address,
-                    pid,
-                    workspace,
-                    monitor,
-                    class: cClass,
-                    title,
-                    floating,
-                });
+            (JSON.parse(clients as string) as { [key: string]: any }[]).forEach(client => {
+                this._clients.set((client.address as string).substring(2), client);
             });
         } catch (error) {
             logError(error as Error);
@@ -172,6 +128,7 @@ class HyprlandService extends Service {
             case 'movewindow':
             case 'windowtitle':
                 await this._syncClients();
+                await this._syncWorkspaces();
                 break;
 
             case 'moveworkspace':
@@ -195,6 +152,7 @@ class HyprlandService extends Service {
                     address: '',
                 };
                 await this._syncClients();
+                await this._syncWorkspaces();
                 break;
 
             case 'urgent':
@@ -209,6 +167,7 @@ class HyprlandService extends Service {
             case 'changefloating': {
                 const client = this._clients.get(argv[0]);
                 if (client)
+                // @ts-ignore
                     client.floating = argv[1] === '1';
                 break;
             }
