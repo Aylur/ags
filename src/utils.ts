@@ -197,17 +197,6 @@ export function lookUpIcon(name?: string, size = 16) {
     );
 }
 
-export const help = (bin: string) => `USAGE:
-    ${bin} [COMMAND] <ARGUMENTS>
-
-COMMANDS:
-    help\t\tPrint this help
-    version\t\tPrint version
-    clear-cache\t\tRemoves ${CACHE_DIR}
-    toggle-window name\tToggle window
-    run-js string\tRuns string as a js function
-    inspector\t\tOpen debugger`;
-
 export function ensureDirectory(path?: string) {
     if (path && !GLib.file_test(path, GLib.FileTest.EXISTS)) {
         Gio.File.new_for_path(path).make_directory_with_parents(null);

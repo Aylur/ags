@@ -169,6 +169,7 @@ export default class App extends Gtk.Application {
 
     _exportActions() {
         this._addAction('inspector', () => Gtk.Window.set_interactive_debugging(true));
+        this._addAction('quit', App.quit);
 
         this._addAction('toggle-window', (_, arg) =>
             App.toggleWindow(arg.unpack() as string), new GLib.VariantType('s'));

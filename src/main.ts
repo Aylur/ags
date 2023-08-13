@@ -17,6 +17,18 @@ import './service/notifications.js';
 const APP_BUS = 'com.github.Aylur.' + pkg.name;
 const APP_PATH = '/com/github/Aylur/' + pkg.name;
 
+export const help = (bin: string) => `USAGE:
+    ${bin} [COMMAND] <ARGUMENTS>
+
+COMMANDS:
+    help\t\tPrint this help
+    version\t\tPrint version
+    quit\t\tKills ags
+    clear-cache\t\tRemoves ${Utils.CACHE_DIR}
+    toggle-window name\tToggle window
+    run-js string\tRuns string as a js function
+    inspector\t\tOpen debugger`;
+
 export function main(args: string[]) {
     switch (args[1]) {
     case 'version':
@@ -28,7 +40,7 @@ export function main(args: string[]) {
     case 'help':
     case '-h':
     case '--help':
-        print(Utils.help(args[0]));
+        print(help(args[0]));
         return;
 
     case 'clear-cache':
@@ -69,8 +81,12 @@ export function main(args: string[]) {
         actions.activate_action('inspector', null);
         return;
 
+    case 'quit':
+        actions.activate_action('quit', null);
+        return;
+
     default:
-        print(Utils.help(args[0]));
+        print(help(args[0]));
         return;
     }
 }
