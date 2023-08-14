@@ -159,6 +159,7 @@ export function Label({
     type,
     label = '',
     markup = false,
+    ellipsize = false,
     wrap = false,
     maxWidth = -1,
     angle = 0,
@@ -169,6 +170,7 @@ export function Label({
 }) {
     typecheck('label', label, 'string', type);
     typecheck('markup', markup || false, 'boolean', type);
+    typecheck('ellipsize', ellipsize || false, 'boolean', type);
     typecheck('wrap', wrap || false, 'boolean', type);
     typecheck('angle', angle || 0, 'number', type);
     typecheck('justify', justify || '', 'string', type);
@@ -184,6 +186,7 @@ export function Label({
         label,
         angle,
         justify: _justify,
+        ellipsize: ellipsize ? 3 : 0, // this is ellipsize mode END to turn it on
         use_markup: markup,
         max_width_chars: maxWidth,
         wrap,
