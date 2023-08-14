@@ -1,6 +1,9 @@
 import Gtk from 'gi://Gtk?version=3.0';
 import { typecheck, error, warning, interval } from './utils.js';
 import * as Widgets from './widgets.js';
+import Box from './widgets/box.js';
+import EventBox from './widgets/eventbox.js';
+import CenterBox from './widgets/centerbox.js';
 
 interface ServiceAPI {
     instance: {
@@ -190,3 +193,6 @@ export default function Widget(params: Widget | string | (() => Gtk.Widget) | Gt
 }
 
 Widget.widgets = widgets;
+Widget.Box = Box;
+Widget.EventBox = EventBox;
+Widget.CenterBox = CenterBox;

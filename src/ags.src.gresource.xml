@@ -8,6 +8,11 @@
     <file>widgets.js</file>
     <file>window.js</file>
 
+    <file>widgets/shared.js</file>
+    <file>widgets/box.js</file>
+    <file>widgets/eventbox.js</file>
+    <file>widgets/centerbox.js</file>
+
     <file>service/service.js</file>
     <file>service/apps.js</file>
     <file>service/audio.js</file>

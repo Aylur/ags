@@ -163,6 +163,9 @@ export function timeout(ms: number, callback: () => void) {
 }
 
 export function runCmd(cmd: string | ((...args: any[]) => void), ...args: any[]) {
+    if (typeof cmd !== 'string' && typeof cmd !== 'function')
+        return warning('Command has to be string or function');
+
     if (!cmd)
         return;
 
