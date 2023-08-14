@@ -27,7 +27,7 @@ class HyprlandService extends Service {
     }
 
     _active: Active;
-    _monitors: Map<string, object>;
+    _monitors: Map<number, object>;
     _workspaces: Map<number, object>;
     _clients: Map<string, object>;
 
@@ -68,7 +68,7 @@ class HyprlandService extends Service {
             const monitors = await execAsync('hyprctl -j monitors');
             this._monitors = new Map();
             (JSON.parse(monitors) as { [key: string]: any }[]).forEach(monitor => {
-                this._monitors.set(monitor.name, monitor);
+                this._monitors.set(monitor.id, monitor);
                 if (monitor.focused) {
                     this._active.monitor = monitor.name;
                     this._active.workspace = monitor.activeWorkspace;
