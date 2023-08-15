@@ -45,7 +45,6 @@ export default class CenterBox extends Box {
     _start!: Gtk.Widget | null;
     get start_widget() { return this._start || null; }
     set start_widget(child: Gtk.Widget | null) {
-        print('test', this._start);
         if (this._start)
             this.remove(this._start);
 

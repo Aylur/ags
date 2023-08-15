@@ -23,6 +23,7 @@
     <file>widgets/progressbar.js</file>
     <file>widgets/menu.js</file>
     <file>widgets/entry.js</file>
+    <file>widgets/window.js</file>
 
     <file>service/service.js</file>
     <file>service/apps.js</file>

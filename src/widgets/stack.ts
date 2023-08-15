@@ -20,12 +20,6 @@ export default class Stack extends Gtk.Stack {
                     GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
                     'none',
                 ),
-                // @ts-ignore
-                'items': GObject.ParamSpec.jsobject(
-                    'items', 'Items', 'Items',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    [],
-                ),
                 'shown': GObject.ParamSpec.string(
                     'shown', 'Shown', 'Shown',
                     GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
@@ -33,6 +27,11 @@ export default class Stack extends Gtk.Stack {
                 ),
             },
         }, this);
+    }
+
+    constructor({ items = [], ...params }: { [key: string]: any } = {}) {
+        super(params);
+        this.items = items;
     }
 
     add_named(child: Gtk.Widget, name: string): void {
@@ -46,8 +45,7 @@ export default class Stack extends Gtk.Stack {
         this.get_children().forEach(ch => this.remove(ch));
         this._items = [];
         items.forEach(([name, widget]) => {
-            if (widget)
-                this.add_named(widget, name);
+            widget && this.add_named(widget, name);
         });
         this.show_all();
     }
@@ -68,9 +66,15 @@ export default class Stack extends Gtk.Stack {
 
     get shown() { return this.visible_child_name; }
     set shown(name: string) {
+        if (name === null || !this.get_child_by_name(name)) {
+            this.visible = false;
+            return;
+        }
+
         if (!name)
             return;
 
+        this.visible = true;
         this.set_visible_child_name(name);
     }
 }

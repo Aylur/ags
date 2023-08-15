@@ -31,24 +31,24 @@ COMMANDS:
 
 export function main(args: string[]) {
     switch (args[1]) {
-    case 'version':
-    case '-v':
-    case '--version':
-        print(pkg.version);
-        return;
+        case 'version':
+        case '-v':
+        case '--version':
+            print(pkg.version);
+            return;
 
-    case 'help':
-    case '-h':
-    case '--help':
-        print(help(args[0]));
-        return;
+        case 'help':
+        case '-h':
+        case '--help':
+            print(help(args[0]));
+            return;
 
-    case 'clear-cache':
-        Utils.exec(`rm -r ${Utils.CACHE_DIR}`);
-        return;
+        case 'clear-cache':
+            Utils.exec(`rm -r ${Utils.CACHE_DIR}`);
+            return;
 
-    default:
-        break;
+        default:
+            break;
     }
 
     // @ts-ignore
@@ -69,24 +69,24 @@ export function main(args: string[]) {
     );
 
     switch (args[1]) {
-    case 'toggle-window':
-        actions.activate_action('toggle-window', new GLib.Variant('s', args[2]));
-        return;
+        case 'toggle-window':
+            actions.activate_action('toggle-window', new GLib.Variant('s', args[2]));
+            return;
 
-    case 'run-js':
-        actions.activate_action('run-js', new GLib.Variant('s', args[2]));
-        return;
+        case 'run-js':
+            actions.activate_action('run-js', new GLib.Variant('s', args[2]));
+            return;
 
-    case 'inspector':
-        actions.activate_action('inspector', null);
-        return;
+        case 'inspector':
+            actions.activate_action('inspector', null);
+            return;
 
-    case 'quit':
-        actions.activate_action('quit', null);
-        return;
+        case 'quit':
+            actions.activate_action('quit', null);
+            return;
 
-    default:
-        print(help(args[0]));
-        return;
+        default:
+            print(help(args[0]));
+            return;
     }
 }

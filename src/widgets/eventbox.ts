@@ -59,7 +59,7 @@ export default class EventBox extends Gtk.EventBox {
     }
 
     vfunc_enter_notify_event(event: Gdk.EventCrossing): boolean {
-        this.unset_state_flags(Gtk.StateFlags.PRELIGHT);
+        this.set_state_flags(Gtk.StateFlags.PRELIGHT, false);
         return runCmd(this.onHover, this, event);
     }
 

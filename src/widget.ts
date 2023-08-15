@@ -16,6 +16,7 @@ import Revealer from './widgets/revealer.js';
 import ProgressBar from './widgets/progressbar.js';
 import Entry from './widgets/entry.js';
 import { Menu, MenuItem } from './widgets/menu.js';
+import Window from './widgets/window.js';
 
 interface ServiceAPI {
     instance: {
@@ -220,4 +221,5 @@ Widget.ProgressBar = (params: object) => constructor(ProgressBar, params);
 Widget.Menu = (params: object) => constructor(Menu, params);
 Widget.MenuItem = (params: object) => constructor(MenuItem, params);
 Widget.Entry = (params: object) => constructor(Entry, params);
+Widget.Window = (params: object) => constructor(Window, params);
 Widget.Widget = ({ type, ...params }: { type: { new(...args: any[]): Gtk.Widget } }) => constructor(type, params);
