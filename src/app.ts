@@ -3,16 +3,22 @@ import Gdk from 'gi://Gdk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import Window from './window.js';
-import { error, warning, getConfig, timeout, connect } from './utils.js';
+import { timeout, connect } from './utils.js';
 
-const APP_BUS = 'com.github.Aylur.' + pkg.name;
+interface Config {
+    windows?: Gtk.Window[]
+    style?: string
+    notificationPopupTimeout?: number
+    closeWindowDelay?: { [key: string]: number }
+}
 
 export default class App extends Gtk.Application {
     private _windows: Map<string, Gtk.Window>;
     private _closeDelay!: { [key: string]: number };
     private _cssProviders: Gtk.CssProvider[] = [];
 
+    static configPath: string;
+    static config: Config;
     static instance: App;
 
     static {
@@ -32,7 +38,7 @@ export default class App extends Gtk.Application {
 
     static getWindow(name: string) {
         const w = App.instance._windows.get(name);
-        return w ? w : warning(`There is no window named ${name}`);
+        return w ? w : console.error(`There is no window named ${name}`);
     }
 
     static closeWindow(name: string) {
@@ -69,7 +75,7 @@ export default class App extends Gtk.Application {
     static resetCss() {
         const screen = Gdk.Screen.get_default();
         if (!screen) {
-            error("couldn't get screen");
+            console.error("couldn't get screen");
             return;
         }
 
@@ -83,7 +89,7 @@ export default class App extends Gtk.Application {
     static applyCss(path: string) {
         const screen = Gdk.Screen.get_default();
         if (!screen) {
-            error("couldn't get screen");
+            console.error("couldn't get screen");
             return;
         }
 
@@ -107,52 +113,58 @@ export default class App extends Gtk.Application {
         connect(this, widget, callback, event);
     }
 
-    constructor() {
+    constructor({ bus, config }: {
+        bus: string
+        config: string
+    }) {
         super({
-            application_id: APP_BUS,
+            application_id: bus,
             flags: Gio.ApplicationFlags.DEFAULT_FLAGS,
         });
 
         this._windows = new Map();
+        App.configPath = config;
         App.instance = this;
     }
 
     vfunc_activate() {
         this.hold();
-        this._load();
         this._exportActions();
+        this._load();
     }
 
-    _load() {
-        for (const [name, window] of this._windows) {
-            window.destroy();
-            this._windows.delete(name);
-        }
+    async _load() {
+        try {
+            const mod = await import(`file://${App.configPath}`);
+            const config = mod.default as Config;
+            App.config = config;
 
-        const config = getConfig();
-        if (!config) {
-            this.quit();
-            return;
-        }
-
-        this._closeDelay = config.closeWindowDelay || {};
-
-        if (config.style)
-            App.applyCss(config.style);
-
-        config.windows?.forEach(window => {
-            const w = Window(window);
-            w.connect('notify::visible', () => this.emit('window-toggled', w.name, w.visible));
-
-            if (this._windows.has(w.name)) {
-                error('name of window has to be unique!');
+            if (!config) {
+                this.quit();
                 return;
             }
 
-            this._windows.set(w.name, w);
-        });
+            this._closeDelay = config.closeWindowDelay || {};
 
-        this.emit('config-parsed');
+            if (config.style)
+                App.applyCss(config.style);
+
+            config.windows?.forEach(w => {
+                w.connect('notify::visible', () => this.emit('window-toggled', w.name, w.visible));
+
+                if (this._windows.has(w.name)) {
+                    console.error('name of window has to be unique!');
+                    this.quit();
+                    return;
+                }
+
+                this._windows.set(w.name, w);
+            });
+
+            this.emit('config-parsed');
+        } catch (error) {
+            logError(error as Error);
+        }
     }
 
     _addAction(

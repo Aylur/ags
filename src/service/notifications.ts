@@ -2,8 +2,9 @@ import Gio from 'gi://Gio';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import GLib from 'gi://GLib';
 import Service from './service.js';
+import App from '../app.js';
 import { NotificationIFace } from '../dbus/notifications.js';
-import { NOTIFICATIONS_CACHE_PATH, ensureDirectory, getConfig, readFileAsync, timeout, writeFile } from '../utils.js';
+import { NOTIFICATIONS_CACHE_PATH, ensureDirectory, readFileAsync, timeout, writeFile } from '../utils.js';
 
 interface action {
     id: string
@@ -45,7 +46,7 @@ class NotificationsService extends Service {
     _notifications: Map<number, Notification>;
     _dnd = false;
     _idCount = 0;
-    _timeout = getConfig()?.notificationPopupTimeout || 3000;
+    _timeout = App.config.notificationPopupTimeout || 3000;
 
     constructor() {
         super();

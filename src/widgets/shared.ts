@@ -1,5 +1,5 @@
 import Gtk from 'gi://Gtk?version=3.0';
-import { warning, interval } from '../utils.js';
+import { interval } from '../utils.js';
 
 interface ServiceAPI {
     instance: {
@@ -65,7 +65,7 @@ function parseCommon(widget: Gtk.Widget, {
         // @ts-ignore
         const align = Gtk.Align[halign.toUpperCase()];
         if (typeof align !== 'number')
-            warning('wrong halign value');
+            console.error('wrong halign value');
         widget.halign = align;
     }
 
@@ -73,7 +73,7 @@ function parseCommon(widget: Gtk.Widget, {
         // @ts-ignore
         const align = Gtk.Align[valign.toUpperCase()];
         if (typeof align !== 'number')
-            warning('wrong valign value');
+            console.error('wrong valign value');
         widget.valign = align;
     }
 
@@ -104,7 +104,7 @@ function parseCommon(widget: Gtk.Widget, {
         setup(widget);
 }
 
-export function constructor(ctor: { new(...args: any[]): Gtk.Widget }, params: CommonParams | string = {}) {
+export default function constructor(ctor: { new(...args: any[]): Gtk.Widget }, params: CommonParams | string = {}) {
     let widget;
     if (typeof params === 'string') {
         widget = new ctor(params);

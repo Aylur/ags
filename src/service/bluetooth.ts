@@ -139,11 +139,11 @@ class BluetoothService extends Service {
 
     get state() {
         switch (this._client.default_adapter_state) {
-        case GnomeBluetooth.AdapterState.ON: return 'on';
-        case GnomeBluetooth.AdapterState.TURNING_ONON: return 'turning-on';
-        case GnomeBluetooth.AdapterState.OFF: return 'off';
-        case GnomeBluetooth.AdapterState.TURNING_OFF: return 'turning-off';
-        default: return 'absent';
+            case GnomeBluetooth.AdapterState.ON: return 'on';
+            case GnomeBluetooth.AdapterState.TURNING_ONON: return 'turning-on';
+            case GnomeBluetooth.AdapterState.OFF: return 'off';
+            case GnomeBluetooth.AdapterState.TURNING_OFF: return 'turning-off';
+            default: return 'absent';
         }
     }
 

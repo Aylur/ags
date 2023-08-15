@@ -1,6 +1,6 @@
 import GLib from 'gi://GLib';
 import Service from './service.js';
-import { error, execAsync, subprocess } from '../utils.js';
+import { execAsync, subprocess } from '../utils.js';
 
 const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
 
@@ -33,7 +33,7 @@ class HyprlandService extends Service {
 
     constructor() {
         if (!HIS)
-            error('Hyprland is not running');
+            console.error('Hyprland is not running');
 
         super();
         this._active = {
@@ -112,71 +112,71 @@ class HyprlandService extends Service {
 
         try {
             switch (e) {
-            case 'workspace':
-            case 'focusedmon':
-            case 'monitorremoved':
-            case 'monitoradded':
-                await this._syncMonitors();
-                break;
+                case 'workspace':
+                case 'focusedmon':
+                case 'monitorremoved':
+                case 'monitoradded':
+                    await this._syncMonitors();
+                    break;
 
-            case 'createworkspace':
-            case 'destroyworkspace':
-                await this._syncWorkspaces();
-                break;
+                case 'createworkspace':
+                case 'destroyworkspace':
+                    await this._syncWorkspaces();
+                    break;
 
-            case 'openwindow':
-            case 'movewindow':
-            case 'windowtitle':
-                await this._syncClients();
-                await this._syncWorkspaces();
-                break;
+                case 'openwindow':
+                case 'movewindow':
+                case 'windowtitle':
+                    await this._syncClients();
+                    await this._syncWorkspaces();
+                    break;
 
-            case 'moveworkspace':
-                await this._syncWorkspaces();
-                await this._syncMonitors();
-                break;
+                case 'moveworkspace':
+                    await this._syncWorkspaces();
+                    await this._syncMonitors();
+                    break;
 
-            case 'activewindow':
-                this._active.client.class = argv[0];
-                this._active.client.title = argv[1];
-                break;
+                case 'activewindow':
+                    this._active.client.class = argv[0];
+                    this._active.client.title = argv[1];
+                    break;
 
-            case 'activewindowv2':
-                this._active.client.address = argv[0];
-                break;
+                case 'activewindowv2':
+                    this._active.client.address = argv[0];
+                    break;
 
-            case 'closewindow':
-                this._active.client = {
-                    class: '',
-                    title: '',
-                    address: '',
-                };
-                await this._syncClients();
-                await this._syncWorkspaces();
-                break;
+                case 'closewindow':
+                    this._active.client = {
+                        class: '',
+                        title: '',
+                        address: '',
+                    };
+                    await this._syncClients();
+                    await this._syncWorkspaces();
+                    break;
 
-            case 'urgent':
-                this.emit('urgent-window', argv[0]);
-                break;
+                case 'urgent':
+                    this.emit('urgent-window', argv[0]);
+                    break;
 
-            case 'activelayout': {
-                const [kbName, layoutName] = argv[0].split(',');
-                this.emit('keyboard-layout', `${kbName}`, `${layoutName}`);
-                break;
-            }
-            case 'changefloating': {
-                const client = this._clients.get(argv[0]);
-                if (client)
-                // @ts-ignore
-                    client.floating = argv[1] === '1';
-                break;
-            }
-            case 'submap':
-                this.emit('submap', argv[0]);
-                break;
+                case 'activelayout': {
+                    const [kbName, layoutName] = argv[0].split(',');
+                    this.emit('keyboard-layout', `${kbName}`, `${layoutName}`);
+                    break;
+                }
+                case 'changefloating': {
+                    const client = this._clients.get(argv[0]);
+                    if (client)
+                        // @ts-ignore
+                        client.floating = argv[1] === '1';
+                    break;
+                }
+                case 'submap':
+                    this.emit('submap', argv[0]);
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
             }
         } catch (error) {
             logError(error as Error);

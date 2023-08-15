@@ -209,17 +209,17 @@ class MprisPlayer extends GObject.Object {
     shuffle() { this._playerProxy.Shuffle = !this._playerProxy.Shuffle; }
     loop() {
         switch (this._playerProxy.LoopStatus) {
-        case 'None':
-            this._playerProxy.LoopStatus = 'Track';
-            break;
-        case 'Track':
-            this._playerProxy.LoopStatus = 'Playlist';
-            break;
-        case 'Playlist':
-            this._playerProxy.LoopStatus = 'None';
-            break;
-        default:
-            break;
+            case 'None':
+                this._playerProxy.LoopStatus = 'Track';
+                break;
+            case 'Track':
+                this._playerProxy.LoopStatus = 'Playlist';
+                break;
+            case 'Playlist':
+                this._playerProxy.LoopStatus = 'None';
+                break;
+            default:
+                break;
         }
     }
 }

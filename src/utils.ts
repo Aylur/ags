@@ -2,71 +2,11 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import App from './app.js';
-import { type Window } from './window.js';
-
-interface Config {
-    windows?: Window[]
-    style?: string
-    stackTraceOnError?: boolean
-    baseIconSize?: number
-    notificationPopupTimeout?: number
-    exitOnError?: boolean
-    closeWindowDelay: { [key: string]: number }
-}
 
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name}`;
 export const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
 export const NOTIFICATIONS_CACHE_PATH = `${CACHE_DIR}/notifications`;
-export const CONFIG_DIR = `${GLib.get_user_config_dir()}/${pkg.name}`;
-
-export function error(message: string) {
-    getConfig()?.stackTraceOnError
-        ? logError(new Error(message))
-        : print(`AGS ERROR: ${message}`);
-
-    if (getConfig()?.exitOnError)
-        App.quit();
-}
-
-export function warning(message: string) {
-    getConfig()?.stackTraceOnError
-        ? logError(new Error(message))
-        : print(`AGS WARNING: ${message}`);
-}
-
-export function typecheck(key: string, value: unknown, type: string | string[], widget: string) {
-    if (Array.isArray(type)) {
-        for (const t of type) {
-            if (t === 'array' && Array.isArray(value))
-                return true;
-
-            if (typeof value === t)
-                return true;
-        }
-
-        warning(`"${key}" has to be one of ${type.join(' or ')} on ${widget}`);
-        return false;
-    }
-
-    if (type === 'array' && Array.isArray(value))
-        return true;
-
-    if (typeof value === type)
-        return true;
-
-    warning(`"${key}" has to be a ${type} on ${widget} but it is of type ${typeof value}`);
-    return false;
-}
-
-export function restcheck(rest: object, widget: string) {
-    const keys = Object.keys(rest);
-    if (keys.length === 0)
-        return;
-
-    warning(`unknown keys on ${widget}: ${JSON.stringify(keys)}`);
-}
 
 export function readFile(path: string) {
     try {
@@ -164,7 +104,7 @@ export function timeout(ms: number, callback: () => void) {
 
 export function runCmd(cmd: string | ((...args: any[]) => boolean), ...args: any[]) {
     if (typeof cmd !== 'string' && typeof cmd !== 'function') {
-        warning('Command has to be string or function');
+        console.error('Command has to be string or function');
         return false;
     }
 
@@ -180,19 +120,6 @@ export function runCmd(cmd: string | ((...args: any[]) => boolean), ...args: any
         return cmd(...args);
 
     return false;
-}
-
-export function getConfig() {
-    try {
-        imports.searchPath.push(CONFIG_DIR);
-        return imports.config.config as Config;
-    } catch (err) {
-        GLib.file_test(CONFIG_DIR + '/config.js', GLib.FileTest.EXISTS)
-            ? logError(err as Error)
-            : print('No config was provided');
-
-        return null;
-    }
 }
 
 export function lookUpIcon(name?: string, size = 16) {
@@ -220,21 +147,6 @@ export function ensureDirectory(path?: string) {
                     Gio.File.new_for_path(path).make_directory_with_parents(null);
             });
     }
-}
-
-export function isRunning(dbusName: string) {
-    return Gio.DBus.session.call_sync(
-        'org.freedesktop.DBus',
-        '/org/freedesktop/DBus',
-        'org.freedesktop.DBus',
-        'NameHasOwner',
-        // @ts-ignore
-        GLib.Variant.new_tuple([new GLib.Variant('s', dbusName)]),
-        new GLib.VariantType('(b)'),
-        Gio.DBusCallFlags.NONE,
-        -1,
-        null,
-    ).deepUnpack()?.toString() === 'true' || false;
 }
 
 export function execAsync(cmd: string | string[]): Promise<string> {
