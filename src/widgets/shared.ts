@@ -7,7 +7,7 @@ interface ServiceAPI {
     }
 }
 
-export interface CommonParams {
+interface CommonParams {
     className?: string
     style?: string
     halign?: 'start' | 'center' | 'end' | 'fill'
@@ -21,20 +21,20 @@ export interface CommonParams {
     setup?: (widget: Gtk.Widget) => void
 }
 
-export function setStyle(widget: Gtk.Widget, css: string) {
+function setStyle(widget: Gtk.Widget, css: string) {
     const provider = new Gtk.CssProvider();
     const style = `* { ${css} }`;
     provider.load_from_data(style);
     widget.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 }
 
-export function toggleClassName(widget: Gtk.Widget, className: string, condition = true) {
+function toggleClassName(widget: Gtk.Widget, className: string, condition = true) {
     condition
         ? widget.get_style_context().add_class(className)
         : widget.get_style_context().remove_class(className);
 }
 
-export function separateCommon({
+function separateCommon({
     className, style, halign, valign, connections, properties, setup,
     ...rest
 }: CommonParams) {
@@ -44,7 +44,7 @@ export function separateCommon({
     ];
 }
 
-export function parseCommon(widget: Gtk.Widget, {
+function parseCommon(widget: Gtk.Widget, {
     className, style,
     halign, valign,
     connections, properties, setup,
@@ -102,4 +102,16 @@ export function parseCommon(widget: Gtk.Widget, {
 
     if (typeof setup === 'function')
         setup(widget);
+}
+
+export function constructor(ctor: { new(...args: any[]): Gtk.Widget }, params: CommonParams | string = {}) {
+    let widget;
+    if (typeof params === 'string') {
+        widget = new ctor(params);
+    } else {
+        const [common, rest] = separateCommon(params);
+        widget = new ctor(rest);
+        parseCommon(widget, common);
+    }
+    return widget;
 }

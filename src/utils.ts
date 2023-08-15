@@ -162,18 +162,24 @@ export function timeout(ms: number, callback: () => void) {
     });
 }
 
-export function runCmd(cmd: string | ((...args: any[]) => void), ...args: any[]) {
-    if (typeof cmd !== 'string' && typeof cmd !== 'function')
-        return warning('Command has to be string or function');
+export function runCmd(cmd: string | ((...args: any[]) => boolean), ...args: any[]) {
+    if (typeof cmd !== 'string' && typeof cmd !== 'function') {
+        warning('Command has to be string or function');
+        return false;
+    }
 
     if (!cmd)
-        return;
+        return false;
 
-    if (typeof cmd === 'string')
-        return GLib.spawn_command_line_async(cmd);
+    if (typeof cmd === 'string') {
+        GLib.spawn_command_line_async(cmd);
+        return true;
+    }
 
     if (typeof cmd === 'function')
         return cmd(...args);
+
+    return false;
 }
 
 export function getConfig() {

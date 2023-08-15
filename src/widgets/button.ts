@@ -3,46 +3,44 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import { runCmd } from '../utils.js';
 
-export default class EventBox extends Gtk.EventBox {
+export default class Button extends Gtk.Button {
     static {
-        GObject.registerClass({ GTypeName: 'AgsEventBox' }, this);
+        GObject.registerClass({ GTypeName: 'AgsButton' }, this);
     }
 
+    onClicked: string | ((...args: any[]) => boolean);
     onPrimaryClick: string | ((...args: any[]) => boolean);
     onSecondaryClick: string | ((...args: any[]) => boolean);
     onMiddleClick: string | ((...args: any[]) => boolean);
     onPrimaryClickRelease: string | ((...args: any[]) => boolean);
     onSecondaryClickRelease: string | ((...args: any[]) => boolean);
     onMiddleClickRelease: string | ((...args: any[]) => boolean);
-    onHover: string | ((...args: any[]) => boolean);
-    onHoverLost: string | ((...args: any[]) => boolean);
     onScrollUp: string | ((...args: any[]) => boolean);
     onScrollDown: string | ((...args: any[]) => boolean);
 
-    constructor({
-        onPrimaryClick = '',
-        onSecondaryClick = '',
-        onMiddleClick = '',
-        onPrimaryClickRelease = '',
-        onSecondaryClickRelease = '',
-        onMiddleClickRelease = '',
-        onHover = '',
-        onHoverLost = '',
-        onScrollUp = '',
-        onScrollDown = '',
-        ...params
-    } = {}) {
-        super(params);
-        this.add_events(Gdk.EventMask.SCROLL_MASK);
+    constructor(params: object | string) {
+        const {
+            onClicked = '',
+            onPrimaryClick = '',
+            onSecondaryClick = '',
+            onMiddleClick = '',
+            onPrimaryClickRelease = '',
+            onSecondaryClickRelease = '',
+            onMiddleClickRelease = '',
+            onScrollUp = '',
+            onScrollDown = '',
+            ...rest
+        } = params as { [key: string]: any };
 
+        super(typeof params === 'string' ? { label: params } : rest);
+        this.add_events(Gdk.EventMask.SCROLL_MASK);
+        this.onClicked = onClicked;
         this.onPrimaryClick = onPrimaryClick;
         this.onSecondaryClick = onSecondaryClick;
         this.onMiddleClick = onMiddleClick;
         this.onPrimaryClickRelease = onPrimaryClickRelease;
         this.onSecondaryClickRelease = onSecondaryClickRelease;
         this.onMiddleClickRelease = onMiddleClickRelease;
-        this.onHover = onHover;
-        this.onHoverLost = onHoverLost;
         this.onScrollUp = onScrollUp;
         this.onScrollDown = onScrollDown;
     }
@@ -58,17 +56,12 @@ export default class EventBox extends Gtk.EventBox {
             this.add(child);
     }
 
-    vfunc_enter_notify_event(event: Gdk.EventCrossing): boolean {
-        this.unset_state_flags(Gtk.StateFlags.PRELIGHT);
-        return runCmd(this.onHover, this, event);
-    }
-
-    vfunc_leave_notify_event(event: Gdk.EventCrossing): boolean {
-        this.unset_state_flags(Gtk.StateFlags.PRELIGHT);
-        return runCmd(this.onHoverLost, this, event);
+    vfunc_clicked(): void {
+        runCmd(this.onClicked, this);
     }
 
     vfunc_button_press_event(event: Gdk.EventButton): boolean {
+        super.vfunc_button_press_event(event);
         this.set_state_flags(Gtk.StateFlags.ACTIVE, false);
         if (event.button === Gdk.BUTTON_PRIMARY)
             return runCmd(this.onPrimaryClick, this, event);
@@ -83,6 +76,7 @@ export default class EventBox extends Gtk.EventBox {
     }
 
     vfunc_button_release_event(event: Gdk.EventButton): boolean {
+        super.vfunc_button_release_event(event);
         this.unset_state_flags(Gtk.StateFlags.ACTIVE);
         if (event.button === Gdk.BUTTON_PRIMARY)
             return runCmd(this.onPrimaryClickRelease, this, event);

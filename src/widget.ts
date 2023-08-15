@@ -1,9 +1,21 @@
 import Gtk from 'gi://Gtk?version=3.0';
 import { typecheck, error, warning, interval } from './utils.js';
 import * as Widgets from './widgets.js';
+import { constructor } from './widgets/shared.js';
 import Box from './widgets/box.js';
-import EventBox from './widgets/eventbox.js';
 import CenterBox from './widgets/centerbox.js';
+import EventBox from './widgets/eventbox.js';
+import Icon from './widgets/icon.js';
+import Label from './widgets/label.js';
+import Button from './widgets/button.js';
+import Slider from './widgets/slider.js';
+import Scrollable from './widgets/scrollable.js';
+import Stack from './widgets/stack.js';
+import Overlay from './widgets/overlay.js';
+import Revealer from './widgets/revealer.js';
+import ProgressBar from './widgets/progressbar.js';
+import Entry from './widgets/entry.js';
+import { Menu, MenuItem } from './widgets/menu.js';
 
 interface ServiceAPI {
     instance: {
@@ -193,6 +205,19 @@ export default function Widget(params: Widget | string | (() => Gtk.Widget) | Gt
 }
 
 Widget.widgets = widgets;
-Widget.Box = Box;
-Widget.EventBox = EventBox;
-Widget.CenterBox = CenterBox;
+Widget.Box = (params: object) => constructor(Box, params);
+Widget.CenterBox = (params: object) => constructor(CenterBox, params);
+Widget.EventBox = (params: object) => constructor(EventBox, params);
+Widget.Icon = (params: object) => constructor(Icon, params);
+Widget.Label = (params: object) => constructor(Label, params);
+Widget.Button = (params: object) => constructor(Button, params);
+Widget.Slider = (params: object) => constructor(Slider, params);
+Widget.Stack = (params: object) => constructor(Stack, params);
+Widget.Scrollable = (params: object) => constructor(Scrollable, params);
+Widget.Overlay = (params: object) => constructor(Overlay, params);
+Widget.Revealer = (params: object) => constructor(Revealer, params);
+Widget.ProgressBar = (params: object) => constructor(ProgressBar, params);
+Widget.Menu = (params: object) => constructor(Menu, params);
+Widget.MenuItem = (params: object) => constructor(MenuItem, params);
+Widget.Entry = (params: object) => constructor(Entry, params);
+Widget.Widget = ({ type, ...params }: { type: { new(...args: any[]): Gtk.Widget } }) => constructor(type, params);
