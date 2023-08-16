@@ -12,7 +12,7 @@ export default class Icon extends Gtk.Image {
                 'size': GObject.ParamSpec.int(
                     'size', 'Size', 'Size',
                     GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    0, 1024, 0,
+                    1, 1024, 1,
                 ),
                 'icon': GObject.ParamSpec.string(
                     'icon', 'Icon', 'Icon',
@@ -32,8 +32,8 @@ export default class Icon extends Gtk.Image {
         }
     }
 
-    _size = 0;
-    get size() { return this._size; }
+    _size = 16;
+    get size() { return this._size || 16; }
     set size(size: number) {
         size ||= 0;
         this._size = size;
