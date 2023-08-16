@@ -20,7 +20,7 @@ interface Active {
 class HyprlandService extends Service {
     static {
         Service.register(this, {
-            'urgent-window': ['int'],
+            'urgent-window': ['string'],
             'submap': ['string'],
             'keyboard-layout': ['string', 'string'],
         });
