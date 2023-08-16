@@ -50,11 +50,17 @@ const widgets: { [key: string]: (props: any) => Gtk.Widget } = {
     'menuitem': Widgets.MenutItem,
 };
 
+const widgetProviders: Map<Gtk.Widget, Gtk.CssProvider> = new Map();
 export function setStyle(widget: Gtk.Widget, css: string) {
+    const previous = widgetProviders.get(widget);
+    if (previous)
+        widget.get_style_context().remove_provider(previous);
+
     const provider = new Gtk.CssProvider();
     const style = `* { ${css} }`;
     provider.load_from_data(style);
     widget.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+    widgetProviders.set(widget, provider);
 }
 
 export function toggleClassName(widget: Gtk.Widget, className: string, condition = true) {
