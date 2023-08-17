@@ -16,7 +16,7 @@ import { Menu, MenuItem } from './widgets/menu.js';
 import Window from './widgets/window.js';
 import constructor from './widgets/shared.js';
 
-function Widget({ type, ...params }: { type: { new(...args: any[]): Gtk.Widget } }) {
+export default function Widget({ type, ...params }: { type: { new(...args: any[]): Gtk.Widget } }) {
     return constructor(type, params);
 }
 
@@ -36,5 +36,3 @@ Widget.Scrollable = (params: object) => constructor(Scrollable, params);
 Widget.Slider = (params: object) => constructor(Slider, params);
 Widget.Stack = (params: object) => constructor(Stack, params);
 Widget.Window = (params: object) => constructor(Window, params);
-
-export default Widget;

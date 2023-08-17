@@ -1,6 +1,7 @@
 import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
 import Service from './service.js';
-import { execAsync, subprocess } from '../utils.js';
+import { execAsync } from '../utils.js';
 
 const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
 
@@ -31,6 +32,9 @@ class HyprlandService extends Service {
     _workspaces: Map<number, object>;
     _clients: Map<string, object>;
 
+    _decoder = new TextDecoder();
+    _socketStream = new Gio.DataInputStream;
+
     constructor() {
         if (!HIS)
             console.error('Hyprland is not running');
@@ -55,12 +59,29 @@ class HyprlandService extends Service {
         this._syncWorkspaces();
         this._syncClients();
 
-        // using Gio for socket reading sometimes misses events
-        // so for now the best solution I found was using socat
-        const socat = `socat -U - UNIX-CONNECT:/tmp/hypr/${HIS}/.socket2.sock`;
-        subprocess(['bash', '-c', socat], line => {
-            this._onEvent(line);
-        });
+        this.watchSocket(new Gio.DataInputStream({
+            close_base_stream: true,
+            base_stream: new Gio.SocketClient()
+                .connect(new Gio.UnixSocketAddress({
+                    path: `/tmp/hypr/${HIS}/.socket2.sock`,
+                }), null)
+                .get_input_stream(),
+        }));
+    }
+
+    watchSocket(stream: Gio.DataInputStream) {
+        stream.read_line_async(
+            0, null,
+            (stream, result) => {
+                if (!stream) {
+                    console.error('Error reading Hyprland socket');
+                    return;
+                }
+
+                const [line] = stream.read_line_finish(result);
+                this._onEvent(this._decoder.decode(line));
+                this.watchSocket(stream);
+            });
     }
 
     async _syncMonitors() {

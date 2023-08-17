@@ -18,6 +18,7 @@ export default class App extends Gtk.Application {
     private _cssProviders: Gtk.CssProvider[] = [];
 
     static configPath: string;
+    static configDir: string;
     static config: Config;
     static instance: App;
 
@@ -123,6 +124,10 @@ export default class App extends Gtk.Application {
         });
 
         this._windows = new Map();
+
+        const dir = config.split('/');
+        dir.pop();
+        App.configDir = dir.join('/');
         App.configPath = config;
         App.instance = this;
     }
@@ -140,7 +145,7 @@ export default class App extends Gtk.Application {
             App.config = config;
 
             if (!config) {
-                this.quit();
+                console.error('Missing default export');
                 return;
             }
 

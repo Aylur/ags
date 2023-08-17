@@ -62,7 +62,7 @@ export default class Icon extends Gtk.Image {
     }
 
     vfunc_draw(cr: Context): boolean {
-        if (this._size)
+        if (this._size > 1)
             return super.vfunc_draw(cr);
 
         const size = this.get_style_context()
