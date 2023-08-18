@@ -5,8 +5,6 @@ import GObject from 'gi://GObject';
 
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name}`;
-export const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
-export const NOTIFICATIONS_CACHE_PATH = `${CACHE_DIR}/notifications`;
 
 export function readFile(path: string) {
     const f = Gio.File.new_for_path(path);
@@ -129,19 +127,8 @@ export function lookUpIcon(name?: string, size = 16) {
 }
 
 export function ensureDirectory(path?: string) {
-    if (path && !GLib.file_test(path, GLib.FileTest.EXISTS)) {
+    if (path && !GLib.file_test(path, GLib.FileTest.EXISTS))
         Gio.File.new_for_path(path).make_directory_with_parents(null);
-    }
-    else {
-        [
-            MEDIA_CACHE_PATH,
-            NOTIFICATIONS_CACHE_PATH,
-        ]
-            .forEach(path => {
-                if (!GLib.file_test(path, GLib.FileTest.EXISTS))
-                    Gio.File.new_for_path(path).make_directory_with_parents(null);
-            });
-    }
 }
 
 export function execAsync(cmd: string | string[]): Promise<string> {

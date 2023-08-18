@@ -4,7 +4,10 @@ import GLib from 'gi://GLib';
 import Service from './service.js';
 import App from '../app.js';
 import { NotificationIFace } from '../dbus/notifications.js';
-import { NOTIFICATIONS_CACHE_PATH, ensureDirectory, readFileAsync, timeout, writeFile } from '../utils.js';
+import { CACHE_DIR, ensureDirectory, readFileAsync, timeout, writeFile } from '../utils.js';
+
+const NOTIFICATIONS_CACHE_PATH = `${CACHE_DIR}/notifications`;
+const CACHE_FILE = NOTIFICATIONS_CACHE_PATH + '/notifications.json';
 
 interface action {
     id: string
@@ -183,8 +186,7 @@ class NotificationsService extends Service {
 
     async _readFromFile() {
         try {
-            const path = NOTIFICATIONS_CACHE_PATH + '/notifications.json';
-            const file = await readFileAsync(path);
+            const file = await readFileAsync(CACHE_FILE);
             const notifications = JSON.parse(file as string) as Notification[];
             notifications.forEach(n => {
                 if (n.id > this._idCount)
@@ -207,7 +209,7 @@ class NotificationsService extends Service {
         if (!image_data)
             return null;
 
-        ensureDirectory();
+        ensureDirectory(NOTIFICATIONS_CACHE_PATH);
         const fileName = NOTIFICATIONS_CACHE_PATH + '/' + name.replace(/[^a-zA-Z0-9]/g, '');
         const image = image_data.recursiveUnpack();
         const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
@@ -237,8 +239,8 @@ class NotificationsService extends Service {
             notifications.push(n);
         }
 
-        ensureDirectory();
-        writeFile(JSON.stringify(notifications, null, 2), NOTIFICATIONS_CACHE_PATH + '/notifications.json').catch();
+        ensureDirectory(NOTIFICATIONS_CACHE_PATH);
+        writeFile(JSON.stringify(notifications, null, 2), CACHE_FILE).catch(logError);
     }
 }
 

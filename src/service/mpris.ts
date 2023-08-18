@@ -5,7 +5,9 @@ import Service from './service.js';
 import { ensureDirectory, timeout } from '../utils.js';
 import { MprisPlayerProxy, MprisProxy, TMprisProxy, TPlayerProxy, MprisMetadata } from '../dbus/mpris.js';
 import { DBusProxy, TDBusProxy } from '../dbus/dbus.js';
-import { MEDIA_CACHE_PATH } from '../utils.js';
+import { CACHE_DIR } from '../utils.js';
+
+const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
 
 type PlaybackStatus = 'Playing' | 'Paused' | 'Stopped';
 type LoopStatus = 'None' | 'Track' | 'Playlist';
@@ -144,8 +146,7 @@ class MprisPlayer extends GObject.Object {
         if (GLib.file_test(coverPath, GLib.FileTest.EXISTS))
             return;
 
-        ensureDirectory();
-
+        ensureDirectory(MEDIA_CACHE_PATH);
         Gio.File.new_for_uri(trackCoverUrl).copy_async(
             Gio.File.new_for_path(coverPath),
             Gio.FileCopyFlags.OVERWRITE,
