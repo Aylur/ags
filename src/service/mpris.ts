@@ -149,16 +149,13 @@ class MprisPlayer extends GObject.Object {
     }
 
     _cacheCoverArt() {
-        this.coverPath = MEDIA_CACHE_PATH + '/' +
-            `${this.trackArtists.join(', ')}-${this.trackTitle}`
-                .replace(/[\,\*\?\"\<\>\|\#\:\?\/\'\(\)]/g, '');
-
-        if (this.coverPath.length > 255)
-            this.coverPath = this.coverPath.substring(0, 255);
-
         const { trackCoverUrl, coverPath } = this;
-        if (trackCoverUrl === '' || coverPath === '')
+        if (trackCoverUrl === '') {
+            this.coverPath = '';
             return;
+        }
+
+        this.coverPath = MEDIA_CACHE_PATH + '/' + GLib.compute_checksum_for_string(GLib.ChecksumType.SHA256, trackCoverUrl, 255);
 
         if (GLib.file_test(coverPath, GLib.FileTest.EXISTS))
             return;
