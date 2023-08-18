@@ -156,14 +156,16 @@ export default class App extends Gtk.Application {
                 App.applyCss(config.style);
 
             if (config.windows && !Array.isArray(config.windows)) {
-                console.error(`windows attribute has to be an array, but it is a ${typeof config.windows}`);
+                console.error('windows attribute has to be an array, ' +
+                    `but it is a ${typeof config.windows}`);
                 this.emit('config-parsed');
                 return;
             }
 
             config.windows?.forEach(w => {
                 if (!(w instanceof Gtk.Window)) {
-                    console.error(`${w} is not an instanceof Gtk.Window, but ${typeof w}`);
+                    console.error(`${w} is not an instanceof Gtk.Window, ` +
+                        ` but it is of type ${typeof w}`);
                     return;
                 }
 
@@ -198,11 +200,12 @@ export default class App extends Gtk.Application {
     }
 
     _exportActions() {
-        this._addAction('inspector', () => Gtk.Window.set_interactive_debugging(true));
+        this._addAction('inspector',
+            () => Gtk.Window.set_interactive_debugging(true));
         this._addAction('quit', App.quit);
 
-        this._addAction('toggle-window', (_, arg) =>
-            App.toggleWindow(arg.unpack() as string), new GLib.VariantType('s'));
+        this._addAction('toggle-window', (_, arg) => App.toggleWindow(
+            arg.unpack() as string), new GLib.VariantType('s'));
 
         this._addAction('run-js', (_, arg) => {
             const fn = new Function(arg.unpack() as string);

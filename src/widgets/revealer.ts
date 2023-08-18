@@ -31,8 +31,9 @@ export default class Revealer extends Gtk.Revealer {
             return;
         }
 
-        // @ts-ignore
-        this.transitionType = Gtk.RevealerTransitionType[transition.toUpperCase()];
+        this.transitionType =
+            // @ts-ignore
+            Gtk.RevealerTransitionType[transition.toUpperCase()];
     }
 
     // @ts-ignore

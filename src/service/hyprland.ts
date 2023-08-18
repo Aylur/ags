@@ -88,7 +88,8 @@ class HyprlandService extends Service {
         try {
             const monitors = await execAsync('hyprctl -j monitors');
             this._monitors = new Map();
-            (JSON.parse(monitors) as { [key: string]: any }[]).forEach(monitor => {
+            const json = JSON.parse(monitors) as { [key: string]: any }[];
+            json.forEach(monitor => {
                 this._monitors.set(monitor.name, monitor);
                 if (monitor.focused) {
                     this._active.monitor = monitor.name;
@@ -104,7 +105,8 @@ class HyprlandService extends Service {
         try {
             const workspaces = await execAsync('hyprctl -j workspaces');
             this._workspaces = new Map();
-            (JSON.parse(workspaces) as { [key: string]: any }[]).forEach(ws => {
+            const json = JSON.parse(workspaces) as { [key: string]: any }[];
+            json.forEach(ws => {
                 this._workspaces.set(ws.id, ws);
             });
         } catch (error) {
@@ -116,8 +118,10 @@ class HyprlandService extends Service {
         try {
             const clients = await execAsync('hyprctl -j clients');
             this._clients = new Map();
-            (JSON.parse(clients as string) as { [key: string]: any }[]).forEach(client => {
-                this._clients.set((client.address as string).substring(2), client);
+            const json = JSON.parse(clients) as { [key: string]: any }[];
+            json.forEach(client => {
+                this._clients.set(
+                    (client.address as string).substring(2), client);
             });
         } catch (error) {
             logError(error as Error);

@@ -16,7 +16,13 @@ import { Menu, MenuItem } from './widgets/menu.js';
 import Window from './widgets/window.js';
 import constructor from './widgets/shared.js';
 
-export default function Widget({ type, ...params }: { type: { new(...args: any[]): Gtk.Widget } }) {
+interface Params {
+    type: {
+        new(...args: any[]): Gtk.Widget
+    }
+}
+
+export default function Widget({ type, ...params }: Params) {
     return constructor(type, params);
 }
 

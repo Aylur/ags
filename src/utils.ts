@@ -21,7 +21,8 @@ export function readFileAsync(path: string): Promise<string> {
                 const [success, bytes] = file.load_contents_finish(res);
                 return success
                     ? resolve(new TextDecoder().decode(bytes))
-                    : reject(new Error(`reading file ${path} was unsuccessful`));
+                    : reject(new Error(
+                        `reading file ${path} was unsuccessful`));
             } catch (error) {
                 reject(error);
             }
@@ -51,7 +52,13 @@ export function writeFile(string: string, path: string): Promise<Gio.File> {
     });
 }
 
-export function bulkConnect(service: GObject.Object, list: [event: string, callback: (...args: any[]) => void][]) {
+export function bulkConnect(
+    service: GObject.Object,
+    list: [
+        event: string,
+        callback: (...args: any[]) => void
+    ][],
+) {
     const ids = [];
     for (const [event, callback] of list)
         ids.push(service.connect(event, callback));
@@ -70,12 +77,17 @@ export function connect(
     callback: (widget: Gtk.Widget, ...args: any[]) => void,
     event = 'changed',
 ) {
-    const bind = service.connect(event, (_s: GObject.Object, ...args: any[]) => callback(widget, ...args));
+    const bind = service.connect(
+        event, (_s, ...args: any[]) => callback(widget, ...args));
+
     widget.connect('destroy', () => service.disconnect(bind));
     timeout(10, () => callback(widget));
 }
 
-export function interval(interval: number, callback: () => void, widget: Gtk.Widget) {
+export function interval(
+    interval: number,
+    callback: () => void, widget: Gtk.Widget,
+) {
     callback();
     const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, interval, () => {
         callback();
@@ -95,7 +107,10 @@ export function timeout(ms: number, callback: () => void) {
     });
 }
 
-export function runCmd(cmd: string | ((...args: any[]) => boolean), ...args: any[]) {
+export function runCmd(
+    cmd: string | ((...args: any[]) => boolean),
+    ...args: any[]
+) {
     if (typeof cmd !== 'string' && typeof cmd !== 'function') {
         console.error('Command has to be string or function');
         return false;

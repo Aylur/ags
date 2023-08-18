@@ -74,23 +74,28 @@ export default class Button extends Gtk.Button {
 
     vfunc_button_release_event(event: Gdk.EventButton): boolean {
         this.unset_state_flags(Gtk.StateFlags.ACTIVE);
-        if (this.onPrimaryClickRelease && event.button === Gdk.BUTTON_PRIMARY)
+        if (this.onPrimaryClickRelease &&
+            event.button === Gdk.BUTTON_PRIMARY)
             return runCmd(this.onPrimaryClickRelease, this, event);
 
-        else if (this.onSecondaryClickRelease && event.button === Gdk.BUTTON_SECONDARY)
+        else if (this.onSecondaryClickRelease &&
+            event.button === Gdk.BUTTON_SECONDARY)
             return runCmd(this.onSecondaryClickRelease, this, event);
 
-        else if (this.onMiddleClickRelease && event.button === Gdk.BUTTON_MIDDLE)
+        else if (this.onMiddleClickRelease &&
+            event.button === Gdk.BUTTON_MIDDLE)
             return runCmd(this.onMiddleClickRelease, this, event);
 
         return super.vfunc_button_release_event(event);
     }
 
     vfunc_scroll_event(event: Gdk.EventScroll): boolean {
-        if (this.onScrollUp && event.direction === Gdk.ScrollDirection.UP)
+        if (this.onScrollUp &&
+            event.direction === Gdk.ScrollDirection.UP)
             return runCmd(this.onScrollUp, this, event);
 
-        else if (this.onScrollDown && event.direction === Gdk.ScrollDirection.DOWN)
+        else if (this.onScrollDown &&
+            event.direction === Gdk.ScrollDirection.DOWN)
             return runCmd(this.onScrollDown, this, event);
 
         return super.vfunc_scroll_event(event);

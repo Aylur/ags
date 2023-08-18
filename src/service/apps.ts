@@ -89,7 +89,8 @@ class ApplicationsService extends Service {
         Gio.AppInfoMonitor.get().connect('changed', this._sync.bind(this));
 
         try {
-            this.frequents = JSON.parse(readFile(CACHE_FILE)) as { [app: string]: number };
+            this.frequents =
+                JSON.parse(readFile(CACHE_FILE)) as { [app: string]: number };
         } catch (_) {
             this.frequents = {};
         }

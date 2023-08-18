@@ -30,7 +30,8 @@ export default class Overlay extends Gtk.Overlay {
     get pass_through() { return this._passthrough; }
     set pass_through(passthrough: boolean) {
         this._passthrough = passthrough;
-        this.get_children().forEach(ch => this.set_overlay_pass_through(ch, passthrough));
+        this.get_children().forEach(ch =>
+            this.set_overlay_pass_through(ch, passthrough));
     }
 
     _child!: Gtk.Widget;

@@ -24,7 +24,10 @@ class Stream extends GObject.Object {
             'icon-name',
             'id',
             'state',
-        ].map(prop => stream.connect(`notify::${prop}`, () => this.emit('changed')));
+        ].map(prop => stream.connect(
+            `notify::${prop}`, () => this.emit('changed'),
+        ));
+
         this.emit('changed');
     }
 
@@ -34,7 +37,8 @@ class Stream extends GObject.Object {
     get name() { return this._stream.name; }
 
     get volume() {
-        return this._stream.volume / Audio._instance._control.get_vol_max_norm();
+        const max = Audio._instance._control.get_vol_max_norm();
+        return this._stream.volume / max;
     }
 
     set volume(value) { // 0..100
@@ -44,7 +48,8 @@ class Stream extends GObject.Object {
         if (value < 0)
             value = 0;
 
-        this._stream.set_volume(value * Audio._instance._control.get_vol_max_norm());
+        const max = Audio._instance._control.get_vol_max_norm();
+        this._stream.set_volume(value * max);
         this._stream.push_volume();
     }
 
@@ -79,12 +84,16 @@ class AudioService extends Service {
 
     constructor() {
         super();
-        this._control = new Gvc.MixerControl({ name: `${pkg.name} mixer control` });
+        this._control = new Gvc.MixerControl({
+            name: `${pkg.name} mixer control`,
+        });
         this._streams = new Map();
 
         bulkConnect((this._control as unknown) as GObject.Object, [
-            ['default-sink-changed', (_c, id: number) => this._defaultChanged(id, 'speaker')],
-            ['default-source-changed', (_c, id: number) => this._defaultChanged(id, 'microphone')],
+            ['default-sink-changed', (_c, id: number) =>
+                this._defaultChanged(id, 'speaker')],
+            ['default-source-changed', (_c, id: number) =>
+                this._defaultChanged(id, 'microphone')],
             ['stream-added', this._streamAdded.bind(this)],
             ['stream-removed', this._streamRemoved.bind(this)],
         ]);
@@ -100,7 +109,10 @@ class AudioService extends Service {
         if (!stream)
             return;
 
-        this[`_${type}ID`] = stream.connect('changed', () => this.emit(`${type}-changed`));
+        this[`_${type}ID`] = stream.connect(
+            'changed',
+            () => this.emit(`${type}-changed`),
+        );
         this[`_${type}`] = stream;
         this.emit(`${type}-changed`);
         this.emit('changed');
@@ -152,13 +164,15 @@ export default class Audio {
         return Audio._instance;
     }
 
+    // eslint-disable-next-line max-len
+    static get microphones() { return Audio.instance.getStreams(Gvc.MixerSource); }
     static get apps() { return Audio.instance.getStreams(Gvc.MixerSinkInput); }
     static get speakers() { return Audio.instance.getStreams(Gvc.MixerSink); }
-    static get microphones() { return Audio.instance.getStreams(Gvc.MixerSource); }
 
     static get speaker() { return Audio.instance._speaker; }
     static set speaker(stream: Stream) { Audio.instance.setSpeaker(stream); }
 
-    static get microphone() { return Audio.instance._microphone; }
+    // eslint-disable-next-line max-len
     static set microphone(stream: Stream) { Audio.instance.setMicrophone(stream); }
+    static get microphone() { return Audio.instance._microphone; }
 }

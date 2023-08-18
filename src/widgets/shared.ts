@@ -3,7 +3,11 @@ import { interval } from '../utils.js';
 
 interface ServiceAPI {
     instance: {
-        connectWidget: (widget: Gtk.Widget, callback: (widget: Gtk.Widget, ...args: any[]) => void, event?: string) => void
+        connectWidget: (
+            widget: Gtk.Widget,
+            callback: (widget: Gtk.Widget, ...args: any[]) => void,
+            event?: string
+        ) => void
     }
 }
 
@@ -30,11 +34,16 @@ function setStyle(widget: Gtk.Widget, css: string) {
     const provider = new Gtk.CssProvider();
     const style = `* { ${css} }`;
     provider.load_from_data(style);
-    widget.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+    widget.get_style_context()
+        .add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
     widgetProviders.set(widget, provider);
 }
 
-function toggleClassName(widget: Gtk.Widget, className: string, condition = true) {
+function toggleClassName(
+    widget: Gtk.Widget,
+    className: string,
+    condition = true,
+) {
     condition
         ? widget.get_style_context().add_class(className)
         : widget.get_style_context().remove_class(className);
@@ -59,7 +68,8 @@ function parseCommon(widget: Gtk.Widget, {
     widget.setStyle = (css: string) => setStyle(widget, css);
 
     // @ts-ignore
-    widget.toggleClassName = (className: string, condition = true) => toggleClassName(widget, className, condition);
+    widget.toggleClassName = (className: string, condition = true) =>
+        toggleClassName(widget, className, condition);
 
     if (typeof className === 'string') {
         className.split(' ').forEach(cn => {
@@ -110,7 +120,10 @@ function parseCommon(widget: Gtk.Widget, {
         setup(widget);
 }
 
-export default function constructor(ctor: { new(...args: any[]): Gtk.Widget }, params: CommonParams | string = {}) {
+export default function constructor(
+    ctor: { new(...args: any[]): Gtk.Widget },
+    params: CommonParams | string = {},
+) {
     let widget;
     if (typeof params === 'string') {
         widget = new ctor(params);

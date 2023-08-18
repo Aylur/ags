@@ -72,7 +72,8 @@ export default class Window extends Gtk.Window {
     get layet() { return this._layer; }
     set layer(layer: string) {
         this._layer;
-        GtkLayerShell.set_layer(this, GtkLayerShell.Layer[layer?.toUpperCase()]);
+        GtkLayerShell.set_layer(this,
+            GtkLayerShell.Layer[layer?.toUpperCase()]);
     }
 
     _anchor: string[] = [];
@@ -108,23 +109,28 @@ export default class Window extends Gtk.Window {
 
         switch (margin.length) {
             case 1:
-                margins = [['TOP', 0], ['RIGHT', 0], ['BOTTOM', 0], ['LEFT', 0]];
+                margins = [
+                    ['TOP', 0], ['RIGHT', 0], ['BOTTOM', 0], ['LEFT', 0]];
                 break;
             case 2:
-                margins = [['TOP', 0], ['RIGHT', 1], ['BOTTOM', 0], ['LEFT', 1]];
+                margins = [
+                    ['TOP', 0], ['RIGHT', 1], ['BOTTOM', 0], ['LEFT', 1]];
                 break;
             case 3:
-                margins = [['TOP', 0], ['RIGHT', 1], ['BOTTOM', 2], ['LEFT', 1]];
+                margins = [
+                    ['TOP', 0], ['RIGHT', 1], ['BOTTOM', 2], ['LEFT', 1]];
                 break;
             case 4:
-                margins = [['TOP', 0], ['RIGHT', 1], ['BOTTOM', 2], ['LEFT', 3]];
+                margins = [
+                    ['TOP', 0], ['RIGHT', 1], ['BOTTOM', 2], ['LEFT', 3]];
                 break;
             default:
                 break;
         }
 
         margins.forEach(([side, i]) =>
-            GtkLayerShell.set_margin(this, GtkLayerShell.Edge[side], (margin as number[])[i]),
+            GtkLayerShell.set_margin(this,
+                GtkLayerShell.Edge[side], (margin as number[])[i]),
         );
 
         this._margins = margin;
@@ -138,14 +144,18 @@ export default class Window extends Gtk.Window {
 
         if (popup) {
             this.connect('key-press-event', (_, event) => {
-                if (event.get_keyval()[1] === Gdk.KEY_Escape)
-                    App.getWindow(this.name) ? App.closeWindow(this.name) : this.hide();
+                if (event.get_keyval()[1] === Gdk.KEY_Escape) {
+                    App.getWindow(this.name)
+                        ? App.closeWindow(this.name)
+                        : this.hide();
+                }
             });
         }
     }
 
     get focusable() {
-        return GtkLayerShell.get_keyboard_mode(this) === GtkLayerShell.KeyboardMode.ON_DEMAND;
+        return GtkLayerShell.get_keyboard_mode(this) ===
+            GtkLayerShell.KeyboardMode.ON_DEMAND;
     }
 
     set focusable(focusable: boolean) {

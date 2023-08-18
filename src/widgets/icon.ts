@@ -24,7 +24,10 @@ export default class Icon extends Gtk.Image {
     }
 
     constructor(params: object | string) {
-        const { icon = '', size = 0 } = params as { icon: string, size: number };
+        const {
+            icon = '',
+            size = 0,
+        } = params as { icon: string, size: number };
         super(typeof params === 'string' ? { icon: params } : params);
 
         // set correct size after construct
@@ -53,7 +56,9 @@ export default class Icon extends Gtk.Image {
         if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
             this._file = true;
             this.set_from_pixbuf(
-                GdkPixbuf.Pixbuf.new_from_file_at_size(icon, this.size, this.size),
+                GdkPixbuf.Pixbuf.new_from_file_at_size(
+                    icon, this.size, this.size,
+                ),
             );
         }
         else {

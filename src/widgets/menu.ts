@@ -24,8 +24,11 @@ export class Menu extends Gtk.Menu {
         this.onPopup = onPopup;
         this.onMoveScroll = onMoveScroll;
 
-        this.connect('popped-up', (...args) => runCmd(this.onPopup, ...args));
-        this.connect('move-scroll', (...args) => runCmd(this.onMoveScroll, ...args));
+        this.connect('popped-up', (...args) =>
+            runCmd(this.onPopup, ...args));
+
+        this.connect('move-scroll', (...args) =>
+            runCmd(this.onMoveScroll, ...args));
     }
 
     get children() { return this.get_children(); }

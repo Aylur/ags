@@ -25,12 +25,15 @@ OPTIONS:
     -v, --version           Print version and exit
     -q, --quit              Kills AGS
     -c, --config            Path to the config file. Default: ${DEFAULT_CONF}
-    -b, --bus-name          Bus name of the process, can be used to launch multiple instances
-    -i, --inspector         Open up the Gtk debug tool, useful for fetching css selectors
+    -b, --bus-name          Bus name of the process,
+                            can be used to launch multiple instances
+    -i, --inspector         Open up the Gtk debug tool,
+                            useful for fetching css selectors
     -t, --toggle-window     Show or hide a window
     -r, --run-js            Evaluate given string as a function and execute it.
-                              NOTE: It won't print anything, but if the function logs something,
-                              it can be seen on AGS's stdout.
+                            NOTE: It won't print anything,
+                            but if the function logs something,
+                            it can be seen on AGS's stdout.
     --clear-cache           Removes ${Utils.CACHE_DIR}
 
 EXAMPLES
@@ -38,12 +41,20 @@ EXAMPLES
     ags --run-js "ags.Service.Mpris.getPlayer()?.playPause()"
     ags --toggle-window "window-name"`;
 
-function client(busName: string, inspector: boolean, runJs: string, toggleWindow: string, quit: boolean) {
+function client(
+    busName: string,
+    inspector: boolean,
+    runJs: string,
+    toggleWindow: string,
+    quit: boolean,
+) {
     const actions = Gio.DBusActionGroup.get(
         Gio.DBus.session, APP_BUS(busName), APP_PATH(busName));
 
-    if (toggleWindow)
-        actions.activate_action('toggle-window', new GLib.Variant('s', toggleWindow));
+    if (toggleWindow) {
+        actions.activate_action('toggle-window',
+            new GLib.Variant('s', toggleWindow));
+    }
 
     if (runJs)
         actions.activate_action('run-js', new GLib.Variant('s', runJs));
