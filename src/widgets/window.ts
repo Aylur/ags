@@ -36,13 +36,13 @@ export default class Window extends Gtk.Window {
         GtkLayerShell.init_for_window(this);
         GtkLayerShell.set_namespace(this, this.name);
 
-        this.show_all();
         this.anchor = anchor;
         this.exclusive = exclusive;
         this.focusable = focusable;
         this.layer = layer;
         this.margins = margins;
         this.monitor = monitor;
+        this.show_all();
         this.popup = popup;
         this.visible = visible === true || visible === null && !popup;
     }
@@ -52,9 +52,9 @@ export default class Window extends Gtk.Window {
             return;
 
         if (typeof monitor === 'number') {
-            const display = Gdk.Display.get_default();
-            display
-                ? GtkLayerShell.set_monitor(this, display.get_monitor(monitor))
+            const m = Gdk.Display.get_default()?.get_monitor(monitor);
+            m
+                ? GtkLayerShell.set_monitor(this, m)
                 : console.error(`Could not find monitor with id: ${monitor}`);
         }
     }
@@ -63,7 +63,9 @@ export default class Window extends Gtk.Window {
     get exclusive() { return this._exclusive; }
     set exclusive(exclusive: boolean) {
         this._exclusive = exclusive;
-        GtkLayerShell.auto_exclusive_zone_enable(this);
+        exclusive
+            ? GtkLayerShell.auto_exclusive_zone_enable(this)
+            : GtkLayerShell.set_exclusive_zone(this, 0);
     }
 
     _layer = 'top';
@@ -157,7 +159,7 @@ export default class Window extends Gtk.Window {
     set child(child: Gtk.Widget) {
         const widget = this.get_child();
         if (widget)
-            this.remove(widget);
+            widget.destroy();
 
         if (child)
             this.add(child);

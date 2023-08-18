@@ -85,6 +85,9 @@ export default class Slider extends Gtk.Scale {
     _value = 0;
     get value() { return this._value; }
     set value(value: number) {
+        if (this.dragging)
+            return;
+
         this._value = value;
         this.notify('value');
     }

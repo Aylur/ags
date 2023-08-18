@@ -14,23 +14,33 @@ import './service/network.js';
 import './service/notifications.js';
 
 const APP_BUS = (name: string) => 'com.github.Aylur.' + name;
-const APP_PATH = '/com/github/Aylur/' + pkg.name;
+const APP_PATH = (name: string) => '/com/github/Aylur/' + name;
+const DEFAULT_CONF = `${GLib.get_user_config_dir()}/${pkg.name}/config.js`;
 
 const help = (bin: string) => `USAGE:
-    ${bin} [COMMAND] <ARGUMENTS>
+    ${bin} [OPTIONS]
 
-COMMANDS:
-    help\t\tPrint this help
-    version\t\tPrint version
-    quit\t\tKills ags
-    clear-cache\t\tRemoves ${Utils.CACHE_DIR}
-    toggle-window name\tToggle window
-    run-js string\tRuns string as a js function
-    inspector\t\tOpen debugger`;
+OPTIONS:
+    -h, --help              Print this help and exit
+    -v, --version           Print version and exit
+    -q, --quit              Kills AGS
+    -c, --config            Path to the config file. Default: ${DEFAULT_CONF}
+    -b, --bus-name          Bus name of the process, can be used to launch multiple instances
+    -i, --inspector         Open up the Gtk debug tool, useful for fetching css selectors
+    -t, --toggle-window     Show or hide a window
+    -r, --run-js            Evaluate given string as a function and execute it.
+                              NOTE: It won't print anything, but if the function logs something,
+                              it can be seen on AGS's stdout.
+    --clear-cache           Removes ${Utils.CACHE_DIR}
 
-function client(bus: string, inspector: boolean, runJs: string, toggleWindow: string, quit: boolean) {
+EXAMPLES
+    ags --config $HOME/.config/ags/main.js --bus-name second-instance
+    ags --run-js "ags.Service.Mpris.getPlayer()?.playPause()"
+    ags --toggle-window "window-name"`;
+
+function client(busName: string, inspector: boolean, runJs: string, toggleWindow: string, quit: boolean) {
     const actions = Gio.DBusActionGroup.get(
-        Gio.DBus.session, bus, APP_PATH);
+        Gio.DBus.session, APP_BUS(busName), APP_PATH(busName));
 
     if (toggleWindow)
         actions.activate_action('toggle-window', new GLib.Variant('s', toggleWindow));
@@ -62,14 +72,14 @@ function isRunning(dbusName: string) {
 
 export function main(args: string[]) {
     let appBus = pkg.name;
-    let config = `${GLib.get_user_config_dir()}/${pkg.name}/config.js`;
+    let config = DEFAULT_CONF;
     let inspector = false;
     let runJs = '';
     let toggleWindow = '';
     let quit = false;
 
-    args.forEach((arg, i) => {
-        switch (arg) {
+    for (let i = 1; i < args.length; ++i) {
+        switch (args[i]) {
             case 'version':
             case '-v':
             case '--version':
@@ -89,12 +99,12 @@ export function main(args: string[]) {
 
             case '-b':
             case '--bus-name':
-                appBus = args[i + 1];
+                appBus = args[++i];
                 break;
 
             case '-c':
             case '--config':
-                config = args[i + 1];
+                config = args[++i];
                 break;
 
             case 'inspector':
@@ -106,13 +116,13 @@ export function main(args: string[]) {
             case 'run-js':
             case '-r':
             case '--run-js':
-                runJs = args[i + 1];
+                runJs = args[++i];
                 break;
 
             case 'toggle-window':
             case '-t':
             case '--toggle-window':
-                toggleWindow = args[i + 1];
+                toggleWindow = args[++i];
                 break;
 
             case 'quit':
@@ -121,10 +131,9 @@ export function main(args: string[]) {
                 quit = true;
                 break;
 
-            default:
-                break;
+            default: break;
         }
-    });
+    }
 
     // @ts-ignore
     globalThis.ags = {
@@ -138,15 +147,15 @@ export function main(args: string[]) {
     if (!isRunning(bus)) {
         const app = new App({ bus, config });
         app.connect('config-parsed', () => {
-            client(bus, inspector, runJs, toggleWindow, quit);
+            client(appBus, inspector, runJs, toggleWindow, quit);
         });
 
         // @ts-ignore
         return app.runAsync(null);
     }
 
-    client(bus, inspector, runJs, toggleWindow, quit);
+    client(appBus, inspector, runJs, toggleWindow, quit);
 
-    if (args.length === 1)
-        print('Ags is already running');
+    if (!inspector && !runJs && !toggleWindow && !quit)
+        print(`Ags with busname "${appBus}" is already running`);
 }

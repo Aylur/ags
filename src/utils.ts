@@ -9,14 +9,9 @@ export const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
 export const NOTIFICATIONS_CACHE_PATH = `${CACHE_DIR}/notifications`;
 
 export function readFile(path: string) {
-    try {
-        const f = Gio.File.new_for_path(path);
-        const [, bytes] = f.load_contents(null);
-        return new TextDecoder().decode(bytes);
-    } catch (error) {
-        logError(error as Error);
-        return null;
-    }
+    const f = Gio.File.new_for_path(path);
+    const [, bytes] = f.load_contents(null);
+    return new TextDecoder().decode(bytes);
 }
 
 export function readFileAsync(path: string): Promise<string> {
@@ -211,8 +206,10 @@ export function subprocess(
         );
 
         const pipe = proc.get_stdout_pipe();
-        if (!pipe)
-            return onError(new Error(`subprocess ${cmd} stdout pipe is null`));
+        if (!pipe) {
+            onError(new Error(`subprocess ${cmd} stdout pipe is null`));
+            return null;
+        }
 
         const stdout = new Gio.DataInputStream({
             base_stream: pipe,
@@ -220,7 +217,9 @@ export function subprocess(
         });
 
         read(stdout);
+        return proc;
     } catch (e) {
-        return onError(e as Error);
+        onError(e as Error);
+        return null;
     }
 }

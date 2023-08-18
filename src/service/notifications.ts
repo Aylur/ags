@@ -46,7 +46,7 @@ class NotificationsService extends Service {
     _notifications: Map<number, Notification>;
     _dnd = false;
     _idCount = 0;
-    _timeout = App.config.notificationPopupTimeout || 3000;
+    _timeout = App.config?.notificationPopupTimeout || 3000;
 
     constructor() {
         super();

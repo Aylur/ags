@@ -26,25 +26,27 @@ export default class Icon extends Gtk.Image {
     constructor(params: object | string) {
         const { icon = '', size = 0 } = params as { icon: string, size: number };
         super(typeof params === 'string' ? { icon: params } : params);
+
+        // set correct size after construct
         if (typeof params === 'object') {
             this.size = size;
             this.icon = icon;
         }
     }
 
-    _size = 16;
-    get size() { return this._size || 16; }
+    _size = 1;
+    get size() { return this._size || 1; }
     set size(size: number) {
-        size ||= 0;
+        size ||= 1;
         this._size = size;
-        this.icon = this._icon;
+        this.queue_draw();
     }
 
     _file = false;
     _icon = '';
     get icon() { return this._icon; }
     set icon(icon: string) {
-        if (!icon)
+        if (!icon || this._icon === icon)
             return;
 
         this._icon = icon;
@@ -66,7 +68,7 @@ export default class Icon extends Gtk.Image {
             return super.vfunc_draw(cr);
 
         const size = this.get_style_context()
-            .get_property('font-size', Gtk.StateFlags.NORMAL) as number || 11;
+            .get_property('font-size', Gtk.StateFlags.NORMAL) as number;
 
         if (this._file) {
             this.set_from_pixbuf(

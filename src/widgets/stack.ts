@@ -42,7 +42,7 @@ export default class Stack extends Gtk.Stack {
     _items: [string, Gtk.Widget][] = [];
     get items() { return this._items; }
     set items(items: [string, Gtk.Widget][]) {
-        this.get_children().forEach(ch => this.remove(ch));
+        this.get_children().forEach(ch => ch.destroy());
         this._items = [];
         items.forEach(([name, widget]) => {
             widget && this.add_named(widget, name);

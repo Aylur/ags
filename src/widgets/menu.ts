@@ -30,7 +30,7 @@ export class Menu extends Gtk.Menu {
 
     get children() { return this.get_children(); }
     set children(children: Gtk.Widget[] | null) {
-        this.get_children().forEach(ch => this.remove(ch));
+        this.get_children().forEach(ch => ch.destroy());
 
         if (!children)
             return;
@@ -77,7 +77,7 @@ export class MenuItem extends Gtk.MenuItem {
     set child(child: Gtk.Widget) {
         const widget = this.get_child();
         if (widget)
-            this.remove(widget);
+            widget.destroy();
 
         if (child)
             this.add(child);

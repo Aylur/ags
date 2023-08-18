@@ -52,7 +52,7 @@ export default class EventBox extends Gtk.EventBox {
     set child(child: Gtk.Widget) {
         const widget = this.get_child();
         if (widget)
-            this.remove(widget);
+            widget.destroy();
 
         if (child)
             this.add(child);

@@ -134,8 +134,8 @@ export default class App extends Gtk.Application {
 
     vfunc_activate() {
         this.hold();
-        this._exportActions();
         this._load();
+        this._exportActions();
     }
 
     async _load() {
@@ -146,6 +146,7 @@ export default class App extends Gtk.Application {
 
             if (!config) {
                 console.error('Missing default export');
+                this.emit('config-parsed');
                 return;
             }
 
@@ -154,8 +155,20 @@ export default class App extends Gtk.Application {
             if (config.style)
                 App.applyCss(config.style);
 
+            if (config.windows && !Array.isArray(config.windows)) {
+                console.error(`windows attribute has to be an array, but it is a ${typeof config.windows}`);
+                this.emit('config-parsed');
+                return;
+            }
+
             config.windows?.forEach(w => {
-                w.connect('notify::visible', () => this.emit('window-toggled', w.name, w.visible));
+                if (!(w instanceof Gtk.Window)) {
+                    console.error(`${w} is not an instanceof Gtk.Window, but ${typeof w}`);
+                    return;
+                }
+
+                w.connect('notify::visible',
+                    () => this.emit('window-toggled', w.name, w.visible));
 
                 if (this._windows.has(w.name)) {
                     console.error('name of window has to be unique!');

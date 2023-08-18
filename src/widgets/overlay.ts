@@ -38,7 +38,7 @@ export default class Overlay extends Gtk.Overlay {
     set child(child: Gtk.Widget) {
         const widget = this.get_child();
         if (widget)
-            this.remove(widget);
+            widget.destroy();
 
         this._child = child;
         if (child)
@@ -50,7 +50,7 @@ export default class Overlay extends Gtk.Overlay {
     set overlays(overlays: Gtk.Widget[]) {
         overlays ||= [];
         this.get_children().filter(ch => ch !== this._child)
-            .forEach(ch => this.remove(ch));
+            .forEach(ch => ch.destroy());
 
         this._overlays = [];
         overlays.forEach(ch => this.add_overlay(ch));

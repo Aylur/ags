@@ -35,10 +35,12 @@ export default class Revealer extends Gtk.Revealer {
         this.transitionType = Gtk.RevealerTransitionType[transition.toUpperCase()];
     }
 
+    // @ts-ignore
+    get child() { return this.get_child(); }
     set child(child: Gtk.Widget) {
         const widget = this.get_child();
         if (widget)
-            this.remove(widget);
+            widget.destroy();
 
         if (child)
             this.add(child);

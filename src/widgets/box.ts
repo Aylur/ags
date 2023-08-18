@@ -24,7 +24,7 @@ export default class Box extends Gtk.Box {
 
     get children() { return this.get_children(); }
     set children(children: Gtk.Widget[] | null) {
-        this.get_children().forEach(ch => this.remove(ch));
+        this.get_children().forEach(ch => ch.destroy());
 
         if (!children)
             return;

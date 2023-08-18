@@ -27,7 +27,7 @@ export default class CenterBox extends Box {
     }
 
     set children(children: Gtk.Widget[] | null) {
-        this.get_children().forEach(ch => this.remove(ch));
+        this.get_children().forEach(ch => ch.destroy());
 
         if (!children)
             return;
@@ -46,7 +46,7 @@ export default class CenterBox extends Box {
     get start_widget() { return this._start || null; }
     set start_widget(child: Gtk.Widget | null) {
         if (this._start)
-            this.remove(this._start);
+            this._start.destroy();
 
         this._start = child;
 
@@ -61,7 +61,7 @@ export default class CenterBox extends Box {
     get end_widget() { return this._end || null; }
     set end_widget(child: Gtk.Widget | null) {
         if (this._end)
-            this.remove(this._end);
+            this._end.destroy();
 
         this._end = child;
 
@@ -76,7 +76,7 @@ export default class CenterBox extends Box {
     set center_widget(child: Gtk.Widget | null) {
         const center_widget = this.get_center_widget();
         if (!child && center_widget) {
-            this.remove(center_widget);
+            center_widget.destroy();
             return;
         }
 

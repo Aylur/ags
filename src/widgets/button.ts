@@ -43,6 +43,8 @@ export default class Button extends Gtk.Button {
         this.onMiddleClickRelease = onMiddleClickRelease;
         this.onScrollUp = onScrollUp;
         this.onScrollDown = onScrollDown;
+
+        this.connect('clicked', (...args) => runCmd(this.onClicked, ...args));
     }
 
     // @ts-ignore
@@ -50,53 +52,47 @@ export default class Button extends Gtk.Button {
     set child(child: Gtk.Widget) {
         const widget = this.get_child();
         if (widget)
-            this.remove(widget);
+            widget.destroy();
 
         if (child)
             this.add(child);
     }
 
-    vfunc_clicked(): void {
-        runCmd(this.onClicked, this);
-    }
-
     vfunc_button_press_event(event: Gdk.EventButton): boolean {
-        super.vfunc_button_press_event(event);
         this.set_state_flags(Gtk.StateFlags.ACTIVE, false);
-        if (event.button === Gdk.BUTTON_PRIMARY)
+        if (this.onPrimaryClick && event.button === Gdk.BUTTON_PRIMARY)
             return runCmd(this.onPrimaryClick, this, event);
 
-        else if (event.button === Gdk.BUTTON_SECONDARY)
+        else if (this.onSecondaryClick && event.button === Gdk.BUTTON_SECONDARY)
             return runCmd(this.onSecondaryClick, this, event);
 
-        else if (event.button === Gdk.BUTTON_MIDDLE)
+        else if (this.onMiddleClick && event.button === Gdk.BUTTON_MIDDLE)
             return runCmd(this.onMiddleClick, this, event);
 
-        return false;
+        return super.vfunc_button_press_event(event);
     }
 
     vfunc_button_release_event(event: Gdk.EventButton): boolean {
-        super.vfunc_button_release_event(event);
         this.unset_state_flags(Gtk.StateFlags.ACTIVE);
-        if (event.button === Gdk.BUTTON_PRIMARY)
+        if (this.onPrimaryClickRelease && event.button === Gdk.BUTTON_PRIMARY)
             return runCmd(this.onPrimaryClickRelease, this, event);
 
-        else if (event.button === Gdk.BUTTON_SECONDARY)
+        else if (this.onSecondaryClickRelease && event.button === Gdk.BUTTON_SECONDARY)
             return runCmd(this.onSecondaryClickRelease, this, event);
 
-        else if (event.button === Gdk.BUTTON_MIDDLE)
+        else if (this.onMiddleClickRelease && event.button === Gdk.BUTTON_MIDDLE)
             return runCmd(this.onMiddleClickRelease, this, event);
 
-        return false;
+        return super.vfunc_button_release_event(event);
     }
 
     vfunc_scroll_event(event: Gdk.EventScroll): boolean {
-        if (event.direction === Gdk.ScrollDirection.UP)
+        if (this.onScrollUp && event.direction === Gdk.ScrollDirection.UP)
             return runCmd(this.onScrollUp, this, event);
 
-        else if (event.direction === Gdk.ScrollDirection.DOWN)
+        else if (this.onScrollDown && event.direction === Gdk.ScrollDirection.DOWN)
             return runCmd(this.onScrollDown, this, event);
 
-        return false;
+        return super.vfunc_scroll_event(event);
     }
 }
