@@ -186,7 +186,6 @@ class MprisPlayer extends GObject.Object {
         try {
             const cacheCovers = new TextDecoder().decode(fileResult[1]);
             this._coverCache = JSON.parse(cacheCovers);
-            log(this._coverCache);
             log(`loaded ${Object.keys(this._coverCache).length} covers from cover cache`);
         } catch (e) {
             logError(e as Error, `failed to parse ${cachePath}`);
