@@ -2,7 +2,7 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
 
-export class Menu extends Gtk.Menu {
+export class AgsMenu extends Gtk.Menu {
     static {
         GObject.registerClass({ GTypeName: 'AgsMenu' }, this);
     }
@@ -49,7 +49,7 @@ export class Menu extends Gtk.Menu {
     }
 }
 
-export class MenuItem extends Gtk.MenuItem {
+export class AgsMenuItem extends Gtk.MenuItem {
     static {
         GObject.registerClass({ GTypeName: 'AgsMenuItem' }, this);
     }

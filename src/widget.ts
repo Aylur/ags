@@ -1,44 +1,57 @@
-import Gtk from 'gi://Gtk?version=3.0';
-import Box from './widgets/box.js';
-import CenterBox from './widgets/centerbox.js';
-import EventBox from './widgets/eventbox.js';
-import Icon from './widgets/icon.js';
-import Label from './widgets/label.js';
-import Button from './widgets/button.js';
-import Slider from './widgets/slider.js';
-import Scrollable from './widgets/scrollable.js';
-import Stack from './widgets/stack.js';
-import Overlay from './widgets/overlay.js';
-import Revealer from './widgets/revealer.js';
-import ProgressBar from './widgets/progressbar.js';
-import Entry from './widgets/entry.js';
-import { Menu, MenuItem } from './widgets/menu.js';
-import Window from './widgets/window.js';
+import AgsBox from './widgets/box.js';
+import AgsCenterBox from './widgets/centerbox.js';
+import AgsEventBox from './widgets/eventbox.js';
+import AgsIcon from './widgets/icon.js';
+import AgsLabel from './widgets/label.js';
+import AgsButton from './widgets/button.js';
+import AgsSlider from './widgets/slider.js';
+import AgsScrollable from './widgets/scrollable.js';
+import AgsStack from './widgets/stack.js';
+import AgsOverlay from './widgets/overlay.js';
+import AgsRevealer from './widgets/revealer.js';
+import AgsProgressBar from './widgets/progressbar.js';
+import AgsEntry from './widgets/entry.js';
+import { AgsMenu, AgsMenuItem } from './widgets/menu.js';
+import AgsWindow from './widgets/window.js';
 import constructor from './widgets/shared.js';
+import { ctor } from './widgets/shared.js';
 
-interface Params {
-    type: {
-        new(...args: any[]): Gtk.Widget
-    }
-}
-
-export default function Widget({ type, ...params }: Params) {
+export default function Widget({ type, ...params }: { type: ctor }) {
     return constructor(type, params);
 }
 
-Widget.Box = (params: object) => constructor(Box, params);
-Widget.Button = (params: object) => constructor(Button, params);
-Widget.CenterBox = (params: object) => constructor(CenterBox, params);
-Widget.Entry = (params: object) => constructor(Entry, params);
-Widget.EventBox = (params: object) => constructor(EventBox, params);
-Widget.Icon = (params: object) => constructor(Icon, params);
-Widget.Label = (params: object) => constructor(Label, params);
-Widget.Menu = (params: object) => constructor(Menu, params);
-Widget.MenuItem = (params: object) => constructor(MenuItem, params);
-Widget.Overlay = (params: object) => constructor(Overlay, params);
-Widget.ProgressBar = (params: object) => constructor(ProgressBar, params);
-Widget.Revealer = (params: object) => constructor(Revealer, params);
-Widget.Scrollable = (params: object) => constructor(Scrollable, params);
-Widget.Slider = (params: object) => constructor(Slider, params);
-Widget.Stack = (params: object) => constructor(Stack, params);
-Widget.Window = (params: object) => constructor(Window, params);
+export const Box = (args: object) => constructor(AgsBox, args);
+export const Button = (args: object) => constructor(AgsButton, args);
+export const CenterBox = (args: object) => constructor(AgsCenterBox, args);
+export const Entry = (args: object) => constructor(AgsEntry, args);
+export const EventBox = (args: object) => constructor(AgsEventBox, args);
+export const Icon = (args: object) => constructor(AgsIcon, args);
+export const Label = (args: object) => constructor(AgsLabel, args);
+export const Menu = (args: object) => constructor(AgsMenu, args);
+export const MenuItem = (args: object) => constructor(AgsMenuItem, args);
+export const Overlay = (args: object) => constructor(AgsOverlay, args);
+export const ProgressBar = (args: object) => constructor(AgsProgressBar, args);
+export const Revealer = (args: object) => constructor(AgsRevealer, args);
+export const Scrollable = (args: object) => constructor(AgsScrollable, args);
+export const Slider = (args: object) => constructor(AgsSlider, args);
+export const Stack = (args: object) => constructor(AgsStack, args);
+export const Window = (args: object) => constructor(AgsWindow, args);
+
+// so it is still in global scope through ags.Widget
+Widget.Widget = Widget;
+Widget.Box = Box;
+Widget.Button = Button;
+Widget.CenterBox = CenterBox;
+Widget.Entry = Entry;
+Widget.EventBox = EventBox;
+Widget.Icon = Icon;
+Widget.Label = Label;
+Widget.Menu = Menu;
+Widget.MenuItem = MenuItem;
+Widget.Overlay = Overlay;
+Widget.ProgressBar = ProgressBar;
+Widget.Revealer = Revealer;
+Widget.Scrollable = Scrollable;
+Widget.Slider = Slider;
+Widget.Stack = Stack;
+Widget.Window = Window;

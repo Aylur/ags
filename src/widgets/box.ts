@@ -1,7 +1,7 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 
-export default class Box extends Gtk.Box {
+export default class AgsBox extends Gtk.Box {
     static {
         GObject.registerClass({
             GTypeName: 'AgsBox',

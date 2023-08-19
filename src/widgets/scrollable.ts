@@ -3,7 +3,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 
 const policy = ['automatic', 'always', 'never', 'external'];
 
-export default class Scrollable extends Gtk.ScrolledWindow {
+export default class AgsScrollable extends Gtk.ScrolledWindow {
     static {
         GObject.registerClass({
             GTypeName: 'AgsScrollable',

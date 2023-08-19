@@ -111,8 +111,11 @@ function parseCommon(widget: Gtk.Widget, {
             else if (typeof s === 'number')
                 interval(s, () => callback(widget), widget);
 
-            else
+            else if (typeof s?.instance?.connectWidget === 'function')
                 s.instance.connectWidget(widget, callback, event);
+
+            else
+                logError(new Error(`${s} is not an instanceof Service`));
         });
     }
 
@@ -120,8 +123,9 @@ function parseCommon(widget: Gtk.Widget, {
         setup(widget);
 }
 
+export type ctor = { new(...args: any[]): Gtk.Widget }
 export default function constructor(
-    ctor: { new(...args: any[]): Gtk.Widget },
+    ctor: ctor,
     params: CommonParams | string = {},
 ) {
     let widget;

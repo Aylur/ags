@@ -5,7 +5,7 @@ import App from '../app.js';
 
 const { GtkLayerShell } = imports.gi;
 
-export interface Params {
+interface Params {
     anchor?: string[]
     exclusive?: boolean
     focusable?: boolean
@@ -16,7 +16,7 @@ export interface Params {
     visible?: boolean | null
 }
 
-export default class Window extends Gtk.Window {
+export default class AgsWindow extends Gtk.Window {
     static {
         GObject.registerClass({ GTypeName: 'AgsWindow' }, this);
     }

@@ -3,7 +3,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import { runCmd } from '../utils.js';
 
-export default class EventBox extends Gtk.EventBox {
+export default class AgsEventBox extends Gtk.EventBox {
     static {
         GObject.registerClass({ GTypeName: 'AgsEventBox' }, this);
     }

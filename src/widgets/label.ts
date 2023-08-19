@@ -3,7 +3,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 
 const justification = ['left', 'center', 'right', 'fill'];
 
-export default class Label extends Gtk.Label {
+export default class AgsLabel extends Gtk.Label {
     static {
         GObject.registerClass({
             GTypeName: 'AgsLabel',

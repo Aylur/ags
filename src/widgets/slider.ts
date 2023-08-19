@@ -3,16 +3,11 @@ import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
 import { EventButton, EventScroll } from 'gi-types/gdk3';
 
-export default class Slider extends Gtk.Scale {
+export default class AgsSlider extends Gtk.Scale {
     static {
         GObject.registerClass({
             GTypeName: 'AgsSlider',
             Properties: {
-                'value': GObject.ParamSpec.float(
-                    'value', 'Value', 'Value',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    -100, 100, 0,
-                ),
                 'min': GObject.ParamSpec.float(
                     'min', 'Min', 'Min',
                     GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
@@ -44,15 +39,9 @@ export default class Slider extends Gtk.Scale {
 
     onChange: string | ((...args: any[]) => boolean);
 
-    constructor({ onChange = '', ...rest }) {
+    constructor({ onChange = '', value = 0, ...rest }) {
         super({ ...rest, adjustment: new Gtk.Adjustment() });
         this.onChange = onChange;
-
-        this.bind_property(
-            'value', this.adjustment, 'value',
-            GObject.BindingFlags.BIDIRECTIONAL |
-            GObject.BindingFlags.SYNC_CREATE,
-        );
 
         this.bind_property(
             'min', this.adjustment, 'lower',
@@ -72,7 +61,7 @@ export default class Slider extends Gtk.Scale {
             GObject.BindingFlags.SYNC_CREATE,
         );
 
-        this.connect('notify::value', ({ value }, event) => {
+        this.adjustment.connect('notify::value', ({ value }, event) => {
             if (!this._dragging)
                 return;
 
@@ -80,16 +69,17 @@ export default class Slider extends Gtk.Scale {
                 ? this.onChange(this, event, value)
                 : runCmd(onChange.replace(/\{\}/g, value));
         });
+
+        if (value)
+            this.value = value;
     }
 
-    _value = 0;
-    get value() { return this._value; }
+    get value() { return this.adjustment.value; }
     set value(value: number) {
-        if (this.dragging)
+        if (this._dragging)
             return;
 
-        this._value = value;
-        this.notify('value');
+        this.adjustment.value = value;
     }
 
     _min = 0;

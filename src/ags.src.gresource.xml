@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/com/github/Aylur/ags/js">
+  <gresource prefix="/com/github/Aylur/ags">
     <file>main.js</file>
     <file>app.js</file>
     <file>utils.js</file>

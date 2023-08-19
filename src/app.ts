@@ -182,8 +182,8 @@ export default class App extends Gtk.Application {
             });
 
             this.emit('config-parsed');
-        } catch (_) {
-            print(`No config found at ${App.configPath}`);
+        } catch (err) {
+            logError(err as Error);
         }
     }
 

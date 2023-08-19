@@ -7,7 +7,7 @@ const transitions = [
     'slide_up', 'slide_down',
 ];
 
-export default class Revealer extends Gtk.Revealer {
+export default class AgsRevealer extends Gtk.Revealer {
     static {
         GObject.registerClass({
             GTypeName: 'AgsRevealer',

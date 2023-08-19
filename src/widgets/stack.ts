@@ -10,7 +10,7 @@ const transitions = [
     'over_up_down', 'over_down_up', 'over_left_right', 'over_right_left',
 ];
 
-export default class Stack extends Gtk.Stack {
+export default class AgsStack extends Gtk.Stack {
     static {
         GObject.registerClass({
             GTypeName: 'AgsStack',

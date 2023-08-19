@@ -1,8 +1,8 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import Box from './box.js';
+import AgsBox from './box.js';
 
-export default class CenterBox extends Box {
+export default class AgsCenterBox extends AgsBox {
     static {
         GObject.registerClass({
             GTypeName: 'AgsCenterBox',

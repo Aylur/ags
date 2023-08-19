@@ -4,7 +4,7 @@ import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import { Context } from 'gi-types/cairo1';
 
-export default class Icon extends Gtk.Image {
+export default class AgsIcon extends Gtk.Image {
     static {
         GObject.registerClass({
             GTypeName: 'AgsIcon',

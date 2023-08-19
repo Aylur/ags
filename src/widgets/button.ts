@@ -3,7 +3,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import { runCmd } from '../utils.js';
 
-export default class Button extends Gtk.Button {
+export default class AgsButton extends Gtk.Button {
     static {
         GObject.registerClass({ GTypeName: 'AgsButton' }, this);
     }

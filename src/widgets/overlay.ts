@@ -1,7 +1,7 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 
-export default class Overlay extends Gtk.Overlay {
+export default class AgsOverlay extends Gtk.Overlay {
     static {
         GObject.registerClass({
             GTypeName: 'AgsOverlay',

@@ -1,7 +1,7 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 
-export default class ProgressBar extends Gtk.ProgressBar {
+export default class AgsProgressBar extends Gtk.ProgressBar {
     static {
         GObject.registerClass({
             GTypeName: 'AgsProgressBar',

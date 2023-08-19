@@ -142,7 +142,9 @@ export function main(args: string[]) {
                 quit = true;
                 break;
 
-            default: break;
+            default:
+                console.error(`unknown option: ${args[i]}`);
+                break;
         }
     }
 
