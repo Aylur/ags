@@ -26,6 +26,10 @@ type MprisMetadata = {
     'mpris:trackid': string
     [key: string]: unknown
 }
+type cacheValue = {
+    coverPath: string,
+    timestamp: number,
+};
 
 class MprisPlayer extends GObject.Object {
     static {
@@ -59,9 +63,12 @@ class MprisPlayer extends GObject.Object {
     _binding: { mpris: number, player: number };
     _mprisProxy: MprisProxy;
     _playerProxy: PlayerProxy;
+    _coverCache: { [key: string]: cacheValue } = {};
 
     constructor(busName: string) {
         super();
+
+        this._repopulateCoverCache();
 
         this.busName = busName;
         this.name = busName.substring(23).split('.')[0];
@@ -149,18 +156,50 @@ class MprisPlayer extends GObject.Object {
     }
 
     _cacheCoverArt() {
-        const { trackCoverUrl, coverPath } = this;
-        if (trackCoverUrl === '') {
+        if (this.trackCoverUrl === '') {
             this.coverPath = '';
             return;
         }
 
-        this.coverPath = MEDIA_CACHE_PATH + '/' + GLib.compute_checksum_for_string(GLib.ChecksumType.SHA256, trackCoverUrl, 255);
-
-        if (GLib.file_test(coverPath, GLib.FileTest.EXISTS))
+        const hash = GLib.compute_checksum_for_string(GLib.ChecksumType.SHA256, this.trackCoverUrl, this.trackCoverUrl.length) + "";
+        if (this._coverCache[hash]) {
+            this.coverPath = this._coverCache[hash].coverPath;
+            this._coverCache[hash].timestamp = Date.now();
             return;
+        }
 
-        ensureDirectory(MEDIA_CACHE_PATH);
+        this.coverPath = this._coverCacheAdd(hash, this.trackCoverUrl);       
+    }
+
+    _repopulateCoverCache() {
+        const cachePath = MEDIA_CACHE_PATH + '/covercache.json';
+        if (!GLib.file_test(cachePath, GLib.FileTest.EXISTS)) {
+        this._coverCache = {};
+            return;
+        }
+        const file = Gio.File.new_for_path(cachePath);
+        const fileResult = file.load_contents(null);
+        if (!fileResult[0]) {
+        this._coverCache = {};
+            return;
+        }
+        try {
+            const cacheCovers = new TextDecoder().decode(fileResult[1]);
+            this._coverCache = JSON.parse(cacheCovers);
+            log(this._coverCache);
+            log(`loaded ${Object.keys(this._coverCache).length} covers from cover cache`);
+        } catch (e) {
+            logError(e as Error, `failed to parse ${cachePath}`);
+            this._coverCache = {};
+            return;
+        }
+    }
+
+    _coverCacheAdd(hash: string, trackCoverUrl: string): string {
+        const coverPath = MEDIA_CACHE_PATH + '/covers/' + hash;
+
+        ensureDirectory(MEDIA_CACHE_PATH + '/covers/');
+
         Gio.File.new_for_uri(trackCoverUrl).copy_async(
             Gio.File.new_for_path(coverPath),
             Gio.FileCopyFlags.OVERWRITE,
@@ -175,10 +214,46 @@ class MprisPlayer extends GObject.Object {
                     this.emit('changed');
                 }
                 catch (e) {
-                    logError(e as Error, `failed to cache ${coverPath}`);
+                    logError(e as Error, `failed to cache ${trackCoverUrl}`);
+                    return "";
                 }
             },
         );
+
+        this._coverCache[hash] = {
+            coverPath,
+            timestamp: Date.now(),
+        };
+
+        if (Object.keys(this._coverCache).length > 100) {
+            this._coverCachePurgeOldest();
+        }
+
+        const cachePath = MEDIA_CACHE_PATH + '/covercache.json';
+        const file = Gio.File.new_for_path(cachePath);
+        const result = file.replace_contents(JSON.stringify(this._coverCache), null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null);
+        if (!result[0]) {
+            logError(new Error(`failed to write ${cachePath}`));
+        }
+
+        return coverPath;
+    }
+
+    _coverCachePurgeOldest() {
+        let oldest = Infinity;
+        let oldestKey = '';
+        for (const key of Object.keys(this._coverCache)) {
+            if (this._coverCache[key].timestamp < oldest) {
+                oldest = this._coverCache[key].timestamp;
+                oldestKey = key;
+            }
+        }
+        delete(this._coverCache[oldestKey]);
+
+        if (GLib.file_test(this._coverCache[oldestKey].coverPath, GLib.FileTest.EXISTS)) {
+            const file = Gio.File.new_for_path(this._coverCache[oldestKey].coverPath);
+            file.delete_async(GLib.PRIORITY_DEFAULT, null, null);
+        }
     }
 
     get volume() {
