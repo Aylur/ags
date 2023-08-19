@@ -1,5 +1,5 @@
 project('ags',
-          version: '0.2.1',
+          version: '1.0.0',
     meson_version: '>= 0.62.0',
     	  license: ['GPL-3.0-or-later'],
   default_options: [ 'warning_level=2', 'werror=false', ],

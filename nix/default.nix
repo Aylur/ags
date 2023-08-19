@@ -32,7 +32,7 @@ let
 in
 stdenv.mkDerivation {
   pname = "ags";
-  version = "0.2.1";
+  version = "1.0.0";
 
   src = buildNpmPackage {
     name = "ags";
