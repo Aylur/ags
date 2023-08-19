@@ -173,16 +173,20 @@ class MprisPlayer extends GObject.Object {
 
     _repopulateCoverCache() {
         const cachePath = MEDIA_CACHE_PATH + '/covercache.json';
+        ensureDirectory(MEDIA_CACHE_PATH);
+
         if (!GLib.file_test(cachePath, GLib.FileTest.EXISTS)) {
         this._coverCache = {};
             return;
         }
+
         const file = Gio.File.new_for_path(cachePath);
         const fileResult = file.load_contents(null);
         if (!fileResult[0]) {
         this._coverCache = {};
             return;
         }
+
         try {
             const cacheCovers = new TextDecoder().decode(fileResult[1]);
             this._coverCache = JSON.parse(cacheCovers);
