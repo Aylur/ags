@@ -2,6 +2,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
+import { Command } from './widgets/shared.js';
 
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name}`;
@@ -108,7 +109,7 @@ export function timeout(ms: number, callback: () => void) {
 }
 
 export function runCmd(
-    cmd: string | ((...args: any[]) => boolean),
+    cmd: Command,
     ...args: any[]
 ) {
     if (typeof cmd !== 'string' && typeof cmd !== 'function') {

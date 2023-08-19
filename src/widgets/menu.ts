@@ -1,14 +1,15 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
+import { Command } from './shared.js';
 
 export class AgsMenu extends Gtk.Menu {
     static {
         GObject.registerClass({ GTypeName: 'AgsMenu' }, this);
     }
 
-    onPopup: string | ((...args: any[]) => boolean);
-    onMoveScroll: string | ((...args: any[]) => boolean);
+    onPopup: Command;
+    onMoveScroll: Command;
 
     constructor({
         children,
@@ -54,16 +55,16 @@ export class AgsMenuItem extends Gtk.MenuItem {
         GObject.registerClass({ GTypeName: 'AgsMenuItem' }, this);
     }
 
-    onActivate: string | ((...args: any[]) => boolean);
-    onSelect: string | ((...args: any[]) => boolean);
-    onDeselect: string | ((...args: any[]) => boolean);
+    onActivate: Command;
+    onSelect: Command;
+    onDeselect: Command;
 
     constructor({
         onActivate = '',
         onSelect = '',
         onDeselect = '',
         ...rest
-    }: { [key: string]: any }) {
+    }: { [key: string]: Command }) {
         super(rest);
 
         this.onActivate = onActivate;

@@ -1,20 +1,21 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
+import { Command } from './shared.js';
 
 export default class AgsEntry extends Gtk.Entry {
     static {
         GObject.registerClass({ GTypeName: 'AgsEntry' }, this);
     }
 
-    onAccept: string | ((...args: any[]) => void);
-    onChange: string | ((...args: any[]) => void);
+    onAccept: Command;
+    onChange: Command;
 
     constructor({
         onAccept = '',
         onChange = '',
         ...rest
-    }: { [key: string]: any }) {
+    }: { [key: string]: Command }) {
         super(rest);
 
         this.onAccept = onAccept;

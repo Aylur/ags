@@ -1,6 +1,8 @@
 import Gtk from 'gi://Gtk?version=3.0';
 import { interval } from '../utils.js';
 
+export type Command = string | ((...args: any[]) => boolean);
+
 interface ServiceAPI {
     instance: {
         connectWidget: (
@@ -77,21 +79,35 @@ function parseCommon(widget: Gtk.Widget, {
         });
     }
 
+    if (Array.isArray(className)) {
+        className.forEach(cn => {
+            widget.get_style_context().add_class(cn);
+        });
+    }
+
     if (typeof halign === 'string') {
         // @ts-ignore
         const align = Gtk.Align[halign.toUpperCase()];
         if (typeof align !== 'number')
             console.error('wrong halign value');
+
         widget.halign = align;
     }
+
+    if (typeof halign === 'number')
+        widget.halign = halign;
 
     if (typeof valign === 'string') {
         // @ts-ignore
         const align = Gtk.Align[valign.toUpperCase()];
         if (typeof align !== 'number')
             console.error('wrong valign value');
+
         widget.valign = align;
     }
+
+    if (typeof valign === 'number')
+        widget.valign = valign;
 
     if (typeof style === 'string')
         setStyle(widget, style);

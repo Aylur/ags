@@ -2,6 +2,7 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
 import { EventButton, EventScroll } from 'gi-types/gdk3';
+import { Command } from './shared.js';
 
 export default class AgsSlider extends Gtk.Scale {
     static {
@@ -37,11 +38,17 @@ export default class AgsSlider extends Gtk.Scale {
         }, this);
     }
 
-    onChange: string | ((...args: any[]) => boolean);
+    onChange: Command;
 
     constructor({ onChange = '', value = 0, ...rest }) {
         super({ ...rest, adjustment: new Gtk.Adjustment() });
         this.onChange = onChange;
+
+        this.bind_property(
+            'min', this.adjustment, 'lower',
+            GObject.BindingFlags.BIDIRECTIONAL |
+            GObject.BindingFlags.SYNC_CREATE,
+        );
 
         this.bind_property(
             'min', this.adjustment, 'lower',
