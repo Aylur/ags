@@ -192,12 +192,12 @@ export function subprocess(
             stdout.read_line_async(GLib.PRIORITY_LOW, null, (stdout, res) => {
                 try {
                     const output = stdout?.read_line_finish_utf8(res)[0];
-                    if (output) {
+                    if (typeof output === 'string' && stdout) {
                         callback(output);
                         read(stdout);
                     }
                 } catch (e) {
-                    return onError(e as Error);
+                    onError(e as Error);
                 }
             });
         };

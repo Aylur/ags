@@ -21,14 +21,14 @@ interface Active {
 class HyprlandService extends Service {
     static {
         Service.register(this, {
-            'urgent-window': ['int'],
+            'urgent-window': ['string'],
             'submap': ['string'],
             'keyboard-layout': ['string', 'string'],
         });
     }
 
     _active: Active;
-    _monitors: Map<string, object>;
+    _monitors: Map<number, object>;
     _workspaces: Map<number, object>;
     _clients: Map<string, object>;
 
