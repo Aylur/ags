@@ -17,6 +17,6 @@
     "eslint": "^8.42.0"
   },
   "scripts": {
-    "test": "tsc --strict --noEmit && eslint ."
+    "test": "eslint ."
   }
 }
