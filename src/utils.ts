@@ -94,10 +94,9 @@ export function interval(
         callback();
         return true;
     });
-    if (widget) {
+    if (widget)
         widget.connect('destroy', () => GLib.source_remove(id));
-        return widget;
-    }
+
     return id;
 }
 
