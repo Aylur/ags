@@ -2,7 +2,8 @@ import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import Service from './service.js';
-import { ensureDirectory, timeout } from '../utils.js';
+import App from '../app.js';
+import { ensureDirectory, timeout, writeFile, readFile } from '../utils.js';
 import { CACHE_DIR } from '../utils.js';
 import { loadInterfaceXML } from '../utils.js';
 import { DBusProxy, PlayerProxy, MprisProxy } from '../dbus/types.js';
@@ -42,6 +43,8 @@ class MprisPlayer extends GObject.Object {
         }, this);
     }
 
+    static cachePath = MEDIA_CACHE_PATH + '/covercache.json';
+
     busName: string;
     name: string;
     entry!: string;
@@ -59,15 +62,16 @@ class MprisPlayer extends GObject.Object {
     shuffleStatus!: boolean | null;
     loopStatus!: LoopStatus | null;
     length!: number;
-
     _binding: { mpris: number, player: number };
     _mprisProxy: MprisProxy;
     _playerProxy: PlayerProxy;
+    _cacheSize: number;
     _coverCache: { [key: string]: cacheValue } = {};
 
     constructor(busName: string) {
         super();
 
+        this._cacheSize = App.config?.mediaCacheSize || 100;
         this._repopulateCoverCache();
 
         this.busName = busName;
@@ -156,56 +160,41 @@ class MprisPlayer extends GObject.Object {
     }
 
     _cacheCoverArt() {
-        if (this.trackCoverUrl === '') {
+        if (!this.trackCoverUrl) {
             this.coverPath = '';
             return;
         }
-        const tc = this.trackCoverUrl;
-        const tcl = tc.length;
-        const shaFlag = GLib.ChecksumType.SHA256;
-        const hash = GLib.compute_checksum_for_string(shaFlag, tc, tcl) + '';
+
+        const hash = GLib.compute_checksum_for_string(GLib.ChecksumType.SHA256,
+            this.trackCoverUrl,
+            this.trackCoverUrl.length) + '';
+
         if (this._coverCache[hash]) {
             this.coverPath = this._coverCache[hash].coverPath;
             this._coverCache[hash].timestamp = Date.now();
             return;
         }
 
-        this.coverPath = this._coverCacheAdd(hash, this.trackCoverUrl);
+        this._coverCacheAdd(hash, this.trackCoverUrl);
     }
 
     _repopulateCoverCache() {
-        const cachePath = MEDIA_CACHE_PATH + '/covercache.json';
-        ensureDirectory(MEDIA_CACHE_PATH);
-
-        if (!GLib.file_test(cachePath, GLib.FileTest.EXISTS)) {
-            this._coverCache = {};
-            return;
-        }
-
-        const file = Gio.File.new_for_path(cachePath);
-        const fileResult = file.load_contents(null);
-        if (!fileResult[0]) {
-            this._coverCache = {};
-            return;
-        }
-
         try {
-            const cacheCovers = new TextDecoder().decode(fileResult[1]);
+            const cacheCovers = readFile(MprisPlayer.cachePath);
             this._coverCache = JSON.parse(cacheCovers);
         } catch (e) {
-            logError(e as Error, `failed to parse ${cachePath}`);
+            logError(e as Error, `failed to parse ${MprisPlayer.cachePath}`);
             this._coverCache = {};
             return;
         }
     }
 
-    _coverCacheAdd(hash: string, trackCoverUrl: string): string {
-        const coverPath = MEDIA_CACHE_PATH + '/covers/' + hash;
-
+    _coverCacheAdd(hash: string, trackCoverUrl: string) {
+        this.coverPath = MEDIA_CACHE_PATH + '/covers/' + hash;
         ensureDirectory(MEDIA_CACHE_PATH + '/covers/');
 
         Gio.File.new_for_uri(trackCoverUrl).copy_async(
-            Gio.File.new_for_path(coverPath),
+            Gio.File.new_for_path(this.coverPath),
             Gio.FileCopyFlags.OVERWRITE,
             GLib.PRIORITY_DEFAULT,
             null,
@@ -219,28 +208,22 @@ class MprisPlayer extends GObject.Object {
                 }
                 catch (e) {
                     logError(e as Error, `failed to cache ${trackCoverUrl}`);
-                    return '';
+                    delete this._coverCache[hash];
+                    this.coverPath = '';
                 }
             },
         );
 
         this._coverCache[hash] = {
-            coverPath,
+            coverPath: this.coverPath,
             timestamp: Date.now(),
         };
 
-        if (Object.keys(this._coverCache).length > 100)
+        if (Object.keys(this._coverCache).length > this._cacheSize)
             this._coverCachePurgeOldest();
 
-        const cachePath = MEDIA_CACHE_PATH + '/covercache.json';
-        const file = Gio.File.new_for_path(cachePath);
-        const jsOut = JSON.stringify(this._coverCache);
-        const repFlag = Gio.FileCreateFlags.REPLACE_DESTINATION;
-        const result = file.replace_contents(jsOut, null, false, repFlag, null);
-        if (!result[0])
-            logError(new Error(`failed to write ${cachePath}`));
-
-        return coverPath;
+        writeFile(MprisPlayer.cachePath,
+            JSON.stringify(this._coverCache)).catch(logError);
     }
 
     _coverCachePurgeOldest() {
