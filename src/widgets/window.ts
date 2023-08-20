@@ -69,7 +69,7 @@ export default class AgsWindow extends Gtk.Window {
     }
 
     _layer = 'top';
-    get layet() { return this._layer; }
+    get layer() { return this._layer; }
     set layer(layer: string) {
         this._layer;
         GtkLayerShell.set_layer(this,

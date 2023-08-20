@@ -34,9 +34,9 @@ const _DEVICE_STATE = (device: NM.Device) => {
 const _CONNECTIVITY_STATE = (client: NM.Client) => {
     switch (client.connectivity) {
         case NM.ConnectivityState.NONE: return 'none';
-        case NM.ConnectivityState.PORTAL: return 'none';
-        case NM.ConnectivityState.LIMITED: return 'none';
-        case NM.ConnectivityState.FULL: return 'none';
+        case NM.ConnectivityState.PORTAL: return 'portal';
+        case NM.ConnectivityState.LIMITED: return 'limited';
+        case NM.ConnectivityState.FULL: return 'full';
         default: return 'unknown';
     }
 };
