@@ -87,7 +87,7 @@ export default class AgsWindow extends Gtk.Window {
         );
 
         if (typeof anchor === 'string')
-            anchor = anchor.split(' ');
+            anchor = anchor.split(/\s+/);
 
         if (Array.isArray(anchor)) {
             anchor.forEach(side => {
@@ -101,7 +101,8 @@ export default class AgsWindow extends Gtk.Window {
         }
     }
 
-    _margins: number[] | number = 0;
+    _margins: number[] | number = [0];
+    get margins() { return this._margins; }
     set margins(margin: number[] | number) {
         let margins: [side: string, index: number][] = [];
         if (typeof margin === 'number')

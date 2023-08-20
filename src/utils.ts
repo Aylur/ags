@@ -148,7 +148,7 @@ export function ensureDirectory(path?: string) {
 
 export function execAsync(cmd: string | string[]): Promise<string> {
     const proc = Gio.Subprocess.new(
-        typeof cmd === 'string' ? cmd.split(' ') : cmd,
+        typeof cmd === 'string' ? cmd.split(/\s+/) : cmd,
         Gio.SubprocessFlags.STDOUT_PIPE |
         Gio.SubprocessFlags.STDERR_PIPE,
     );
@@ -202,7 +202,7 @@ export function subprocess(
         };
 
         const proc = Gio.Subprocess.new(
-            typeof cmd === 'string' ? cmd.split(' ') : cmd,
+            typeof cmd === 'string' ? cmd.split(/\s+/) : cmd,
             Gio.SubprocessFlags.STDOUT_PIPE |
             Gio.SubprocessFlags.STDERR_PIPE,
         );
