@@ -2,17 +2,20 @@ label {
     font-weight: bold;
 }
 
-.workspaces button {
+.workspaces button,
+.media {
     background-color: transparent;
     color: #eee;
 }
 
-.workspaces button:hover {
+.workspaces button:hover,
+.media:hover {
     background-color: rgba(255, 255, 255, 0.1);
     color: #efefef;
 }
 
-.workspaces button:active {
+.workspaces button:active,
+.media:active {
     background-color: rgba(255, 255, 255, 0.2);
     color: #fff;
 }
@@ -23,9 +26,6 @@ label {
 
 .client-title {
     margin-left: 1em;
-}
-
-.client-title {
     color: aqua;
 }
 

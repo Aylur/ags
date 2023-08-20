@@ -83,10 +83,10 @@ const Notification = () => Box({
 });
 
 const Media = () => Button({
+    className: 'media',
     onPrimaryClick: () => Mpris.getPlayer('')?.playPause(),
     onScrollUp: () => Mpris.getPlayer('')?.next(),
     onScrollDown: () => Mpris.getPlayer('')?.previous(),
-    className: 'media',
     child: Label({
         connections: [[Mpris, label => {
             const mpris = Mpris.getPlayer('');
@@ -121,16 +121,16 @@ const Volume = () => Box({
                     return;
                 }
 
-                const show = [100, 66, 33, 1, 0].find(
+                const show = [101, 67, 34, 1, 0].find(
                     threshold => threshold <= Audio.speaker.volume * 100);
 
-                stack.shown = `${show + 1}`;
+                stack.shown = `${show}`;
             }, 'speaker-changed']],
         }),
         Slider({
             hexpand: true,
             drawValue: false,
-            onChange: value => Audio.speaker.volume = value,
+            onChange: ({ value }) => Audio.speaker.volume = value,
             connections: [[Audio, slider => {
                 if (!Audio.speaker)
                     return;
@@ -163,7 +163,6 @@ const BatteryLabel = () => Box({
 
 // layout of the bar
 const Left = () => Box({
-    className: 'left',
     children: [
         Workspaces(),
         ClientTitle(),
@@ -171,7 +170,6 @@ const Left = () => Box({
 });
 
 const Center = () => Box({
-    className: 'center',
     children: [
         Media(),
         Notification(),
@@ -179,7 +177,6 @@ const Center = () => Box({
 });
 
 const Right = () => Box({
-    className: 'right',
     halign: 'end',
     children: [
         Volume(),
@@ -188,8 +185,9 @@ const Right = () => Box({
     ],
 });
 
-const Bar = ({ monitor }) => Window({
-    name: `bar${monitor}`, // name has to be unique
+const Bar = ({ monitor } = {}) => Window({
+    name: `bar${monitor || ''}`, // name has to be unique
+    className: 'bar',
     monitor,
     anchor: ['top', 'left', 'right'],
     exclusive: true,
@@ -204,9 +202,10 @@ const Bar = ({ monitor }) => Window({
 export default {
     style: App.configDir + '/style.css',
     windows: [
-        Bar({ monitor: 0 }),
+        Bar(),
 
-        // you can call it as many times
-        Bar({ monitor: 1 })
+        // you can call it, for each monitor
+        // Bar({ monitor: 0 }),
+        // Bar({ monitor: 1 })
     ],
 };
