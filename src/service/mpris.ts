@@ -222,8 +222,8 @@ class MprisPlayer extends GObject.Object {
         if (Object.keys(this._coverCache).length > this._cacheSize)
             this._coverCachePurgeOldest();
 
-        writeFile(MprisPlayer.cachePath,
-            JSON.stringify(this._coverCache)).catch(logError);
+        writeFile(JSON.stringify(this._coverCache),
+            MprisPlayer.cachePath).catch(logError);
     }
 
     _coverCachePurgeOldest() {
