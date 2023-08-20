@@ -160,8 +160,10 @@ class MprisPlayer extends GObject.Object {
             this.coverPath = '';
             return;
         }
-
-        const hash = GLib.compute_checksum_for_string(GLib.ChecksumType.SHA256, this.trackCoverUrl, this.trackCoverUrl.length) + '';
+        const tc = this.trackCoverUrl;
+        const tcl = tc.length;
+        const shaFlag = GLib.ChecksumType.SHA256;
+        const hash = GLib.compute_checksum_for_string(shaFlag, tc, tcl) + '';
         if (this._coverCache[hash]) {
             this.coverPath = this._coverCache[hash].coverPath;
             this._coverCache[hash].timestamp = Date.now();
@@ -190,7 +192,6 @@ class MprisPlayer extends GObject.Object {
         try {
             const cacheCovers = new TextDecoder().decode(fileResult[1]);
             this._coverCache = JSON.parse(cacheCovers);
-            log(`loaded ${Object.keys(this._coverCache).length} covers from cover cache`);
         } catch (e) {
             logError(e as Error, `failed to parse ${cachePath}`);
             this._coverCache = {};
@@ -233,7 +234,9 @@ class MprisPlayer extends GObject.Object {
 
         const cachePath = MEDIA_CACHE_PATH + '/covercache.json';
         const file = Gio.File.new_for_path(cachePath);
-        const result = file.replace_contents(JSON.stringify(this._coverCache), null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null);
+        const jsOut = JSON.stringify(this._coverCache);
+        const repFlag = Gio.FileCreateFlags.REPLACE_DESTINATION;
+        const result = file.replace_contents(jsOut, null, false, repFlag, null);
         if (!result[0])
             logError(new Error(`failed to write ${cachePath}`));
 
@@ -250,9 +253,9 @@ class MprisPlayer extends GObject.Object {
             }
         }
         delete (this._coverCache[oldestKey]);
-
-        if (GLib.file_test(this._coverCache[oldestKey].coverPath, GLib.FileTest.EXISTS)) {
-            const file = Gio.File.new_for_path(this._coverCache[oldestKey].coverPath);
+        const okc = this._coverCache[oldestKey].coverPath;
+        if (GLib.file_test(okc, GLib.FileTest.EXISTS)) {
+            const file = Gio.File.new_for_path(okc);
             file.delete_async(GLib.PRIORITY_DEFAULT, null, null);
         }
     }
