@@ -5,17 +5,6 @@ import App from '../app.js';
 
 const { GtkLayerShell } = imports.gi;
 
-interface Params {
-    anchor?: string[]
-    exclusive?: boolean
-    focusable?: boolean
-    layer?: string
-    margins?: number[] | number
-    monitor?: number | null
-    popup?: boolean
-    visible?: boolean | null
-}
-
 export default class AgsWindow extends Gtk.Window {
     static {
         GObject.registerClass({ GTypeName: 'AgsWindow' }, this);
@@ -26,12 +15,12 @@ export default class AgsWindow extends Gtk.Window {
         exclusive = false,
         focusable = false,
         layer = 'top',
-        margins = [],
+        margin = [],
         monitor = null,
         popup = false,
         visible = null,
         ...params
-    }: Params) {
+    }: any) {
         super(params);
         GtkLayerShell.init_for_window(this);
         GtkLayerShell.set_namespace(this, this.name);
@@ -40,7 +29,7 @@ export default class AgsWindow extends Gtk.Window {
         this.exclusive = exclusive;
         this.focusable = focusable;
         this.layer = layer;
-        this.margins = margins;
+        this.margin = margin;
         this.monitor = monitor;
         this.show_all();
         this.popup = popup;
@@ -101,9 +90,13 @@ export default class AgsWindow extends Gtk.Window {
         }
     }
 
-    _margins: number[] | number = [0];
-    get margins() { return this._margins; }
-    set margins(margin: number[] | number) {
+    _margin: number[] | number = [0];
+
+    // @ts-ignore
+    get margin() { return this._margin; }
+
+    // @ts-ignore
+    set margin(margin: number[] | number) {
         let margins: [side: string, index: number][] = [];
         if (typeof margin === 'number')
             margin = [margin];
@@ -134,7 +127,7 @@ export default class AgsWindow extends Gtk.Window {
                 GtkLayerShell.Edge[side], (margin as number[])[i]),
         );
 
-        this._margins = margin;
+        this._margin = margin;
     }
 
     _popup!: number;

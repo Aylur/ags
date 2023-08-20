@@ -20,6 +20,8 @@ export default function Widget({ type, ...params }: { type: ctor }) {
     return constructor(type, params);
 }
 
+// @ts-ignore
+export const Window = (args: object) => constructor(AgsWindow, args);
 export const Box = (args: object) => constructor(AgsBox, args);
 export const Button = (args: object) => constructor(AgsButton, args);
 export const CenterBox = (args: object) => constructor(AgsCenterBox, args);
@@ -35,7 +37,6 @@ export const Revealer = (args: object) => constructor(AgsRevealer, args);
 export const Scrollable = (args: object) => constructor(AgsScrollable, args);
 export const Slider = (args: object) => constructor(AgsSlider, args);
 export const Stack = (args: object) => constructor(AgsStack, args);
-export const Window = (args: object) => constructor(AgsWindow, args);
 
 // so it is still in global scope through ags.Widget
 Widget.Widget = Widget;
