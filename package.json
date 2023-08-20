@@ -17,8 +17,6 @@
     "eslint": "^8.42.0"
   },
   "scripts": {
-    "build": "tsc --strict",
-    "typecheck": "tsc --strict --noEmit",
-    "lint": "eslint ."
+    "test": "tsc --strict --noEmit && eslint .",
   }
 }
