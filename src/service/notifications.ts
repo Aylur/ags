@@ -2,8 +2,15 @@ import Gio from 'gi://Gio';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import GLib from 'gi://GLib';
 import Service from './service.js';
+import App from '../app.js';
 import { NotificationIFace } from '../dbus/notifications.js';
-import { NOTIFICATIONS_CACHE_PATH, ensureDirectory, getConfig, readFileAsync, timeout, writeFile } from '../utils.js';
+import {
+    CACHE_DIR, ensureDirectory, readFileAsync,
+    timeout, writeFile,
+} from '../utils.js';
+
+const NOTIFICATIONS_CACHE_PATH = `${CACHE_DIR}/notifications`;
+const CACHE_FILE = NOTIFICATIONS_CACHE_PATH + '/notifications.json';
 
 interface action {
     id: string
@@ -45,7 +52,7 @@ class NotificationsService extends Service {
     _notifications: Map<number, Notification>;
     _dnd = false;
     _idCount = 0;
-    _timeout = getConfig()?.notificationPopupTimeout || 3000;
+    _timeout = App.config?.notificationPopupTimeout || 3000;
 
     constructor() {
         super();
@@ -109,8 +116,10 @@ class NotificationsService extends Service {
             actions,
             urgency,
             time: GLib.DateTime.new_now_local().to_unix(),
-            image: this._parseImage(`${summary}${id}`, hints['image-data']) || this._isFile(appIcon),
             popup: !this._dnd,
+            image: this._parseImage(
+                id, hints['image-data']) ||
+                this._isFile(appIcon),
         });
 
         timeout(this._timeout, () => this.DismissNotification(id));
@@ -135,7 +144,9 @@ class NotificationsService extends Service {
         if (!this._notifications.has(id))
             return;
 
-        this._dbus.emit_signal('NotificationClosed', GLib.Variant.new('(uu)', [id, 3]));
+        this._dbus.emit_signal('NotificationClosed',
+            GLib.Variant.new('(uu)', [id, 3]));
+
         this._notifications.delete(id);
         this.emit('closed', id);
         this.emit('changed');
@@ -146,7 +157,9 @@ class NotificationsService extends Service {
         if (!this._notifications.has(id))
             return;
 
-        this._dbus.emit_signal('ActionInvoked', GLib.Variant.new('(us)', [id, actionId]));
+        this._dbus.emit_signal('ActionInvoked',
+            GLib.Variant.new('(us)', [id, actionId]));
+
         this.CloseNotification(id);
         this._cache();
     }
@@ -170,20 +183,23 @@ class NotificationsService extends Service {
             'org.freedesktop.Notifications',
             Gio.BusNameOwnerFlags.NONE,
             (connection: Gio.DBusConnection) => {
-                this._dbus = Gio.DBusExportedObject.wrapJSObject(NotificationIFace, this);
+                this._dbus = Gio.DBusExportedObject
+                    .wrapJSObject(NotificationIFace, this);
+
                 this._dbus.export(connection, '/org/freedesktop/Notifications');
             },
             null,
             () => {
-                print('Another notification daemon is already running, make sure you stop Dunst or any other daemon you have running');
+                print('Another notification daemon is already running, ' +
+                    'make sure you stop Dunst ' +
+                    'or any other daemon you have running');
             },
         );
     }
 
     async _readFromFile() {
         try {
-            const path = NOTIFICATIONS_CACHE_PATH + '/notifications.json';
-            const file = await readFileAsync(path);
+            const file = await readFileAsync(CACHE_FILE);
             const notifications = JSON.parse(file as string) as Notification[];
             notifications.forEach(n => {
                 if (n.id > this._idCount)
@@ -202,12 +218,12 @@ class NotificationsService extends Service {
         return GLib.file_test(path, GLib.FileTest.EXISTS) ? path : null;
     }
 
-    _parseImage(name: string, image_data?: GLib.Variant<'(iiibiiay)'>) {
+    _parseImage(id: number, image_data?: GLib.Variant<'(iiibiiay)'>) {
         if (!image_data)
             return null;
 
-        ensureDirectory();
-        const fileName = NOTIFICATIONS_CACHE_PATH + '/' + name.replace(/[^a-zA-Z0-9]/g, '');
+        ensureDirectory(NOTIFICATIONS_CACHE_PATH);
+        const fileName = NOTIFICATIONS_CACHE_PATH + `/${id}`;
         const image = image_data.recursiveUnpack();
         const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
             image[6],
@@ -236,8 +252,9 @@ class NotificationsService extends Service {
             notifications.push(n);
         }
 
-        ensureDirectory();
-        writeFile(JSON.stringify(notifications, null, 2), NOTIFICATIONS_CACHE_PATH + '/notifications.json').catch();
+        ensureDirectory(NOTIFICATIONS_CACHE_PATH);
+        const json = JSON.stringify(notifications, null, 2);
+        writeFile(json, CACHE_FILE).catch(logError);
     }
 }
 
@@ -250,10 +267,13 @@ export default class Notifications {
         return Notifications._instance;
     }
 
+    // eslint-disable-next-line max-len
+    static invoke(id: number, actionId: string) { Notifications.instance.InvokeAction(id, actionId); }
+    // eslint-disable-next-line max-len
+    static dismiss(id: number) { Notifications.instance.DismissNotification(id); }
     static clear() { Notifications.instance.Clear(); }
     static close(id: number) { Notifications.instance.CloseNotification(id); }
-    static dismiss(id: number) { Notifications.instance.DismissNotification(id); }
-    static invoke(id: number, actionId: string) { Notifications.instance.InvokeAction(id, actionId); }
+
     static get dnd() { return Notifications.instance.dnd; }
     static set dnd(value: boolean) { Notifications.instance.dnd = value; }
     static get popups() { return Notifications.instance.popups; }

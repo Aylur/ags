@@ -30,7 +30,9 @@ class Device extends GObject.Object {
             'name',
             'paired',
             'trusted',
-        ].map(prop => device.connect(`notify::${prop}`, () => this.emit('changed')));
+        ].map(prop => device.connect(
+            `notify::${prop}`, () => this.emit('changed'),
+        ));
     }
 
     close() {
@@ -81,7 +83,8 @@ class BluetoothService extends Service {
     }
 
     toggle() {
-        this._client.default_adapter_powered = !this._client.default_adapter_powered;
+        this._client.default_adapter_powered =
+            !this._client.default_adapter_powered;
     }
 
     _getDevices() {
@@ -117,7 +120,11 @@ class BluetoothService extends Service {
         this.emit('changed');
     }
 
-    connectDevice(device: Device, connect: boolean, callback: (s: boolean) => void) {
+    connectDevice(
+        device: Device,
+        connect: boolean,
+        callback: (s: boolean) => void,
+    ) {
         this._client.connect_service(
             device._device.get_object_path(),
             connect,
@@ -139,11 +146,11 @@ class BluetoothService extends Service {
 
     get state() {
         switch (this._client.default_adapter_state) {
-        case GnomeBluetooth.AdapterState.ON: return 'on';
-        case GnomeBluetooth.AdapterState.TURNING_ONON: return 'turning-on';
-        case GnomeBluetooth.AdapterState.OFF: return 'off';
-        case GnomeBluetooth.AdapterState.TURNING_OFF: return 'turning-off';
-        default: return 'absent';
+            case GnomeBluetooth.AdapterState.ON: return 'on';
+            case GnomeBluetooth.AdapterState.TURNING_ONON: return 'turning-on';
+            case GnomeBluetooth.AdapterState.OFF: return 'off';
+            case GnomeBluetooth.AdapterState.TURNING_OFF: return 'turning-off';
+            default: return 'absent';
         }
     }
 
@@ -167,8 +174,9 @@ export default class Bluetooth {
         return Bluetooth._instance;
     }
 
+    // eslint-disable-next-line max-len
+    static get connectedDevices() { return Bluetooth.instance.connectedDevices; }
     static get enabled() { return Bluetooth.instance.enabled; }
     static set enabled(enable: boolean) { Bluetooth.instance.enabled = enable; }
     static get devices() { return Bluetooth.instance.devices; }
-    static get connectedDevices() { return Bluetooth.instance.connectedDevices; }
 }

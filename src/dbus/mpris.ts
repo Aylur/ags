@@ -84,5 +84,8 @@ export interface TMprisProxy extends Proxy {
     DesktopEntry: string
 }
 
-export const MprisPlayerProxy = Gio.DBusProxy.makeProxyWrapper(player) as TPlayerProxy;
-export const MprisProxy = Gio.DBusProxy.makeProxyWrapper(mpris) as TMprisProxy;
+export const MprisPlayerProxy =
+    Gio.DBusProxy.makeProxyWrapper(player) as TPlayerProxy;
+
+export const MprisProxy =
+    Gio.DBusProxy.makeProxyWrapper(mpris) as TMprisProxy;

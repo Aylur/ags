@@ -1,6 +1,7 @@
 import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
 import Service from './service.js';
-import { error, execAsync, subprocess } from '../utils.js';
+import { execAsync } from '../utils.js';
 
 const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
 
@@ -31,9 +32,12 @@ class HyprlandService extends Service {
     _workspaces: Map<number, object>;
     _clients: Map<string, object>;
 
+    _decoder = new TextDecoder();
+    _socketStream = new Gio.DataInputStream;
+
     constructor() {
         if (!HIS)
-            error('Hyprland is not running');
+            console.error('Hyprland is not running');
 
         super();
         this._active = {
@@ -55,20 +59,38 @@ class HyprlandService extends Service {
         this._syncWorkspaces();
         this._syncClients();
 
-        // using Gio for socket reading sometimes misses events
-        // so for now the best solution I found was using socat
-        const socat = `socat -U - UNIX-CONNECT:/tmp/hypr/${HIS}/.socket2.sock`;
-        subprocess(['bash', '-c', socat], line => {
-            this._onEvent(line);
-        });
+        this.watchSocket(new Gio.DataInputStream({
+            close_base_stream: true,
+            base_stream: new Gio.SocketClient()
+                .connect(new Gio.UnixSocketAddress({
+                    path: `/tmp/hypr/${HIS}/.socket2.sock`,
+                }), null)
+                .get_input_stream(),
+        }));
+    }
+
+    watchSocket(stream: Gio.DataInputStream) {
+        stream.read_line_async(
+            0, null,
+            (stream, result) => {
+                if (!stream) {
+                    console.error('Error reading Hyprland socket');
+                    return;
+                }
+
+                const [line] = stream.read_line_finish(result);
+                this._onEvent(this._decoder.decode(line));
+                this.watchSocket(stream);
+            });
     }
 
     async _syncMonitors() {
         try {
             const monitors = await execAsync('hyprctl -j monitors');
             this._monitors = new Map();
-            (JSON.parse(monitors) as { [key: string]: any }[]).forEach(monitor => {
-                this._monitors.set(monitor.id, monitor);
+            const json = JSON.parse(monitors) as { [key: string]: any }[];
+            json.forEach(monitor => {
+                this._monitors.set(monitor.name, monitor);
                 if (monitor.focused) {
                     this._active.monitor = monitor.name;
                     this._active.workspace = monitor.activeWorkspace;
@@ -83,7 +105,8 @@ class HyprlandService extends Service {
         try {
             const workspaces = await execAsync('hyprctl -j workspaces');
             this._workspaces = new Map();
-            (JSON.parse(workspaces) as { [key: string]: any }[]).forEach(ws => {
+            const json = JSON.parse(workspaces) as { [key: string]: any }[];
+            json.forEach(ws => {
                 this._workspaces.set(ws.id, ws);
             });
         } catch (error) {
@@ -95,8 +118,10 @@ class HyprlandService extends Service {
         try {
             const clients = await execAsync('hyprctl -j clients');
             this._clients = new Map();
-            (JSON.parse(clients as string) as { [key: string]: any }[]).forEach(client => {
-                this._clients.set((client.address as string).substring(2), client);
+            const json = JSON.parse(clients) as { [key: string]: any }[];
+            json.forEach(client => {
+                this._clients.set(
+                    (client.address as string).substring(2), client);
             });
         } catch (error) {
             logError(error as Error);
@@ -112,71 +137,71 @@ class HyprlandService extends Service {
 
         try {
             switch (e) {
-            case 'workspace':
-            case 'focusedmon':
-            case 'monitorremoved':
-            case 'monitoradded':
-                await this._syncMonitors();
-                break;
+                case 'workspace':
+                case 'focusedmon':
+                case 'monitorremoved':
+                case 'monitoradded':
+                    await this._syncMonitors();
+                    break;
 
-            case 'createworkspace':
-            case 'destroyworkspace':
-                await this._syncWorkspaces();
-                break;
+                case 'createworkspace':
+                case 'destroyworkspace':
+                    await this._syncWorkspaces();
+                    break;
 
-            case 'openwindow':
-            case 'movewindow':
-            case 'windowtitle':
-                await this._syncClients();
-                await this._syncWorkspaces();
-                break;
+                case 'openwindow':
+                case 'movewindow':
+                case 'windowtitle':
+                    await this._syncClients();
+                    await this._syncWorkspaces();
+                    break;
 
-            case 'moveworkspace':
-                await this._syncWorkspaces();
-                await this._syncMonitors();
-                break;
+                case 'moveworkspace':
+                    await this._syncWorkspaces();
+                    await this._syncMonitors();
+                    break;
 
-            case 'activewindow':
-                this._active.client.class = argv[0];
-                this._active.client.title = argv[1];
-                break;
+                case 'activewindow':
+                    this._active.client.class = argv[0];
+                    this._active.client.title = argv[1];
+                    break;
 
-            case 'activewindowv2':
-                this._active.client.address = argv[0];
-                break;
+                case 'activewindowv2':
+                    this._active.client.address = argv[0];
+                    break;
 
-            case 'closewindow':
-                this._active.client = {
-                    class: '',
-                    title: '',
-                    address: '',
-                };
-                await this._syncClients();
-                await this._syncWorkspaces();
-                break;
+                case 'closewindow':
+                    this._active.client = {
+                        class: '',
+                        title: '',
+                        address: '',
+                    };
+                    await this._syncClients();
+                    await this._syncWorkspaces();
+                    break;
 
-            case 'urgent':
-                this.emit('urgent-window', argv[0]);
-                break;
+                case 'urgent':
+                    this.emit('urgent-window', argv[0]);
+                    break;
 
-            case 'activelayout': {
-                const [kbName, layoutName] = argv[0].split(',');
-                this.emit('keyboard-layout', `${kbName}`, `${layoutName}`);
-                break;
-            }
-            case 'changefloating': {
-                const client = this._clients.get(argv[0]);
-                if (client)
-                // @ts-ignore
-                    client.floating = argv[1] === '1';
-                break;
-            }
-            case 'submap':
-                this.emit('submap', argv[0]);
-                break;
+                case 'activelayout': {
+                    const [kbName, layoutName] = argv[0].split(',');
+                    this.emit('keyboard-layout', `${kbName}`, `${layoutName}`);
+                    break;
+                }
+                case 'changefloating': {
+                    const client = this._clients.get(argv[0]);
+                    if (client)
+                        // @ts-ignore
+                        client.floating = argv[1] === '1';
+                    break;
+                }
+                case 'submap':
+                    this.emit('submap', argv[0]);
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
             }
         } catch (error) {
             logError(error as Error);

@@ -1,198 +1,57 @@
-import Gtk from 'gi://Gtk?version=3.0';
-import { typecheck, error, warning, interval } from './utils.js';
-import * as Widgets from './widgets.js';
+import AgsBox from './widgets/box.js';
+import AgsCenterBox from './widgets/centerbox.js';
+import AgsEventBox from './widgets/eventbox.js';
+import AgsIcon from './widgets/icon.js';
+import AgsLabel from './widgets/label.js';
+import AgsButton from './widgets/button.js';
+import AgsSlider from './widgets/slider.js';
+import AgsScrollable from './widgets/scrollable.js';
+import AgsStack from './widgets/stack.js';
+import AgsOverlay from './widgets/overlay.js';
+import AgsRevealer from './widgets/revealer.js';
+import AgsProgressBar from './widgets/progressbar.js';
+import AgsEntry from './widgets/entry.js';
+import { AgsMenu, AgsMenuItem } from './widgets/menu.js';
+import AgsWindow from './widgets/window.js';
+import constructor from './widgets/shared.js';
+import { ctor } from './widgets/shared.js';
 
-interface ServiceAPI {
-    instance: {
-        connectWidget: (widget: Gtk.Widget, callback: (widget: Gtk.Widget, ...args: any[]) => void, event?: string) => void
-    }
+export default function Widget({ type, ...params }: { type: ctor }) {
+    return constructor(type, params);
 }
 
-interface Widget {
-    type: string | (() => Gtk.Widget)
-    className?: string
-    style?: string
-    halign?: 'start' | 'center' | 'end' | 'fill'
-    valign?: 'start' | 'center' | 'end' | 'fill'
-    hexpand?: boolean
-    vexpand?: boolean
-    sensitive?: boolean
-    tooltip?: string
-    visible?: boolean
-    connections?: (
-        [string, (...args: any[]) => any] |
-        [number, (...args: any[]) => any] |
-        [ServiceAPI, (...args: any[]) => any, string]
-    )[]
-    properties?: [any, any][]
-    setup?: (widget: Gtk.Widget) => void
-}
+export const Box = (args: object) => constructor(AgsBox, args);
+export const Button = (args: object) => constructor(AgsButton, args);
+export const CenterBox = (args: object) => constructor(AgsCenterBox, args);
+export const Entry = (args: object) => constructor(AgsEntry, args);
+export const EventBox = (args: object) => constructor(AgsEventBox, args);
+export const Icon = (args: object) => constructor(AgsIcon, args);
+export const Label = (args: object) => constructor(AgsLabel, args);
+export const Menu = (args: object) => constructor(AgsMenu, args);
+export const MenuItem = (args: object) => constructor(AgsMenuItem, args);
+export const Overlay = (args: object) => constructor(AgsOverlay, args);
+export const ProgressBar = (args: object) => constructor(AgsProgressBar, args);
+export const Revealer = (args: object) => constructor(AgsRevealer, args);
+export const Scrollable = (args: object) => constructor(AgsScrollable, args);
+export const Slider = (args: object) => constructor(AgsSlider, args);
+export const Stack = (args: object) => constructor(AgsStack, args);
+export const Window = (args: object) => constructor(AgsWindow, args);
 
-const widgets: { [key: string]: (props: any) => Gtk.Widget } = {
-    'box': Widgets.Box,
-    'button': Widgets.Button,
-    'centerbox': Widgets.CenterBox,
-    'dynamic': Widgets.Dynamic,
-    'entry': Widgets.Entry,
-    'eventbox': Widgets.EventBox,
-    'icon': Widgets.Icon,
-    'label': Widgets.Label,
-    'overlay': Widgets.Overlay,
-    'progressbar': Widgets.ProgressBar,
-    'revealer': Widgets.Revealer,
-    'scrollable': Widgets.Scrollable,
-    'slider': Widgets.Slider,
-    'stack': Widgets.Stack,
-    'switch': Widgets.Switch,
-    'menubutton': Widgets.MenuButton,
-    'popover': Widgets.Popover,
-    'menu': Widgets.Menu,
-    'menuitem': Widgets.MenutItem,
-};
-
-const widgetProviders: Map<Gtk.Widget, Gtk.CssProvider> = new Map();
-export function setStyle(widget: Gtk.Widget, css: string) {
-    const previous = widgetProviders.get(widget);
-    if (previous)
-        widget.get_style_context().remove_provider(previous);
-
-    const provider = new Gtk.CssProvider();
-    const style = `* { ${css} }`;
-    provider.load_from_data(style);
-    widget.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
-    widgetProviders.set(widget, provider);
-}
-
-export function toggleClassName(widget: Gtk.Widget, className: string, condition = true) {
-    condition
-        ? widget.get_style_context().add_class(className)
-        : widget.get_style_context().remove_class(className);
-}
-
-function parseParams(widget: Gtk.Widget, {
-    type, className, style, sensitive, tooltip, connections, properties, setup,
-    halign, valign, hexpand, vexpand, visible = true,
-}: Widget) {
-    type = type.toString();
-    typecheck('className', className, ['string', 'undefined'], type);
-    typecheck('style', style, ['string', 'undefined'], type);
-    typecheck('sensitive', sensitive, ['boolean', 'undefined'], type);
-    typecheck('tooltip', tooltip, ['string', 'undefined'], type);
-    typecheck('halign', halign, ['string', 'undefined'], type);
-    typecheck('valign', valign, ['string', 'undefined'], type);
-    typecheck('hexpand', hexpand, ['boolean', 'undefined'], type);
-    typecheck('vexpand', vexpand, ['boolean', 'undefined'], type);
-    typecheck('visible', visible, 'boolean', type);
-
-    // @ts-ignore
-    widget.setStyle = (css: string) => setStyle(widget, css);
-
-    // @ts-ignore
-    widget.toggleClassName = (className: string, condition = true) => toggleClassName(widget, className, condition);
-
-    if (typeof className === 'string') {
-        className.split(' ').forEach(cn => {
-            widget.get_style_context().add_class(cn);
-        });
-    }
-
-    if (typeof halign === 'string') {
-        // @ts-ignore
-        const align = Gtk.Align[halign.toUpperCase()];
-        if (typeof align !== 'number')
-            warning('wrong halign value');
-        widget.halign = align;
-    }
-
-    if (typeof valign === 'string') {
-        // @ts-ignore
-        const align = Gtk.Align[valign.toUpperCase()];
-        if (typeof align !== 'number')
-            warning('wrong valign value');
-        widget.valign = align;
-    }
-
-    if (typeof hexpand === 'boolean')
-        widget.hexpand = hexpand;
-
-    if (typeof vexpand === 'boolean')
-        widget.vexpand = vexpand;
-
-    if (typeof sensitive === 'boolean')
-        widget.sensitive = sensitive;
-
-    if (typeof tooltip === 'string')
-        widget.set_tooltip_text(tooltip);
-
-    if (typeof style === 'string')
-        setStyle(widget, style);
-
-    if (typeof visible === 'boolean')
-        widget.visible = visible;
-
-    if (properties) {
-        properties.forEach(([key, value]) => {
-            // @ts-ignore
-            widget[`_${key}`] = value;
-        });
-    }
-
-    if (connections) {
-        connections.forEach(([s, callback, event]) => {
-            if (typeof s === 'string')
-                widget.connect(s, callback);
-
-            else if (typeof s === 'number')
-                interval(s, () => callback(widget), widget);
-
-            else
-                s.instance.connectWidget(widget, callback, event);
-        });
-    }
-
-    if (typeof setup === 'function')
-        setup(widget);
-}
-
-export default function Widget(params: Widget | string | (() => Gtk.Widget) | Gtk.Widget): Gtk.Widget {
-    if (!params) {
-        error('Widget from null/undefined');
-        return new Gtk.Label({ label: `error widget from: "${params}"` });
-    }
-
-    if (typeof params === 'string')
-        return new Gtk.Label({ label: params });
-
-    if (typeof params === 'function')
-        return params();
-
-    if (params instanceof Gtk.Widget)
-        return params;
-
-    const {
-        type, className, style, halign, valign, connections, properties,
-        hexpand, vexpand, sensitive, tooltip, visible, setup,
-        ...props
-    }: Widget = params;
-
-    let widget: Gtk.Widget | null = null;
-    if (typeof type === 'function')
-        widget = type();
-
-    if (typeof type === 'string' && type in widgets)
-        widget = widgets[type]({ type, ...props });
-
-    if (widget === null) {
-        error(`There is no widget with type ${type}`);
-        return new Gtk.Label({ label: `${type} doesn't exist` });
-    }
-
-    parseParams(widget, {
-        type, className, style, halign, valign, connections, properties,
-        hexpand, vexpand, sensitive, tooltip, visible, setup,
-    });
-
-    return widget;
-}
-
-Widget.widgets = widgets;
+// so it is still in global scope through ags.Widget
+Widget.Widget = Widget;
+Widget.Box = Box;
+Widget.Button = Button;
+Widget.CenterBox = CenterBox;
+Widget.Entry = Entry;
+Widget.EventBox = EventBox;
+Widget.Icon = Icon;
+Widget.Label = Label;
+Widget.Menu = Menu;
+Widget.MenuItem = MenuItem;
+Widget.Overlay = Overlay;
+Widget.ProgressBar = ProgressBar;
+Widget.Revealer = Revealer;
+Widget.Scrollable = Scrollable;
+Widget.Slider = Slider;
+Widget.Stack = Stack;
+Widget.Window = Window;

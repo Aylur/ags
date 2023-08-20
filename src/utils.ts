@@ -2,81 +2,15 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import App from './app.js';
-import { type Window } from './window.js';
-
-interface Config {
-    windows?: Window[]
-    style?: string
-    stackTraceOnError?: boolean
-    baseIconSize?: number
-    notificationPopupTimeout?: number
-    exitOnError?: boolean
-    closeWindowDelay: { [key: string]: number }
-}
+import { Command } from './widgets/shared.js';
 
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name}`;
-export const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
-export const NOTIFICATIONS_CACHE_PATH = `${CACHE_DIR}/notifications`;
-export const CONFIG_DIR = `${GLib.get_user_config_dir()}/${pkg.name}`;
-
-export function error(message: string) {
-    getConfig()?.stackTraceOnError
-        ? logError(new Error(message))
-        : print(`AGS ERROR: ${message}`);
-
-    if (getConfig()?.exitOnError)
-        App.quit();
-}
-
-export function warning(message: string) {
-    getConfig()?.stackTraceOnError
-        ? logError(new Error(message))
-        : print(`AGS WARNING: ${message}`);
-}
-
-export function typecheck(key: string, value: unknown, type: string | string[], widget: string) {
-    if (Array.isArray(type)) {
-        for (const t of type) {
-            if (t === 'array' && Array.isArray(value))
-                return true;
-
-            if (typeof value === t)
-                return true;
-        }
-
-        warning(`"${key}" has to be one of ${type.join(' or ')} on ${widget}`);
-        return false;
-    }
-
-    if (type === 'array' && Array.isArray(value))
-        return true;
-
-    if (typeof value === type)
-        return true;
-
-    warning(`"${key}" has to be a ${type} on ${widget} but it is of type ${typeof value}`);
-    return false;
-}
-
-export function restcheck(rest: object, widget: string) {
-    const keys = Object.keys(rest);
-    if (keys.length === 0)
-        return;
-
-    warning(`unknown keys on ${widget}: ${JSON.stringify(keys)}`);
-}
 
 export function readFile(path: string) {
-    try {
-        const f = Gio.File.new_for_path(path);
-        const [, bytes] = f.load_contents(null);
-        return new TextDecoder().decode(bytes);
-    } catch (error) {
-        logError(error as Error);
-        return null;
-    }
+    const f = Gio.File.new_for_path(path);
+    const [, bytes] = f.load_contents(null);
+    return new TextDecoder().decode(bytes);
 }
 
 export function readFileAsync(path: string): Promise<string> {
@@ -88,7 +22,8 @@ export function readFileAsync(path: string): Promise<string> {
                 const [success, bytes] = file.load_contents_finish(res);
                 return success
                     ? resolve(new TextDecoder().decode(bytes))
-                    : reject(new Error(`reading file ${path} was unsuccessful`));
+                    : reject(new Error(
+                        `reading file ${path} was unsuccessful`));
             } catch (error) {
                 reject(error);
             }
@@ -118,7 +53,13 @@ export function writeFile(string: string, path: string): Promise<Gio.File> {
     });
 }
 
-export function bulkConnect(service: GObject.Object, list: [event: string, callback: (...args: any[]) => void][]) {
+export function bulkConnect(
+    service: GObject.Object,
+    list: [
+        event: string,
+        callback: (...args: any[]) => void
+    ][],
+) {
     const ids = [];
     for (const [event, callback] of list)
         ids.push(service.connect(event, callback));
@@ -137,21 +78,25 @@ export function connect(
     callback: (widget: Gtk.Widget, ...args: any[]) => void,
     event = 'changed',
 ) {
-    const bind = service.connect(event, (_s: GObject.Object, ...args: any[]) => callback(widget, ...args));
+    const bind = service.connect(
+        event, (_s, ...args: any[]) => callback(widget, ...args));
+
     widget.connect('destroy', () => service.disconnect(bind));
     timeout(10, () => callback(widget));
 }
 
-export function interval(interval: number, callback: () => void, widget: Gtk.Widget) {
+export function interval(
+    interval: number,
+    callback: () => void, widget: Gtk.Widget,
+) {
     callback();
     const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, interval, () => {
         callback();
         return true;
     });
-    if (widget) {
+    if (widget)
         widget.connect('destroy', () => GLib.source_remove(id));
-        return widget;
-    }
+
     return id;
 }
 
@@ -162,28 +107,27 @@ export function timeout(ms: number, callback: () => void) {
     });
 }
 
-export function runCmd(cmd: string | ((...args: any[]) => void), ...args: any[]) {
-    if (!cmd)
-        return;
+export function runCmd(
+    cmd: Command,
+    ...args: any[]
+) {
+    if (typeof cmd !== 'string' && typeof cmd !== 'function') {
+        console.error('Command has to be string or function');
+        return false;
+    }
 
-    if (typeof cmd === 'string')
-        return GLib.spawn_command_line_async(cmd);
+    if (!cmd)
+        return false;
+
+    if (typeof cmd === 'string') {
+        GLib.spawn_command_line_async(cmd);
+        return true;
+    }
 
     if (typeof cmd === 'function')
         return cmd(...args);
-}
 
-export function getConfig() {
-    try {
-        imports.searchPath.push(CONFIG_DIR);
-        return imports.config.config as Config;
-    } catch (err) {
-        GLib.file_test(CONFIG_DIR + '/config.js', GLib.FileTest.EXISTS)
-            ? logError(err as Error)
-            : print('No config was provided');
-
-        return null;
-    }
+    return false;
 }
 
 export function lookUpIcon(name?: string, size = 16) {
@@ -198,34 +142,8 @@ export function lookUpIcon(name?: string, size = 16) {
 }
 
 export function ensureDirectory(path?: string) {
-    if (path && !GLib.file_test(path, GLib.FileTest.EXISTS)) {
+    if (path && !GLib.file_test(path, GLib.FileTest.EXISTS))
         Gio.File.new_for_path(path).make_directory_with_parents(null);
-    }
-    else {
-        [
-            MEDIA_CACHE_PATH,
-            NOTIFICATIONS_CACHE_PATH,
-        ]
-            .forEach(path => {
-                if (!GLib.file_test(path, GLib.FileTest.EXISTS))
-                    Gio.File.new_for_path(path).make_directory_with_parents(null);
-            });
-    }
-}
-
-export function isRunning(dbusName: string) {
-    return Gio.DBus.session.call_sync(
-        'org.freedesktop.DBus',
-        '/org/freedesktop/DBus',
-        'org.freedesktop.DBus',
-        'NameHasOwner',
-        // @ts-ignore
-        GLib.Variant.new_tuple([new GLib.Variant('s', dbusName)]),
-        new GLib.VariantType('(b)'),
-        Gio.DBusCallFlags.NONE,
-        -1,
-        null,
-    ).deepUnpack()?.toString() === 'true' || false;
 }
 
 export function execAsync(cmd: string | string[]): Promise<string> {
@@ -290,8 +208,10 @@ export function subprocess(
         );
 
         const pipe = proc.get_stdout_pipe();
-        if (!pipe)
-            return onError(new Error(`subprocess ${cmd} stdout pipe is null`));
+        if (!pipe) {
+            onError(new Error(`subprocess ${cmd} stdout pipe is null`));
+            return null;
+        }
 
         const stdout = new Gio.DataInputStream({
             base_stream: pipe,
@@ -299,7 +219,9 @@ export function subprocess(
         });
 
         read(stdout);
+        return proc;
     } catch (e) {
-        return onError(e as Error);
+        onError(e as Error);
+        return null;
     }
 }

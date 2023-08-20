@@ -20,7 +20,13 @@ export interface TDBusProxy {
     disconnect: (id: number) => void
     g_name_owner: string
     ListNamesRemote: (callback: (names: string[][]) => void) => void
-    connectSignal: (event: string, callback: (proxy: string, sender: string, owners: string[]) => void) => void
+    connectSignal: (
+        event: string,
+        callback: (
+            proxy: string,
+            sender: string,
+            owners: string[]
+        ) => void) => void
 }
 
 export const DBusProxy = Gio.DBusProxy.makeProxyWrapper(dbus) as TDBusProxy;

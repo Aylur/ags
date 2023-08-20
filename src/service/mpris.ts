@@ -3,9 +3,14 @@ import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import Service from './service.js';
 import { ensureDirectory, timeout } from '../utils.js';
-import { MprisPlayerProxy, MprisProxy, TMprisProxy, TPlayerProxy, MprisMetadata } from '../dbus/mpris.js';
 import { DBusProxy, TDBusProxy } from '../dbus/dbus.js';
-import { MEDIA_CACHE_PATH } from '../utils.js';
+import { CACHE_DIR } from '../utils.js';
+import {
+    MprisPlayerProxy, MprisProxy,
+    TMprisProxy, TPlayerProxy, MprisMetadata,
+} from '../dbus/mpris.js';
+
+const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
 
 type PlaybackStatus = 'Playing' | 'Paused' | 'Stopped';
 type LoopStatus = 'None' | 'Track' | 'Playlist';
@@ -114,12 +119,14 @@ class MprisPlayer extends GObject.Object {
             ? -1
             : Number.parseInt(`${length}`.substring(0, 3));
 
-        this.playBackStatus = this._playerProxy.PlaybackStatus as PlaybackStatus;
+        this.shuffleStatus = this._playerProxy.Shuffle;
+        this.loopStatus = this._playerProxy.LoopStatus as LoopStatus;
         this.canGoNext = this._playerProxy.CanGoNext;
         this.canGoPrev = this._playerProxy.CanGoPrevious;
         this.canPlay = this._playerProxy.CanPlay;
-        this.shuffleStatus = this._playerProxy.Shuffle;
-        this.loopStatus = this._playerProxy.LoopStatus as LoopStatus;
+        this.playBackStatus =
+            this._playerProxy.PlaybackStatus as PlaybackStatus;
+
         this.trackid = metadata['mpris:trackid'];
         this.trackArtists = trackArtists;
         this.trackTitle = trackTitle;
@@ -144,8 +151,7 @@ class MprisPlayer extends GObject.Object {
         if (GLib.file_test(coverPath, GLib.FileTest.EXISTS))
             return;
 
-        ensureDirectory();
-
+        ensureDirectory(MEDIA_CACHE_PATH);
         Gio.File.new_for_uri(trackCoverUrl).copy_async(
             Gio.File.new_for_path(coverPath),
             Gio.FileCopyFlags.OVERWRITE,
@@ -209,17 +215,17 @@ class MprisPlayer extends GObject.Object {
     shuffle() { this._playerProxy.Shuffle = !this._playerProxy.Shuffle; }
     loop() {
         switch (this._playerProxy.LoopStatus) {
-        case 'None':
-            this._playerProxy.LoopStatus = 'Track';
-            break;
-        case 'Track':
-            this._playerProxy.LoopStatus = 'Playlist';
-            break;
-        case 'Playlist':
-            this._playerProxy.LoopStatus = 'None';
-            break;
-        default:
-            break;
+            case 'None':
+                this._playerProxy.LoopStatus = 'Track';
+                break;
+            case 'Track':
+                this._playerProxy.LoopStatus = 'Playlist';
+                break;
+            case 'Playlist':
+                this._playerProxy.LoopStatus = 'None';
+                break;
+            default:
+                break;
         }
     }
 }
@@ -282,7 +288,11 @@ class MprisService extends Service {
             this._onNameOwnerChanged.bind(this));
     }
 
-    _onNameOwnerChanged(_proxy: string, _sender: string, [name, oldOwner, newOwner]: string[]) {
+    _onNameOwnerChanged(
+        _proxy: string,
+        _sender: string,
+        [name, oldOwner, newOwner]: string[],
+    ) {
         if (!name.startsWith('org.mpris.MediaPlayer2.'))
             return;
 
@@ -312,7 +322,7 @@ export default class Mpris {
         return Mpris._instance;
     }
 
-    static getPlayer(name: string | ((players: Players) => MprisPlayer)): MprisPlayer | null {
+    static getPlayer(name: string | ((players: Players) => MprisPlayer)) {
         return Mpris._instance.getPlayer(name);
     }
 }

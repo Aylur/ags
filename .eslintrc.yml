@@ -10,11 +10,14 @@ parserOptions:
   project: './tsconfig.json'
   warnOnUnsupportedTypeScriptVersion: false
 root: true
+ignorePatterns:
+  - example/
+  - types/
+  - gi-types/
+  - _build/
 plugins:
   - '@typescript-eslint'
 rules:
-  no-unused-vars:
-    - off
   '@typescript-eslint/no-unused-vars':
     - 'warn'
   '@typescript-eslint/restrict-template-expressions':
@@ -63,9 +66,7 @@ rules:
   indent:
     - error
     - 4
-    - ignoredNodes:
-      - 'CallExpression[callee.object.name=GObject][callee.property.name=registerClass] > ClassExpression:first-child'
-      MemberExpression: 'off'
+    - SwitchCase: 1
   keyword-spacing:
     - error
     - before: true
@@ -102,6 +103,10 @@ rules:
     - always
   no-useless-escape:
     - off
+  max-len:
+    - error
+    - code: 80
+      tabWidth: 80
 globals:
   pkg: readonly
   ARGV: readonly

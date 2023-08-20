@@ -22,8 +22,9 @@ export default class Service extends GObject.Object {
         if (signals) {
             Object.keys(signals).forEach(signal =>
                 Signals[signal] = {
-                    // @ts-ignore
-                    param_types: signals[signal].map(t => GObject[`TYPE_${t.toUpperCase()}`]),
+                    param_types: signals[signal].map(t =>
+                        // @ts-ignore
+                        GObject[`TYPE_${t.toUpperCase()}`]),
                 },
             );
         }
@@ -35,7 +36,11 @@ export default class Service extends GObject.Object {
         (Service as { [key: string]: any })[name] = api;
     }
 
-    connectWidget(widget: Gtk.Widget, callback: (widget: Gtk.Widget, ...args: any[]) => void, event = 'changed') {
+    connectWidget(
+        widget: Gtk.Widget,
+        callback: (widget: Gtk.Widget, ...args: any[]) => void,
+        event = 'changed',
+    ) {
         connect(this, widget, callback, event);
     }
 }

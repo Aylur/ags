@@ -1,32 +1,51 @@
 import NM from 'gi://NM';
+import GObject from 'gi://GObject';
 import Service from './service.js';
 import { bulkConnect } from '../utils.js';
 
 const _INTERNET = (device: NM.Device) => {
     switch (device?.active_connection?.state) {
-    case NM.ActiveConnectionState.ACTIVATED: return 'connected';
-    case NM.ActiveConnectionState.ACTIVATING: return 'connecting';
-    case NM.ActiveConnectionState.DEACTIVATING:
-    case NM.ActiveConnectionState.DEACTIVATED:
-    default: return 'disconnected';
+        case NM.ActiveConnectionState.ACTIVATED: return 'connected';
+        case NM.ActiveConnectionState.ACTIVATING: return 'connecting';
+        case NM.ActiveConnectionState.DEACTIVATING:
+        case NM.ActiveConnectionState.DEACTIVATED:
+        default: return 'disconnected';
     }
 };
 
 const _DEVICE_STATE = (device: NM.Device) => {
     switch (device?.state) {
-    case NM.DeviceState.UNMANAGED: return 'unmanaged';
-    case NM.DeviceState.UNAVAILABLE: return 'unavailable';
-    case NM.DeviceState.DISCONNECTED: return 'disconnected';
-    case NM.DeviceState.PREPARE: return 'prepare';
-    case NM.DeviceState.CONFIG: return 'config';
-    case NM.DeviceState.NEED_AUTH: return 'need_auth';
-    case NM.DeviceState.IP_CONFIG: return 'ip_config';
-    case NM.DeviceState.IP_CHECK: return 'ip_check';
-    case NM.DeviceState.SECONDARIES: return 'secondaries';
-    case NM.DeviceState.ACTIVATED: return 'activated';
-    case NM.DeviceState.DEACTIVATING: return 'deactivating';
-    case NM.DeviceState.FAILED: return 'failed';
-    default: return 'unknown';
+        case NM.DeviceState.UNMANAGED: return 'unmanaged';
+        case NM.DeviceState.UNAVAILABLE: return 'unavailable';
+        case NM.DeviceState.DISCONNECTED: return 'disconnected';
+        case NM.DeviceState.PREPARE: return 'prepare';
+        case NM.DeviceState.CONFIG: return 'config';
+        case NM.DeviceState.NEED_AUTH: return 'need_auth';
+        case NM.DeviceState.IP_CONFIG: return 'ip_config';
+        case NM.DeviceState.IP_CHECK: return 'ip_check';
+        case NM.DeviceState.SECONDARIES: return 'secondaries';
+        case NM.DeviceState.ACTIVATED: return 'activated';
+        case NM.DeviceState.DEACTIVATING: return 'deactivating';
+        case NM.DeviceState.FAILED: return 'failed';
+        default: return 'unknown';
+    }
+};
+
+const _CONNECTIVITY_STATE = (client: NM.Client) => {
+    switch (client.connectivity) {
+        case NM.ConnectivityState.NONE: return 'none';
+        case NM.ConnectivityState.PORTAL: return 'none';
+        case NM.ConnectivityState.LIMITED: return 'none';
+        case NM.ConnectivityState.FULL: return 'none';
+        default: return 'unknown';
+    }
+};
+
+const _DEVICE = (device: string) => {
+    switch (device) {
+        case '802-11-wireless': return 'wifi';
+        case '802-3-ethernet': return 'wired';
+        default: return '';
     }
 };
 
@@ -68,7 +87,8 @@ class Wifi extends Service {
         if (!this._ap)
             return;
 
-        this._apBind = this._ap.connect('notify::strength', () => this.emit('changed'));
+        this._apBind = this._ap.connect(
+            'notify::strength', () => this.emit('changed'));
     }
 
     get accessPoints() {
@@ -151,15 +171,19 @@ class NetworkService extends Service {
     }
 
     _clientReady() {
-        this._client.connect('notify::wireless-enabled', this._sync.bind(this));
-        this._client.connect('notify::connectivity', this._sync.bind(this));
-        this._client.connect('notify::primary-connection', this._sync.bind(this));
-        this._client.connect('notify::activating-connection', this._sync.bind(this));
+        bulkConnect((this._client as unknown) as GObject.Object, [
+            ['notify::wireless-enabled', this._sync.bind(this)],
+            ['notify::connectivity', this._sync.bind(this)],
+            ['notify::primary-connection', this._sync.bind(this)],
+            ['notify::activating-connection', this._sync.bind(this)],
+        ]);
 
-        this._wifi = new Wifi(this._client, this._getDevice(NM.DeviceType.WIFI) as NM.DeviceWifi);
+        this._wifi = new Wifi(this._client,
+            this._getDevice(NM.DeviceType.WIFI) as NM.DeviceWifi);
         this._wifi.connect('changed', this._sync.bind(this));
 
-        this._wired = new Wired(this._getDevice(NM.DeviceType.ETHERNET) as NM.DeviceEthernet);
+        this._wired = new Wired(
+            this._getDevice(NM.DeviceType.ETHERNET) as NM.DeviceEthernet);
         this._wired.connect('changed', this._sync.bind(this));
 
         this._sync();
@@ -170,19 +194,8 @@ class NetworkService extends Service {
             this._client.get_primary_connection() ||
             this._client.get_activating_connection();
 
-        const primary = mainConnection?.type;
-        this._primary = {
-            '802-11-wireless': 'wifi',
-            '802-3-ethernet': 'wired',
-        }[primary || ''],
-
-        this._connectivity = {
-            [NM.ConnectivityState.NONE]: 'none',
-            [NM.ConnectivityState.PORTAL]: 'portal',
-            [NM.ConnectivityState.LIMITED]: 'limited',
-            [NM.ConnectivityState.FULL]: 'full',
-        }[this._client.connectivity] || 'unknown';
-
+        this._primary = _DEVICE(mainConnection?.type || '');
+        this._connectivity = _CONNECTIVITY_STATE(this._client);
         this.emit('changed');
     }
 }
