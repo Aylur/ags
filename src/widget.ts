@@ -18,6 +18,7 @@ import { ctor } from './widgets/shared.js';
 
 export default function Widget({ type, ...params }: { type: ctor }) {
     return constructor(type, params);
+}
 
 export const Box = (args: object) => constructor(AgsBox, args);
 export const Button = (args: object) => constructor(AgsButton, args);
