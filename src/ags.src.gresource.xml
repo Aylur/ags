@@ -33,9 +33,11 @@
     <file>service/network.js</file>
     <file>service/notifications.js</file>
 
-    <file>dbus/dbus.js</file>
-    <file>dbus/mpris.js</file>
-    <file>dbus/notifications.js</file>
-    <file>dbus/upower.js</file>
+    <file>dbus/types.js</file>
+    <file>dbus/org.freedesktop.DBus.xml</file>
+    <file>dbus/org.freedesktop.Notifications.xml</file>
+    <file>dbus/org.freedesktop.UPower.Device.xml</file>
+    <file>dbus/org.mpris.MediaPlayer2.Player.xml</file>
+    <file>dbus/org.mpris.MediaPlayer2.xml</file>
   </gresource>
 </gresources>

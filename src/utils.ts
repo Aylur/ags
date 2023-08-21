@@ -53,6 +53,21 @@ export function writeFile(string: string, path: string): Promise<Gio.File> {
     });
 }
 
+
+export function loadInterfaceXML(iface: string) {
+    const uri = `resource:///com/github/Aylur/ags/dbus/${iface}.xml`;
+    const f = Gio.File.new_for_uri(uri);
+
+    try {
+        const [, bytes] = f.load_contents(null);
+        return new TextDecoder().decode(bytes);
+    } catch (e) {
+        logError(e as Error);
+        return null;
+    }
+}
+
+
 export function bulkConnect(
     service: GObject.Object,
     list: [

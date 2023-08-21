@@ -1,7 +1,12 @@
 import Gio from 'gi://Gio';
 import Service from './service.js';
-import { PowerManagerProxy, BatteryProxy } from '../dbus/upower.js';
 import { timeout } from '../utils.js';
+import { loadInterfaceXML } from '../utils.js';
+import { type BatteryProxy } from '../dbus/types.js';
+
+const BatteryIFace = loadInterfaceXML('org.freedesktop.UPower.Device');
+const PowerManagerProxy =
+    Gio.DBusProxy.makeProxyWrapper(BatteryIFace) as BatteryProxy;
 
 const DeviceState = {
     CHARGING: 1,
@@ -34,7 +39,7 @@ class BatteryService extends Service {
         this._proxy = new PowerManagerProxy(
             Gio.DBus.system,
             'org.freedesktop.UPower',
-            '/org/freedesktop/UPower/devices/DisplayDevice') as BatteryProxy;
+            '/org/freedesktop/UPower/devices/DisplayDevice');
 
         this._proxy.connect('g-properties-changed', () => this._sync());
 

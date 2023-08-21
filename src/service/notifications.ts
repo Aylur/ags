@@ -3,14 +3,16 @@ import GdkPixbuf from 'gi://GdkPixbuf';
 import GLib from 'gi://GLib';
 import Service from './service.js';
 import App from '../app.js';
-import { NotificationIFace } from '../dbus/notifications.js';
+
 import {
-    CACHE_DIR, ensureDirectory, readFileAsync,
+    CACHE_DIR, ensureDirectory,
+    loadInterfaceXML, readFileAsync,
     timeout, writeFile,
 } from '../utils.js';
 
 const NOTIFICATIONS_CACHE_PATH = `${CACHE_DIR}/notifications`;
 const CACHE_FILE = NOTIFICATIONS_CACHE_PATH + '/notifications.json';
+const NotificationIFace = loadInterfaceXML('org.freedesktop.Notifications');
 
 interface action {
     id: string
@@ -184,7 +186,7 @@ class NotificationsService extends Service {
             Gio.BusNameOwnerFlags.NONE,
             (connection: Gio.DBusConnection) => {
                 this._dbus = Gio.DBusExportedObject
-                    .wrapJSObject(NotificationIFace, this);
+                    .wrapJSObject(NotificationIFace as string, this);
 
                 this._dbus.export(connection, '/org/freedesktop/Notifications');
             },
