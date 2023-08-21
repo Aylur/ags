@@ -41,10 +41,15 @@ Object.defineProperty(Gtk.Widget.prototype, 'className', {
     get: function() {
         return this._className || [];
     },
-    set: function(names) {
+    set: function(names: string[] | string) {
         if (!Array.isArray(names) && typeof names !== 'string') {
             console.error('className has to be a string or array');
             return;
+        }
+
+        if (this._className) {
+            this._className.forEach((cn: string) =>
+                toggleClassName(this, cn, false));
         }
 
         this._className = [];
@@ -80,7 +85,7 @@ Object.defineProperty(Gtk.Widget.prototype, 'style', {
     get: function() {
         return this._style || '';
     },
-    set: function(css) {
+    set: function(css: string) {
         if (!setStyle(this, css))
             return;
 
