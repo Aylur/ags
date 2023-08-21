@@ -32,10 +32,12 @@
     <file>service/mpris.js</file>
     <file>service/network.js</file>
     <file>service/notifications.js</file>
+    <file>service/systray.js</file>
 
     <file>dbus/dbus.js</file>
     <file>dbus/mpris.js</file>
     <file>dbus/notifications.js</file>
     <file>dbus/upower.js</file>
+    <file>dbus/systray.js</file>
   </gresource>
 </gresources>
