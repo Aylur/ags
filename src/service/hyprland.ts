@@ -184,11 +184,10 @@ class HyprlandService extends Service {
                     this.emit('urgent-window', argv[0]);
                     break;
 
-                case 'activelayout': {
-                    const [kbName, layoutName] = argv[0].split(',');
-                    this.emit('keyboard-layout', `${kbName}`, `${layoutName}`);
+                case 'activelayout':
+                    this.emit('keyboard-layout', `${argv[0]}`, `${argv[1]}`);
                     break;
-                }
+
                 case 'changefloating': {
                     const client = this._clients.get(argv[0]);
                     if (client)
