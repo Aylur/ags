@@ -36,7 +36,7 @@ export default class AgsWindow extends Gtk.Window {
         this.visible = visible === true || visible === null && !popup;
     }
 
-    set monitor(monitor: number | null) {
+    set monitor(monitor: number | null | Gdk.Monitor) {
         if (monitor === null)
             return;
 
@@ -46,6 +46,9 @@ export default class AgsWindow extends Gtk.Window {
                 ? GtkLayerShell.set_monitor(this, m)
                 : console.error(`Could not find monitor with id: ${monitor}`);
         }
+
+        if (monitor instanceof Gdk.Monitor)
+            GtkLayerShell.set_monitor(this, monitor);
     }
 
     _exclusive = false;
