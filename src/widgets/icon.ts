@@ -2,7 +2,6 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
-import { Context } from 'gi-types/cairo1';
 
 export default class AgsIcon extends Gtk.Image {
     static {
@@ -68,7 +67,7 @@ export default class AgsIcon extends Gtk.Image {
         }
     }
 
-    vfunc_draw(cr: Context): boolean {
+    vfunc_draw(cr: any): boolean {
         if (this._size > 1)
             return super.vfunc_draw(cr);
 
