@@ -27,7 +27,10 @@ export default class AgsCenterBox extends AgsBox {
     }
 
     set children(children: Gtk.Widget[] | null) {
-        this.get_children().forEach(ch => ch.destroy());
+        const newChildren = children || [];
+
+        newChildren.filter((ch) => !newChildren?.includes(ch))
+            .forEach(ch => ch.destroy());
 
         if (!children)
             return;

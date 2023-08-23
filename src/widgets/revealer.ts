@@ -40,6 +40,8 @@ export default class AgsRevealer extends Gtk.Revealer {
     get child() { return this.get_child(); }
     set child(child: Gtk.Widget) {
         const widget = this.get_child();
+        if (widget === child) return;
+        
         if (widget)
             widget.destroy();
 

@@ -42,7 +42,17 @@ export default class AgsStack extends Gtk.Stack {
     _items: [string, Gtk.Widget][] = [];
     get items() { return this._items; }
     set items(items: [string, Gtk.Widget][]) {
-        this.get_children().forEach(ch => ch.destroy());
+        this._items
+            .filter(([name]) => !items.find(([n]) => n === name))
+            .forEach(([_, ch]) => ch.destroy());
+        
+        // remove any children that weren't destroyed so
+        // we can re-add everything without trying to add
+        // items multiple times
+        this._items
+            .filter(([_, ch]) => this.get_children().includes(ch))
+            .forEach(([_, ch]) => this.remove(ch));
+        
         this._items = [];
         items.forEach(([name, widget]) => {
             widget && this.add_named(widget, name);
