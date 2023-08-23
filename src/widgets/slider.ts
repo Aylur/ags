@@ -9,24 +9,9 @@ export default class AgsSlider extends Gtk.Scale {
         GObject.registerClass({
             GTypeName: 'AgsSlider',
             Properties: {
-                'min': GObject.ParamSpec.float(
-                    'min', 'Min', 'Min',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    -100, 100, 0,
-                ),
-                'max': GObject.ParamSpec.float(
-                    'max', 'Max', 'Max',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    -100, 100, 1,
-                ),
-                'step': GObject.ParamSpec.float(
-                    'step', 'Step', 'Step',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    -100, 100, 0.01,
-                ),
                 'dragging': GObject.ParamSpec.boolean(
                     'dragging', 'Dragging', 'Dragging',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                    GObject.ParamFlags.READABLE,
                     false,
                 ),
                 'vertical': GObject.ParamSpec.boolean(
@@ -40,33 +25,24 @@ export default class AgsSlider extends Gtk.Scale {
 
     onChange: Command;
 
-    constructor({ onChange = '', value = 0, ...rest }) {
-        super({ ...rest, adjustment: new Gtk.Adjustment() });
+    constructor({
+        onChange = '',
+        value = 0,
+        min = 0,
+        max = 1,
+        step = 0.01,
+        ...rest
+    } = {}) {
+        super({
+            ...rest,
+            adjustment: new Gtk.Adjustment({
+                lower: min,
+                upper: max,
+                stepIncrement: step,
+            }),
+        });
+
         this.onChange = onChange;
-
-        this.bind_property(
-            'min', this.adjustment, 'lower',
-            GObject.BindingFlags.BIDIRECTIONAL |
-            GObject.BindingFlags.SYNC_CREATE,
-        );
-
-        this.bind_property(
-            'min', this.adjustment, 'lower',
-            GObject.BindingFlags.BIDIRECTIONAL |
-            GObject.BindingFlags.SYNC_CREATE,
-        );
-
-        this.bind_property(
-            'max', this.adjustment, 'upper',
-            GObject.BindingFlags.BIDIRECTIONAL |
-            GObject.BindingFlags.SYNC_CREATE,
-        );
-
-        this.bind_property(
-            'step', this.adjustment, 'step-increment',
-            GObject.BindingFlags.BIDIRECTIONAL |
-            GObject.BindingFlags.SYNC_CREATE,
-        );
 
         this.adjustment.connect('notify::value', ({ value }, event) => {
             if (!this._dragging)
@@ -89,26 +65,14 @@ export default class AgsSlider extends Gtk.Scale {
         this.adjustment.value = value;
     }
 
-    _min = 0;
-    get min() { return this._min; }
-    set min(min: number) {
-        this._min = min;
-        this.notify('min');
-    }
+    get min() { return this.adjustment.lower; }
+    set min(min: number) { this.adjustment.lower = min; }
 
-    _max = 1;
-    get max() { return this._max; }
-    set max(max: number) {
-        this._max = max;
-        this.notify('max');
-    }
+    get max() { return this.adjustment.upper; }
+    set max(max: number) { this.adjustment.upper = max; }
 
-    _step = 0.01;
-    get step() { return this._step; }
-    set step(step: number) {
-        this._step = step;
-        this.notify('step');
-    }
+    get step() { return this.adjustment.stepIncrement; }
+    set step(step: number) { this.adjustment.stepIncrement = step; }
 
     _dragging = false;
     get dragging() { return this._dragging; }
