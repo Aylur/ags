@@ -121,6 +121,30 @@ class Wifi extends Service {
     }
 
     get state() { return _DEVICE_STATE(this._device); }
+    get iconName() {
+        const iconNames: [number, string][] = [
+            [80, 'excellent'],
+            [60, 'good'],
+            [40, 'ok'],
+            [20, 'weak'],
+            [0, 'none'],
+        ];
+
+        if (this.internet === 'connected') {
+            for (const [threshold, name] of iconNames) {
+                if (this.strength >= threshold)
+                    return `network-wireless-signal-${name}-symbolic`;
+            }
+        }
+
+        if (this.internet === 'connecting')
+            return 'network-wireless-acquiring-symbolic';
+
+        if (this.enabled)
+            return 'network-wireless-offline-symbolic';
+
+        return 'network-wireless-disabled-symbolic';
+    }
 }
 
 class Wired extends Service {
@@ -136,6 +160,18 @@ class Wired extends Service {
     get speed() { return this._device.get_speed(); }
     get internet() { return _INTERNET(this._device); }
     get state() { return _DEVICE_STATE(this._device); }
+    get iconName() {
+        if (this.internet === 'connecting')
+            return 'network-wired-acquiring-symbolic';
+
+        if (this.internet === 'connected')
+            return 'network-wired-symbolic';
+
+        if (Network.connectivity !== 'full')
+            return 'network-wired-no-route-symbolic';
+
+        return 'network-wired-disconnected-symbolic';
+    }
 }
 
 class NetworkService extends Service {

@@ -18,6 +18,7 @@ type BatteryState = {
     percent: number
     charging: boolean
     charged: boolean
+    iconName: string
 }
 
 class BatteryService extends Service {
@@ -34,6 +35,7 @@ class BatteryService extends Service {
             percent: -1,
             charging: false,
             charged: false,
+            iconName: 'battery-missing-symbolic',
         };
 
         this._proxy = new PowerManagerProxy(
@@ -56,11 +58,20 @@ class BatteryService extends Service {
             this._proxy.State === DeviceState.FULLY_CHARGED ||
             (this._proxy.State === DeviceState.CHARGING && percent === 100);
 
+        const state = this._proxy.State ===
+            DeviceState.CHARGING ? '-charging' : '';
+
+        const level = Math.floor(percent / 10) * 10;
+        const iconName = charged
+            ? 'battery-level-100-charged-symbolic'
+            : `battery-level-${level}${state}-symbolic`;
+
         this._state = {
             available: true,
             percent,
             charging,
             charged,
+            iconName,
         };
 
         this.emit('changed');
@@ -80,4 +91,5 @@ export default class Battery {
     static get percent() { return Battery.instance._state.percent; }
     static get charging() { return Battery.instance._state.charging; }
     static get charged() { return Battery.instance._state.charged; }
+    static get iconName() { return Battery.instance._state.iconName; }
 }
