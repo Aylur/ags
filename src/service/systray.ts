@@ -1,5 +1,6 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import GdkPixbuf from 'gi://GdkPixbuf';
 import Service from './service.js';
 import { DBusProxy, TDBusProxy } from '../dbus/dbus.js';
 import { StatusNotifierWatcherIFace,
@@ -117,5 +118,31 @@ export default class SystemTray {
 
     static get items() {
         return Array.from(SystemTray.instance._items.values());
+    }
+
+    static getPixbuf(item: TStatusNotifierItemProxy, iconSize: number){
+        //TODO instead of getting the first provided pixmap,
+        // it would be better to get the smallest pixmap
+        // that is larger than the target size
+        let pixMap :[number, number, Uint8Array];
+        if (item.Status === 'NeedsAttention')
+            pixMap = item.AttentionIconPixmap[0];
+        else
+            pixMap = item.IconPixmap[0];
+        const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
+            pixMap[2],
+            GdkPixbuf.Colorspace.RGB,
+            true,
+            8,
+            pixMap[0],
+            pixMap[1],
+            pixMap[0] * 4);
+        const scale_pixbuf = pixbuf.scale_simple(
+            iconSize,
+            iconSize,
+            GdkPixbuf.InterpType.BILINEAR);
+        if (!scale_pixbuf)
+            return;
+        return scale_pixbuf;
     }
 }

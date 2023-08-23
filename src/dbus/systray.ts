@@ -55,6 +55,11 @@ export const StatusNotifierItemIFace = `
             <annotation name="org.qtproject.QtDBus.QtTypeName"
                         value="KDbusImageVector"/>
         </property>
+        <property name="AttentionIconName" type="s" access="read"/>
+        <property name="AttentionIconPixmap" type="a(iiay)" access="read">
+            <annotation name="org.qtproject.QtDBus.QtTypeName"
+                        value="KDbusImageVector"/>
+        </property>
         <property name="ToolTip" type="(sa(iiay)ss)" access="read">
             <annotation name="org.qtproject.QtDBus.QtTypeName"
                         value="KDbusToolTipStruct"/>
@@ -102,7 +107,9 @@ export  interface TStatusNotifierItemProxy  extends Proxy{
     IconThemePath: string
     ItemIsMenu: boolean
     IconName: string
-    IconPixmap: GLib.Variant<'a(iiay)'>
+    IconPixmap: Array<[number, number, Uint8Array]>
+    AttentionIconName: string
+    AttentionIconPixmap: Array<[number, number, Uint8Array]>
     ToolTip: GLib.Variant<'(sa(iiay)ss)'>
     ContextMenuAsync: (x:number, y:number) => Promise<void>
     ActivateAsync: (x:number, y:number) =>  Promise<void>
