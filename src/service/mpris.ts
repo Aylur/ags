@@ -235,8 +235,11 @@ class MprisPlayer extends GObject.Object {
                 oldestKey = key;
             }
         }
-        delete (this._coverCache[oldestKey]);
+        if (!oldestKey)
+            return;
+
         const okc = this._coverCache[oldestKey].coverPath;
+        delete (this._coverCache[oldestKey]);
         if (GLib.file_test(okc, GLib.FileTest.EXISTS)) {
             const file = Gio.File.new_for_path(okc);
             file.delete_async(GLib.PRIORITY_DEFAULT, null, null);
