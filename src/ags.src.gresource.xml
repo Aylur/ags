@@ -3,6 +3,7 @@
   <gresource prefix="/com/github/Aylur/ags">
     <file>main.js</file>
     <file>app.js</file>
+    <file>client.js</file>
     <file>utils.js</file>
     <file>widget.js</file>
 

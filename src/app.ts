@@ -27,6 +27,7 @@ export default class App extends Gtk.Application {
     private _windows: Map<string, Gtk.Window>;
     private _closeDelay!: { [key: string]: number };
     private _cssProviders: Gtk.CssProvider[] = [];
+    private _clientActionGroup: Gio.DBusActionGroup;
 
     static configPath: string;
     static configDir: string;
@@ -39,7 +40,7 @@ export default class App extends Gtk.Application {
     static get windows() { return App.instance._windows; }
     static getWindow(name: string) { return App.instance.getWindow(name); }
     static closeWindow(name: string) { App.instance.closeWindow(name); }
-    static openWindow(name: string) { App.getWindow(name)?.show(); }
+    static openWindow(name: string) { App.instance.openWindow(name); }
     static toggleWindow(name: string) { App.instance.toggleWindow(name); }
     static quit() { App.instance.quit(); }
 
@@ -76,21 +77,20 @@ export default class App extends Gtk.Application {
         App.instance._cssProviders.push(cssProvider);
     }
 
-    constructor({ bus, config }: {
-        bus: string
-        config: string
-    }) {
+    constructor(bus: string, path: string, configPath: string) {
         super({
             application_id: bus,
             flags: Gio.ApplicationFlags.DEFAULT_FLAGS,
         });
 
         this._windows = new Map();
+        this._clientActionGroup = Gio.DBusActionGroup
+            .get(Gio.DBus.session, bus + '.client', path + '/client');
 
-        const dir = config.split('/');
+        const dir = configPath.split('/');
         dir.pop();
         App.configDir = dir.join('/');
-        App.configPath = config;
+        App.configPath = configPath;
         App.instance = this;
     }
 
@@ -111,7 +111,13 @@ export default class App extends Gtk.Application {
     toggleWindow(name: string) {
         const w = this.getWindow(name);
         if (w)
-            w.visible ? App.closeWindow(name) : App.openWindow(name);
+            w.visible ? this.closeWindow(name) : this.openWindow(name);
+        else
+            return 'There is no window named ' + name;
+    }
+
+    openWindow(name: string) {
+        this.getWindow(name)?.show();
     }
 
     closeWindow(name: string) {
@@ -201,6 +207,14 @@ export default class App extends Gtk.Application {
         }
     }
 
+    _runJs(js: string) {
+        return new Promise((resolve, reject) => {
+            js.includes('\n') || js.includes(';')
+                ? Function('resolve', 'reject', js)(resolve, reject)
+                : resolve(`${Function('return ' + js)()}` || '');
+        });
+    }
+
     _addAction(
         name: string,
         callback: (_source: Gio.SimpleAction, _param: GLib.Variant) => void,
@@ -214,16 +228,30 @@ export default class App extends Gtk.Application {
     }
 
     _exportActions() {
-        this._addAction('inspector',
-            () => Gtk.Window.set_interactive_debugging(true));
-        this._addAction('quit', App.quit);
+        this._addAction('inspector', () => {
+            Gtk.Window.set_interactive_debugging(true);
+        });
 
-        this._addAction('toggle-window', (_, arg) => App.toggleWindow(
-            arg.unpack() as string), new GLib.VariantType('s'));
+        this._addAction('quit', () => {
+            this.quit();
+        });
+
+        this._addAction('toggle-window', (_, arg) => {
+            const err = this.toggleWindow(arg.unpack() as string);
+            this._clientActionGroup.activate_action('print',
+                new GLib.Variant('s', err || ''));
+        }, new GLib.VariantType('s'));
 
         this._addAction('run-js', (_, arg) => {
-            const fn = new Function(arg.unpack() as string);
-            fn();
+            this._runJs(arg.unpack() as string)
+                .then(res => {
+                    this._clientActionGroup.activate_action('print',
+                        new GLib.Variant('s', `${res}` || ''));
+                })
+                .catch(rej => {
+                    this._clientActionGroup.activate_action('print',
+                        new GLib.Variant('s', `${rej}` || ''));
+                });
         }, new GLib.VariantType('s'));
     }
 }
