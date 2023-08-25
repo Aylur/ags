@@ -38,8 +38,9 @@ export default class AgsOverlay extends Gtk.Overlay {
     get child() { return this._child; }
     set child(child: Gtk.Widget) {
         const widget = this.get_child();
-        if (widget === child) return;
-        
+        if (widget === child)
+            return;
+
         if (widget)
             widget.destroy();
 
@@ -54,12 +55,12 @@ export default class AgsOverlay extends Gtk.Overlay {
         overlays ||= [];
         this.get_children().filter(
             ch => ch !== this._child
-                // && !overlays.includes(ch)
-            )
+                && !overlays.includes(ch),
+        )
             .forEach(ch => ch.destroy());
 
-        // this.get_children()
-        //     .forEach(ch => this.remove_overlay(ch));
+        this.get_children()
+            .forEach(ch => this.remove_overlay(ch));
 
         this._overlays = [];
         overlays.forEach(ch => this.add_overlay(ch));
@@ -71,7 +72,6 @@ export default class AgsOverlay extends Gtk.Overlay {
     }
 
     remove_overlay(widget: Gtk.Widget): void {
-        //why is ts complaining remove_overlay doesn't exist?
-        //super.remove_overlay(widget);
+        super.remove(widget);
     }
 }

@@ -25,19 +25,20 @@ export default class AgsBox extends Gtk.Box {
     get children() { return this.get_children(); }
     set children(children: Gtk.Widget[] | null) {
         const newChildren = children || [];
-            
+
         this.get_children()
-            .filter((ch) => !newChildren?.includes(ch))
-            .forEach((ch) => ch.destroy());
+            .filter(ch => !newChildren?.includes(ch))
+            .forEach(ch => ch.destroy());
 
         // remove any children that weren't destroyed so
         // we can re-add everything in the correct new order
         this.get_children()
             .forEach(ch => this.remove(ch));
-            
-        if (!children) return;
 
-        children.forEach((w) => w && this.add(w));
+        if (!children)
+            return;
+
+        children.forEach(w => w && this.add(w));
         this.show_all();
     }
 
