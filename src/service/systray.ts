@@ -1,11 +1,15 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
+import Dbusmenu from 'gi://Dbusmenu';
 import Service from './service.js';
 import { DBusProxy, TDBusProxy } from '../dbus/dbus.js';
 import { StatusNotifierWatcherIFace,
     TStatusNotifierItemProxy,
     StatusNotifierItemProxy } from '../dbus/systray.js';
+import { Label, Menu, MenuItem } from '../widget.js';
+import { AgsMenu, AgsMenuItem } from '../widgets/menu.js';
+import Gtk from 'gi://Gtk?version=3.0';
 
 class SystemTrayService extends Service {
     static {
@@ -15,8 +19,15 @@ class SystemTrayService extends Service {
     _dbus!: Gio.DBusExportedObject;
     _items: Map<string, TStatusNotifierItemProxy>;
     _proxy: TDBusProxy;
-    get IsStatusNotifierHostRegistered() { return true; }
-    get ProtocolVersion() { return 0; }
+
+    get IsStatusNotifierHostRegistered() {
+        return true;
+    }
+
+    get ProtocolVersion() {
+        return 0;
+    }
+
     get RegisteredStatusNotifierItems() {
         return Array.from(this._items.keys());
     }
@@ -54,11 +65,10 @@ class SystemTrayService extends Service {
         serviceName: string, invocation: Gio.DBusMethodInvocation) {
         let busName: string, objectPath: string;
         const [service] = serviceName;
-        if (service.startsWith('/')){
+        if (service.startsWith('/')) {
             objectPath = service;
             busName = invocation.get_sender();
-        }
-        else {
+        } else {
             busName = service;
             objectPath = '/StatusNotifierItem';
         }
@@ -69,11 +79,13 @@ class SystemTrayService extends Service {
                 objectPath,
                 (proxy: TStatusNotifierItemProxy, error: any) => {
                     if (error === null) {
-                        this._items.set(busName+objectPath, proxy);
+                        this._items.set(busName + objectPath, proxy);
                         this._dbus.emit_signal(
                             'StatusNotifierItemRegistered',
-                            new GLib.Variant('(s)', [busName+objectPath]));
+                            new GLib.Variant('(s)', [busName + objectPath]));
                         this.emit('changed');
+                        proxy.AgsMenu = new AgsMenu({ children: [] });
+                        proxy.DbusMenusClient = this._createMenu(proxy);
                     }
                 },
                 null, /* cancellable */
@@ -103,6 +115,40 @@ class SystemTrayService extends Service {
                 new GLib.Variant('(s)', [key]));
             this.emit('changed');
         }
+    }
+
+    _createMenu(item: TStatusNotifierItemProxy) {
+        const menu = new Dbusmenu.Client(
+            { dbus_name: item.g_name_owner, dbus_object: item.Menu });
+        menu.connect('new-menuitem', (
+            client: Dbusmenu.Client, menuItem: Dbusmenu.Menuitem) => {
+            const mi = this._createItem(menu, menuItem);
+            item.AgsMenu.add(mi);
+            item.AgsMenu.show_all();
+        });
+        return menu;
+    }
+
+    _createItem(client: Dbusmenu.Client, dbusMenuItem: Dbusmenu.Menuitem) {
+        let menuItem;
+        if (dbusMenuItem.property_get('children-display') === 'submenu') {
+            menuItem = MenuItem({
+                child: Label({ label: dbusMenuItem.property_get('label') }),
+            }) as AgsMenuItem;
+            const submenu = new Gtk.Menu();
+            dbusMenuItem.get_children().forEach(dbitem =>
+                submenu.add(this._createItem(client, dbitem)));
+            menuItem.set_submenu(submenu);
+        }
+        else if (dbusMenuItem.property_get('type') === 'separator') {
+            menuItem = new Gtk.SeparatorMenuItem();
+        }
+        else {
+            menuItem = MenuItem({
+                child: Label({ label: dbusMenuItem.property_get('label') }),
+            });
+        }
+        return menuItem;
     }
 }
 

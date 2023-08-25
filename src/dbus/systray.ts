@@ -1,5 +1,7 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import Dbusmenu from 'gi://Dbusmenu';
+import Gtk from 'gi://Gtk?version=3.0';
 
 export const StatusNotifierWatcherIFace = `
 <node>
@@ -50,6 +52,7 @@ export const StatusNotifierItemIFace = `
         <property name="WindowId" type="i" access="read"/>
         <property name="IconThemePath" type="s" access="read"/>
         <property name="ItemIsMenu" type="b" access="read"/>
+        <property name="Menu" type="o" access="read"/>
         <property name="IconName" type="s" access="read"/>
         <property name="IconPixmap" type="a(iiay)" access="read">
             <annotation name="org.qtproject.QtDBus.QtTypeName"
@@ -106,6 +109,9 @@ export  interface TStatusNotifierItemProxy  extends Proxy{
     WindowId: number
     IconThemePath: string
     ItemIsMenu: boolean
+    Menu: string
+    DbusMenusClient: Dbusmenu.Client
+    AgsMenu: Gtk.Menu
     IconName: string
     IconPixmap: Array<[number, number, Uint8Array]>
     AttentionIconName: string
