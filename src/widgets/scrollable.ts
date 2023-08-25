@@ -30,20 +30,6 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
         });
     }
 
-    // @ts-ignore
-    get child() { return this.get_child(); }
-    set child(child: Gtk.Widget) {
-        const widget = this.get_child();
-        if (widget === child)
-            return;
-
-        if (widget)
-            widget.destroy();
-
-        if (child)
-            this.add(child);
-    }
-
     _hscroll = 'automatic';
     get hscroll() { return this._hscroll; }
     set hscroll(hscroll: string) {

@@ -169,18 +169,4 @@ export default class AgsWindow extends Gtk.Window {
             this, GtkLayerShell.KeyboardMode[focusable ? 'ON_DEMAND' : 'NONE'],
         );
     }
-
-    // @ts-ignore
-    get child() { return this.get_child(); }
-    set child(child: Gtk.Widget) {
-        const widget = this.get_child();
-        if (widget === child)
-            return;
-
-        if (widget)
-            widget.destroy();
-
-        if (child)
-            this.add(child);
-    }
 }

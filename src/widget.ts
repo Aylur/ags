@@ -1,3 +1,4 @@
+import './widgets/overrides.js';
 import AgsBox from './widgets/box.js';
 import AgsCenterBox from './widgets/centerbox.js';
 import AgsEventBox from './widgets/eventbox.js';

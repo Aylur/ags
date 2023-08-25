@@ -90,18 +90,4 @@ export default class AgsEventBox extends Gtk.EventBox {
                 return runCmd(this.onScrollDown, box, event);
         });
     }
-
-    // @ts-ignore
-    get child() { return this.get_child(); }
-    set child(child: Gtk.Widget) {
-        const widget = this.get_child();
-        if (widget === child)
-            return;
-
-        if (widget)
-            widget.destroy();
-
-        if (child)
-            this.add(child);
-    }
 }

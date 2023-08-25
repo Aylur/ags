@@ -28,20 +28,6 @@ export default class AgsOverlay extends Gtk.Overlay {
             this.set_overlay_pass_through(ch, passthrough));
     }
 
-    // @ts-ignore
-    get child() { return this.get_child(); }
-    set child(child: Gtk.Widget) {
-        const widget = this.get_child();
-        if (widget === child)
-            return;
-
-        if (widget)
-            widget.destroy();
-
-        if (child)
-            this.add(child);
-    }
-
     _overlays!: Gtk.Widget[];
     get overlays() { return this._overlays; }
     set overlays(overlays: Gtk.Widget[]) {
