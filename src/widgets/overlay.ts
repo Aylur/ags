@@ -6,17 +6,6 @@ export default class AgsOverlay extends Gtk.Overlay {
         GObject.registerClass({
             GTypeName: 'AgsOverlay',
             Properties: {
-                'child': GObject.ParamSpec.object(
-                    'child', 'Child', 'Child',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    Gtk.Widget.$gtype,
-                ),
-                // @ts-ignore
-                'overlays': GObject.ParamSpec.jsobject(
-                    'overlays', 'Overlays', 'Overlays',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    [],
-                ),
                 'pass-through': GObject.ParamSpec.boolean(
                     'pass-through', 'Pass Through', 'Pass Through',
                     GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
@@ -24,6 +13,11 @@ export default class AgsOverlay extends Gtk.Overlay {
                 ),
             },
         }, this);
+    }
+
+    constructor({ overlays = [], ...rest } = {}) {
+        super(rest);
+        this.overlays = overlays;
     }
 
     _passthrough = false;
@@ -34,14 +28,16 @@ export default class AgsOverlay extends Gtk.Overlay {
             this.set_overlay_pass_through(ch, passthrough));
     }
 
-    _child!: Gtk.Widget;
-    get child() { return this._child; }
+    // @ts-ignore
+    get child() { return this.get_child(); }
     set child(child: Gtk.Widget) {
         const widget = this.get_child();
+        if (widget === child)
+            return;
+
         if (widget)
             widget.destroy();
 
-        this._child = child;
         if (child)
             this.add(child);
     }
@@ -49,12 +45,20 @@ export default class AgsOverlay extends Gtk.Overlay {
     _overlays!: Gtk.Widget[];
     get overlays() { return this._overlays; }
     set overlays(overlays: Gtk.Widget[]) {
-        overlays ||= [];
-        this.get_children().filter(ch => ch !== this._child)
+        this.get_children()
+            .filter(ch => ch !== this.child && !overlays.includes(ch))
             .forEach(ch => ch.destroy());
+
+        this.get_children()
+            .filter(ch => ch !== this.child)
+            .forEach(ch => this.remove(ch));
 
         this._overlays = [];
         overlays.forEach(ch => this.add_overlay(ch));
+
+        // reset passthrough
+        this.get_children().forEach(ch =>
+            this.set_overlay_pass_through(ch, this.pass_through));
     }
 
     add_overlay(widget: Gtk.Widget): void {
