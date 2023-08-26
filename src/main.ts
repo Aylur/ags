@@ -8,6 +8,7 @@ import './service/apps.js';
 import './service/audio.js';
 import './service/battery.js';
 import './service/bluetooth.js';
+import './service/cache.js';
 import './service/hyprland.js';
 import './service/mpris.js';
 import './service/network.js';

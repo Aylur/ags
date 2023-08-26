@@ -1,12 +1,10 @@
-import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import Service from './service.js';
 import App from '../app.js';
-import { ensureDirectory, timeout, writeFile, readFile } from '../utils.js';
-import { CACHE_DIR } from '../utils.js';
 import { loadInterfaceXML } from '../utils.js';
 import { DBusProxy, PlayerProxy, MprisProxy } from '../dbus/types.js';
+import Cache from './cache.js';
 
 const DBusIFace = loadInterfaceXML('org.freedesktop.DBus');
 const PlayerIFace = loadInterfaceXML('org.mpris.MediaPlayer2.Player');
@@ -15,7 +13,7 @@ const DBusProxy = Gio.DBusProxy.makeProxyWrapper(DBusIFace) as DBusProxy;
 const PlayerProxy = Gio.DBusProxy.makeProxyWrapper(PlayerIFace) as PlayerProxy;
 const MprisProxy = Gio.DBusProxy.makeProxyWrapper(MprisIFace) as MprisProxy;
 
-const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
+const CACHE_KEY = 'covers';
 
 type PlaybackStatus = 'Playing' | 'Paused' | 'Stopped';
 type LoopStatus = 'None' | 'Track' | 'Playlist';
@@ -27,10 +25,6 @@ type MprisMetadata = {
     'mpris:trackid': string
     [key: string]: unknown
 }
-type cacheValue = {
-    coverPath: string,
-    timestamp: number,
-};
 
 class MprisPlayer extends GObject.Object {
     static {
@@ -42,8 +36,6 @@ class MprisPlayer extends GObject.Object {
             },
         }, this);
     }
-
-    static cachePath = MEDIA_CACHE_PATH + '/covercache.json';
 
     busName: string;
     name: string;
@@ -65,14 +57,9 @@ class MprisPlayer extends GObject.Object {
     _binding: { mpris: number, player: number };
     _mprisProxy: MprisProxy;
     _playerProxy: PlayerProxy;
-    _cacheSize: number;
-    _coverCache: { [key: string]: cacheValue } = {};
 
     constructor(busName: string) {
         super();
-
-        this._cacheSize = App.config?.mediaCacheSize || 100;
-        this._repopulateCoverCache();
 
         this.busName = busName;
         this.name = busName.substring(23).split('.')[0];
@@ -81,7 +68,6 @@ class MprisPlayer extends GObject.Object {
         this._mprisProxy = new MprisProxy(
             Gio.DBus.session, busName,
             '/org/mpris/MediaPlayer2');
-
         this._playerProxy = new PlayerProxy(
             Gio.DBus.session, busName,
             '/org/mpris/MediaPlayer2');
@@ -89,7 +75,22 @@ class MprisPlayer extends GObject.Object {
         this._onMprisProxyReady();
         this._onPlayerProxyReady();
 
-        timeout(100, this._updateState.bind(this));
+        Cache.Connect('cache-changed', (name: string, path: string) => {
+            logError(new Error(`${name} also changed at ${path}`));
+            if (name == CACHE_KEY) {
+                this.emit('changed');
+                this.coverPath = path;
+            }
+        });
+
+        Cache.Connect('cache-repolulated', (name: string) => {
+            logError(new Error(`${name} repopulated`));
+            if (name == CACHE_KEY)
+                this._updateState.bind(this);
+        });
+
+        Cache.NewCache(CACHE_KEY, App.config?.mediaCacheSize || 100);
+        logError(new Error(`new player ${busName}`));
     }
 
     close() {
@@ -164,86 +165,9 @@ class MprisPlayer extends GObject.Object {
             this.coverPath = '';
             return;
         }
-
-        const hash = GLib.compute_checksum_for_string(GLib.ChecksumType.SHA256,
-            this.trackCoverUrl,
-            this.trackCoverUrl.length) + '';
-
-        if (this._coverCache[hash]) {
-            this.coverPath = this._coverCache[hash].coverPath;
-            this._coverCache[hash].timestamp = Date.now();
-            return;
-        }
-
-        this._coverCacheAdd(hash, this.trackCoverUrl);
-    }
-
-    _repopulateCoverCache() {
-        try {
-            const cacheCovers = readFile(MprisPlayer.cachePath);
-            this._coverCache = JSON.parse(cacheCovers);
-        } catch (e) {
-            logError(e as Error, `failed to parse ${MprisPlayer.cachePath}`);
-            this._coverCache = {};
-            return;
-        }
-    }
-
-    _coverCacheAdd(hash: string, trackCoverUrl: string) {
-        this.coverPath = MEDIA_CACHE_PATH + '/covers/' + hash;
-        ensureDirectory(MEDIA_CACHE_PATH + '/covers/');
-
-        Gio.File.new_for_uri(trackCoverUrl).copy_async(
-            Gio.File.new_for_path(this.coverPath),
-            Gio.FileCopyFlags.OVERWRITE,
-            GLib.PRIORITY_DEFAULT,
-            null,
-            // @ts-ignore
-            null,
-            // @ts-ignore
-            (source, result) => {
-                try {
-                    source.copy_finish(result);
-                    this.emit('changed');
-                }
-                catch (e) {
-                    logError(e as Error, `failed to cache ${trackCoverUrl}`);
-                    delete this._coverCache[hash];
-                    this.coverPath = '';
-                }
-            },
-        );
-
-        this._coverCache[hash] = {
-            coverPath: this.coverPath,
-            timestamp: Date.now(),
-        };
-
-        if (Object.keys(this._coverCache).length > this._cacheSize)
-            this._coverCachePurgeOldest();
-
-        writeFile(JSON.stringify(this._coverCache),
-            MprisPlayer.cachePath).catch(logError);
-    }
-
-    _coverCachePurgeOldest() {
-        let oldest = Infinity;
-        let oldestKey = '';
-        for (const key of Object.keys(this._coverCache)) {
-            if (this._coverCache[key].timestamp < oldest) {
-                oldest = this._coverCache[key].timestamp;
-                oldestKey = key;
-            }
-        }
-        if (!oldestKey)
-            return;
-
-        const okc = this._coverCache[oldestKey].coverPath;
-        delete (this._coverCache[oldestKey]);
-        if (GLib.file_test(okc, GLib.FileTest.EXISTS)) {
-            const file = Gio.File.new_for_path(okc);
-            file.delete_async(GLib.PRIORITY_DEFAULT, null, null);
-        }
+        this.coverPath = Cache.GetPath(CACHE_KEY, this.trackCoverUrl);
+        if (!this.coverPath)
+            Cache.AddPath(CACHE_KEY, this.trackCoverUrl);
     }
 
     get volume() {
@@ -351,7 +275,7 @@ class MprisService extends Service {
 
     _onProxyReady() {
         this._proxy.ListNamesRemote(([names]) => {
-            names.forEach(name => {
+            names?.forEach(name => {
                 if (!name.startsWith('org.mpris.MediaPlayer2.'))
                     return;
 
