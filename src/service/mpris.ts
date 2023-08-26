@@ -76,7 +76,6 @@ class MprisPlayer extends GObject.Object {
         this._onPlayerProxyReady();
 
         Cache.Connect('cache-changed', (name: string, path: string) => {
-            logError(new Error(`${name} also changed at ${path}`));
             if (name == CACHE_KEY) {
                 this.emit('changed');
                 this.coverPath = path;
@@ -84,13 +83,11 @@ class MprisPlayer extends GObject.Object {
         });
 
         Cache.Connect('cache-repolulated', (name: string) => {
-            logError(new Error(`${name} repopulated`));
             if (name == CACHE_KEY)
                 this._updateState.bind(this);
         });
 
         Cache.NewCache(CACHE_KEY, App.config?.mediaCacheSize || 100);
-        logError(new Error(`new player ${busName}`));
     }
 
     close() {
