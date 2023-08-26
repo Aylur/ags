@@ -122,7 +122,7 @@ export class CacheService extends Service {
             Gio.File.new_for_path(savePath),
             Gio.FileCopyFlags.OVERWRITE,
             null,
-            null
+            null,
         );
 
         if (!success)
