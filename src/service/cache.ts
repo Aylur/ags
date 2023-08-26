@@ -19,16 +19,9 @@ export class CacheService extends Service {
         });
     }
 
-    private cacheLimits: { [key: string]: number };
-    private cachePaths: { [key: string]: string };
-    private caches: { [key: string]: { [key: string]: cacheValue } };
-
-    constructor() {
-        super();
-        this.cacheLimits = {};
-        this.cachePaths = {};
-        this.caches = {};
-    }
+    private cacheLimits: { [key: string]: number } = {};
+    private cachePaths: { [key: string]: string } = {};
+    private caches: { [key: string]: { [key: string]: cacheValue } } = {};
 
     newCache(name: string, limit: number) {
         this.cacheLimits[name] = limit;
@@ -193,7 +186,7 @@ export class CacheService extends Service {
 }
 
 export default class Cache {
-    static { Service.export(this, 'cache'); }
+    static { Service.export(this, 'Cache'); }
     static _instance: CacheService;
 
     static get instance() {
