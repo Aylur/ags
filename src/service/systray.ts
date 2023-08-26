@@ -4,9 +4,11 @@ import GdkPixbuf from 'gi://GdkPixbuf';
 import Dbusmenu from 'gi://Dbusmenu';
 import Service from './service.js';
 import { DBusProxy, TDBusProxy } from '../dbus/dbus.js';
-import { StatusNotifierWatcherIFace,
+import {
+    StatusNotifierWatcherIFace,
     TStatusNotifierItemProxy,
-    StatusNotifierItemProxy } from '../dbus/systray.js';
+    StatusNotifierItemProxy,
+} from '../dbus/systray.js';
 import { Label, Menu, MenuItem } from '../widget.js';
 import { AgsMenu, AgsMenuItem } from '../widgets/menu.js';
 import Gtk from 'gi://Gtk?version=3.0';
@@ -72,31 +74,73 @@ class SystemTrayService extends Service {
             busName = service;
             objectPath = '/StatusNotifierItem';
         }
-        new Promise(() => {
-            new StatusNotifierItemProxy(
-                Gio.DBus.session,
-                busName,
-                objectPath,
-                (proxy: TStatusNotifierItemProxy, error: any) => {
-                    if (error === null) {
-                        this._items.set(busName + objectPath, proxy);
-                        this._dbus.emit_signal(
-                            'StatusNotifierItemRegistered',
-                            new GLib.Variant('(s)', [busName + objectPath]));
-                        this.emit('changed');
-                        proxy.AgsMenu = new AgsMenu({ children: [] });
-                        proxy.DbusMenusClient = this._createMenu(proxy);
-                    }
-                },
-                null, /* cancellable */
-                Gio.DBusProxyFlags.NONE);
-        }).catch(e => logError(e));
+
         invocation.return_value(null);
+
+        new StatusNotifierItemProxy(
+            Gio.DBus.session,
+            busName,
+            objectPath,
+            //TODO should probably be its own method for better readability
+            (proxy: TStatusNotifierItemProxy, error: any) => {
+                if (error === null) {
+                    this._items.set(busName + objectPath, proxy);
+                    proxy.AgsMenu = new AgsMenu({ children: [] });
+                    proxy.DbusMenusClient = this._createMenu(proxy);
+                    proxy.connect('g-signal', (
+                        _proxy: TStatusNotifierItemProxy,
+                        senderName: string,
+                        signalName: string,
+                        parameters: GLib.Variant<any>) => {
+                        //TODO only refresh changed properties not all of them
+                        // you would think, when a property is changed, the
+                        // 'property-changed' signal is emitted, but that would be too easy.
+                        if (signalName === 'NewTitle' ||
+                            signalName === 'NewIcon' ||
+                            signalName === 'NewToolTip' ||
+                            signalName === 'NewStatus') {
+                            this._refresh_properties(_proxy);
+                            this.emit('changed');
+                        }
+                    });
+                    this._dbus.emit_signal(
+                        'StatusNotifierItemRegistered',
+                        new GLib.Variant('(s)', [busName + objectPath]));
+                    this.emit('changed');
+                }
+            },
+            null, /* cancellable */
+            Gio.DBusProxyFlags.NONE);
     }
 
     RegisterStatusNotifierHostAsync(
         serviceName: string, invocation: Gio.DBusMethodInvocation) {
         // TODO: Implement the logic to register a status notifier host
+    }
+
+    _refresh_properties(proxy: TStatusNotifierItemProxy) {
+        const [properties] =
+            (proxy.g_connection.call_sync(
+                proxy.g_name,
+                proxy.g_object_path,
+                'org.freedesktop.DBus.Properties',
+                'GetAll',
+                GLib.Variant.new('(s)',
+                    [proxy.g_interface_name]),
+                GLib.VariantType.new('(a{sv})'),
+                Gio.DBusCallFlags.NONE, -1,
+                null) as GLib.Variant<'(a{sv})'>)
+                .deep_unpack();
+        Object.entries(properties).map(
+            ([property_name, value]) => {
+                this._update_property(proxy, property_name, value);
+            });
+    }
+
+    _update_property(proxy: TStatusNotifierItemProxy, property_name: string, value :GLib.Variant<any>){
+        //TODO for now don't update the menu, needs to be handled properly
+        if (property_name !== 'Menu')
+            proxy.set_cached_property(property_name, value);
     }
 
     _onNameOwnerChanged(
@@ -126,6 +170,10 @@ class SystemTrayService extends Service {
             item.AgsMenu.add(mi);
             item.AgsMenu.show_all();
         });
+        menu.connect('layout-updated', (
+            client: Dbusmenu.Client) => {
+            //TODO update the layout when requested
+        });
         return menu;
     }
 
@@ -139,11 +187,9 @@ class SystemTrayService extends Service {
             dbusMenuItem.get_children().forEach(dbitem =>
                 submenu.add(this._createItem(client, dbitem)));
             menuItem.set_submenu(submenu);
-        }
-        else if (dbusMenuItem.property_get('type') === 'separator') {
+        } else if (dbusMenuItem.property_get('type') === 'separator') {
             menuItem = new Gtk.SeparatorMenuItem();
-        }
-        else {
+        } else {
             menuItem = MenuItem({
                 child: Label({ label: dbusMenuItem.property_get('label') }),
             });
@@ -154,7 +200,10 @@ class SystemTrayService extends Service {
 
 
 export default class SystemTray {
-    static { Service.export(this, 'SystemTray'); }
+    static {
+        Service.export(this, 'SystemTray');
+    }
+
     static _instance: SystemTrayService;
 
     static get instance() {
@@ -166,11 +215,11 @@ export default class SystemTray {
         return Array.from(SystemTray.instance._items.values());
     }
 
-    static getPixbuf(item: TStatusNotifierItemProxy, iconSize: number){
+    static getPixbuf(item: TStatusNotifierItemProxy, iconSize: number) {
         //TODO instead of getting the first provided pixmap,
         // it would be better to get the smallest pixmap
         // that is larger than the target size
-        let pixMap :[number, number, Uint8Array];
+        let pixMap: [number, number, Uint8Array];
         if (item.Status === 'NeedsAttention')
             pixMap = item.AttentionIconPixmap[0];
         else

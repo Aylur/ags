@@ -1,7 +1,7 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Dbusmenu from 'gi://Dbusmenu';
-import Gtk from 'gi://Gtk?version=3.0';
+import { AgsMenu } from '../widgets/menu.js';
 
 export const StatusNotifierWatcherIFace = `
 <node>
@@ -95,32 +95,29 @@ export const StatusNotifierItemIFace = `
     </interface>
 </node>
 `;
-interface Proxy {
-    connect: (event: string, callback: () => void) => number
-    disconnect: (id: number) => void
-    g_name_owner: string
-}
-export  interface TStatusNotifierItemProxy  extends Proxy{
-    new(...args: any[]): TStatusNotifierItemProxy
-    Category :string
-    Id: string
-    Title: string
-    Status: string
-    WindowId: number
-    IconThemePath: string
-    ItemIsMenu: boolean
-    Menu: string
-    DbusMenusClient: Dbusmenu.Client
-    AgsMenu: Gtk.Menu
-    IconName: string
-    IconPixmap: Array<[number, number, Uint8Array]>
-    AttentionIconName: string
-    AttentionIconPixmap: Array<[number, number, Uint8Array]>
-    ToolTip: GLib.Variant<'(sa(iiay)ss)'>
-    ContextMenuAsync: (x:number, y:number) => Promise<void>
-    ActivateAsync: (x:number, y:number) =>  Promise<void>
-    SecondaryActivateAsync: (x:number, y:number) =>  Promise<void>
-    ScrollAsync: (delta:number, orientation:string) =>  Promise<void>
+
+export interface TStatusNotifierItemProxy extends Gio.DBusProxy {
+    new(...args: any[]): TStatusNotifierItemProxy;
+
+    Category: string;
+    Id: string;
+    Title: string;
+    Status: string;
+    WindowId: number;
+    IconThemePath: string;
+    ItemIsMenu: boolean;
+    Menu: string;
+    DbusMenusClient: Dbusmenu.Client;
+    AgsMenu: AgsMenu;
+    IconName: string;
+    IconPixmap: Array<[number, number, Uint8Array]>;
+    AttentionIconName: string;
+    AttentionIconPixmap: Array<[number, number, Uint8Array]>;
+    ToolTip: GLib.Variant<'(sa(iiay)ss)'>;
+    ContextMenuAsync: (x: number, y: number) => Promise<void>;
+    ActivateAsync: (x: number, y: number) => Promise<void>;
+    SecondaryActivateAsync: (x: number, y: number) => Promise<void>;
+    ScrollAsync: (delta: number, orientation: string) => Promise<void>;
 }
 
 export const StatusNotifierItemProxy = Gio.DBusProxy
