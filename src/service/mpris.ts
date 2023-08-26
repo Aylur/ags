@@ -2,7 +2,7 @@ import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import Service from './service.js';
 import App from '../app.js';
-import { loadInterfaceXML } from '../utils.js';
+import { loadInterfaceXML, timeout } from '../utils.js';
 import { DBusProxy, PlayerProxy, MprisProxy } from '../dbus/types.js';
 import Cache from './cache.js';
 
@@ -75,19 +75,16 @@ class MprisPlayer extends GObject.Object {
         this._onMprisProxyReady();
         this._onPlayerProxyReady();
 
+        Cache.NewCache(CACHE_KEY, App.config?.mediaCacheSize || 100);
         Cache.Connect('cache-changed', (name: string, path: string) => {
+            logError(new Error(`${name} also changed at ${path}`));
             if (name == CACHE_KEY) {
                 this.emit('changed');
                 this.coverPath = path;
             }
         });
 
-        Cache.Connect('cache-repolulated', (name: string) => {
-            if (name == CACHE_KEY)
-                this._updateState.bind(this);
-        });
-
-        Cache.NewCache(CACHE_KEY, App.config?.mediaCacheSize || 100);
+        timeout(100, this._updateState.bind(this));
     }
 
     close() {

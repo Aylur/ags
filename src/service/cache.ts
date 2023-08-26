@@ -30,13 +30,13 @@ export class CacheService extends Service {
         this.caches = {};
     }
 
-    public NewCache(name: string, limit: number) {
+    newCache(name: string, limit: number) {
         this.cacheLimits[name] = limit;
         this.cachePaths[name] = `${CACHE_DIR}/${name}`;
         this.repopulateCache(name);
     }
 
-    public AddPath(name: string, fetchPath: string) {
+    addPath(name: string, fetchPath: string) {
         const key = GLib.compute_checksum_for_string(GLib.ChecksumType.SHA256,
             fetchPath,
             fetchPath.length) + '';
@@ -57,7 +57,7 @@ export class CacheService extends Service {
         this.emit('cache-changed', name, this.caches[name][key].filePath);
     }
 
-    public AddImage(name: string, key: string, pixbuf: GdkPixbuf.Pixbuf) {
+    addImage(name: string, key: string, pixbuf: GdkPixbuf.Pixbuf) {
         if (this.caches[name][key]) {
             const err = new Error(`cache ${name} already has key ${key}`);
             logError(err);
@@ -73,7 +73,7 @@ export class CacheService extends Service {
         this.emit('cache-changed', name, this.caches[name][key].filePath);
     }
 
-    public GetPath(name: string, fetchPath: string) {
+    getPath(name: string, fetchPath: string) {
         const key = GLib.compute_checksum_for_string(GLib.ChecksumType.SHA256,
             fetchPath,
             fetchPath.length) + '';
@@ -81,20 +81,20 @@ export class CacheService extends Service {
         if (!this.caches[name][key])
             return '';
 
-        this.UpdateLastUsed(name, key);
+        this.updateLastUsed(name, key);
         return this.caches[name][key].filePath;
     }
 
-    public GetImage(name: string, key: string) {
+    getImage(name: string, key: string) {
         if (!this.caches[name][key])
             return null;
 
-        this.UpdateLastUsed(name, key);
+        this.updateLastUsed(name, key);
 
         return GdkPixbuf.Pixbuf.new_from_file(this.caches[name][key].filePath);
     }
 
-    public UpdateImage(name: string, key: string, pixbuf: GdkPixbuf.Pixbuf) {
+    updateImage(name: string, key: string, pixbuf: GdkPixbuf.Pixbuf) {
         if (!this.caches[name][key]) {
             const err = new Error(`cache ${name} does not have key ${key}`);
             logError(err);
@@ -134,7 +134,7 @@ export class CacheService extends Service {
             throw new Error(`failed to copy ${path} to ${savePath}`);
     }
 
-    private UpdateLastUsed(name: string, key: string) {
+    private updateLastUsed(name: string, key: string) {
         if (!this.caches[name][key]) {
             const err = new Error(`cache ${name} does not have key ${key}`);
             logError(err);
@@ -167,10 +167,10 @@ export class CacheService extends Service {
 
     private checkAndPurge(name: string) {
         if (Object.keys(this.caches[name]).length > this.cacheLimits[name])
-            this.CachePurgeOldest(name);
+            this.cachePurgeOldest(name);
     }
 
-    private CachePurgeOldest(name: string) {
+    private cachePurgeOldest(name: string) {
         let oldest = Infinity;
         let oldestKey = '';
         for (const key of Object.keys(this.caches[name])) {
@@ -202,27 +202,27 @@ export default class Cache {
     }
 
     static NewCache(name: string, limit: number) {
-        Cache.instance.NewCache(name, limit);
+        Cache.instance.newCache(name, limit);
     }
 
     static AddPath(name: string, fetchPath: string) {
-        Cache.instance.AddPath(name, fetchPath);
+        Cache.instance.addPath(name, fetchPath);
     }
 
     static AddImage(name: string, key: string, pixbuf: GdkPixbuf.Pixbuf) {
-        Cache.instance.AddImage(name, key, pixbuf);
+        Cache.instance.addImage(name, key, pixbuf);
     }
 
     static GetPath(name: string, fetchPath: string) {
-        return Cache.instance.GetPath(name, fetchPath);
+        return Cache.instance.getPath(name, fetchPath);
     }
 
     static GetImage(name: string, key: string) {
-        return Cache.instance.GetImage(name, key);
+        return Cache.instance.getImage(name, key);
     }
 
     static UpdateImage(name: string, key: string, pixbuf: GdkPixbuf.Pixbuf) {
-        Cache.instance.UpdateImage(name, key, pixbuf);
+        Cache.instance.updateImage(name, key, pixbuf);
     }
 
     static Connect(signal: string, callback: (...args: any[]) => void) {
