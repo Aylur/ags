@@ -61,6 +61,8 @@ class MprisPlayer extends GObject.Object {
     constructor(busName: string) {
         super();
 
+        Cache.NewCache(CACHE_KEY, App.config?.mediaCacheSize || 100);
+
         this.busName = busName;
         this.name = busName.substring(23).split('.')[0];
 
@@ -74,15 +76,6 @@ class MprisPlayer extends GObject.Object {
 
         this._onMprisProxyReady();
         this._onPlayerProxyReady();
-
-        Cache.NewCache(CACHE_KEY, App.config?.mediaCacheSize || 100);
-        Cache.Connect('cache-changed', (name: string, path: string) => {
-            logError(new Error(`${name} also changed at ${path}`));
-            if (name == CACHE_KEY) {
-                this.emit('changed');
-                this.coverPath = path;
-            }
-        });
 
         timeout(100, this._updateState.bind(this));
     }
@@ -161,7 +154,7 @@ class MprisPlayer extends GObject.Object {
         }
         this.coverPath = Cache.GetPath(CACHE_KEY, this.trackCoverUrl);
         if (!this.coverPath)
-            Cache.AddPath(CACHE_KEY, this.trackCoverUrl);
+            this.coverPath = Cache.AddPath(CACHE_KEY, this.trackCoverUrl);
     }
 
     get volume() {
@@ -269,7 +262,7 @@ class MprisService extends Service {
 
     _onProxyReady() {
         this._proxy.ListNamesRemote(([names]) => {
-            names?.forEach(name => {
+            names.forEach(name => {
                 if (!name.startsWith('org.mpris.MediaPlayer2.'))
                     return;
 

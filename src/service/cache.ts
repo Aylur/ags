@@ -45,9 +45,11 @@ export class CacheService extends Service {
             timestamp: Date.now(),
         };
 
-        this.writePath(fetchPath, this.caches[name][key].filePath);
+        const filePath = this.caches[name][key].filePath;
+        this.writePath(fetchPath, filePath);
         this.writeIndex(name);
-        this.emit('cache-changed', name, this.caches[name][key].filePath);
+        this.emit('cache-changed', name, filePath);
+        return filePath;
     }
 
     addImage(name: string, key: string, pixbuf: GdkPixbuf.Pixbuf) {
@@ -61,9 +63,11 @@ export class CacheService extends Service {
             filePath: `${this.cachePaths[name]}/${key}`,
             timestamp: Date.now(),
         };
-        this.writeImage(this.caches[name][key].filePath, key, pixbuf);
+        const filePath = this.caches[name][key].filePath;
+        this.writeImage(filePath, key, pixbuf);
         this.writeIndex(name);
-        this.emit('cache-changed', name, this.caches[name][key].filePath);
+        this.emit('cache-changed', name, filePath);
+        return filePath;
     }
 
     getPath(name: string, fetchPath: string) {
@@ -117,10 +121,8 @@ export class CacheService extends Service {
         const success = file.copy(
             Gio.File.new_for_path(savePath),
             Gio.FileCopyFlags.OVERWRITE,
-            GLib.PRIORITY_DEFAULT,
             null,
-            // @ts-ignore
-            null,
+            null
         );
 
         if (!success)
@@ -142,12 +144,14 @@ export class CacheService extends Service {
         ensureDirectory(this.cachePaths[name]);
         this.caches[name] = {};
         const indexPath = this.cachePaths[name] + '/index';
+
         if (GLib.file_test(indexPath, GLib.FileTest.EXISTS)) {
             const cacheIndex = readFile(indexPath);
             this.caches[name] = JSON.parse(cacheIndex);
         } else {
             this.writeIndex(name);
         }
+
         this.emit('cache-repopulated', name);
     }
 
@@ -199,11 +203,11 @@ export default class Cache {
     }
 
     static AddPath(name: string, fetchPath: string) {
-        Cache.instance.addPath(name, fetchPath);
+        return Cache.instance.addPath(name, fetchPath);
     }
 
     static AddImage(name: string, key: string, pixbuf: GdkPixbuf.Pixbuf) {
-        Cache.instance.addImage(name, key, pixbuf);
+        return Cache.instance.addImage(name, key, pixbuf);
     }
 
     static GetPath(name: string, fetchPath: string) {
