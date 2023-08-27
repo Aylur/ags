@@ -45,11 +45,11 @@ export class CacheService extends Service {
             timestamp: Date.now(),
         };
 
-        const filePath = this.caches[name][key].filePath;
-        this.writePath(fetchPath, filePath);
-        this.writeIndex(name);
-        this.emit('cache-changed', name, filePath);
-        return filePath;
+        this.writePath(fetchPath, this.caches[name][key].filePath)
+            .then(outputPath => {
+                this.writeIndex(name);
+                this.emit('cache-changed', name, outputPath);
+            }).catch(logError);
     }
 
     addImage(name: string, key: string, pixbuf: GdkPixbuf.Pixbuf) {
@@ -63,11 +63,12 @@ export class CacheService extends Service {
             filePath: `${this.cachePaths[name]}/${key}`,
             timestamp: Date.now(),
         };
-        const filePath = this.caches[name][key].filePath;
-        this.writeImage(filePath, key, pixbuf);
+
+        this.writeImage(this.caches[name][key].filePath, key, pixbuf);
         this.writeIndex(name);
-        this.emit('cache-changed', name, filePath);
-        return filePath;
+        this.emit('cache-changed',
+            name,
+            this.caches[name][key].filePath);
     }
 
     getPath(name: string, fetchPath: string) {
@@ -116,17 +117,27 @@ export class CacheService extends Service {
         output_stream.close(null);
     }
 
-    private writePath(path: string, savePath: string) {
+    private writePath(path: string, savePath: string): Promise<string> {
         const file = Gio.File.new_for_uri(path);
-        const success = file.copy(
-            Gio.File.new_for_path(savePath),
-            Gio.FileCopyFlags.OVERWRITE,
-            null,
-            null,
-        );
-
-        if (!success)
-            throw new Error(`failed to copy ${path} to ${savePath}`);
+        return new Promise((resolve, reject) => {
+            file.copy_async(
+                Gio.File.new_for_path(savePath),
+                Gio.FileCopyFlags.OVERWRITE,
+                GLib.PRIORITY_DEFAULT,
+                null,
+                // @ts-ignore
+                null,
+                // @ts-ignore
+                (_, res) => {
+                    try {
+                        file.copy_finish(res);
+                        resolve(savePath);
+                    } catch (error) {
+                        reject(error);
+                    }
+                },
+            );
+        });
     }
 
     private updateLastUsed(name: string, key: string) {
@@ -203,11 +214,11 @@ export default class Cache {
     }
 
     static AddPath(name: string, fetchPath: string) {
-        return Cache.instance.addPath(name, fetchPath);
+        Cache.instance.addPath(name, fetchPath);
     }
 
     static AddImage(name: string, key: string, pixbuf: GdkPixbuf.Pixbuf) {
-        return Cache.instance.addImage(name, key, pixbuf);
+        Cache.instance.addImage(name, key, pixbuf);
     }
 
     static GetPath(name: string, fetchPath: string) {

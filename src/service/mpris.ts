@@ -63,6 +63,13 @@ class MprisPlayer extends GObject.Object {
 
         Cache.NewCache(CACHE_KEY, App.config?.mediaCacheSize || 100);
 
+        Cache.Connect('cache-changed', (_, name, path) => {
+            if (name !== CACHE_KEY && this.coverPath !== path)
+                return;
+            this.coverPath = path;
+            this.emit('changed');
+        });
+
         this.busName = busName;
         this.name = busName.substring(23).split('.')[0];
 
@@ -122,6 +129,7 @@ class MprisPlayer extends GObject.Object {
             trackTitle = 'Unknown title';
 
         let trackCoverUrl = metadata['mpris:artUrl'];
+
         if (typeof trackCoverUrl !== 'string')
             trackCoverUrl = '';
 
@@ -154,7 +162,7 @@ class MprisPlayer extends GObject.Object {
         }
         this.coverPath = Cache.GetPath(CACHE_KEY, this.trackCoverUrl);
         if (!this.coverPath)
-            this.coverPath = Cache.AddPath(CACHE_KEY, this.trackCoverUrl);
+            Cache.AddPath(CACHE_KEY, this.trackCoverUrl);
     }
 
     get volume() {
