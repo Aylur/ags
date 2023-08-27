@@ -1,11 +1,10 @@
-import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import Service from './service.js';
-import { ensureDirectory, timeout } from '../utils.js';
-import { CACHE_DIR } from '../utils.js';
-import { loadInterfaceXML } from '../utils.js';
+import App from '../app.js';
+import { loadInterfaceXML, timeout } from '../utils.js';
 import { DBusProxy, PlayerProxy, MprisProxy } from '../dbus/types.js';
+import Cache from './cache.js';
 
 const DBusIFace = loadInterfaceXML('org.freedesktop.DBus');
 const PlayerIFace = loadInterfaceXML('org.mpris.MediaPlayer2.Player');
@@ -14,7 +13,7 @@ const DBusProxy = Gio.DBusProxy.makeProxyWrapper(DBusIFace) as DBusProxy;
 const PlayerProxy = Gio.DBusProxy.makeProxyWrapper(PlayerIFace) as PlayerProxy;
 const MprisProxy = Gio.DBusProxy.makeProxyWrapper(MprisIFace) as MprisProxy;
 
-const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
+const CACHE_KEY = 'covers';
 
 type PlaybackStatus = 'Playing' | 'Paused' | 'Stopped';
 type LoopStatus = 'None' | 'Track' | 'Playlist';
@@ -55,13 +54,23 @@ class MprisPlayer extends GObject.Object {
     shuffleStatus!: boolean | null;
     loopStatus!: LoopStatus | null;
     length!: number;
-
     _binding: { mpris: number, player: number };
     _mprisProxy: MprisProxy;
     _playerProxy: PlayerProxy;
+    _pendingCover = false;
 
     constructor(busName: string) {
         super();
+
+        Cache.NewCache(CACHE_KEY, App.config?.mediaCacheSize || 100);
+
+        Cache.Connect('cache-changed', (_, name, path) => {
+            if (name !== CACHE_KEY && this.coverPath !== path)
+                return;
+            this.coverPath = path;
+            this._pendingCover = false;
+            this.emit('changed');
+        });
 
         this.busName = busName;
         this.name = busName.substring(23).split('.')[0];
@@ -70,7 +79,6 @@ class MprisPlayer extends GObject.Object {
         this._mprisProxy = new MprisProxy(
             Gio.DBus.session, busName,
             '/org/mpris/MediaPlayer2');
-
         this._playerProxy = new PlayerProxy(
             Gio.DBus.session, busName,
             '/org/mpris/MediaPlayer2');
@@ -123,6 +131,7 @@ class MprisPlayer extends GObject.Object {
             trackTitle = 'Unknown title';
 
         let trackCoverUrl = metadata['mpris:artUrl'];
+
         if (typeof trackCoverUrl !== 'string')
             trackCoverUrl = '';
 
@@ -145,43 +154,22 @@ class MprisPlayer extends GObject.Object {
         this.trackCoverUrl = trackCoverUrl;
         this.length = length;
         this._cacheCoverArt();
-        this.emit('changed');
+        if (!this._pendingCover)
+            this.emit('changed');
     }
 
     _cacheCoverArt() {
-        this.coverPath = MEDIA_CACHE_PATH + '/' +
-            `${this.trackArtists.join(', ')}-${this.trackTitle}`
-                .replace(/[\,\*\?\"\<\>\|\#\:\?\/\'\(\)]/g, '');
-
-        if (this.coverPath.length > 255)
-            this.coverPath = this.coverPath.substring(0, 255);
-
-        const { trackCoverUrl, coverPath } = this;
-        if (trackCoverUrl === '' || coverPath === '')
+        if (!this.trackCoverUrl) {
+            this.coverPath = '';
+            this._pendingCover = false;
             return;
-
-        if (GLib.file_test(coverPath, GLib.FileTest.EXISTS))
-            return;
-
-        ensureDirectory(MEDIA_CACHE_PATH);
-        Gio.File.new_for_uri(trackCoverUrl).copy_async(
-            Gio.File.new_for_path(coverPath),
-            Gio.FileCopyFlags.OVERWRITE,
-            GLib.PRIORITY_DEFAULT,
-            null,
-            // @ts-ignore
-            null,
-            // @ts-ignore
-            (source, result) => {
-                try {
-                    source.copy_finish(result);
-                    this.emit('changed');
-                }
-                catch (e) {
-                    logError(e as Error, `failed to cache ${coverPath}`);
-                }
-            },
-        );
+        }
+        this.coverPath = Cache.GetPath(CACHE_KEY, this.trackCoverUrl);
+        this._pendingCover = false;
+        if (!this.coverPath) {
+            this._pendingCover = true;
+            Cache.AddPath(CACHE_KEY, this.trackCoverUrl);
+        }
     }
 
     get volume() {

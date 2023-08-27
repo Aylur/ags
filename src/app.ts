@@ -10,6 +10,7 @@ interface Config {
     style?: string
     notificationPopupTimeout?: number
     closeWindowDelay?: { [key: string]: number }
+    mediaCacheSize?: number
 }
 
 export default class App extends Gtk.Application {
