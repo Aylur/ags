@@ -198,6 +198,13 @@ class SystemTrayService extends Service {
             menuItem = new Gtk.SeparatorMenuItem();
         } else {
             menuItem = MenuItem({
+                onActivate: (item: AgsMenuItem) => {
+                    dbusMenuItem.handle_event(
+                        'clicked',
+                        // @ts-ignore
+                        GLib.Variant.new('i', 0),
+                        Gtk.get_current_event_time());
+                },
                 child: Label({ label: dbusMenuItem.property_get('label') }),
             });
         }
