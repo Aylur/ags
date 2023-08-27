@@ -195,6 +195,7 @@ class SystemTrayService extends Service {
             dbusMenuItem.get_children().forEach(dbitem =>
                 submenu.add(this._createItem(client, dbitem)));
             menuItem.set_submenu(submenu);
+            menuItem.set_use_underline(true);
         } else if (dbusMenuItem.property_get('type') === 'separator') {
             menuItem = new Gtk.SeparatorMenuItem();
         } else {
@@ -207,7 +208,8 @@ class SystemTrayService extends Service {
                         Gtk.get_current_event_time());
                 },
                 child: Label({ label: dbusMenuItem.property_get('label') }),
-            });
+            }) as AgsMenuItem;
+            menuItem.set_use_underline(true);
         }
         return menuItem;
     }
@@ -248,6 +250,13 @@ class SystemTrayService extends Service {
                     this.get_pixbuf(item.IconPixmap, iconSize));
         }
     }
+
+    get_tooltip_markup(item: TStatusNotifierItemProxy){
+        let tooltip_markup = item.ToolTip[2];
+        if (item.ToolTip[3] !== '')
+            tooltip_markup += '\n' + item.ToolTip[3];
+        return tooltip_markup;
+    }
 }
 
 
@@ -269,5 +278,9 @@ export default class SystemTray {
 
     static get_icon(item :TStatusNotifierItemProxy, iconSize: number){
         return SystemTray.instance.get_icon(item, iconSize);
+    }
+
+    static get_tooltip_markup(item: TStatusNotifierItemProxy){
+        return SystemTray.instance.get_tooltip_markup(item);
     }
 }

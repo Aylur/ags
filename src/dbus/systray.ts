@@ -110,10 +110,10 @@ export interface TStatusNotifierItemProxy extends Gio.DBusProxy {
     DbusMenusClient: Dbusmenu.Client;
     AgsMenu: AgsMenu;
     IconName: string;
-    IconPixmap: Array<[number, number, Uint8Array]>;
+    IconPixmap: [number, number, Uint8Array][];
     AttentionIconName: string;
-    AttentionIconPixmap: Array<[number, number, Uint8Array]>;
-    ToolTip: GLib.Variant<'(sa(iiay)ss)'>;
+    AttentionIconPixmap: [number, number, Uint8Array][];
+    ToolTip: [string, [number, number, Uint8Array], string, string];
     ContextMenuAsync: (x: number, y: number) => Promise<void>;
     ActivateAsync: (x: number, y: number) => Promise<void>;
     SecondaryActivateAsync: (x: number, y: number) => Promise<void>;
