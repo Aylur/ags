@@ -9,7 +9,7 @@ import {
     TStatusNotifierItemProxy,
     StatusNotifierItemProxy,
 } from '../dbus/systray.js';
-import { Label, Menu, MenuItem } from '../widget.js';
+import { Icon, Label, Menu, MenuItem } from '../widget.js';
 import { AgsMenu, AgsMenuItem } from '../widgets/menu.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
@@ -176,7 +176,8 @@ class SystemTrayService extends Service {
     }
 
     _createRootMenu(client: Dbusmenu.Client, dbusMenuItem: Dbusmenu.Menuitem) {
-        if (dbusMenuItem.property_get('children-display') !== 'submenu')
+        if (!dbusMenuItem ||
+            dbusMenuItem.property_get('children-display') !== 'submenu')
             return [];
         const menu_items: Gtk.Widget[] = [];
         dbusMenuItem.get_children().forEach(dbitem =>
@@ -210,6 +211,43 @@ class SystemTrayService extends Service {
         }
         return menuItem;
     }
+
+    get_pixbuf(pixMapArray:  [number, number, Uint8Array][], iconSize: number) {
+        //TODO instead of getting the first provided pixmap,
+        // it would be better to get the smallest pixmap
+        // that is larger than the target size
+        const pixMap = pixMapArray[0];
+        const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
+            pixMap[2],
+            GdkPixbuf.Colorspace.RGB,
+            true,
+            8,
+            pixMap[0],
+            pixMap[1],
+            pixMap[0] * 4);
+        const scale_pixbuf = pixbuf.scale_simple(
+            iconSize,
+            iconSize,
+            GdkPixbuf.InterpType.BILINEAR);
+        if (!scale_pixbuf)
+            return;
+        return scale_pixbuf;
+    }
+
+    get_icon(item: TStatusNotifierItemProxy, iconSize: number){
+        if (item.Status === 'NeedsAttention') {
+            return item.AttentionIconName ?
+                Icon({ icon: item.AttentionIconName }) :
+                Gtk.Image.new_from_pixbuf(
+                    this.get_pixbuf(item.AttentionIconPixmap, iconSize));
+        }
+        else {
+            return item.IconName ?
+                Icon({ icon: item.IconName }) :
+                Gtk.Image.new_from_pixbuf(
+                    this.get_pixbuf(item.IconPixmap, iconSize));
+        }
+    }
 }
 
 
@@ -229,29 +267,7 @@ export default class SystemTray {
         return Array.from(SystemTray.instance._items.values());
     }
 
-    static getPixbuf(item: TStatusNotifierItemProxy, iconSize: number) {
-        //TODO instead of getting the first provided pixmap,
-        // it would be better to get the smallest pixmap
-        // that is larger than the target size
-        let pixMap: [number, number, Uint8Array];
-        if (item.Status === 'NeedsAttention')
-            pixMap = item.AttentionIconPixmap[0];
-        else
-            pixMap = item.IconPixmap[0];
-        const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
-            pixMap[2],
-            GdkPixbuf.Colorspace.RGB,
-            true,
-            8,
-            pixMap[0],
-            pixMap[1],
-            pixMap[0] * 4);
-        const scale_pixbuf = pixbuf.scale_simple(
-            iconSize,
-            iconSize,
-            GdkPixbuf.InterpType.BILINEAR);
-        if (!scale_pixbuf)
-            return;
-        return scale_pixbuf;
+    static get_icon(item :TStatusNotifierItemProxy, iconSize: number){
+        return SystemTray.instance.get_icon(item, iconSize);
     }
 }
