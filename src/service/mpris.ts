@@ -57,6 +57,7 @@ class MprisPlayer extends GObject.Object {
     _binding: { mpris: number, player: number };
     _mprisProxy: MprisProxy;
     _playerProxy: PlayerProxy;
+    _pendingCover = false;
 
     constructor(busName: string) {
         super();
@@ -67,6 +68,7 @@ class MprisPlayer extends GObject.Object {
             if (name !== CACHE_KEY && this.coverPath !== path)
                 return;
             this.coverPath = path;
+            this._pendingCover = false;
             this.emit('changed');
         });
 
@@ -152,17 +154,22 @@ class MprisPlayer extends GObject.Object {
         this.trackCoverUrl = trackCoverUrl;
         this.length = length;
         this._cacheCoverArt();
-        this.emit('changed');
+        if (!this._pendingCover)
+            this.emit('changed');
     }
 
     _cacheCoverArt() {
         if (!this.trackCoverUrl) {
             this.coverPath = '';
+            this._pendingCover = false;
             return;
         }
         this.coverPath = Cache.GetPath(CACHE_KEY, this.trackCoverUrl);
-        if (!this.coverPath)
+        this._pendingCover = false;
+        if (!this.coverPath) {
+            this._pendingCover = true;
             Cache.AddPath(CACHE_KEY, this.trackCoverUrl);
+        }
     }
 
     get volume() {
