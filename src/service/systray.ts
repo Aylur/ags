@@ -93,8 +93,6 @@ class SystemTrayService extends Service {
                         signalName: string,
                         parameters: GLib.Variant<any>) => {
                         //TODO only refresh changed properties not all of them
-                        // you would think, when a property is changed, the
-                        // 'property-changed' signal is emitted, but that would be too easy.
                         if (signalName === 'NewTitle' ||
                             signalName === 'NewIcon' ||
                             signalName === 'NewToolTip' ||
@@ -137,10 +135,15 @@ class SystemTrayService extends Service {
             });
     }
 
-    _update_property(proxy: TStatusNotifierItemProxy, property_name: string, value :GLib.Variant<any>){
-        //TODO for now don't update the menu, needs to be handled properly
-        if (property_name !== 'Menu')
-            proxy.set_cached_property(property_name, value);
+    _update_property(
+        proxy: TStatusNotifierItemProxy,
+        property_name: string,
+        value :GLib.Variant<any>){
+        proxy.set_cached_property(property_name, value);
+        if (property_name === 'Menu' && proxy.Menu !== value.unpack()) {
+            //new menu path, construct new proxy
+            proxy.DbusMenusClient = this._createMenu(proxy);
+        }
     }
 
     _onNameOwnerChanged(
@@ -164,17 +167,21 @@ class SystemTrayService extends Service {
     _createMenu(item: TStatusNotifierItemProxy) {
         const menu = new Dbusmenu.Client(
             { dbus_name: item.g_name_owner, dbus_object: item.Menu });
-        menu.connect('new-menuitem', (
-            client: Dbusmenu.Client, menuItem: Dbusmenu.Menuitem) => {
-            const mi = this._createItem(menu, menuItem);
-            item.AgsMenu.add(mi);
-            item.AgsMenu.show_all();
-        });
         menu.connect('layout-updated', (
             client: Dbusmenu.Client) => {
-            //TODO update the layout when requested
+            const menu_items = this._createRootMenu(menu, client.get_root());
+            item.AgsMenu.children = menu_items;
         });
         return menu;
+    }
+
+    _createRootMenu(client: Dbusmenu.Client, dbusMenuItem: Dbusmenu.Menuitem) {
+        if (dbusMenuItem.property_get('children-display') !== 'submenu')
+            return [];
+        const menu_items: Gtk.Widget[] = [];
+        dbusMenuItem.get_children().forEach(dbitem =>
+            menu_items.push(this._createItem(client, dbitem)));
+        return menu_items;
     }
 
     _createItem(client: Dbusmenu.Client, dbusMenuItem: Dbusmenu.Menuitem) {
@@ -183,7 +190,7 @@ class SystemTrayService extends Service {
             menuItem = MenuItem({
                 child: Label({ label: dbusMenuItem.property_get('label') }),
             }) as AgsMenuItem;
-            const submenu = new Gtk.Menu();
+            const submenu = new AgsMenu({ children: [] });
             dbusMenuItem.get_children().forEach(dbitem =>
                 submenu.add(this._createItem(client, dbitem)));
             menuItem.set_submenu(submenu);
