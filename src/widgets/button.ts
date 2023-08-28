@@ -76,17 +76,6 @@ export default class AgsButton extends Gtk.Button {
         });
     }
 
-    // @ts-ignore
-    get child() { return this.get_child(); }
-    set child(child: Gtk.Widget) {
-        const widget = this.get_child();
-        if (widget)
-            widget.destroy();
-
-        if (child)
-            this.add(child);
-    }
-
     vfunc_scroll_event(event: Gdk.EventScroll): boolean {
         if (this.onScrollUp &&
             event.direction === Gdk.ScrollDirection.UP)

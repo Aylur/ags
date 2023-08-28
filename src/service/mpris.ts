@@ -3,17 +3,29 @@ import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import Service from './service.js';
 import { ensureDirectory, timeout } from '../utils.js';
-import { DBusProxy, TDBusProxy } from '../dbus/dbus.js';
 import { CACHE_DIR } from '../utils.js';
-import {
-    MprisPlayerProxy, MprisProxy,
-    TMprisProxy, TPlayerProxy, MprisMetadata,
-} from '../dbus/mpris.js';
+import { loadInterfaceXML } from '../utils.js';
+import { DBusProxy, PlayerProxy, MprisProxy } from '../dbus/types.js';
+
+const DBusIFace = loadInterfaceXML('org.freedesktop.DBus');
+const PlayerIFace = loadInterfaceXML('org.mpris.MediaPlayer2.Player');
+const MprisIFace = loadInterfaceXML('org.mpris.MediaPlayer2');
+const DBusProxy = Gio.DBusProxy.makeProxyWrapper(DBusIFace) as DBusProxy;
+const PlayerProxy = Gio.DBusProxy.makeProxyWrapper(PlayerIFace) as PlayerProxy;
+const MprisProxy = Gio.DBusProxy.makeProxyWrapper(MprisIFace) as MprisProxy;
 
 const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
 
 type PlaybackStatus = 'Playing' | 'Paused' | 'Stopped';
 type LoopStatus = 'None' | 'Track' | 'Playlist';
+type MprisMetadata = {
+    'xesam:artist': string[]
+    'xesam:title': string
+    'mpris:artUrl': string
+    'mpris:length': number
+    'mpris:trackid': string
+    [key: string]: unknown
+}
 
 class MprisPlayer extends GObject.Object {
     static {
@@ -45,8 +57,8 @@ class MprisPlayer extends GObject.Object {
     length!: number;
 
     _binding: { mpris: number, player: number };
-    _mprisProxy: TMprisProxy;
-    _playerProxy: TPlayerProxy;
+    _mprisProxy: MprisProxy;
+    _playerProxy: PlayerProxy;
 
     constructor(busName: string) {
         super();
@@ -59,7 +71,7 @@ class MprisPlayer extends GObject.Object {
             Gio.DBus.session, busName,
             '/org/mpris/MediaPlayer2');
 
-        this._playerProxy = new MprisPlayerProxy(
+        this._playerProxy = new PlayerProxy(
             Gio.DBus.session, busName,
             '/org/mpris/MediaPlayer2');
 
@@ -241,7 +253,7 @@ class MprisService extends Service {
     }
 
     _players!: Players;
-    _proxy: TDBusProxy;
+    _proxy: DBusProxy;
 
     constructor() {
         super();

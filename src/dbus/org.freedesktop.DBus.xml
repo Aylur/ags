@@ -1,0 +1,12 @@
+<node>
+    <interface name="org.freedesktop.DBus">
+        <method name="ListNames">
+            <arg type="as" direction="out" name="names"/>
+        </method>
+        <signal name="NameOwnerChanged">
+            <arg type="s" direction="out" name="name"/>
+            <arg type="s" direction="out" name="oldOwner"/>
+            <arg type="s" direction="out" name="newOwner"/>
+        </signal>
+    </interface>
+</node>

@@ -39,10 +39,7 @@ export class AgsMenu extends Gtk.Menu {
         if (!children)
             return;
 
-        children.forEach(w => {
-            if (w)
-                this.add(w);
-        });
+        children.forEach(w => w && this.add(w));
 
         const visible = this.visible;
         this.show_all();
@@ -74,16 +71,5 @@ export class AgsMenuItem extends Gtk.MenuItem {
         this.connect('activate', (...args) => runCmd(this.onActivate, ...args));
         this.connect('select', (...args) => runCmd(this.onSelect, ...args));
         this.connect('deselect', (...args) => runCmd(this.onDeselect, ...args));
-    }
-
-    // @ts-ignore
-    get child() { return this.get_child(); }
-    set child(child: Gtk.Widget) {
-        const widget = this.get_child();
-        if (widget)
-            widget.destroy();
-
-        if (child)
-            this.add(child);
     }
 }

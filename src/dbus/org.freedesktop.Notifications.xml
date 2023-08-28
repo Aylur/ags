@@ -1,4 +1,3 @@
-export const NotificationIFace = `
 <node>
     <interface name="org.freedesktop.Notifications">
         <method name="Notify">
@@ -33,4 +32,4 @@ export const NotificationIFace = `
             <arg type="s"/>
         </signal>
     </interface>
-</node>`;
+</node>

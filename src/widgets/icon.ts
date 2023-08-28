@@ -2,7 +2,6 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
-import { Context } from 'gi-types/cairo1';
 
 export default class AgsIcon extends Gtk.Image {
     static {
@@ -12,7 +11,7 @@ export default class AgsIcon extends Gtk.Image {
                 'size': GObject.ParamSpec.int(
                     'size', 'Size', 'Size',
                     GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    1, 1024, 1,
+                    0, 1024, 0,
                 ),
                 'icon': GObject.ParamSpec.string(
                     'icon', 'Icon', 'Icon',
@@ -37,10 +36,11 @@ export default class AgsIcon extends Gtk.Image {
         }
     }
 
-    _size = 1;
-    get size() { return this._size || 1; }
+    _size = 0;
+    _previousSize = 0;
+    get size() { return this._size || this._previousSize || 13; }
     set size(size: number) {
-        size ||= 1;
+        size ||= 0;
         this._size = size;
         this.queue_draw();
     }
@@ -68,12 +68,17 @@ export default class AgsIcon extends Gtk.Image {
         }
     }
 
-    vfunc_draw(cr: Context): boolean {
+    vfunc_draw(cr: any): boolean {
         if (this._size > 1)
             return super.vfunc_draw(cr);
 
         const size = this.get_style_context()
             .get_property('font-size', Gtk.StateFlags.NORMAL) as number;
+
+        if (size === this._previousSize)
+            return super.vfunc_draw(cr);
+
+        this._previousSize = size;
 
         if (this._file) {
             this.set_from_pixbuf(

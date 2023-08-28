@@ -13,15 +13,6 @@ interface Config {
 }
 
 export default class App extends Gtk.Application {
-    private _windows: Map<string, Gtk.Window>;
-    private _closeDelay!: { [key: string]: number };
-    private _cssProviders: Gtk.CssProvider[] = [];
-
-    static configPath: string;
-    static configDir: string;
-    static config: Config;
-    static instance: App;
-
     static {
         GObject.registerClass({
             Signals: {
@@ -33,45 +24,24 @@ export default class App extends Gtk.Application {
         }, this);
     }
 
-    static get windows() {
-        return App.instance._windows;
-    }
+    private _windows: Map<string, Gtk.Window>;
+    private _closeDelay!: { [key: string]: number };
+    private _cssProviders: Gtk.CssProvider[] = [];
 
-    static getWindow(name: string) {
-        const w = App.instance._windows.get(name);
-        return w ? w : console.error(`There is no window named ${name}`);
-    }
+    static configPath: string;
+    static configDir: string;
+    static config: Config;
+    static instance: App;
 
-    static closeWindow(name: string) {
-        const w = App.getWindow(name);
-        if (!w || !w.visible)
-            return;
-
-        const delay = App.instance._closeDelay[name];
-        if (delay && w.visible) {
-            timeout(delay, () => w.hide());
-            App.instance.emit('window-toggled', name, false);
-        }
-        else {
-            w.hide();
-        }
-    }
-
-    static openWindow(name: string) {
-        App.getWindow(name)?.show();
-    }
-
-    static toggleWindow(name: string) {
-        const w = App.getWindow(name);
-        if (!w)
-            return;
-
-        w.visible ? App.closeWindow(name) : App.openWindow(name);
-    }
-
-    static quit() {
-        App.instance.quit();
-    }
+    // eslint-disable-next-line max-len
+    static removeWindow(w: Gtk.Window | string) { App.instance.removeWindow(w); }
+    static addWindow(w: Gtk.Window) { App.instance.addWindow(w); }
+    static get windows() { return App.instance._windows; }
+    static getWindow(name: string) { return App.instance.getWindow(name); }
+    static closeWindow(name: string) { App.instance.closeWindow(name); }
+    static openWindow(name: string) { App.getWindow(name)?.show(); }
+    static toggleWindow(name: string) { App.instance.toggleWindow(name); }
+    static quit() { App.instance.quit(); }
 
     static resetCss() {
         const screen = Gdk.Screen.get_default();
@@ -106,14 +76,6 @@ export default class App extends Gtk.Application {
         App.instance._cssProviders.push(cssProvider);
     }
 
-    connectWidget(
-        widget: Gtk.Widget,
-        callback: (widget: Gtk.Widget, ...args: any[]) => void,
-        event = 'window-toggled',
-    ) {
-        connect(this, widget, callback, event);
-    }
-
     constructor({ bus, config }: {
         bus: string
         config: string
@@ -132,10 +94,79 @@ export default class App extends Gtk.Application {
         App.instance = this;
     }
 
+    connectWidget(
+        widget: Gtk.Widget,
+        callback: (widget: Gtk.Widget, ...args: any[]) => void,
+        event = 'window-toggled',
+    ) {
+        connect(this, widget, callback, event);
+    }
+
     vfunc_activate() {
         this.hold();
         this._load();
         this._exportActions();
+    }
+
+    toggleWindow(name: string) {
+        const w = this.getWindow(name);
+        if (w)
+            w.visible ? App.closeWindow(name) : App.openWindow(name);
+    }
+
+    closeWindow(name: string) {
+        const w = this.getWindow(name);
+        if (!w || !w.visible)
+            return;
+
+        const delay = this._closeDelay[name];
+        if (delay && w.visible) {
+            timeout(delay, () => w.hide());
+            this.emit('window-toggled', name, false);
+        }
+        else {
+            w.hide();
+        }
+    }
+
+    getWindow(name: string) {
+        const w = this._windows.get(name);
+        if (!w)
+            console.error(`There is no window named ${name}`);
+
+        return w;
+    }
+
+    removeWindow(w: Gtk.Window | string) {
+        const name = typeof w === 'string' ? w : w.name;
+
+        const win = this._windows.get(name);
+        if (!win) {
+            console.error('There is no window named ' + name);
+            return;
+        }
+
+        win.destroy();
+        this._windows.delete(name);
+    }
+
+    addWindow(w: Gtk.Window) {
+        if (!(w instanceof Gtk.Window)) {
+            console.error(`${w} is not an instanceof Gtk.Window, ` +
+                ` but it is of type ${typeof w}`);
+            return;
+        }
+
+        w.connect('notify::visible',
+            () => this.emit('window-toggled', w.name, w.visible));
+
+        if (this._windows.has(w.name)) {
+            console.error('There is already a window named' + w.name);
+            this.quit();
+            return;
+        }
+
+        this._windows.set(w.name, w);
     }
 
     async _load() {
@@ -162,24 +193,7 @@ export default class App extends Gtk.Application {
                 return;
             }
 
-            config.windows?.forEach(w => {
-                if (!(w instanceof Gtk.Window)) {
-                    console.error(`${w} is not an instanceof Gtk.Window, ` +
-                        ` but it is of type ${typeof w}`);
-                    return;
-                }
-
-                w.connect('notify::visible',
-                    () => this.emit('window-toggled', w.name, w.visible));
-
-                if (this._windows.has(w.name)) {
-                    console.error('name of window has to be unique!');
-                    this.quit();
-                    return;
-                }
-
-                this._windows.set(w.name, w);
-            });
+            config.windows?.forEach(this.addWindow.bind(this));
 
             this.emit('config-parsed');
         } catch (err) {
