@@ -41,5 +41,7 @@
     <file>dbus/org.freedesktop.UPower.Device.xml</file>
     <file>dbus/org.mpris.MediaPlayer2.Player.xml</file>
     <file>dbus/org.mpris.MediaPlayer2.xml</file>
+    <file>dbus/org.kde.StatusNotifierWatcher.xml</file>
+    <file>dbus/org.kde.StatusNotifierItem.xml</file>
   </gresource>
 </gresources>

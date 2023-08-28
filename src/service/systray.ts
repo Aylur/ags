@@ -3,17 +3,20 @@ import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import Dbusmenu from 'gi://Dbusmenu';
 import Service from './service.js';
-import { DBusProxy, TDBusProxy } from '../dbus/dbus.js';
 import {
-    StatusNotifierWatcherIFace,
-    TStatusNotifierItemProxy,
     StatusNotifierItemProxy,
-} from '../dbus/systray.js';
+} from '../dbus/types.js';
 import { Label, MenuItem } from '../widget.js';
 import { AgsMenu, AgsMenuItem } from '../widgets/menu.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import AgsIcon from '../widgets/icon.js';
-import { ParamSpec } from 'gobject2';
+import { loadInterfaceXML } from '../utils.js';
+
+const StatusNotifierWatcherIFace =
+    loadInterfaceXML('org.kde.StatusNotifierWatcher');
+const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem');
+const StatusNotifierItemProxy = Gio.DBusProxy
+    .makeProxyWrapper(StatusNotifierItemIFace) as StatusNotifierItemProxy;
 
 class SystemTrayService extends Service {
     static {
@@ -21,8 +24,7 @@ class SystemTrayService extends Service {
     }
 
     _dbus!: Gio.DBusExportedObject;
-    _items: Map<string, TStatusNotifierItemProxy>;
-    _proxy: TDBusProxy;
+    _items: Map<string, StatusNotifierItemProxy>;
 
     get IsStatusNotifierHostRegistered() {
         return true;
@@ -40,9 +42,6 @@ class SystemTrayService extends Service {
         super();
         this._items = new Map();
         this._register();
-        this._proxy = new DBusProxy(Gio.DBus.session,
-            'org.freedesktop.DBus',
-            '/org/freedesktop/DBus');
     }
 
     _register() {
@@ -52,7 +51,7 @@ class SystemTrayService extends Service {
             Gio.BusNameOwnerFlags.NONE,
             (connection: Gio.DBusConnection) => {
                 this._dbus = Gio.DBusExportedObject
-                    .wrapJSObject(StatusNotifierWatcherIFace, this);
+                    .wrapJSObject(StatusNotifierWatcherIFace as string, this);
 
                 this._dbus.export(connection, '/StatusNotifierWatcher');
             },
@@ -86,7 +85,7 @@ class SystemTrayService extends Service {
             Gio.DBusProxyFlags.NONE);
     }
 
-    _item_proxy_acquired(proxy: TStatusNotifierItemProxy, error: any) {
+    _item_proxy_acquired(proxy: StatusNotifierItemProxy, error: any) {
         if (error !== null)
             return;
         const busName = proxy.g_name_owner;
@@ -97,7 +96,7 @@ class SystemTrayService extends Service {
             proxy.DbusMenusClient = this._createMenu(proxy);
         proxy.connect('g-signal', this._on_item_signal.bind(this));
         proxy.connect('notify::g-name-owner',
-            (_proxy: TStatusNotifierItemProxy, params: ParamSpec) => {
+            (_proxy: StatusNotifierItemProxy, params: any) => {
                 if (_proxy.g_name_owner != null)
                     return;
                 const [key, _] = Array.from(
@@ -119,7 +118,7 @@ class SystemTrayService extends Service {
     }
 
     _on_item_signal(
-        proxy: TStatusNotifierItemProxy,
+        proxy: StatusNotifierItemProxy,
         senderName: string,
         signalName: string,
         parameters: GLib.Variant<any>) {
@@ -146,7 +145,7 @@ class SystemTrayService extends Service {
     }
 
 
-    _refresh_property(proxy: TStatusNotifierItemProxy, property: string) {
+    _refresh_property(proxy: StatusNotifierItemProxy, property: string) {
         if (!proxy[property])
             return;
         const [prop_value] = (proxy.g_connection.call_sync(
@@ -165,7 +164,7 @@ class SystemTrayService extends Service {
     }
 
 
-    _refresh_all_properties(proxy: TStatusNotifierItemProxy) {
+    _refresh_all_properties(proxy: StatusNotifierItemProxy) {
         const [properties] =
             (proxy.g_connection.call_sync(
                 proxy.g_name,
@@ -185,7 +184,7 @@ class SystemTrayService extends Service {
     }
 
     _update_property(
-        proxy: TStatusNotifierItemProxy,
+        proxy: StatusNotifierItemProxy,
         property_name: string,
         value: GLib.Variant<any>) {
         proxy.set_cached_property(property_name, value);
@@ -195,7 +194,7 @@ class SystemTrayService extends Service {
         }
     }
 
-    _createMenu(item: TStatusNotifierItemProxy) {
+    _createMenu(item: StatusNotifierItemProxy) {
         const menu = new Dbusmenu.Client(
             { dbus_name: item.g_name_owner, dbus_object: item.Menu });
         menu.connect('layout-updated', (
@@ -277,7 +276,7 @@ class SystemTrayService extends Service {
         return scale_pixbuf;
     }
 
-    get_icon(item: TStatusNotifierItemProxy) {
+    get_icon(item: StatusNotifierItemProxy) {
         const icon = new AgsIcon({});
         const iconSize = icon.get_style_context()
             .get_property('font-size', Gtk.StateFlags.NORMAL) as number;
@@ -300,7 +299,7 @@ class SystemTrayService extends Service {
         return icon;
     }
 
-    get_tooltip_markup(item: TStatusNotifierItemProxy) {
+    get_tooltip_markup(item: StatusNotifierItemProxy) {
         let tooltip_markup = item.ToolTip[2];
         if (item.ToolTip[3] !== '')
             tooltip_markup += '\n' + item.ToolTip[3];
@@ -325,11 +324,11 @@ export default class SystemTray {
         return Array.from(SystemTray.instance._items.values());
     }
 
-    static get_icon(item: TStatusNotifierItemProxy) {
+    static get_icon(item: StatusNotifierItemProxy) {
         return SystemTray.instance.get_icon(item);
     }
 
-    static get_tooltip_markup(item: TStatusNotifierItemProxy) {
+    static get_tooltip_markup(item: StatusNotifierItemProxy) {
         return SystemTray.instance.get_tooltip_markup(item);
     }
 }

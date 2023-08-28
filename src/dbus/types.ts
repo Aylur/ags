@@ -1,4 +1,7 @@
 import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+import Dbusmenu from 'gi://Dbusmenu';
+import { AgsMenu } from 'src/widgets/menu.js';
 
 interface Proxy {
     connect: (event: string, callback: () => void) => number
@@ -55,3 +58,27 @@ export interface BatteryProxy extends Proxy {
     Percentage: number
     IsPresent: boolean
 }
+
+export interface StatusNotifierItemProxy extends Gio.DBusProxy {
+    new(...args: any[]): StatusNotifierItemProxy;
+    Category: string;
+    Id: string;
+    Title: string;
+    Status: string;
+    WindowId: number;
+    IconThemePath: string;
+    ItemIsMenu: boolean;
+    Menu: string;
+    DbusMenusClient: Dbusmenu.Client;
+    AgsMenu: AgsMenu;
+    IconName: string;
+    IconPixmap: [number, number, Uint8Array][];
+    AttentionIconName: string;
+    AttentionIconPixmap: [number, number, Uint8Array][];
+    ToolTip: [string, [number, number, Uint8Array], string, string];
+    ContextMenuAsync: (x: number, y: number) => Promise<void>;
+    ActivateAsync: (x: number, y: number) => Promise<void>;
+    SecondaryActivateAsync: (x: number, y: number) => Promise<void>;
+    ScrollAsync: (delta: number, orientation: string) => Promise<void>;
+}
+
