@@ -1,5 +1,4 @@
 import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
 import Dbusmenu from 'gi://Dbusmenu';
 import { AgsMenu } from '../widgets/menu.js';
 

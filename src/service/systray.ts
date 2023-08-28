@@ -9,9 +9,10 @@ import {
     TStatusNotifierItemProxy,
     StatusNotifierItemProxy,
 } from '../dbus/systray.js';
-import { Icon, Label, Menu, MenuItem } from '../widget.js';
+import { Label, MenuItem } from '../widget.js';
 import { AgsMenu, AgsMenuItem } from '../widgets/menu.js';
 import Gtk from 'gi://Gtk?version=3.0';
+import AgsIcon from '../widgets/icon.js';
 
 class SystemTrayService extends Service {
     static {
@@ -86,18 +87,31 @@ class SystemTrayService extends Service {
                 if (error === null) {
                     this._items.set(busName + objectPath, proxy);
                     proxy.AgsMenu = new AgsMenu({ children: [] });
-                    proxy.DbusMenusClient = this._createMenu(proxy);
+                    if (proxy.Menu)
+                        proxy.DbusMenusClient = this._createMenu(proxy);
                     proxy.connect('g-signal', (
                         _proxy: TStatusNotifierItemProxy,
                         senderName: string,
                         signalName: string,
                         parameters: GLib.Variant<any>) => {
-                        //TODO only refresh changed properties not all of them
-                        if (signalName === 'NewTitle' ||
-                            signalName === 'NewIcon' ||
-                            signalName === 'NewToolTip' ||
-                            signalName === 'NewStatus') {
-                            this._refresh_properties(_proxy);
+                        if (signalName === 'NewTitle'){
+                            this._refresh_property(proxy, 'Title');
+                            this.emit('changed');
+                        }
+                        if (signalName === 'NewIcon'){
+                            this._refresh_property(proxy, 'IconName');
+                            this._refresh_property(proxy, 'IconPixmap');
+                            this._refresh_property(proxy, 'AttentionIconName');
+                            this._refresh_property(
+                                proxy, 'AttentionIconPixmap');
+                            this.emit('changed');
+                        }
+                        if (signalName === 'NewToolTip'){
+                            this._refresh_property(proxy, 'ToolTip');
+                            this.emit('changed');
+                        }
+                        if (signalName === 'NewStatus') {
+                            this._refresh_property(proxy, 'Status');
                             this.emit('changed');
                         }
                     });
@@ -107,7 +121,7 @@ class SystemTrayService extends Service {
                     this.emit('changed');
                 }
             },
-            null, /* cancellable */
+            null,
             Gio.DBusProxyFlags.NONE);
     }
 
@@ -115,6 +129,25 @@ class SystemTrayService extends Service {
         serviceName: string, invocation: Gio.DBusMethodInvocation) {
         // TODO: Implement the logic to register a status notifier host
     }
+
+    _refresh_property(proxy: TStatusNotifierItemProxy, property: string) {
+        if (!proxy[property])
+            return;
+        const [prop_value] = (proxy.g_connection.call_sync(
+            proxy.g_name,
+            proxy.g_object_path,
+            'org.freedesktop.DBus.Properties',
+            'Get',
+            GLib.Variant.new('(ss)',
+                [proxy.g_interface_name,
+                    property]),
+            GLib.VariantType.new('(v)'),
+            Gio.DBusCallFlags.NONE, -1,
+            null) as GLib.Variant<'(v)'>)
+            .deep_unpack();
+        this._update_property(proxy, property, prop_value);
+    }
+
 
     _refresh_properties(proxy: TStatusNotifierItemProxy) {
         const [properties] =
@@ -138,7 +171,7 @@ class SystemTrayService extends Service {
     _update_property(
         proxy: TStatusNotifierItemProxy,
         property_name: string,
-        value :GLib.Variant<any>){
+        value: GLib.Variant<any>) {
         proxy.set_cached_property(property_name, value);
         if (property_name === 'Menu' && proxy.Menu !== value.unpack()) {
             //new menu path, construct new proxy
@@ -171,6 +204,7 @@ class SystemTrayService extends Service {
             client: Dbusmenu.Client) => {
             const menu_items = this._createRootMenu(menu, client.get_root());
             item.AgsMenu.children = menu_items;
+            item.AgsMenu.show_all();
         });
         return menu;
     }
@@ -214,13 +248,22 @@ class SystemTrayService extends Service {
         return menuItem;
     }
 
-    get_pixbuf(pixMapArray:  [number, number, Uint8Array][], iconSize: number) {
-        //TODO instead of getting the first provided pixmap,
-        // it would be better to get the smallest pixmap
-        // that is larger than the target size
-        const pixMap = pixMapArray[0];
+    get_pixbuf(pixMapArray: [number, number, Uint8Array][], iconSize: number) {
+        const pixMap =
+            pixMapArray.sort((a, b) => a[0] - b[0])
+                .find(elem => elem[0] >= iconSize) || pixMapArray.pop();
+        if (!pixMap)
+            return;
+        const array :Uint8Array = Uint8Array.from(pixMap[2]);
+        for (let i = 0; i < 4 * pixMap[0] * pixMap[1]; i += 4) {
+            const alpha = array[i];
+            array[i] = array[i + 1];
+            array[i + 1] = array[i + 2];
+            array[i + 2] = array[i + 3];
+            array[i + 3] = alpha;
+        }
         const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
-            pixMap[2],
+            array,
             GdkPixbuf.Colorspace.RGB,
             true,
             8,
@@ -236,22 +279,30 @@ class SystemTrayService extends Service {
         return scale_pixbuf;
     }
 
-    get_icon(item: TStatusNotifierItemProxy, iconSize: number){
+    get_icon(item: TStatusNotifierItemProxy) {
+        const icon = new AgsIcon({});
+        const iconSize = icon.get_style_context()
+            .get_property('font-size', Gtk.StateFlags.NORMAL) as number;
         if (item.Status === 'NeedsAttention') {
-            return item.AttentionIconName ?
-                Icon({ icon: item.AttentionIconName }) :
-                Gtk.Image.new_from_pixbuf(
+            if (item.AttentionIconName) {
+                icon.icon = item.AttentionIconName;
+            } else {
+                icon.set_from_pixbuf(
                     this.get_pixbuf(item.AttentionIconPixmap, iconSize));
+            }
         }
         else {
-            return item.IconName ?
-                Icon({ icon: item.IconName }) :
-                Gtk.Image.new_from_pixbuf(
+            if (item.IconName) {
+                icon.icon = item.IconName;
+            } else {
+                icon.set_from_pixbuf(
                     this.get_pixbuf(item.IconPixmap, iconSize));
+            }
         }
+        return icon;
     }
 
-    get_tooltip_markup(item: TStatusNotifierItemProxy){
+    get_tooltip_markup(item: TStatusNotifierItemProxy) {
         let tooltip_markup = item.ToolTip[2];
         if (item.ToolTip[3] !== '')
             tooltip_markup += '\n' + item.ToolTip[3];
@@ -276,11 +327,11 @@ export default class SystemTray {
         return Array.from(SystemTray.instance._items.values());
     }
 
-    static get_icon(item :TStatusNotifierItemProxy, iconSize: number){
-        return SystemTray.instance.get_icon(item, iconSize);
+    static get_icon(item: TStatusNotifierItemProxy) {
+        return SystemTray.instance.get_icon(item);
     }
 
-    static get_tooltip_markup(item: TStatusNotifierItemProxy){
+    static get_tooltip_markup(item: TStatusNotifierItemProxy) {
         return SystemTray.instance.get_tooltip_markup(item);
     }
 }
