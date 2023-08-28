@@ -13,6 +13,7 @@ import { Label, MenuItem } from '../widget.js';
 import { AgsMenu, AgsMenuItem } from '../widgets/menu.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import AgsIcon from '../widgets/icon.js';
+import { ParamSpec } from 'gobject2';
 
 class SystemTrayService extends Service {
     static {
@@ -42,8 +43,6 @@ class SystemTrayService extends Service {
         this._proxy = new DBusProxy(Gio.DBus.session,
             'org.freedesktop.DBus',
             '/org/freedesktop/DBus');
-        this._proxy.connectSignal('NameOwnerChanged',
-            this._onNameOwnerChanged.bind(this));
     }
 
     _register() {
@@ -82,53 +81,70 @@ class SystemTrayService extends Service {
             Gio.DBus.session,
             busName,
             objectPath,
-            //TODO should probably be its own method for better readability
-            (proxy: TStatusNotifierItemProxy, error: any) => {
-                if (error === null) {
-                    this._items.set(busName + objectPath, proxy);
-                    proxy.AgsMenu = new AgsMenu({ children: [] });
-                    if (proxy.Menu)
-                        proxy.DbusMenusClient = this._createMenu(proxy);
-                    proxy.connect('g-signal', (
-                        _proxy: TStatusNotifierItemProxy,
-                        senderName: string,
-                        signalName: string,
-                        parameters: GLib.Variant<any>) => {
-                        if (signalName === 'NewTitle'){
-                            this._refresh_property(proxy, 'Title');
-                            this.emit('changed');
-                        }
-                        if (signalName === 'NewIcon'){
-                            this._refresh_property(proxy, 'IconName');
-                            this._refresh_property(proxy, 'IconPixmap');
-                            this._refresh_property(proxy, 'AttentionIconName');
-                            this._refresh_property(
-                                proxy, 'AttentionIconPixmap');
-                            this.emit('changed');
-                        }
-                        if (signalName === 'NewToolTip'){
-                            this._refresh_property(proxy, 'ToolTip');
-                            this.emit('changed');
-                        }
-                        if (signalName === 'NewStatus') {
-                            this._refresh_property(proxy, 'Status');
-                            this.emit('changed');
-                        }
-                    });
-                    this._dbus.emit_signal(
-                        'StatusNotifierItemRegistered',
-                        new GLib.Variant('(s)', [busName + objectPath]));
-                    this.emit('changed');
-                }
-            },
+            this._item_proxy_acquired.bind(this),
             null,
             Gio.DBusProxyFlags.NONE);
     }
 
-    RegisterStatusNotifierHostAsync(
-        serviceName: string, invocation: Gio.DBusMethodInvocation) {
-        // TODO: Implement the logic to register a status notifier host
+    _item_proxy_acquired(proxy: TStatusNotifierItemProxy, error: any) {
+        if (error !== null)
+            return;
+        const busName = proxy.g_name_owner;
+        const objectPath = proxy.g_object_path;
+        this._items.set(busName + objectPath, proxy);
+        proxy.AgsMenu = new AgsMenu({ children: [] });
+        if (proxy.Menu)
+            proxy.DbusMenusClient = this._createMenu(proxy);
+        proxy.connect('g-signal', this._on_item_signal.bind(this));
+        proxy.connect('notify::g-name-owner',
+            (_proxy: TStatusNotifierItemProxy, params: ParamSpec) => {
+                if (_proxy.g_name_owner != null)
+                    return;
+                const [key, _] = Array.from(
+                    this._items.entries())
+                    .find(value => value[1] === _proxy) || [];
+                if (!key)
+                    return;
+                this._items.delete(key);
+                this._dbus.emit_signal(
+                    'StatusNotifierItemUnregistered',
+                    new GLib.Variant('(s)', [key]));
+                this.emit('changed');
+            });
+        this._dbus.emit_signal(
+            'StatusNotifierItemRegistered',
+            new GLib.Variant('(s)', [busName + objectPath]));
+
+        this.emit('changed');
     }
+
+    _on_item_signal(
+        proxy: TStatusNotifierItemProxy,
+        senderName: string,
+        signalName: string,
+        parameters: GLib.Variant<any>) {
+        if (signalName === 'NewTitle'){
+            this._refresh_property(proxy, 'Title');
+            this.emit('changed');
+        }
+        if (signalName === 'NewIcon'){
+            this._refresh_property(proxy, 'IconName');
+            this._refresh_property(proxy, 'IconPixmap');
+            this._refresh_property(proxy, 'AttentionIconName');
+            this._refresh_property(
+                proxy, 'AttentionIconPixmap');
+            this.emit('changed');
+        }
+        if (signalName === 'NewToolTip'){
+            this._refresh_property(proxy, 'ToolTip');
+            this.emit('changed');
+        }
+        if (signalName === 'NewStatus') {
+            this._refresh_property(proxy, 'Status');
+            this.emit('changed');
+        }
+    }
+
 
     _refresh_property(proxy: TStatusNotifierItemProxy, property: string) {
         if (!proxy[property])
@@ -149,7 +165,7 @@ class SystemTrayService extends Service {
     }
 
 
-    _refresh_properties(proxy: TStatusNotifierItemProxy) {
+    _refresh_all_properties(proxy: TStatusNotifierItemProxy) {
         const [properties] =
             (proxy.g_connection.call_sync(
                 proxy.g_name,
@@ -176,24 +192,6 @@ class SystemTrayService extends Service {
         if (property_name === 'Menu' && proxy.Menu !== value.unpack()) {
             //new menu path, construct new proxy
             proxy.DbusMenusClient = this._createMenu(proxy);
-        }
-    }
-
-    _onNameOwnerChanged(
-        _proxy: string,
-        _sender: string,
-        [name, oldOwner, newOwner]: string[],
-    ) {
-        if (!newOwner && oldOwner) {
-            const key = Array.from(
-                this._items.keys()).find(key => key.startsWith(oldOwner));
-            if (!key)
-                return;
-            this._items.delete(key);
-            this._dbus.emit_signal(
-                'StatusNotifierItemUnregistered',
-                new GLib.Variant('(s)', [key]));
-            this.emit('changed');
         }
     }
 
