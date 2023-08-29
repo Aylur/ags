@@ -127,11 +127,7 @@ class SystemTrayService extends Service {
             this.emit('changed');
         }
         if (signalName === 'NewIcon'){
-            this._refresh_property(proxy, 'IconName');
-            this._refresh_property(proxy, 'IconPixmap');
-            this._refresh_property(proxy, 'AttentionIconName');
-            this._refresh_property(
-                proxy, 'AttentionIconPixmap');
+            this._refresh_all_properties(proxy);
             this.emit('changed');
         }
         if (signalName === 'NewToolTip'){
@@ -246,6 +242,8 @@ class SystemTrayService extends Service {
     }
 
     get_pixbuf(pixMapArray: [number, number, Uint8Array][], iconSize: number) {
+        if (!pixMapArray)
+            return;
         const pixMap =
             pixMapArray.sort((a, b) => a[0] - b[0])
                 .find(elem => elem[0] >= iconSize) || pixMapArray.pop();
@@ -276,11 +274,11 @@ class SystemTrayService extends Service {
         return scale_pixbuf;
     }
 
-    get_icon(item: StatusNotifierItemProxy) {
+    get_icon(item: StatusNotifierItemProxy, iconSize: number | null) {
         const icon = new AgsIcon({});
-        const iconSize = icon.get_style_context()
+        iconSize = iconSize || icon.get_style_context()
             .get_property('font-size', Gtk.StateFlags.NORMAL) as number;
-        if (item.Status === 'NeedsAttention') {
+        if (item.Status === 'NeedsAttention'){
             if (item.AttentionIconName) {
                 icon.icon = item.AttentionIconName;
             } else {
@@ -300,6 +298,8 @@ class SystemTrayService extends Service {
     }
 
     get_tooltip_markup(item: StatusNotifierItemProxy) {
+        if (!item.ToolTip)
+            return '';
         let tooltip_markup = item.ToolTip[2];
         if (item.ToolTip[3] !== '')
             tooltip_markup += '\n' + item.ToolTip[3];
@@ -324,8 +324,8 @@ export default class SystemTray {
         return Array.from(SystemTray.instance._items.values());
     }
 
-    static get_icon(item: StatusNotifierItemProxy) {
-        return SystemTray.instance.get_icon(item);
+    static get_icon(item: StatusNotifierItemProxy, iconSize: number | null) {
+        return SystemTray.instance.get_icon(item, iconSize);
     }
 
     static get_tooltip_markup(item: StatusNotifierItemProxy) {
