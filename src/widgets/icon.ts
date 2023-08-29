@@ -23,7 +23,7 @@ export default class AgsIcon extends Gtk.Image {
             icon = '',
             size = 0,
         } = params as { icon: string | GdkPixbuf.Pixbuf, size: number };
-        super(typeof params === 'string' ? { icon: params } : params);
+        super(typeof params === 'string' ? {} : params);
 
         // set correct size after construct
         if (typeof params === 'object') {

@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-new */
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import Dbusmenu from 'gi://Dbusmenu';
-import { AgsMenu } from 'src/widgets/menu.js';
 
 interface Proxy {
     connect: (event: string, callback: () => void) => number
@@ -61,7 +59,7 @@ export interface BatteryProxy extends Proxy {
 }
 
 export interface StatusNotifierItemProxy extends Gio.DBusProxy {
-    new(...args: any[]): StatusNotifierItemProxy;
+    new(...args: unknown[]): StatusNotifierItemProxy;
     Category: string;
     Id: string;
     Title: string;

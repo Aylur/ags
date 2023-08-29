@@ -1,17 +1,17 @@
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service/service.js';
 import { interval } from '../utils.js';
 
 export type Command = string | ((...args: unknown[]) => boolean);
 
+type ConnectFn = (
+    widget: Gtk.Widget,
+    callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
+    event?: string
+) => void
+
 interface ServiceAPI {
-    instance: {
-        connectWidget: (
-            widget: Gtk.Widget,
-            callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
-            event?: string
-        ) => void
-    }
+    instance: { connectWidget: ConnectFn }
+    connectWidget: ConnectFn
 }
 
 interface CommonParams {
@@ -91,7 +91,10 @@ function parseCommon(widget: Gtk.Widget, {
             else if (typeof s === 'number')
                 interval(s, () => callback(widget), widget);
 
-            else if (s instanceof Service)
+            else if (typeof s?.instance?.connectWidget === 'function')
+                s.instance.connectWidget(widget, callback, event);
+
+            else if (typeof s?.connectWidget === 'function')
                 s.connectWidget(widget, callback, event);
 
             else
