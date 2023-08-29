@@ -4,6 +4,14 @@ import { runCmd } from '../utils.js';
 import { EventButton, EventScroll } from 'gi-types/gdk3';
 import { Command } from './shared.js';
 
+interface Params {
+    onChange?: Command
+    value?: number
+    min?: number
+    max?: number
+    step?: number
+}
+
 export default class AgsSlider extends Gtk.Scale {
     static {
         GObject.registerClass({
@@ -32,7 +40,7 @@ export default class AgsSlider extends Gtk.Scale {
         max = 1,
         step = 0.01,
         ...rest
-    } = {}) {
+    }: Params = {}) {
         super({
             ...rest,
             adjustment: new Gtk.Adjustment({
@@ -50,7 +58,7 @@ export default class AgsSlider extends Gtk.Scale {
 
             typeof this.onChange === 'function'
                 ? this.onChange(this, event, value)
-                : runCmd(onChange.replace(/\{\}/g, value));
+                : runCmd((onChange as string).replace(/\{\}/g, value));
         });
 
         if (value)

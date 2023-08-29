@@ -3,6 +3,12 @@ import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
 import { Command } from './shared.js';
 
+interface Params {
+    children?: Gtk.Widget[]
+    onPopup?: Command
+    onMoveScroll?: Command
+}
+
 export class AgsMenu extends Gtk.Menu {
     static {
         GObject.registerClass({ GTypeName: 'AgsMenu' }, this);
@@ -16,7 +22,7 @@ export class AgsMenu extends Gtk.Menu {
         onPopup = '',
         onMoveScroll = '',
         ...rest
-    }: { [key: string]: any }) {
+    }: Params = {}) {
         super(rest);
 
         if (children)

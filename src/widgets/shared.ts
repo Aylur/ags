@@ -2,13 +2,13 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Service from '../service/service.js';
 import { interval } from '../utils.js';
 
-export type Command = string | ((...args: any[]) => boolean);
+export type Command = string | ((...args: unknown[]) => boolean);
 
 interface ServiceAPI {
     instance: {
         connectWidget: (
             widget: Gtk.Widget,
-            callback: (widget: Gtk.Widget, ...args: any[]) => void,
+            callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
             event?: string
         ) => void
     }
@@ -20,12 +20,11 @@ interface CommonParams {
     halign?: 'start' | 'center' | 'end' | 'fill'
     valign?: 'start' | 'center' | 'end' | 'fill'
     connections?: (
-        [string, (...args: any[]) => any] |
-        [number, (...args: any[]) => any] |
-        [ServiceAPI, (...args: any[]) => any, string] |
-        [Service, (...args: any[]) => any, string]
+        [string, (...args: unknown[]) => unknown] |
+        [number, (...args: unknown[]) => unknown] |
+        [ServiceAPI, (...args: unknown[]) => unknown, string]
     )[]
-    properties?: [any, any][]
+    properties?: [string, unknown][]
     setup?: (widget: Gtk.Widget) => void
 }
 
@@ -91,10 +90,9 @@ function parseCommon(widget: Gtk.Widget, {
 
             else if (typeof s === 'number')
                 interval(s, () => callback(widget), widget);
+
             else if (s instanceof Service)
                 s.connectWidget(widget, callback, event);
-            else if (typeof s?.instance?.connectWidget === 'function')
-                s.instance.connectWidget(widget, callback, event);
 
             else
                 logError(new Error(`${s} is not an instanceof Service`));
@@ -105,6 +103,7 @@ function parseCommon(widget: Gtk.Widget, {
         setup(widget);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ctor = { new(...args: any[]): Gtk.Widget }
 export default function constructor(
     ctor: ctor,

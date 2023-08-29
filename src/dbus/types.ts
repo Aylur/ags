@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-new */
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import Dbusmenu from 'gi://Dbusmenu';
@@ -10,7 +11,7 @@ interface Proxy {
 }
 
 export interface DBusProxy extends Proxy {
-    new(...args: any[]): DBusProxy
+    new(...args: unknown[]): DBusProxy
     ListNamesRemote: (callback: (names: string[][]) => void) => void
     connectSignal: (
         event: string,
@@ -22,7 +23,7 @@ export interface DBusProxy extends Proxy {
 }
 
 export interface PlayerProxy extends Proxy {
-    new(...args: any[]): PlayerProxy
+    new(...args: unknown[]): PlayerProxy
     CanControl: boolean
     CanGoNext: boolean
     CanGoPrevious: boolean
@@ -43,7 +44,7 @@ export interface PlayerProxy extends Proxy {
 }
 
 export interface MprisProxy extends Proxy {
-    new(...args: any[]): MprisProxy
+    new(...args: unknown[]): MprisProxy
     Raise: () => void
     Quit: () => void
     CanQuit: boolean
@@ -53,7 +54,7 @@ export interface MprisProxy extends Proxy {
 }
 
 export interface BatteryProxy extends Proxy {
-    new(...args: any[]): BatteryProxy
+    new(...args: unknown[]): BatteryProxy
     State: number
     Percentage: number
     IsPresent: boolean

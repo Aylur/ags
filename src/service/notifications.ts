@@ -50,11 +50,11 @@ class NotificationsService extends Service {
         });
     }
 
-    _dbus!: Gio.DBusExportedObject;
-    _notifications: Map<number, Notification>;
-    _dnd = false;
-    _idCount = 0;
-    _timeout = App.config?.notificationPopupTimeout || 3000;
+    private _dbus!: Gio.DBusExportedObject;
+    private _notifications: Map<number, Notification>;
+    private _dnd = false;
+    private _idCount = 0;
+    private _timeout = App.config?.notificationPopupTimeout || 3000;
 
     constructor() {
         super();
@@ -64,15 +64,14 @@ class NotificationsService extends Service {
         this._register();
     }
 
-    get dnd() {
-        return this._dnd;
-    }
 
+    get dnd() { return this._dnd; }
     set dnd(value: boolean) {
         this._dnd = value;
         this.emit('changed');
     }
 
+    get notifications() { return this._notifications; }
     get popups() {
         const map: Map<number, Notification> = new Map();
         for (const [id, notification] of this._notifications) {
@@ -179,7 +178,7 @@ class NotificationsService extends Service {
         ]);
     }
 
-    _register() {
+    private _register() {
         Gio.bus_own_name(
             Gio.BusType.SESSION,
             'org.freedesktop.Notifications',
@@ -199,7 +198,7 @@ class NotificationsService extends Service {
         );
     }
 
-    async _readFromFile() {
+    private async _readFromFile() {
         try {
             const file = await readFileAsync(CACHE_FILE);
             const notifications = JSON.parse(file as string) as Notification[];
@@ -216,11 +215,11 @@ class NotificationsService extends Service {
         }
     }
 
-    _isFile(path: string) {
+    private _isFile(path: string) {
         return GLib.file_test(path, GLib.FileTest.EXISTS) ? path : null;
     }
 
-    _parseImage(id: number, image_data?: GLib.Variant<'(iiibiiay)'>) {
+    private _parseImage(id: number, image_data?: GLib.Variant<'(iiibiiay)'>) {
         if (!image_data)
             return null;
 
@@ -247,7 +246,7 @@ class NotificationsService extends Service {
         return fileName;
     }
 
-    _cache() {
+    private _cache() {
         const notifications = [];
         for (const [, notification] of this._notifications) {
             const n = { ...notification, action: [], popup: false };
@@ -271,7 +270,6 @@ export default class Notifications {
 
     // eslint-disable-next-line max-len
     static invoke(id: number, actionId: string) { Notifications.instance.InvokeAction(id, actionId); }
-    // eslint-disable-next-line max-len
     static dismiss(id: number) { Notifications.instance.DismissNotification(id); }
     static clear() { Notifications.instance.Clear(); }
     static close(id: number) { Notifications.instance.CloseNotification(id); }
@@ -279,5 +277,5 @@ export default class Notifications {
     static get dnd() { return Notifications.instance.dnd; }
     static set dnd(value: boolean) { Notifications.instance.dnd = value; }
     static get popups() { return Notifications.instance.popups; }
-    static get notifications() { return Notifications.instance._notifications; }
+    static get notifications() { return Notifications.instance.notifications; }
 }

@@ -72,6 +72,7 @@ export function bulkConnect(
     service: GObject.Object,
     list: [
         event: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         callback: (...args: any[]) => void
     ][],
 ) {
@@ -90,11 +91,11 @@ export function bulkDisconnect(service: GObject.Object, ids: number[]) {
 export function connect(
     service: GObject.Object,
     widget: Gtk.Widget,
-    callback: (widget: Gtk.Widget, ...args: any[]) => void,
+    callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
     event = 'changed',
 ) {
     const bind = service.connect(
-        event, (_s, ...args: any[]) => callback(widget, ...args));
+        event, (_s, ...args: unknown[]) => callback(widget, ...args));
 
     widget.connect('destroy', () => service.disconnect(bind));
     timeout(10, () => callback(widget));
@@ -124,7 +125,7 @@ export function timeout(ms: number, callback: () => void) {
 
 export function runCmd(
     cmd: Command,
-    ...args: any[]
+    ...args: unknown[]
 ) {
     if (typeof cmd !== 'string' && typeof cmd !== 'function') {
         console.error('Command has to be string or function');

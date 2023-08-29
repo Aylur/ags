@@ -33,7 +33,6 @@ export default class App extends Gtk.Application {
     static config: Config;
     static instance: App;
 
-    // eslint-disable-next-line max-len
     static removeWindow(w: Gtk.Window | string) { App.instance.removeWindow(w); }
     static addWindow(w: Gtk.Window) { App.instance.addWindow(w); }
     static get windows() { return App.instance._windows; }
@@ -96,6 +95,7 @@ export default class App extends Gtk.Application {
 
     connectWidget(
         widget: Gtk.Widget,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         callback: (widget: Gtk.Widget, ...args: any[]) => void,
         event = 'window-toggled',
     ) {
@@ -169,7 +169,7 @@ export default class App extends Gtk.Application {
         this._windows.set(w.name, w);
     }
 
-    async _load() {
+    private async _load() {
         try {
             const mod = await import(`file://${App.configPath}`);
             const config = mod.default as Config;
@@ -201,7 +201,7 @@ export default class App extends Gtk.Application {
         }
     }
 
-    _addAction(
+    private _addAction(
         name: string,
         callback: (_source: Gio.SimpleAction, _param: GLib.Variant) => void,
         parameter_type?: GLib.VariantType,
@@ -213,7 +213,7 @@ export default class App extends Gtk.Application {
         this.add_action(action);
     }
 
-    _exportActions() {
+    private _exportActions() {
         this._addAction('inspector',
             () => Gtk.Window.set_interactive_debugging(true));
         this._addAction('quit', App.quit);

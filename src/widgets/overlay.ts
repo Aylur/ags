@@ -1,6 +1,12 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 
+interface Params {
+    overlays?: Gtk.Widget[]
+    pass_through?: boolean
+    passThrough?: boolean
+}
+
 export default class AgsOverlay extends Gtk.Overlay {
     static {
         GObject.registerClass({
@@ -15,9 +21,17 @@ export default class AgsOverlay extends Gtk.Overlay {
         }, this);
     }
 
-    constructor({ overlays = [], ...rest } = {}) {
+    constructor({
+        overlays = [],
+        pass_through,
+        passThrough,
+        ...rest
+    }: Params = {}) {
         super(rest);
         this.overlays = overlays;
+
+        if (pass_through || passThrough)
+            this.pass_through = true;
     }
 
     _passthrough = false;

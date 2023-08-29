@@ -1,6 +1,10 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 
+interface Params {
+    items?: [string, Gtk.Widget][]
+}
+
 const transitions = [
     'none', 'crossfade',
     'slide_right', 'slide_left', 'slide_up', 'slide_down',
@@ -29,7 +33,7 @@ export default class AgsStack extends Gtk.Stack {
         }, this);
     }
 
-    constructor({ items = [], ...params }: { [key: string]: any } = {}) {
+    constructor({ items = [], ...params }: Params = {}) {
         super(params);
         this.items = items;
     }

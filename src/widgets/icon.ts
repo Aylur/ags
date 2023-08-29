@@ -2,6 +2,7 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
+import { Context } from 'gi-types/cairo1';
 
 export default class AgsIcon extends Gtk.Image {
     static {
@@ -12,11 +13,6 @@ export default class AgsIcon extends Gtk.Image {
                     'size', 'Size', 'Size',
                     GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
                     0, 1024, 0,
-                ),
-                'icon': GObject.ParamSpec.string(
-                    'icon', 'Icon', 'Icon',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    '',
                 ),
             },
         }, this);
@@ -45,37 +41,36 @@ export default class AgsIcon extends Gtk.Image {
         this.queue_draw();
     }
 
-    _file = false;
-    _icon :string | GdkPixbuf.Pixbuf = '';
+    _type!: 'file' | 'named' | 'pixbuf';
+    _icon: string | GdkPixbuf.Pixbuf = '';
     get icon() { return this._icon; }
     set icon(icon: string | GdkPixbuf.Pixbuf) {
-        if (!icon ||
-            (!(icon instanceof GdkPixbuf.Pixbuf) && this._icon === icon))
+        if (!icon || this._icon === icon)
             return;
 
         this._icon = icon;
         if (typeof icon === 'string') {
             if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
-                this._file = true;
+                this._type = 'file';
                 this.set_from_pixbuf(
-                    GdkPixbuf.Pixbuf.new_from_file_at_size(
-                        icon, this.size, this.size,
-                    ),
-                );
+                    GdkPixbuf.Pixbuf.new_from_file_at_size(icon, this.size, this.size));
             } else {
-                this._file = false;
+                this._type = 'named';
                 this.icon_name = icon;
                 this.pixel_size = this.size;
             }
         }
+        else if (icon instanceof GdkPixbuf.Pixbuf) {
+            this._type = 'pixbuf';
+            this.set_from_pixbuf(
+                icon.scale_simple(this.size, this.size, GdkPixbuf.InterpType.BILINEAR));
+        }
         else {
-            const scaled_pixbuf = icon.scale_simple(
-                this.size, this.size, GdkPixbuf.InterpType.BILINEAR);
-            this.set_from_pixbuf(scaled_pixbuf);
+            logError(new Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));
         }
     }
 
-    vfunc_draw(cr: any): boolean {
+    vfunc_draw(cr: Context): boolean {
         if (this._size > 1)
             return super.vfunc_draw(cr);
 
@@ -87,12 +82,20 @@ export default class AgsIcon extends Gtk.Image {
 
         this._previousSize = size;
 
-        if (this._file && typeof this.icon === 'string') {
-            this.set_from_pixbuf(
-                GdkPixbuf.Pixbuf.new_from_file_at_size(this.icon, size, size),
-            );
-        } else {
-            this.pixel_size = size;
+        switch (this._type) {
+            case 'file':
+                this.set_from_pixbuf(
+                    GdkPixbuf.Pixbuf.new_from_file_at_size(this.icon as string, size, size));
+                break;
+            case 'pixbuf':
+                this.set_from_pixbuf((this.icon as GdkPixbuf.Pixbuf).scale_simple(
+                    this.size, this.size, GdkPixbuf.InterpType.BILINEAR));
+                break;
+            case 'named':
+                this.set_pixel_size(size);
+                break;
+            default:
+                break;
         }
 
         return super.vfunc_draw(cr);
