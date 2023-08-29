@@ -1,7 +1,6 @@
 import Gtk from 'gi://Gtk?version=3.0';
 import GObject from 'gi://GObject';
 import { connect, interval } from '../utils.js';
-import Service from '../service/service.js';
 
 export type Command = string | ((...args: unknown[]) => boolean);
 
@@ -113,8 +112,7 @@ function parseCommon(widget: Gtk.Widget, {
 
             else if (typeof s === 'number')
                 interval(s, () => callback(widget), widget);
-            else if (s instanceof Service)
-                s.connectWidget(widget, callback, event);
+
             else if (typeof s?.instance?.connectWidget === 'function')
                 s.instance.connectWidget(widget, callback, event);
 
