@@ -69,8 +69,6 @@ export interface StatusNotifierItemProxy extends Gio.DBusProxy {
     IconThemePath: string;
     ItemIsMenu: boolean;
     Menu: string;
-    DbusMenusClient: Dbusmenu.Client;
-    AgsMenu: AgsMenu;
     IconName: string;
     IconPixmap: [number, number, Uint8Array][];
     AttentionIconName: string;

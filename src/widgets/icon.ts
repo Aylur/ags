@@ -26,7 +26,7 @@ export default class AgsIcon extends Gtk.Image {
         const {
             icon = '',
             size = 0,
-        } = params as { icon: string, size: number };
+        } = params as { icon: string | GdkPixbuf.Pixbuf, size: number };
         super(typeof params === 'string' ? { icon: params } : params);
 
         // set correct size after construct
@@ -46,25 +46,32 @@ export default class AgsIcon extends Gtk.Image {
     }
 
     _file = false;
-    _icon = '';
+    _icon :string | GdkPixbuf.Pixbuf = '';
     get icon() { return this._icon; }
-    set icon(icon: string) {
-        if (!icon || this._icon === icon)
+    set icon(icon: string | GdkPixbuf.Pixbuf) {
+        if (!icon ||
+            (!(icon instanceof GdkPixbuf.Pixbuf) && this._icon === icon))
             return;
 
         this._icon = icon;
-        if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
-            this._file = true;
-            this.set_from_pixbuf(
-                GdkPixbuf.Pixbuf.new_from_file_at_size(
-                    icon, this.size, this.size,
-                ),
-            );
+        if (typeof icon === 'string') {
+            if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
+                this._file = true;
+                this.set_from_pixbuf(
+                    GdkPixbuf.Pixbuf.new_from_file_at_size(
+                        icon, this.size, this.size,
+                    ),
+                );
+            } else {
+                this._file = false;
+                this.icon_name = icon;
+                this.pixel_size = this.size;
+            }
         }
         else {
-            this._file = false;
-            this.icon_name = icon;
-            this.pixel_size = this.size;
+            const scaled_pixbuf = icon.scale_simple(
+                this.size, this.size, GdkPixbuf.InterpType.BILINEAR);
+            this.set_from_pixbuf(scaled_pixbuf);
         }
     }
 
@@ -80,7 +87,7 @@ export default class AgsIcon extends Gtk.Image {
 
         this._previousSize = size;
 
-        if (this._file) {
+        if (this._file && typeof this.icon === 'string') {
             this.set_from_pixbuf(
                 GdkPixbuf.Pixbuf.new_from_file_at_size(this.icon, size, size),
             );
