@@ -10,8 +10,10 @@ class Stream extends GObject.Object {
         }, this);
     }
 
-    _stream: Gvc.MixerStream;
-    _ids: number[];
+    private _stream: Gvc.MixerStream;
+    private _ids: number[];
+
+    get stream() { return this._stream; }
 
     constructor(stream: Gvc.MixerStream) {
         super();
@@ -36,8 +38,11 @@ class Stream extends GObject.Object {
     get id() { return this._stream.id; }
     get name() { return this._stream.name; }
 
+    set isMuted(muted) { this._stream.set_is_muted(muted); }
+    get isMuted() { return this._stream.is_muted; }
+
     get volume() {
-        const max = Audio._instance._control.get_vol_max_norm();
+        const max = Audio.instance.control.get_vol_max_norm();
         return this._stream.volume / max;
     }
 
@@ -48,17 +53,9 @@ class Stream extends GObject.Object {
         if (value < 0)
             value = 0;
 
-        const max = Audio._instance._control.get_vol_max_norm();
+        const max = Audio.instance.control.get_vol_max_norm();
         this._stream.set_volume(value * max);
         this._stream.push_volume();
-    }
-
-    set isMuted(muted) {
-        this._stream.set_is_muted(muted);
-    }
-
-    get isMuted() {
-        return this._stream.is_muted;
     }
 
     close() {
@@ -75,12 +72,17 @@ class AudioService extends Service {
         });
     }
 
-    _control: Gvc.MixerControl;
-    _streams: Map<number, Stream>;
-    _speaker!: Stream;
-    _microphone!: Stream;
-    _speakerID!: number;
-    _microphoneID!: number;
+    private _control: Gvc.MixerControl;
+    private _streams: Map<number, Stream>;
+    private _speaker!: Stream;
+    private _microphone!: Stream;
+    private _speakerID!: number;
+    private _microphoneID!: number;
+
+    get speaker() { return this._speaker; }
+    get microphone() { return this._microphone; }
+
+    get control() { return this._control; }
 
     constructor() {
         super();
@@ -90,10 +92,8 @@ class AudioService extends Service {
         this._streams = new Map();
 
         bulkConnect((this._control as unknown) as GObject.Object, [
-            ['default-sink-changed', (_c, id: number) =>
-                this._defaultChanged(id, 'speaker')],
-            ['default-source-changed', (_c, id: number) =>
-                this._defaultChanged(id, 'microphone')],
+            ['default-sink-changed', (_c, id: number) => this._defaultChanged(id, 'speaker')],
+            ['default-source-changed', (_c, id: number) => this._defaultChanged(id, 'microphone')],
             ['stream-added', this._streamAdded.bind(this)],
             ['stream-removed', this._streamRemoved.bind(this)],
         ]);
@@ -101,7 +101,7 @@ class AudioService extends Service {
         this._control.open();
     }
 
-    _defaultChanged(id: number, type: 'speaker' | 'microphone') {
+    private _defaultChanged(id: number, type: 'speaker' | 'microphone') {
         if (this[`_${type}`])
             this[`_${type}`].disconnect(this[`_${type}ID`]);
 
@@ -118,7 +118,7 @@ class AudioService extends Service {
         this.emit('changed');
     }
 
-    _streamAdded(_c: Gvc.MixerControl, id: number) {
+    private _streamAdded(_c: Gvc.MixerControl, id: number) {
         if (this._streams.has(id))
             return;
 
@@ -128,7 +128,7 @@ class AudioService extends Service {
         this.emit('changed');
     }
 
-    _streamRemoved(_c: Gvc.MixerControl, id: number) {
+    private _streamRemoved(_c: Gvc.MixerControl, id: number) {
         if (!this._streams.has(id))
             return;
 
@@ -137,21 +137,21 @@ class AudioService extends Service {
         this.emit('changed');
     }
 
-    getStreams(filter: any) {
+    getStreams(filter: { new(): Gvc.MixerStream }) {
         const map = new Map();
         for (const [id, stream] of this._streams) {
-            if (stream._stream instanceof filter)
+            if (stream.stream instanceof filter)
                 map.set(id, stream);
         }
         return map;
     }
 
     setSpeaker(stream: Stream) {
-        this._control.set_default_sink(stream._stream);
+        this._control.set_default_sink(stream.stream);
     }
 
     setMicrophone(stream: Stream) {
-        this._control.set_default_source(stream._stream);
+        this._control.set_default_source(stream.stream);
     }
 }
 
@@ -164,15 +164,13 @@ export default class Audio {
         return Audio._instance;
     }
 
-    // eslint-disable-next-line max-len
     static get microphones() { return Audio.instance.getStreams(Gvc.MixerSource); }
     static get apps() { return Audio.instance.getStreams(Gvc.MixerSinkInput); }
     static get speakers() { return Audio.instance.getStreams(Gvc.MixerSink); }
 
-    static get speaker() { return Audio.instance._speaker; }
+    static get speaker() { return Audio.instance.speaker; }
     static set speaker(stream: Stream) { Audio.instance.setSpeaker(stream); }
 
-    // eslint-disable-next-line max-len
     static set microphone(stream: Stream) { Audio.instance.setMicrophone(stream); }
-    static get microphone() { return Audio.instance._microphone; }
+    static get microphone() { return Audio.instance.microphone; }
 }

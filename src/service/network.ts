@@ -52,10 +52,10 @@ const _DEVICE = (device: string) => {
 class Wifi extends Service {
     static { Service.register(this); }
 
-    _client: NM.Client;
-    _device: NM.DeviceWifi;
-    _ap!: NM.AccessPoint;
-    _apBind!: number;
+    private _client: NM.Client;
+    private _device: NM.DeviceWifi;
+    private _ap!: NM.AccessPoint;
+    private _apBind!: number;
 
     constructor(client: NM.Client, device: NM.DeviceWifi) {
         super();
@@ -79,7 +79,7 @@ class Wifi extends Service {
         });
     }
 
-    _activeAp() {
+    private _activeAp() {
         if (this._ap)
             this._ap.disconnect(this._apBind);
 
@@ -150,7 +150,7 @@ class Wifi extends Service {
 class Wired extends Service {
     static { Service.register(this); }
 
-    _device: NM.DeviceEthernet;
+    private _device: NM.DeviceEthernet;
 
     constructor(device: NM.DeviceEthernet) {
         super();
@@ -177,7 +177,7 @@ class Wired extends Service {
 class NetworkService extends Service {
     static { Service.register(this); }
 
-    _client!: NM.Client;
+    private _client!: NM.Client;
     _wifi!: Wifi;
     _wired!: Wired;
     _primary?: string;
@@ -200,13 +200,13 @@ class NetworkService extends Service {
         this._client.wireless_enabled = !this._client.wireless_enabled;
     }
 
-    _getDevice(devType: NM.DeviceType) {
+    private _getDevice(devType: NM.DeviceType) {
         return this._client
             .get_devices()
             .find(device => device.get_device_type() === devType);
     }
 
-    _clientReady() {
+    private _clientReady() {
         bulkConnect((this._client as unknown) as GObject.Object, [
             ['notify::wireless-enabled', this._sync.bind(this)],
             ['notify::connectivity', this._sync.bind(this)],
@@ -225,7 +225,7 @@ class NetworkService extends Service {
         this._sync();
     }
 
-    _sync() {
+    private _sync() {
         const mainConnection =
             this._client.get_primary_connection() ||
             this._client.get_activating_connection();

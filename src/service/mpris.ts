@@ -56,9 +56,9 @@ class MprisPlayer extends GObject.Object {
     loopStatus!: LoopStatus | null;
     length!: number;
 
-    _binding: { mpris: number, player: number };
-    _mprisProxy: MprisProxy;
-    _playerProxy: PlayerProxy;
+    private _binding: { mpris: number, player: number };
+    private _mprisProxy: MprisProxy;
+    private _playerProxy: PlayerProxy;
 
     constructor(busName: string) {
         super();
@@ -87,7 +87,7 @@ class MprisPlayer extends GObject.Object {
         this.emit('closed');
     }
 
-    _onMprisProxyReady() {
+    private _onMprisProxyReady() {
         this._binding.mpris = this._mprisProxy.connect(
             'notify::g-name-owner',
             () => {
@@ -101,14 +101,14 @@ class MprisPlayer extends GObject.Object {
             this.close();
     }
 
-    _onPlayerProxyReady() {
+    private _onPlayerProxyReady() {
         this._binding.player = this._playerProxy.connect(
             'g-properties-changed', () => this._updateState());
 
         this._updateState();
     }
 
-    _updateState() {
+    private _updateState() {
         const metadata = {} as MprisMetadata;
         for (const prop in this._playerProxy.Metadata)
             metadata[prop] = this._playerProxy.Metadata[prop].deep_unpack();
@@ -148,7 +148,7 @@ class MprisPlayer extends GObject.Object {
         this.emit('changed');
     }
 
-    _cacheCoverArt() {
+    private _cacheCoverArt() {
         this.coverPath = MEDIA_CACHE_PATH + '/' +
             `${this.trackArtists.join(', ')}-${this.trackTitle}`
                 .replace(/[\,\*\?\"\<\>\|\#\:\?\/\'\(\)]/g, '');
@@ -252,8 +252,8 @@ class MprisService extends Service {
         });
     }
 
-    _players!: Players;
-    _proxy: DBusProxy;
+    private _players!: Players;
+    private _proxy: DBusProxy;
 
     constructor() {
         super();
@@ -266,7 +266,7 @@ class MprisService extends Service {
         this._onProxyReady();
     }
 
-    _addPlayer(busName: string) {
+    private _addPlayer(busName: string) {
         if (this._players.get(busName))
             return;
 
@@ -287,7 +287,7 @@ class MprisService extends Service {
         this.emit('player-added', busName);
     }
 
-    _onProxyReady() {
+    private _onProxyReady() {
         this._proxy.ListNamesRemote(([names]) => {
             names.forEach(name => {
                 if (!name.startsWith('org.mpris.MediaPlayer2.'))
@@ -300,7 +300,7 @@ class MprisService extends Service {
             this._onNameOwnerChanged.bind(this));
     }
 
-    _onNameOwnerChanged(
+    private _onNameOwnerChanged(
         _proxy: string,
         _sender: string,
         [name, oldOwner, newOwner]: string[],
