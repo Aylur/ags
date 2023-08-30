@@ -1,6 +1,10 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 
+interface Params {
+    items?: [string, Gtk.Widget][]
+}
+
 const transitions = [
     'none', 'crossfade',
     'slide_right', 'slide_left', 'slide_up', 'slide_down',
@@ -29,7 +33,7 @@ export default class AgsStack extends Gtk.Stack {
         }, this);
     }
 
-    constructor({ items = [], ...params }: { [key: string]: any } = {}) {
+    constructor({ items = [], ...params }: Params = {}) {
         super(params);
         this.items = items;
     }
@@ -42,7 +46,17 @@ export default class AgsStack extends Gtk.Stack {
     _items: [string, Gtk.Widget][] = [];
     get items() { return this._items; }
     set items(items: [string, Gtk.Widget][]) {
-        this.get_children().forEach(ch => ch.destroy());
+        this._items
+            .filter(([name]) => !items.find(([n]) => n === name))
+            .forEach(([, ch]) => ch.destroy());
+
+        // remove any children that weren't destroyed so
+        // we can re-add everything without trying to add
+        // items multiple times
+        this._items
+            .filter(([, ch]) => this.get_children().includes(ch))
+            .forEach(([, ch]) => this.remove(ch));
+
         this._items = [];
         items.forEach(([name, widget]) => {
             widget && this.add_named(widget, name);

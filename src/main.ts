@@ -2,7 +2,7 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import * as Utils from './utils.js';
 import App from './app.js';
-import Client from './client.js';
+import client from './client.js';
 import Service from './service/service.js';
 import Widget from './widget.js';
 import './service/apps.js';
@@ -14,8 +14,8 @@ import './service/mpris.js';
 import './service/network.js';
 import './service/notifications.js';
 
-const APP_BUS = (name: string) => 'com.github.Aylur.' + name;
-const APP_PATH = (name: string) => '/com/github/Aylur/' + name;
+const APP_BUS = (name: string) => 'com.github.Aylur.ags.' + name;
+const APP_PATH = (name: string) => '/com/github/Aylur/ags/' + name;
 const DEFAULT_CONF = `${GLib.get_user_config_dir()}/${pkg.name}/config.js`;
 
 const help = (bin: string) => `USAGE:
@@ -23,22 +23,24 @@ const help = (bin: string) => `USAGE:
 
 OPTIONS:
     -h, --help              Print this help and exit
+
     -v, --version           Print version and exit
-    -q, --quit              Kills AGS
+
+    -q, --quit              Kill AGS
+
     -c, --config            Path to the config file. Default: ${DEFAULT_CONF}
-    -b, --bus-name          Bus name of the process,
-                            can be used to launch multiple instances
-    -i, --inspector         Open up the Gtk debug tool,
-                            useful for fetching css selectors
+
+    -b, --bus-name          Bus name of the process
+
+    -i, --inspector         Open up the Gtk debug tool
+
     -t, --toggle-window     Show or hide a window
+
     -r, --run-js            Evaluate given string as a function and execute it
-                            NOTE: logging inside this function won't print
-                            anything to the terminal, but it logs to the stdout
-                            of the running AGS proccess
-                            To print to the current stdout the string has to be
-                            a single expression on a single line,
-                            or call resolve() or reject() in the function body
-    --clear-cache           Removes ${Utils.CACHE_DIR}
+
+    -p, --run-promise       Evaluate and execute function as Promise
+
+    --clear-cache           Remove ${Utils.CACHE_DIR}
 
 EXAMPLES
     ags --config $HOME/.config/ags/main.js --bus-name second-instance
@@ -69,6 +71,7 @@ export function main(args: string[]) {
         config: DEFAULT_CONF,
         inspector: false,
         runJs: '',
+        runPromise: '',
         toggleWindow: '',
         quit: false,
     };
@@ -114,6 +117,12 @@ export function main(args: string[]) {
                 flags.runJs = args[++i];
                 break;
 
+            case 'run-promise':
+            case '-p':
+            case '--run-promise':
+                flags.runPromise = args[++i];
+                break;
+
             case 'toggle-window':
             case '-t':
             case '--toggle-window':
@@ -146,29 +155,23 @@ export function main(args: string[]) {
     if (!isRunning(bus)) {
         const app = new App(bus, path, flags.config);
         app.connect('config-parsed', () => {
-            const { toggleWindow, runJs, inspector } = flags;
-            const actions = Gio.DBusActionGroup.get(
-                Gio.DBus.session, bus, path);
+            if (flags.toggleWindow)
+                app.ToggleWindow(flags.toggleWindow);
 
-            if (toggleWindow) {
-                actions.activate_action('toggle-window',
-                    new GLib.Variant('s', toggleWindow));
-            }
+            if (flags.runJs)
+                app.RunJs(flags.runJs);
 
-            if (runJs) {
-                actions.activate_action('run-js',
-                    new GLib.Variant('s', runJs));
-            }
+            if (flags.runPromise)
+                app.RunPromise(flags.runPromise);
 
-            if (inspector)
-                actions.activate_action('inspector', null);
+            if (flags.inspector)
+                app.Inspector();
         });
 
         // @ts-ignore
         return app.runAsync(null);
     }
     else {
-        // @ts-ignore
-        return new Client(bus, path, flags).runAsync(null);
+        return client(bus, path, flags);
     }
 }

@@ -1,6 +1,7 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import { connect } from '../utils.js';
+import { type Ctor } from 'gi-types/gobject2.js';
 
 export default class Service extends GObject.Object {
     static {
@@ -9,12 +10,12 @@ export default class Service extends GObject.Object {
         }, this);
     }
 
-    static ensureInstance(api: { _instance: any }, service: { new(): any }) {
+    static ensureInstance(api: { _instance: Service }, service: { new(): Service }) {
         if (!api._instance)
             api._instance = new service();
     }
 
-    static register(service: any, signals?: { [signal: string]: string[] }) {
+    static register(service: Ctor, signals?: { [signal: string]: string[] }) {
         const Signals: {
             [signal: string]: { param_types: GObject.GType<unknown>[] }
         } = {};
@@ -32,13 +33,14 @@ export default class Service extends GObject.Object {
         GObject.registerClass({ Signals }, service);
     }
 
-    static export(api: any, name: string) {
-        (Service as { [key: string]: any })[name] = api;
+    static export(api: { instance: object }, name: string) {
+        // @ts-ignore
+        Service[name] = api;
     }
 
     connectWidget(
         widget: Gtk.Widget,
-        callback: (widget: Gtk.Widget, ...args: any[]) => void,
+        callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
         event = 'changed',
     ) {
         connect(this, widget, callback, event);

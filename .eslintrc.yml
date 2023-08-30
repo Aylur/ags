@@ -20,29 +20,7 @@ ignorePatterns:
 plugins:
   - '@typescript-eslint'
 rules:
-  '@typescript-eslint/no-unused-vars':
-    - 'warn'
-  '@typescript-eslint/restrict-template-expressions':
-    - 'off'
-  '@typescript-eslint/no-explicit-any':
-    - 'off'
-  '@typescript-eslint/no-implied-eval':
-    - 'off'
-  '@typescript-eslint/no-unsafe-assignment':
-    - 'off'
-  '@typescript-eslint/no-unsafe-member-access':
-    - 'off'
-  '@typescript-eslint/no-unsafe-call':
-    - 'off'
-  '@typescript-eslint/no-floating-promises':
-    - 'off'
-  '@typescript-eslint/no-misused-promises':
-    - 'off'
   '@typescript-eslint/ban-ts-comment':
-    - 'off'
-  '@typescript-eslint/no-empty-function':
-    - 'off'
-  '@typescript-eslint/no-misused-new':
     - 'off'
   arrow-parens:
     - error
@@ -64,7 +42,8 @@ rules:
   dot-location:
     - error
     - property
-  eol-last: error
+  eol-last:
+    - error
   indent:
     - error
     - 4
@@ -80,7 +59,8 @@ rules:
     - error
     - never
     - allowSingleLineBlocks: false
-  prefer-const: error
+  prefer-const:
+    - error
   quotes:
     - error
     - single
@@ -93,21 +73,27 @@ rules:
     - below
   no-trailing-spaces:
     - error
-  array-bracket-spacing:
-    - error
-    - never
-  key-spacing:
-    - error
-    - beforeColon: false
-      afterColon: true
-  object-curly-spacing: 
-    - error
-    - always
   no-useless-escape:
     - off
   max-len:
     - error
-    - code: 80
+    - code: 100
+
+  func-call-spacing:
+    - error
+  array-bracket-spacing:
+    - error
+  space-before-function-paren:
+    - error
+    - never
+  space-before-blocks:
+    - error
+  key-spacing:
+    - error
+  object-curly-spacing: 
+    - error
+    - always
+
 globals:
   pkg: readonly
   ARGV: readonly

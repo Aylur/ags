@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import GObject from 'gi://GObject';
 import Service from './service.js';
 import { bulkConnect, bulkDisconnect } from '../utils.js';
@@ -12,9 +13,10 @@ class Device extends GObject.Object {
         }, this);
     }
 
-    _device: any;
-    _ids: number[];
-    _connecting = false;
+    private _device: any;
+    private _ids: number[];
+
+    get device() { return this._device; }
 
     constructor(device: any) {
         super();
@@ -51,12 +53,9 @@ class Device extends GObject.Object {
     get type() { return GnomeBluetooth.type_to_string(this._device.type); }
 
     setConnection(connect: boolean) {
-        this._connecting = true;
         Bluetooth.instance.connectDevice(this, connect, () => {
-            this._connecting = false;
             this.emit('changed');
         });
-        this.emit('changed');
     }
 }
 
@@ -64,15 +63,13 @@ class BluetoothService extends Service {
     static { Service.register(this); }
 
     // @ts-ignore
-    _client: GnomeBluetooth.Client;
-    _devices: Map<string, Device>;
-    _connections: Map<string, number[]>;
+    private _client: GnomeBluetooth.Client;
+    private _devices: Map<string, Device>;
 
     constructor() {
         super();
 
         this._devices = new Map();
-        this._connections = new Map();
         this._client = new GnomeBluetooth.Client();
         bulkConnect(this._client, [
             ['notify::default-adapter-state', () => this.emit('changed')],
@@ -87,7 +84,7 @@ class BluetoothService extends Service {
             !this._client.default_adapter_powered;
     }
 
-    _getDevices() {
+    private _getDevices() {
         const devices = [];
         const deviceStore = this._client.get_devices();
 
@@ -101,7 +98,7 @@ class BluetoothService extends Service {
         return devices;
     }
 
-    _deviceAdded(_c: unknown, device: any) {
+    private _deviceAdded(_c: unknown, device: any) {
         if (this._devices.has(device.address))
             return;
 
@@ -111,7 +108,7 @@ class BluetoothService extends Service {
         this.emit('changed');
     }
 
-    _deviceRemoved(_c: unknown, device: Device) {
+    private _deviceRemoved(_c: unknown, device: Device) {
         if (!this._devices.has(device.address))
             return;
 
@@ -126,7 +123,7 @@ class BluetoothService extends Service {
         callback: (s: boolean) => void,
     ) {
         this._client.connect_service(
-            device._device.get_object_path(),
+            device.device.get_object_path(),
             connect,
             null,
             (client: any, res: any) => {
@@ -174,7 +171,6 @@ export default class Bluetooth {
         return Bluetooth._instance;
     }
 
-    // eslint-disable-next-line max-len
     static get connectedDevices() { return Bluetooth.instance.connectedDevices; }
     static get enabled() { return Bluetooth.instance.enabled; }
     static set enabled(enable: boolean) { Bluetooth.instance.enabled = enable; }

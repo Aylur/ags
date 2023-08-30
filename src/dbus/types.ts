@@ -1,25 +1,14 @@
+/* eslint-disable @typescript-eslint/no-misused-new */
 import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
 
-interface Proxy {
-    connect: (event: string, callback: () => void) => number
-    disconnect: (id: number) => void
-    g_name_owner: string
-}
-
-export interface DBusProxy extends Proxy {
-    new(...args: any[]): DBusProxy
+export interface DBusProxy extends Gio.DBusProxy {
+    new(...args: unknown[]): DBusProxy
     ListNamesRemote: (callback: (names: string[][]) => void) => void
-    connectSignal: (
-        event: string,
-        callback: (
-            proxy: string,
-            sender: string,
-            owners: string[]
-        ) => void) => void
 }
 
-export interface PlayerProxy extends Proxy {
-    new(...args: any[]): PlayerProxy
+export interface PlayerProxy extends Gio.DBusProxy {
+    new(...args: unknown[]): PlayerProxy
     CanControl: boolean
     CanGoNext: boolean
     CanGoPrevious: boolean
@@ -39,8 +28,8 @@ export interface PlayerProxy extends Proxy {
     PlayAsync: () => Promise<void>
 }
 
-export interface MprisProxy extends Proxy {
-    new(...args: any[]): MprisProxy
+export interface MprisProxy extends Gio.DBusProxy {
+    new(...args: unknown[]): MprisProxy
     Raise: () => void
     Quit: () => void
     CanQuit: boolean
@@ -49,9 +38,18 @@ export interface MprisProxy extends Proxy {
     DesktopEntry: string
 }
 
-export interface BatteryProxy extends Proxy {
-    new(...args: any[]): BatteryProxy
+export interface BatteryProxy extends Gio.DBusProxy {
+    new(...args: unknown[]): BatteryProxy
     State: number
     Percentage: number
     IsPresent: boolean
+}
+
+export interface AgsProxy extends Gio.DBusProxy {
+    new(...args: unknown[]): AgsProxy
+    Inspector: () => void;
+    ToggleWindow: (name: string) => boolean;
+    Quit: () => void;
+    RunJs: (js: string) => string;
+    RunJsAsync: (js: string) => string;
 }

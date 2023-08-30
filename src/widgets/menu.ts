@@ -3,6 +3,12 @@ import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
 import { Command } from './shared.js';
 
+interface Params {
+    children?: Gtk.Widget[]
+    onPopup?: Command
+    onMoveScroll?: Command
+}
+
 export class AgsMenu extends Gtk.Menu {
     static {
         GObject.registerClass({ GTypeName: 'AgsMenu' }, this);
@@ -16,7 +22,7 @@ export class AgsMenu extends Gtk.Menu {
         onPopup = '',
         onMoveScroll = '',
         ...rest
-    }: { [key: string]: any }) {
+    }: Params = {}) {
         super(rest);
 
         if (children)
@@ -39,10 +45,7 @@ export class AgsMenu extends Gtk.Menu {
         if (!children)
             return;
 
-        children.forEach(w => {
-            if (w)
-                this.add(w);
-        });
+        children.forEach(w => w && this.add(w));
 
         const visible = this.visible;
         this.show_all();
@@ -74,16 +77,5 @@ export class AgsMenuItem extends Gtk.MenuItem {
         this.connect('activate', (...args) => runCmd(this.onActivate, ...args));
         this.connect('select', (...args) => runCmd(this.onSelect, ...args));
         this.connect('deselect', (...args) => runCmd(this.onDeselect, ...args));
-    }
-
-    // @ts-ignore
-    get child() { return this.get_child(); }
-    set child(child: Gtk.Widget) {
-        const widget = this.get_child();
-        if (widget)
-            widget.destroy();
-
-        if (child)
-            this.add(child);
     }
 }

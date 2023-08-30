@@ -5,6 +5,17 @@ import App from '../app.js';
 
 const { GtkLayerShell } = imports.gi;
 
+interface Params {
+    anchor?: string[] | string
+    exclusive?: boolean
+    focusable?: boolean
+    layer?: string
+    margin?: number[] | number
+    monitor?: null | Gdk.Monitor | number
+    popup?: boolean
+    visible?: null | boolean
+}
+
 export default class AgsWindow extends Gtk.Window {
     static {
         GObject.registerClass({ GTypeName: 'AgsWindow' }, this);
@@ -20,7 +31,7 @@ export default class AgsWindow extends Gtk.Window {
         popup = false,
         visible = null,
         ...params
-    }: any) {
+    }: Params = {}) {
         super(params);
         GtkLayerShell.init_for_window(this);
         GtkLayerShell.set_namespace(this, this.name);
@@ -168,16 +179,5 @@ export default class AgsWindow extends Gtk.Window {
         GtkLayerShell.set_keyboard_mode(
             this, GtkLayerShell.KeyboardMode[focusable ? 'ON_DEMAND' : 'NONE'],
         );
-    }
-
-    // @ts-ignore
-    get child() { return this.get_child(); }
-    set child(child: Gtk.Widget) {
-        const widget = this.get_child();
-        if (widget)
-            widget.destroy();
-
-        if (child)
-            this.add(child);
     }
 }

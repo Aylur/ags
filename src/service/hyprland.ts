@@ -27,13 +27,16 @@ class HyprlandService extends Service {
         });
     }
 
-    _active: Active;
-    _monitors: Map<number, object>;
-    _workspaces: Map<number, object>;
-    _clients: Map<string, object>;
+    private _active: Active;
+    private _monitors: Map<number, object>;
+    private _workspaces: Map<number, object>;
+    private _clients: Map<string, object>;
+    private _decoder = new TextDecoder();
 
-    _decoder = new TextDecoder();
-    _socketStream = new Gio.DataInputStream;
+    get active() { return this._active; }
+    get monitors() { return this._monitors; }
+    get workspaces() { return this._workspaces; }
+    get clients() { return this._clients; }
 
     constructor() {
         if (!HIS)
@@ -59,7 +62,7 @@ class HyprlandService extends Service {
         this._syncWorkspaces();
         this._syncClients();
 
-        this.watchSocket(new Gio.DataInputStream({
+        this._watchSocket(new Gio.DataInputStream({
             close_base_stream: true,
             base_stream: new Gio.SocketClient()
                 .connect(new Gio.UnixSocketAddress({
@@ -69,7 +72,7 @@ class HyprlandService extends Service {
         }));
     }
 
-    watchSocket(stream: Gio.DataInputStream) {
+    private _watchSocket(stream: Gio.DataInputStream) {
         stream.read_line_async(
             0, null,
             (stream, result) => {
@@ -80,17 +83,25 @@ class HyprlandService extends Service {
 
                 const [line] = stream.read_line_finish(result);
                 this._onEvent(this._decoder.decode(line));
-                this.watchSocket(stream);
+                this._watchSocket(stream);
             });
     }
 
-    async _syncMonitors() {
+    private async _syncMonitors() {
         try {
             const monitors = await execAsync('hyprctl -j monitors');
             this._monitors = new Map();
-            const json = JSON.parse(monitors) as { [key: string]: any }[];
+            const json = JSON.parse(monitors) as {
+                id: number
+                name: string
+                focused: boolean
+                activeWorkspace: {
+                    id: number
+                    name: string
+                }
+            }[];
             json.forEach(monitor => {
-                this._monitors.set(monitor.name, monitor);
+                this._monitors.set(monitor.id, monitor);
                 if (monitor.focused) {
                     this._active.monitor = monitor.name;
                     this._active.workspace = monitor.activeWorkspace;
@@ -101,11 +112,11 @@ class HyprlandService extends Service {
         }
     }
 
-    async _syncWorkspaces() {
+    private async _syncWorkspaces() {
         try {
             const workspaces = await execAsync('hyprctl -j workspaces');
             this._workspaces = new Map();
-            const json = JSON.parse(workspaces) as { [key: string]: any }[];
+            const json = JSON.parse(workspaces) as { id: number }[];
             json.forEach(ws => {
                 this._workspaces.set(ws.id, ws);
             });
@@ -114,21 +125,21 @@ class HyprlandService extends Service {
         }
     }
 
-    async _syncClients() {
+    private async _syncClients() {
         try {
             const clients = await execAsync('hyprctl -j clients');
             this._clients = new Map();
-            const json = JSON.parse(clients) as { [key: string]: any }[];
+            const json = JSON.parse(clients) as { address: string }[];
             json.forEach(client => {
                 this._clients.set(
-                    (client.address as string).substring(2), client);
+                    client.address.substring(2), client);
             });
         } catch (error) {
             logError(error as Error);
         }
     }
 
-    async _onEvent(event: string) {
+    private async _onEvent(event: string) {
         if (!event)
             return;
 
@@ -219,10 +230,10 @@ export default class Hyprland {
         return Hyprland._instance;
     }
 
-    static get active() { return Hyprland.instance._active; }
-    static get monitors() { return Hyprland.instance._monitors; }
-    static get workspaces() { return Hyprland.instance._workspaces; }
-    static get clients() { return Hyprland.instance._clients; }
+    static get active() { return Hyprland.instance.active; }
+    static get monitors() { return Hyprland.instance.monitors; }
+    static get workspaces() { return Hyprland.instance.workspaces; }
+    static get clients() { return Hyprland.instance.clients; }
 
     static HyprctlGet(cmd: string): unknown | object {
         const [success, out, err] =

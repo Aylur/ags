@@ -4,6 +4,10 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import { timeout, connect } from './utils.js';
+import { loadInterfaceXML } from './utils.js';
+
+const AgsIFace = (bus: string) =>
+    loadInterfaceXML('com.github.Aylur.ags')?.replace('@BUS@', bus);
 
 interface Config {
     windows?: Gtk.Window[]
@@ -24,17 +28,18 @@ export default class App extends Gtk.Application {
         }, this);
     }
 
+    private _dbus!: Gio.DBusExportedObject;
     private _windows: Map<string, Gtk.Window>;
     private _closeDelay!: { [key: string]: number };
     private _cssProviders: Gtk.CssProvider[] = [];
-    private _clientActionGroup: Gio.DBusActionGroup;
+    private _busName: string;
+    private _objectPath: string;
 
     static configPath: string;
     static configDir: string;
     static config: Config;
     static instance: App;
 
-    // eslint-disable-next-line max-len
     static removeWindow(w: Gtk.Window | string) { App.instance.removeWindow(w); }
     static addWindow(w: Gtk.Window) { App.instance.addWindow(w); }
     static get windows() { return App.instance._windows; }
@@ -83,9 +88,9 @@ export default class App extends Gtk.Application {
             flags: Gio.ApplicationFlags.DEFAULT_FLAGS,
         });
 
+        this._busName = bus;
+        this._objectPath = path;
         this._windows = new Map();
-        this._clientActionGroup = Gio.DBusActionGroup
-            .get(Gio.DBus.session, bus + '.client', path + '/client');
 
         const dir = configPath.split('/');
         dir.pop();
@@ -96,6 +101,7 @@ export default class App extends Gtk.Application {
 
     connectWidget(
         widget: Gtk.Widget,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         callback: (widget: Gtk.Widget, ...args: any[]) => void,
         event = 'window-toggled',
     ) {
@@ -104,8 +110,8 @@ export default class App extends Gtk.Application {
 
     vfunc_activate() {
         this.hold();
+        this._register();
         this._load();
-        this._exportActions();
     }
 
     toggleWindow(name: string) {
@@ -175,7 +181,7 @@ export default class App extends Gtk.Application {
         this._windows.set(w.name, w);
     }
 
-    async _load() {
+    private async _load() {
         try {
             const mod = await import(`file://${App.configPath}`);
             const config = mod.default as Config;
@@ -207,51 +213,49 @@ export default class App extends Gtk.Application {
         }
     }
 
-    _runJs(js: string) {
-        return new Promise((resolve, reject) => {
-            js.includes('\n') || js.includes(';')
-                ? Function('resolve', 'reject', js)(resolve, reject)
-                : resolve(`${Function('return ' + js)()}` || '');
-        });
+    private _register() {
+        Gio.bus_own_name(
+            Gio.BusType.SESSION,
+            this._busName,
+            Gio.BusNameOwnerFlags.NONE,
+            (connection: Gio.DBusConnection) => {
+                this._dbus = Gio.DBusExportedObject
+                    .wrapJSObject(AgsIFace(this._busName) as string, this);
+
+                this._dbus.export(connection, this._objectPath);
+            },
+            null,
+            null,
+        );
     }
 
-    _addAction(
-        name: string,
-        callback: (_source: Gio.SimpleAction, _param: GLib.Variant) => void,
-        parameter_type?: GLib.VariantType,
-    ) {
-        const action = parameter_type
-            ? new Gio.SimpleAction({ name, parameter_type })
-            : new Gio.SimpleAction({ name });
-        action.connect('activate', callback);
-        this.add_action(action);
+    RunJs(js: string): string {
+        return js.includes(';')
+            ? `${Function('return ' + js)()}`
+            : `${Function(js)()}`;
     }
 
-    _exportActions() {
-        this._addAction('inspector', () => {
-            Gtk.Window.set_interactive_debugging(true);
-        });
-
-        this._addAction('quit', () => {
-            this.quit();
-        });
-
-        this._addAction('toggle-window', (_, arg) => {
-            const err = this.toggleWindow(arg.unpack() as string);
-            this._clientActionGroup.activate_action('print',
-                new GLib.Variant('s', err || ''));
-        }, new GLib.VariantType('s'));
-
-        this._addAction('run-js', (_, arg) => {
-            this._runJs(arg.unpack() as string)
-                .then(res => {
-                    this._clientActionGroup.activate_action('print',
-                        new GLib.Variant('s', `${res}` || ''));
-                })
-                .catch(rej => {
-                    this._clientActionGroup.activate_action('print',
-                        new GLib.Variant('s', `${rej}` || ''));
-                });
-        }, new GLib.VariantType('s'));
+    RunPromise(js: string, busName?: string, objPath?: string) {
+        new Promise((res, rej) => Function('resolve', 'reject', js)(res, rej))
+            .then(out => {
+                if (busName && objPath) {
+                    Gio.DBus.session.call(
+                        busName, objPath, busName, 'Print',
+                        new GLib.Variant('(s)', [`${out}`]),
+                        null, Gio.DBusCallFlags.NONE, -1, null, null,
+                    );
+                }
+                else { print(`${out}`); }
+            })
+            .catch(logError);
     }
+
+    ToggleWindow(name: string) {
+        this.toggleWindow(name);
+        return `${this.getWindow(name)?.visible}`;
+    }
+
+    Inspector() { Gtk.Window.set_interactive_debugging(true); }
+
+    Quit() { this.quit(); }
 }
