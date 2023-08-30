@@ -15,7 +15,7 @@ const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem');
 const StatusNotifierItemProxy =
     Gio.DBusProxy.makeProxyWrapper(StatusNotifierItemIFace) as StatusNotifierItemProxy;
 
-class TrayIcon extends Service {
+export class TrayIcon extends Service {
     static {
         Service.register(this, {
             'removed': ['string'],
@@ -23,11 +23,6 @@ class TrayIcon extends Service {
     }
 
     private _proxy: StatusNotifierItemProxy;
-    private _dbusMenusClient!: Dbusmenu.Client;
-
-    busName: string;
-    objectPath: string;
-    menu?: AgsMenu;
 
     constructor(busName: string, objectPath: string) {
         super();
@@ -53,6 +48,11 @@ class TrayIcon extends Service {
             ? this.menu.popup_at_pointer(event)
             : this._proxy.ContextMenuAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
     }
+
+    dbusMenusClient!: Dbusmenu.Client;
+    busName: string;
+    objectPath: string;
+    menu?: AgsMenu;
 
     get category() { return this._proxy.Category; }
     get id() { return this._proxy.Id; }
@@ -93,7 +93,7 @@ class TrayIcon extends Service {
         }
 
         if (proxy.Menu)
-            this._dbusMenusClient = this._createMenuClient(proxy);
+            this._createMenuClient(proxy);
 
         bulkConnect(proxy, [
             ['g-signal', () => {
@@ -134,39 +134,41 @@ class TrayIcon extends Service {
         this._proxy.set_cached_property(propertyName, value);
         if (propertyName === 'Menu' && this._proxy.Menu !== value.unpack()) {
             // new menu path, construct new proxy
-            this._dbusMenusClient = this._createMenuClient(this._proxy);
+            this._createMenuClient(this._proxy);
         }
     }
 
     private _createMenuClient(item: StatusNotifierItemProxy) {
-        const client = new Dbusmenu.Client({
+        this.dbusMenusClient = new Dbusmenu.Client({
             dbus_name: item.g_name_owner, dbus_object: item.Menu,
         });
-        client.connect('layout-updated', (client: Dbusmenu.Client) => {
-            if (!this.menu) {
-                this.menu = new AgsMenu({
-                    children: this._createRootMenu(client, client.get_root()),
-                });
-            }
+        this.dbusMenusClient.connect('layout-updated', () => {
+            this._createMenuWidget();
         });
-        return client;
     }
 
-    private _createRootMenu(client: Dbusmenu.Client, dbusMenuItem: Dbusmenu.Menuitem) {
+    private _createMenuWidget() {
+        if (this.menu)
+            return;
+
+        this.menu = new AgsMenu();
+
+        const dbusMenuItem = this.dbusMenusClient.get_root();
         if (!dbusMenuItem || dbusMenuItem.property_get('children-display') !== 'submenu')
-            return [];
+            return;
 
-        return dbusMenuItem.get_children().map(item => this._createItem(client, item));
+        this.menu.children = dbusMenuItem.get_children()
+            .map(item => this._createItem(item));
     }
 
-    private _createItem(client: Dbusmenu.Client, dbusMenuItem: Dbusmenu.Menuitem): Gtk.MenuItem {
+    private _createItem(dbusMenuItem: Dbusmenu.Menuitem): Gtk.MenuItem {
         if (dbusMenuItem.property_get('children-display') === 'submenu') {
             return new AgsMenuItem({
                 child: new AgsLabel(dbusMenuItem.property_get('label') || ''),
                 useUnderline: true,
                 submenu: new AgsMenu({
                     children: dbusMenuItem.get_children().map(item =>
-                        this._createItem(client, item)),
+                        this._createItem(item)),
                 }),
             });
         }
