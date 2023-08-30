@@ -6,37 +6,26 @@ import { Context } from 'gi-types/cairo1';
 
 export default class AgsIcon extends Gtk.Image {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsIcon',
-            Properties: {
-                'size': GObject.ParamSpec.int(
-                    'size', 'Size', 'Size',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    0, 1024, 0,
-                ),
-            },
-        }, this);
+        GObject.registerClass({ GTypeName: 'AgsIcon' }, this);
     }
 
-    constructor(params: object | string) {
+    constructor(params: object | string | GdkPixbuf.Pixbuf) {
         const {
             icon = '',
             size = 0,
+            ...rest
         } = params as { icon: string | GdkPixbuf.Pixbuf, size: number };
-        super(typeof params === 'string' ? {} : params);
+        super(typeof params === 'string' || params instanceof GdkPixbuf.Pixbuf ? {} : rest);
 
-        // set correct size after construct
-        if (typeof params === 'object') {
-            this.size = size;
-            this.icon = icon;
-        }
+        this.size = size;
+        this.icon = typeof params === 'string' || params instanceof GdkPixbuf.Pixbuf
+            ? params : icon;
     }
 
     _size = 0;
     _previousSize = 0;
     get size() { return this._size || this._previousSize || 13; }
     set size(size: number) {
-        size ||= 0;
         this._size = size;
         this.queue_draw();
     }
