@@ -45,10 +45,10 @@ OPTIONS:
 EXAMPLES
     ags --config $HOME/.config/ags/main.js --bus-name second-instance
     ags --run-js "ags.Service.Mpris.getPlayer()?.name"
-    ags --run-js "ags.Utils.timeout(1000, () => {
+    ags --run-promise "ags.Utils.timeout(1000, () => {
         resolve('a second later');
     })"
-    ags --toggle-window "window-name"`;
+    ags --toggle-window window-name`;
 
 function isRunning(dbusName: string) {
     return Gio.DBus.session.call_sync(
