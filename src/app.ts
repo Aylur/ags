@@ -231,8 +231,8 @@ export default class App extends Gtk.Application {
 
     RunJs(js: string): string {
         return js.includes(';')
-            ? `${Function('return ' + js)()}`
-            : `${Function(js)()}`;
+            ? `${Function(js)()}`
+            : `${Function('return ' + js)()}`;
     }
 
     RunPromise(js: string, busName?: string, objPath?: string) {
