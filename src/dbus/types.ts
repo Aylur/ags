@@ -47,9 +47,12 @@ export interface BatteryProxy extends Gio.DBusProxy {
 
 export interface AgsProxy extends Gio.DBusProxy {
     new(...args: unknown[]): AgsProxy
-    Inspector: () => void;
-    ToggleWindow: (name: string) => boolean;
-    Quit: () => void;
-    RunJs: (js: string) => string;
-    RunJsAsync: (js: string) => string;
+    InspectorRemote: () => void;
+    QuitRemote: () => void;
+    ToggleWindowSync: (name: string) => boolean;
+    RunJsSync: (js: string) => string;
+    RunPromiseRemote: (
+        js: string,
+        busName?: string,
+        objPath?: string) => void
 }

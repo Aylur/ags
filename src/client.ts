@@ -1,6 +1,7 @@
 import Gtk from 'gi://Gtk?version=3.0';
 import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import { loadInterfaceXML } from './utils.js';
 import { type AgsProxy } from './dbus/types.js';
 
@@ -9,6 +10,8 @@ const AgsIFace = (bus: string) =>
 
 const ClientIFace = (bus: string) =>
     loadInterfaceXML('com.github.Aylur.ags.client')?.replace('@BUS@', bus);
+
+const TIME = `${GLib.DateTime.new_now_local().to_unix()}`;
 
 interface Flags {
     busName: string
@@ -22,18 +25,18 @@ interface Flags {
 class Client extends Gtk.Application {
     static { GObject.registerClass(this); }
 
-    private _path: string;
+    private _objectPath: string;
     private _dbus!: Gio.DBusExportedObject;
     private _proxy: AgsProxy;
     private _promiseJs: string;
 
     constructor(bus: string, path: string, proxy: AgsProxy, js: string) {
         super({
-            application_id: bus + '.client',
+            application_id: bus + '.client' + TIME,
             flags: Gio.ApplicationFlags.DEFAULT_FLAGS,
         });
 
-        this._path = path + '/client';
+        this._objectPath = path + '/client' + TIME;
         this._proxy = proxy;
         this._promiseJs = js;
     }
@@ -47,7 +50,7 @@ class Client extends Gtk.Application {
                 this._dbus = Gio.DBusExportedObject
                     .wrapJSObject(ClientIFace(this.applicationId) as string, this);
 
-                this._dbus.export(connection, this._path);
+                this._dbus.export(connection, this._objectPath);
             },
             null,
             null,
@@ -63,7 +66,11 @@ class Client extends Gtk.Application {
     vfunc_activate(): void {
         this.hold();
         this._register();
-        this._proxy.RunPromiseRemote(this._promiseJs, this.applicationId, this._path);
+        this._proxy.RunPromiseRemote(
+            this._promiseJs,
+            this.applicationId,
+            this._objectPath,
+        );
     }
 }
 
@@ -81,7 +88,7 @@ export default function(bus: string, path: string, flags: Flags) {
         proxy.InspectorRemote();
 
     else if (flags.quit)
-        proxy.Quit();
+        proxy.QuitRemote();
 
     else if (flags.runPromise)
         return new Client(bus, path, proxy, flags.runPromise).run(null);
