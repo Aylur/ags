@@ -1,7 +1,7 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
-import { EventButton, EventScroll } from 'gi-types/gdk3';
+import { EventButton, EventKey, EventScroll } from 'gi-types/gdk3';
 import { Command } from './shared.js';
 
 interface Params {
@@ -103,6 +103,16 @@ export default class AgsSlider extends Gtk.Scale {
     vfunc_button_press_event(event: EventButton): boolean {
         this.dragging = true;
         return super.vfunc_button_press_event(event);
+    }
+
+    vfunc_key_press_event(event: EventKey): boolean {
+        this.dragging = true;
+        return super.vfunc_key_press_event(event);
+    }
+
+    vfunc_key_release_event(event: EventKey): boolean {
+        this.dragging = false;
+        return super.vfunc_key_release_event(event);
     }
 
     vfunc_scroll_event(event: EventScroll): boolean {
