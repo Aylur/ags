@@ -143,11 +143,14 @@ export class TrayIcon extends Service {
             dbus_name: item.g_name_owner, dbus_object: item.Menu,
         });
         this.dbusMenusClient.connect('layout-updated', () => {
-            this._createMenuWidget();
+            if (!this.menu)
+                this.menu = new AgsMenu();
+
+            this._populateMenu();
         });
     }
 
-    private _createMenuWidget() {
+    private _populateMenu() {
         if (!this.menu)
             this.menu = new AgsMenu();
 
