@@ -35,6 +35,7 @@ export default class AgsEventBox extends Gtk.EventBox {
     } = {}) {
         super(params);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
+        this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
 
         this.onPrimaryClick = onPrimaryClick;
         this.onSecondaryClick = onSecondaryClick;
@@ -82,11 +83,9 @@ export default class AgsEventBox extends Gtk.EventBox {
         });
 
         this.connect('scroll-event', (box, event) => {
-            if (event.get_scroll_direction()[1] ===
-                Gdk.ScrollDirection.UP)
+            if (event.get_scroll_deltas()[2] < 0)
                 return runCmd(this.onScrollUp, box, event);
-            else if (event.get_scroll_direction()[1] ===
-                Gdk.ScrollDirection.DOWN)
+            else if (event.get_scroll_deltas()[2] > 0)
                 return runCmd(this.onScrollDown, box, event);
         });
     }
