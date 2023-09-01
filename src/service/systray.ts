@@ -148,10 +148,8 @@ export class TrayIcon extends Service {
     }
 
     private _createMenuWidget() {
-        if (this.menu)
-            return;
-
-        this.menu = new AgsMenu();
+        if (!this.menu)
+            this.menu = new AgsMenu();
 
         const dbusMenuItem = this.dbusMenusClient.get_root();
         if (!dbusMenuItem || dbusMenuItem.property_get('children-display') !== 'submenu')
