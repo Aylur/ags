@@ -19,7 +19,7 @@ export class TrayItem extends Service {
     static {
         Service.register(this, {
             'removed': ['string'],
-            'layout-changed': [],
+            'layout-changed': ['string'],
         });
     }
 
@@ -149,7 +149,7 @@ export class TrayItem extends Service {
             if (!dbusMenuItem || dbusMenuItem.property_get('children-display') !== 'submenu')
                 return;
 
-            this.emit('layout-changed');
+            this.emit('layout-changed', this.busName);
             this.menu.children = dbusMenuItem.get_children()
                 .map(item => this._createItem(item));
         });
