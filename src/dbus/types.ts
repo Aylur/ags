@@ -2,23 +2,12 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 
-interface Proxy {
-    g_name_owner: string
-    connect: (event: string, callback: (...args: unknown[]) => void) => number
-    disconnect: (id: number) => void
-    disconnectSignal: (id: number) => void
-    connectSignal: (
-        event: string,
-        callback: (proxy: string, nameOwner: string, args: string[]) => void
-    ) => void
-}
-
-export interface DBusProxy extends Proxy {
+export interface DBusProxy extends Gio.DBusProxy {
     new(...args: unknown[]): DBusProxy
     ListNamesRemote: (callback: (names: string[][]) => void) => void
 }
 
-export interface PlayerProxy extends Proxy {
+export interface PlayerProxy extends Gio.DBusProxy {
     new(...args: unknown[]): PlayerProxy
     CanControl: boolean
     CanGoNext: boolean
@@ -39,7 +28,7 @@ export interface PlayerProxy extends Proxy {
     PlayAsync: () => Promise<void>
 }
 
-export interface MprisProxy extends Proxy {
+export interface MprisProxy extends Gio.DBusProxy {
     new(...args: unknown[]): MprisProxy
     Raise: () => void
     Quit: () => void
@@ -49,7 +38,7 @@ export interface MprisProxy extends Proxy {
     DesktopEntry: string
 }
 
-export interface BatteryProxy extends Proxy {
+export interface BatteryProxy extends Gio.DBusProxy {
     new(...args: unknown[]): BatteryProxy
     State: number
     Percentage: number
@@ -77,3 +66,14 @@ export interface StatusNotifierItemProxy extends Gio.DBusProxy {
     ScrollAsync: (delta: number, orientation: string) => Promise<void>;
 }
 
+export interface AgsProxy extends Gio.DBusProxy {
+    new(...args: unknown[]): AgsProxy
+    InspectorRemote: () => void;
+    QuitRemote: () => void;
+    ToggleWindowSync: (name: string) => boolean;
+    RunJsSync: (js: string) => string;
+    RunPromiseRemote: (
+        js: string,
+        busName?: string,
+        objPath?: string) => void
+}

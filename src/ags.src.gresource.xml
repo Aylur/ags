@@ -3,6 +3,7 @@
   <gresource prefix="/com/github/Aylur/ags">
     <file>main.js</file>
     <file>app.js</file>
+    <file>client.js</file>
     <file>utils.js</file>
     <file>widget.js</file>
 
@@ -36,6 +37,8 @@
     <file>service/systemtray.js</file>
 
     <file>dbus/types.js</file>
+    <file>dbus/com.github.Aylur.ags.xml</file>
+    <file>dbus/com.github.Aylur.ags.client.xml</file>
     <file>dbus/org.freedesktop.DBus.xml</file>
     <file>dbus/org.freedesktop.Notifications.xml</file>
     <file>dbus/org.freedesktop.UPower.Device.xml</file>
