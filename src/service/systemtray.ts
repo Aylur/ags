@@ -15,7 +15,7 @@ const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem');
 const StatusNotifierItemProxy =
     Gio.DBusProxy.makeProxyWrapper(StatusNotifierItemIFace) as StatusNotifierItemProxy;
 
-export class TrayIcon extends Service {
+export class TrayItem extends Service {
     static {
         Service.register(this, {
             'removed': ['string'],
@@ -220,7 +220,7 @@ class SystemTrayService extends Service {
     }
 
     private _dbus!: Gio.DBusExportedObject;
-    private _items: Map<string, TrayIcon>;
+    private _items: Map<string, TrayItem>;
 
     get IsStatusNotifierHostRegistered() { return true; }
     get ProtocolVersion() { return 0; }
@@ -264,7 +264,7 @@ class SystemTrayService extends Service {
 
         invocation.return_value(null);
 
-        const trayIcon = new TrayIcon(busName, objectPath);
+        const trayIcon = new TrayItem(busName, objectPath);
         this._items.set(busName, trayIcon);
 
         this._dbus.emit_signal(
