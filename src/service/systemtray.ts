@@ -18,6 +18,7 @@ export class TrayItem extends Service {
     static {
         Service.register(this, {
             'removed': ['string'],
+            'ready': [],
         });
     }
 
@@ -32,32 +33,12 @@ export class TrayItem extends Service {
         this._busName = busName;
 
         this._proxy = new StatusNotifierItemProxy(
-            Gio.DBus.session, busName, objectPath);
-
-        if (this._proxy.Menu) {
-            const menu = Widget({
-                // @ts-expect-error
-                type: DbusmenuGtk3.Menu,
-                dbus_name: this._proxy.g_name_owner,
-                dbus_object: this._proxy.Menu,
-            });
-            this.menu = (menu as unknown) as DbusmenuGtk3.Menu;
-        }
-
-        bulkConnect(this._proxy, [
-            ['notify::g-name-owner', () => {
-                if (!this._proxy.g_name_owner)
-                    this.emit('removed', this._busName);
-            }],
-            ['g-signal', () => {
-                this._refreshAllProperties();
-                this.emit('changed');
-            }],
-            ['g-properties-changed', () => this.emit('changed')],
-        ]);
-
-        ['Title', 'Icon', 'AttentionIcon', 'OverlayIcon', 'ToolTip', 'Status']
-            .forEach(prop => this._proxy.connectSignal(`New${prop}`, () => this.emit('changed')));
+            Gio.DBus.session,
+            busName,
+            objectPath,
+            this._itemProxyAcquired.bind(this),
+            null,
+            Gio.DBusProxyFlags.NONE);
     }
 
     activate(event: Gdk.Event) {
@@ -105,6 +86,35 @@ export class TrayItem extends Service {
         }
 
         return icon || 'image-missing';
+    }
+
+    private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
+        if (proxy.Menu) {
+            const menu = Widget({
+                // @ts-expect-error
+                type: DbusmenuGtk3.Menu,
+                dbus_name: proxy.g_name_owner,
+                dbus_object: proxy.Menu,
+            });
+            this.menu = (menu as unknown) as DbusmenuGtk3.Menu;
+        }
+
+        bulkConnect(proxy, [
+            ['notify::g-name-owner', () => {
+                if (!proxy.g_name_owner)
+                    this.emit('removed', this._busName);
+            }],
+            ['g-signal', () => {
+                this._refreshAllProperties();
+                this.emit('changed');
+            }],
+            ['g-properties-changed', () => this.emit('changed')],
+        ]);
+
+        ['Title', 'Icon', 'AttentionIcon', 'OverlayIcon', 'ToolTip', 'Status']
+            .forEach(prop => proxy.connectSignal(`New${prop}`, () => this.emit('changed')));
+
+        this.emit('ready');
     }
 
     private _refreshAllProperties() {
@@ -206,17 +216,17 @@ class SystemTrayService extends Service {
 
         invocation.return_value(null);
 
-        const trayIcon = new TrayItem(busName, objectPath);
-        this._items.set(busName, trayIcon);
-
-        this._dbus.emit_signal(
-            'StatusNotifierItemRegistered',
-            new GLib.Variant('(s)', [busName + objectPath]),
-        );
-        this.emit('added', busName);
-        this.emit('changed');
-
-        trayIcon.connect('removed', () => {
+        const item = new TrayItem(busName, objectPath);
+        item.connect('ready', () => {
+            this._items.set(busName, item);
+            this.emit('added', busName);
+            this.emit('changed');
+            this._dbus.emit_signal(
+                'StatusNotifierItemRegistered',
+                new GLib.Variant('(s)', [busName + objectPath]),
+            );
+        });
+        item.connect('removed', () => {
             this._items.delete(busName);
             this.emit('removed', busName);
             this.emit('changed');
