@@ -53,7 +53,7 @@ export default class AgsSlider extends Gtk.Scale {
         this.onChange = onChange;
 
         this.adjustment.connect('notify::value', ({ value }, event) => {
-            if (!this._dragging)
+            if (!this.dragging)
                 return;
 
             typeof this.onChange === 'function'
@@ -67,7 +67,7 @@ export default class AgsSlider extends Gtk.Scale {
 
     get value() { return this.adjustment.value; }
     set value(value: number) {
-        if (this._dragging)
+        if (this.dragging)
             return;
 
         this.adjustment.value = value;
