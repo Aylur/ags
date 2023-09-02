@@ -48,7 +48,10 @@ export class TrayItem extends Service {
                 if (!this._proxy.g_name_owner)
                     this.emit('removed', this._busName);
             }],
-            ['g-signal', () => this.emit('changed')],
+            ['g-signal', () => {
+                this._refreshAllProperties();
+                this.emit('changed');
+            }],
             ['g-properties-changed', () => this.emit('changed')],
         ]);
 
@@ -102,6 +105,24 @@ export class TrayItem extends Service {
         }
 
         return icon || 'image-missing';
+    }
+
+    private _refreshAllProperties() {
+        const variant = this._proxy.g_connection.call_sync(
+            this._proxy.g_name,
+            this._proxy.g_object_path,
+            'org.freedesktop.DBus.Properties',
+            'GetAll',
+            GLib.Variant.new('(s)', [this._proxy.g_interface_name]),
+            GLib.VariantType.new('(a{sv})'),
+            Gio.DBusCallFlags.NONE, -1,
+            null,
+        ) as GLib.Variant<'(a{sv})'>;
+
+        const [properties] = variant.deep_unpack();
+        Object.entries(properties).map(([propertyName, value]) => {
+            this._proxy.set_cached_property(propertyName, value);
+        });
     }
 
     private _getPixbuf(pixMapArray: [number, number, Uint8Array][]) {
