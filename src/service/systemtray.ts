@@ -1,16 +1,12 @@
 import Gio from 'gi://Gio';
-import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import Gdk from 'gi://Gdk?version=3.0';
 import GdkPixbuf from 'gi://GdkPixbuf';
-import Dbusmenu from 'gi://Dbusmenu';
+import DbusmenuGtk3 from 'gi://DbusmenuGtk3';
 import Service from './service.js';
 import { StatusNotifierItemProxy } from '../dbus/types.js';
-import { AgsMenu, AgsMenuItem } from '../widgets/menu.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
-import AgsLabel from '../widgets/label.js';
-import AgsBox from '../widgets/box.js';
-import AgsIcon from '../widgets/icon.js';
+import Widget from '../widget.js';
 
 const StatusNotifierWatcherIFace = loadInterfaceXML('org.kde.StatusNotifierWatcher');
 const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem');
@@ -21,28 +17,44 @@ export class TrayItem extends Service {
     static {
         Service.register(this, {
             'removed': ['string'],
-            'layout-changed': ['string'],
         });
     }
 
     private _proxy: StatusNotifierItemProxy;
+    private _busName: string;
+
+    menu?: DbusmenuGtk3.Menu;
 
     constructor(busName: string, objectPath: string) {
         super();
 
-        this.busName = busName;
-        this.objectPath = objectPath;
+        this._busName = busName;
 
         this._proxy = new StatusNotifierItemProxy(
-            Gio.DBus.session,
-            busName,
-            objectPath,
-            this._itemProxyAcquired.bind(this),
-            null,
-            Gio.DBusProxyFlags.NONE);
-    }
+            Gio.DBus.session, busName, objectPath);
 
-    menu = new AgsMenu();
+        if (this._proxy.Menu) {
+            const menu = Widget({
+                // @ts-expect-error
+                type: DbusmenuGtk3.Menu,
+                dbus_name: this._proxy.g_name_owner,
+                dbus_object: this._proxy.Menu,
+            });
+            this.menu = (menu as unknown) as DbusmenuGtk3.Menu;
+        }
+
+        bulkConnect(this._proxy, [
+            ['notify::g-name-owner', () => {
+                if (!this._proxy.g_name_owner)
+                    this.emit('removed', this._busName);
+            }],
+            ['g-signal', () => this.emit('changed')],
+            ['g-properties-changed', () => this.emit('changed')],
+        ]);
+
+        ['Title', 'Icon', 'AttentionIcon', 'OverlayIcon', 'ToolTip', 'Status']
+            .forEach(prop => this._proxy.connectSignal(`New${prop}`, () => this.emit('changed')));
+    }
 
     activate(event: Gdk.Event) {
         this._proxy.ActivateAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
@@ -55,12 +67,9 @@ export class TrayItem extends Service {
     openMenu(event: Gdk.Event) {
         this._proxy.ItemIsMenu
             ? this._proxy.ContextMenuAsync(event.get_root_coords()[1], event.get_root_coords()[2])
-            : this.menu.popup_at_pointer(event);
+            // @ts-expect-error
+            : this.menu?.popup_at_pointer(event);
     }
-
-    menuClient!: Dbusmenu.Client;
-    busName: string;
-    objectPath: string;
 
     get category() { return this._proxy.Category; }
     get id() { return this._proxy.Id; }
@@ -93,120 +102,6 @@ export class TrayItem extends Service {
         }
 
         return icon || 'image-missing';
-    }
-
-    private _itemProxyAcquired(proxy: StatusNotifierItemProxy, error: Error) {
-        if (error) {
-            logError(error as Error);
-            return;
-        }
-
-        if (proxy.Menu)
-            this._createMenuClient();
-
-        bulkConnect(proxy, [
-            ['g-signal', () => {
-                this._refreshAllProperties();
-                this.emit('changed');
-            }],
-            ['notify::g-name-owner', () => {
-                if (!proxy.g_name_owner)
-                    this.emit('removed', this.busName);
-            }],
-            ['g-properties-changed', () => this.emit('changed')],
-        ]);
-
-        ['Title', 'Icon', 'AttentionIcon', 'OverlayIcon', 'ToolTip', 'Status']
-            .forEach(prop => proxy.connectSignal(`New${prop}`, () => this.emit('changed')));
-
-        this.emit('changed');
-    }
-
-    private _refreshAllProperties() {
-        const variant = this._proxy.g_connection.call_sync(
-            this._proxy.g_name,
-            this._proxy.g_object_path,
-            'org.freedesktop.DBus.Properties',
-            'GetAll',
-            GLib.Variant.new('(s)', [this._proxy.g_interface_name]),
-            GLib.VariantType.new('(a{sv})'),
-            Gio.DBusCallFlags.NONE, -1,
-            null,
-        ) as GLib.Variant<'(a{sv})'>;
-
-        const [properties] = variant.deep_unpack();
-
-        Object.entries(properties).map(([propertyName, value]) => {
-            this._updateProperty(propertyName, value);
-        });
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _updateProperty(propertyName: string, value: GLib.Variant<any>) {
-        this._proxy.set_cached_property(propertyName, value);
-        if (propertyName === 'Menu' && this._proxy.Menu !== value.unpack()) {
-            // new menu path, construct new proxy
-            this._createMenuClient();
-        }
-    }
-
-    private _createMenuClient() {
-        this.menuClient = new Dbusmenu.Client({
-            dbus_name: this._proxy.g_name_owner, dbus_object: this._proxy.Menu,
-        });
-        this.menuClient.connect('layout-updated', () => {
-            const dbusMenuItem = this.menuClient.get_root();
-            if (!dbusMenuItem || dbusMenuItem.property_get('children-display') !== 'submenu')
-                return;
-
-            this.emit('layout-changed', this.busName);
-            this.menu.children = dbusMenuItem.get_children()
-                .map(item => this._createItem(item));
-        });
-    }
-
-    private _createItem(dbusMenuItem: Dbusmenu.Menuitem): Gtk.MenuItem {
-        let content;
-        if (dbusMenuItem.property_get('icon-name')) {
-            content = new AgsBox({ children: [
-                new AgsIcon({ icon: dbusMenuItem.property_get('icon-name') }),
-                new AgsLabel({
-                    label: dbusMenuItem.property_get('label') || '',
-                    useUnderline: true,
-                })],
-            });
-        }
-        else {
-            content = new AgsLabel({
-                label: dbusMenuItem.property_get('label') || '',
-                useUnderline: true,
-            });
-        }
-        if (dbusMenuItem.property_get('children-display') === 'submenu') {
-            return new AgsMenuItem({
-                child: content,
-                useUnderline: true,
-                submenu: new AgsMenu({
-                    children: dbusMenuItem.get_children().map(item =>
-                        this._createItem(item)),
-                }),
-            });
-        }
-        else if (dbusMenuItem.property_get('type') === 'separator') {
-            return new Gtk.SeparatorMenuItem();
-        }
-        else {
-            return new AgsMenuItem({
-                onActivate: () => dbusMenuItem.handle_event(
-                    'clicked',
-                    // @ts-ignore
-                    GLib.Variant.new('i', 0),
-                    Gtk.get_current_event_time(),
-                ),
-                child: content,
-                useUnderline: true,
-            });
-        }
     }
 
     private _getPixbuf(pixMapArray: [number, number, Uint8Array][]) {

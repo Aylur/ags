@@ -4,41 +4,41 @@ declare function log(msg: string, subsitutions?: any[]): void;
 declare function logError(err: Error, msg?: string): void;
 
 declare const pkg: {
-  version: string;
-  name: string;
+    version: string;
+    name: string;
 };
 
 declare const imports: {
-  config: any;
-  gi: any;
-  searchPath: string[];
+    config: any;
+    gi: any;
+    searchPath: string[];
 }
 
 declare module console {
-  export function error(obj: object, others?: object[]): void;
-  export function error(msg: string, subsitutions?: any[]): void;
+    export function error(obj: object, others?: object[]): void;
+    export function error(msg: string, subsitutions?: any[]): void;
 }
 
 declare interface String {
-  format(...replacements: string[]): string;
-  format(...replacements: number[]): string;
+    format(...replacements: string[]): string;
+    format(...replacements: number[]): string;
 }
 
 declare interface Number {
-  toFixed(digits: number): number;
+    toFixed(digits: number): number;
 }
 
 declare class TextDecoder {
-  constructor(label?: string, options?: TextDecoderOptions);
-  decode(input?: BufferSource, options?: TextDecodeOptions): string;
-  readonly encoding: string;
-  readonly fatal: boolean;
-  readonly ignoreBOM: boolean;
+    constructor(label?: string, options?: TextDecoderOptions);
+    decode(input?: BufferSource, options?: TextDecodeOptions): string;
+    readonly encoding: string;
+    readonly fatal: boolean;
+    readonly ignoreBOM: boolean;
 }
 
 declare class TextEncoder {
-  constructor();
-  encode(input?: string): Uint8Array;
+    constructor();
+    encode(input?: string): Uint8Array;
 }
 
 declare module 'gi://Gvc' {
@@ -51,7 +51,7 @@ declare module 'gi://NM' {
     export default NM10;
 }
 
-declare module 'gi://Dbusmenu' {
-  import Dbusmenu from '@girs/dbusmenu-0.4';
-  export default Dbusmenu;
+declare module 'gi://DbusmenuGtk3' {
+    import Dbusmenu from '@girs/dbusmenugtk3-0.4';
+    export default Dbusmenu;
 }
