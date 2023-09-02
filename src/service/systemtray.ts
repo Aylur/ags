@@ -51,9 +51,9 @@ export class TrayItem extends Service {
 
     scroll(event: Gdk.EventScroll) {
         const direction =
-            ( event.direction == 0 || event.direction == 1 ) ? 'vertical' : 'horizontal';
+            (event.direction == 0 || event.direction == 1) ? 'vertical' : 'horizontal';
         const delta =
-            ( event.direction == 0 || event.direction == 1 ) ? event.delta_y : event.delta_x;
+            (event.direction == 0 || event.direction == 1) ? event.delta_y : event.delta_x;
         this._proxy.ScrollAsync(delta, direction);
     }
 
@@ -265,3 +265,36 @@ export default class SystemTray {
     static get items() { return Array.from(SystemTray.instance.items.values()); }
     static getItem(name: string) { return SystemTray._instance.getItem(name); }
 }
+        
+            
+            
+                    
+                    
+                
+            
+            
+                    
+                    
+                
+            
+            
+        
+            
+                
+            
+            
+                
+            
+        
+                
+                
+            
+        
+
+
+
+
+ 
+                
+
+
