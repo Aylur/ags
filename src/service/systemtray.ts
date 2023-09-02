@@ -9,6 +9,8 @@ import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { AgsMenu, AgsMenuItem } from '../widgets/menu.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
 import AgsLabel from '../widgets/label.js';
+import AgsBox from '../widgets/box.js';
+import AgsIcon from '../widgets/icon.js';
 
 const StatusNotifierWatcherIFace = loadInterfaceXML('org.kde.StatusNotifierWatcher');
 const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem');
@@ -156,9 +158,25 @@ export class TrayItem extends Service {
     }
 
     private _createItem(dbusMenuItem: Dbusmenu.Menuitem): Gtk.MenuItem {
+        let content;
+        if (dbusMenuItem.property_get('icon-name')) {
+            content = new AgsBox({ children: [
+                new AgsIcon({ icon: dbusMenuItem.property_get('icon-name') }),
+                new AgsLabel({
+                    label: dbusMenuItem.property_get('label') || '',
+                    useUnderline: true,
+                })],
+            });
+        }
+        else {
+            content = new AgsLabel({
+                label: dbusMenuItem.property_get('label') || '',
+                useUnderline: true,
+            });
+        }
         if (dbusMenuItem.property_get('children-display') === 'submenu') {
             return new AgsMenuItem({
-                child: new AgsLabel(dbusMenuItem.property_get('label') || ''),
+                child: content,
                 useUnderline: true,
                 submenu: new AgsMenu({
                     children: dbusMenuItem.get_children().map(item =>
@@ -177,7 +195,7 @@ export class TrayItem extends Service {
                     GLib.Variant.new('i', 0),
                     Gtk.get_current_event_time(),
                 ),
-                child: new AgsLabel(dbusMenuItem.property_get('label') || ''),
+                child: content,
                 useUnderline: true,
             });
         }
