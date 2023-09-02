@@ -19,6 +19,7 @@ export class TrayIcon extends Service {
     static {
         Service.register(this, {
             'removed': ['string'],
+            'layout-changed': [],
         });
     }
 
@@ -39,6 +40,8 @@ export class TrayIcon extends Service {
             Gio.DBusProxyFlags.NONE);
     }
 
+    menu = new AgsMenu();
+
     activate(event: Gdk.Event) {
         this._proxy.ActivateAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
     }
@@ -52,7 +55,6 @@ export class TrayIcon extends Service {
     dbusMenusClient!: Dbusmenu.Client;
     busName: string;
     objectPath: string;
-    menu?: AgsMenu;
 
     get category() { return this._proxy.Category; }
     get id() { return this._proxy.Id; }
@@ -143,23 +145,14 @@ export class TrayIcon extends Service {
             dbus_name: item.g_name_owner, dbus_object: item.Menu,
         });
         this.dbusMenusClient.connect('layout-updated', () => {
-            if (!this.menu)
-                this.menu = new AgsMenu();
+            const dbusMenuItem = this.dbusMenusClient.get_root();
+            if (!dbusMenuItem || dbusMenuItem.property_get('children-display') !== 'submenu')
+                return;
 
-            this._populateMenu();
+            this.emit('layout-changed');
+            this.menu.children = dbusMenuItem.get_children()
+                .map(item => this._createItem(item));
         });
-    }
-
-    private _populateMenu() {
-        if (!this.menu)
-            this.menu = new AgsMenu();
-
-        const dbusMenuItem = this.dbusMenusClient.get_root();
-        if (!dbusMenuItem || dbusMenuItem.property_get('children-display') !== 'submenu')
-            return;
-
-        this.menu.children = dbusMenuItem.get_children()
-            .map(item => this._createItem(item));
     }
 
     private _createItem(dbusMenuItem: Dbusmenu.Menuitem): Gtk.MenuItem {
@@ -292,7 +285,7 @@ class SystemTrayService extends Service {
         });
     }
 
-    getTrayIcon(name: string) {
+    getItem(name: string) {
         return this._items.get(name);
     }
 }
@@ -308,5 +301,5 @@ export default class SystemTray {
     }
 
     static get items() { return Array.from(SystemTray.instance.items.values()); }
-    static getTrayIcon(name: string) { return SystemTray._instance.getTrayIcon(name); }
+    static getItem(name: string) { return SystemTray._instance.getItem(name); }
 }
