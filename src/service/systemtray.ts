@@ -1,6 +1,7 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Gdk from 'gi://Gdk?version=3.0';
+import Gtk from 'gi://Gtk?version=3.0';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import DbusmenuGtk3 from 'gi://DbusmenuGtk3';
 import Service from './service.js';
@@ -68,10 +69,9 @@ export class TrayItem extends Service {
     }
 
     openMenu(event: Gdk.Event) {
-        this._proxy.ItemIsMenu
-            ? this._proxy.ContextMenuAsync(event.get_root_coords()[1], event.get_root_coords()[2])
-            // @ts-expect-error
-            : this.menu?.popup_at_pointer(event);
+        this.menu // DbusmenuGtk3 imports the gdk type from @girs
+            ? (this.menu as unknown as Gtk.Menu).popup_at_pointer(event)
+            : this._proxy.ContextMenuAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
     }
 
     get category() { return this._proxy.Category; }
@@ -79,7 +79,7 @@ export class TrayItem extends Service {
     get title() { return this._proxy.Title; }
     get status() { return this._proxy.Status; }
     get windowId() { return this._proxy.WindowId; }
-    get itemIsMenu() { return this._proxy.ItemIsMenu; }
+    get isMenu() { return this._proxy.ItemIsMenu; }
 
     get tooltipMarkup() {
         if (!this._proxy.ToolTip)
