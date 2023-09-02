@@ -12,7 +12,7 @@ import './service/hyprland.js';
 import './service/mpris.js';
 import './service/network.js';
 import './service/notifications.js';
-import './service/systray.js';
+import './service/systemtray.js';
 
 const APP_BUS = (name: string) => 'com.github.Aylur.' + name;
 const APP_PATH = (name: string) => '/com/github/Aylur/' + name;
