@@ -48,10 +48,14 @@ export class TrayItem extends Service {
         this._proxy.ActivateAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
     }
 
+    secondaryActivate(event: Gdk.Event) {
+        this._proxy.SecondaryActivateAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
+    }
+
     openMenu(event: Gdk.Event) {
-        this.menu
-            ? this.menu.popup_at_pointer(event)
-            : this._proxy.ContextMenuAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
+        this._proxy.ItemIsMenu
+            ? this._proxy.ContextMenuAsync(event.get_root_coords()[1], event.get_root_coords()[2])
+            : this.menu.popup_at_pointer(event);
     }
 
     menuClient!: Dbusmenu.Client;
@@ -64,6 +68,7 @@ export class TrayItem extends Service {
     get status() { return this._proxy.Status; }
     get windowId() { return this._proxy.WindowId; }
     get itemIsMenu() { return this._proxy.ItemIsMenu; }
+
     get tooltipMarkup() {
         if (!this._proxy.ToolTip)
             return '';
@@ -97,7 +102,7 @@ export class TrayItem extends Service {
         }
 
         if (proxy.Menu)
-            this._createMenuClient(proxy);
+            this._createMenuClient();
 
         bulkConnect(proxy, [
             ['g-signal', () => {
@@ -105,11 +110,14 @@ export class TrayItem extends Service {
                 this.emit('changed');
             }],
             ['notify::g-name-owner', () => {
-                if (!this._proxy.g_name_owner)
+                if (!proxy.g_name_owner)
                     this.emit('removed', this.busName);
             }],
             ['g-properties-changed', () => this.emit('changed')],
         ]);
+
+        ['Title', 'Icon', 'AttentionIcon', 'OverlayIcon', 'ToolTip', 'Status']
+            .forEach(prop => proxy.connectSignal(`New${prop}`, () => this.emit('changed')));
 
         this.emit('changed');
     }
@@ -138,13 +146,13 @@ export class TrayItem extends Service {
         this._proxy.set_cached_property(propertyName, value);
         if (propertyName === 'Menu' && this._proxy.Menu !== value.unpack()) {
             // new menu path, construct new proxy
-            this._createMenuClient(this._proxy);
+            this._createMenuClient();
         }
     }
 
-    private _createMenuClient(item: StatusNotifierItemProxy) {
+    private _createMenuClient() {
         this.menuClient = new Dbusmenu.Client({
-            dbus_name: item.g_name_owner, dbus_object: item.Menu,
+            dbus_name: this._proxy.g_name_owner, dbus_object: this._proxy.Menu,
         });
         this.menuClient.connect('layout-updated', () => {
             const dbusMenuItem = this.menuClient.get_root();

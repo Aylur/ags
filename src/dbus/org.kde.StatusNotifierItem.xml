@@ -38,14 +38,11 @@
             <arg name="delta" type="i" direction="in"/>
             <arg name="orientation" type="s" direction="in"/>
         </method>
-        <signal name="NewTitle">
-        </signal>
-        <signal name="NewIcon">
-        </signal>
-        <signal name="NewToolTip">
-        </signal>
-        <signal name="NewStatus">
-            <arg name="status" type="s"/>
-        </signal>
+        <signal name="NewTitle"/>
+        <signal name="NewIcon"/>
+        <signal name="NewAttentionIcon"/>
+        <signal name="NewOverlayIcon"/>
+        <signal name="NewToolTip"/>
+        <signal name="NewStatus"/>
     </interface>
 </node>

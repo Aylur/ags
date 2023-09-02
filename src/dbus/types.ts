@@ -3,21 +3,19 @@ import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 
 interface Proxy {
-    connect: (event: string, callback: () => void) => number
-    disconnect: (id: number) => void
     g_name_owner: string
+    connect: (event: string, callback: (...args: unknown[]) => void) => number
+    disconnect: (id: number) => void
+    disconnectSignal: (id: number) => void
+    connectSignal: (
+        event: string,
+        callback: (proxy: string, nameOwner: string, args: string[]) => void
+    ) => void
 }
 
 export interface DBusProxy extends Proxy {
     new(...args: unknown[]): DBusProxy
     ListNamesRemote: (callback: (names: string[][]) => void) => void
-    connectSignal: (
-        event: string,
-        callback: (
-            proxy: string,
-            sender: string,
-            owners: string[]
-        ) => void) => void
 }
 
 export interface PlayerProxy extends Proxy {
