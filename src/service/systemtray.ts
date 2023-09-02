@@ -52,7 +52,7 @@ export class TrayItem extends Service {
             : this._proxy.ContextMenuAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
     }
 
-    dbusMenusClient!: Dbusmenu.Client;
+    menuClient!: Dbusmenu.Client;
     busName: string;
     objectPath: string;
 
@@ -141,11 +141,11 @@ export class TrayItem extends Service {
     }
 
     private _createMenuClient(item: StatusNotifierItemProxy) {
-        this.dbusMenusClient = new Dbusmenu.Client({
+        this.menuClient = new Dbusmenu.Client({
             dbus_name: item.g_name_owner, dbus_object: item.Menu,
         });
-        this.dbusMenusClient.connect('layout-updated', () => {
-            const dbusMenuItem = this.dbusMenusClient.get_root();
+        this.menuClient.connect('layout-updated', () => {
+            const dbusMenuItem = this.menuClient.get_root();
             if (!dbusMenuItem || dbusMenuItem.property_get('children-display') !== 'submenu')
                 return;
 
