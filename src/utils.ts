@@ -114,7 +114,7 @@ export function connect(
 export function interval(
     interval: number,
     callback: () => void,
-    bind?: GObject.Object,
+    bind?: Gtk.Widget,
 ) {
     callback();
     const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, interval, () => {
@@ -212,7 +212,7 @@ export function subprocess(
     cmd: string | string[],
     callback: (out: string) => void,
     onError = logError,
-    bind?: GObject.Object,
+    bind?: Gtk.Widget,
 ) {
     try {
         const read = (stdout: Gio.DataInputStream) => {

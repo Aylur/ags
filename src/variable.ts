@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import GObject from 'gi://GObject';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import { execAsync, interval, subprocess } from './utils.js';
 
 interface Options {
@@ -15,6 +17,9 @@ class AgsVariable extends GObject.Object {
         }, this);
     }
 
+    _inerval?: number;
+    _subprocess?: Gio.Subprocess | null;
+
     constructor(value: any, option: Options) {
         super();
         this.value = value;
@@ -22,16 +27,24 @@ class AgsVariable extends GObject.Object {
         if (option.poll) {
             const [time, cmd] = option.poll;
             if (Array.isArray(cmd) || typeof cmd === 'string') {
-                interval(time, () => execAsync(cmd)
+                this._inerval = interval(time, () => execAsync(cmd)
                     .catch(logError)
-                    .then(this.setValue.bind(this)), this);
+                    .then(this.setValue.bind(this)));
             }
             if (typeof cmd === 'function')
-                interval(time, () => this.setValue(cmd()));
+                this._inerval = interval(time, () => this.setValue(cmd()));
         }
 
         if (option.listen)
-            subprocess(option.listen, this.setValue.bind(this), logError, this);
+            this._subprocess = subprocess(option.listen, this.setValue.bind(this), logError);
+    }
+
+    dispose() {
+        if (this._inerval)
+            GLib.source_remove(this._inerval);
+
+        this._subprocess?.force_exit();
+        this.run_dispose();
     }
 
     private _value: any;
