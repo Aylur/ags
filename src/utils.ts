@@ -2,7 +2,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import { Command } from './widgets/shared.js';
+import { Command } from './widgets/constructor.js';
 
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name}`;
@@ -113,7 +113,8 @@ export function connect(
 
 export function interval(
     interval: number,
-    callback: () => void, widget: Gtk.Widget,
+    callback: () => void,
+    widget?: Gtk.Widget,
 ) {
     callback();
     const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, interval, () => {
