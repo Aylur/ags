@@ -114,15 +114,15 @@ export function connect(
 export function interval(
     interval: number,
     callback: () => void,
-    widget?: Gtk.Widget,
+    bind?: GObject.Object,
 ) {
     callback();
     const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, interval, () => {
         callback();
         return true;
     });
-    if (widget)
-        widget.connect('destroy', () => GLib.source_remove(id));
+    if (bind)
+        bind.connect('destroy', () => GLib.source_remove(id));
 
     return id;
 }
@@ -212,6 +212,7 @@ export function subprocess(
     cmd: string | string[],
     callback: (out: string) => void,
     onError = logError,
+    bind?: GObject.Object,
 ) {
     try {
         const read = (stdout: Gio.DataInputStream) => {
@@ -246,6 +247,10 @@ export function subprocess(
         });
 
         read(stdout);
+
+        if (bind)
+            bind.connect('destroy', () => proc.force_exit());
+
         return proc;
     } catch (e) {
         onError(e as Error);

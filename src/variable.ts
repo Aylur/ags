@@ -24,14 +24,14 @@ class AgsVariable extends GObject.Object {
             if (Array.isArray(cmd) || typeof cmd === 'string') {
                 interval(time, () => execAsync(cmd)
                     .catch(logError)
-                    .then(this.setValue.bind(this)));
+                    .then(this.setValue.bind(this)), this);
             }
             if (typeof cmd === 'function')
                 interval(time, () => this.setValue(cmd()));
         }
 
         if (option.listen)
-            subprocess(option.listen, this.setValue.bind(this));
+            subprocess(option.listen, this.setValue.bind(this), logError, this);
     }
 
     private _value: any;
