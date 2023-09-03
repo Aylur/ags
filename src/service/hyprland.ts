@@ -202,7 +202,7 @@ class HyprlandService extends Service {
                 case 'changefloating': {
                     const client = this._clients.get(argv[0]);
                     if (client)
-                        // @ts-ignore
+                        // @ts-expect-error
                         client.floating = argv[1] === '1';
                     break;
                 }
@@ -222,7 +222,6 @@ class HyprlandService extends Service {
 }
 
 export default class Hyprland {
-    static { Service.export(this, 'Hyprland'); }
     static _instance: HyprlandService;
 
     static get instance() {

@@ -6,6 +6,7 @@ import { type Ctor } from 'gi-types/gobject2.js';
 export default class Service extends GObject.Object {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsService',
             Signals: { 'changed': {} },
         }, this);
     }
@@ -24,7 +25,7 @@ export default class Service extends GObject.Object {
             Object.keys(signals).forEach(signal =>
                 Signals[signal] = {
                     param_types: signals[signal].map(t =>
-                        // @ts-ignore
+                        // @ts-expect-error
                         GObject[`TYPE_${t.toUpperCase()}`]),
                 },
             );
@@ -34,8 +35,11 @@ export default class Service extends GObject.Object {
     }
 
     static export(api: { instance: object }, name: string) {
-        // @ts-ignore
+        // @ts-expect-error
         Service[name] = api;
+        console.error('Service.register is DEPRECATED.\n' +
+            "Simply do Service['YourService'] = YourService\n" +
+            'or just export and import your YourService');
     }
 
     connectWidget(
@@ -46,3 +50,4 @@ export default class Service extends GObject.Object {
         connect(this, widget, callback, event);
     }
 }
+

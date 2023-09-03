@@ -74,7 +74,7 @@ export default class AgsStack extends Gtk.Stack {
             return;
         }
 
-        // @ts-ignore
+        // @ts-expect-error
         this.transitionType = Gtk.StackTransitionType[transition.toUpperCase()];
     }
 

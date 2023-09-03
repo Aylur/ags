@@ -66,12 +66,12 @@ Object.defineProperty(Gtk.Widget.prototype, 'style', {
     },
 });
 
-// @ts-ignore
+// @ts-expect-error
 Gtk.Widget.prototype.setStyle = function(css: string) {
     setStyle(this, css);
 };
 
-// @ts-ignore
+// @ts-expect-error
 Gtk.Widget.prototype.toggleClassName = function(cn: string, condition = true) {
     toggleClassName(this, cn, condition);
 };

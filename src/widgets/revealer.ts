@@ -31,8 +31,7 @@ export default class AgsRevealer extends Gtk.Revealer {
             return;
         }
 
-        this.transitionType =
-            // @ts-ignore
-            Gtk.RevealerTransitionType[transition.toUpperCase()];
+        // @ts-expect-error
+        this.transitionType = Gtk.RevealerTransitionType[transition.toUpperCase()];
     }
 }

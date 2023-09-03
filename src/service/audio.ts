@@ -3,11 +3,11 @@ import GObject from 'gi://GObject';
 import Gvc from 'gi://Gvc';
 import { bulkConnect, bulkDisconnect } from '../utils.js';
 
-class Stream extends GObject.Object {
+class Stream extends Service {
     static {
-        GObject.registerClass({
-            Signals: { 'changed': {}, 'closed': {} },
-        }, this);
+        Service.register(this, {
+            'closed': [],
+        });
     }
 
     private _stream: Gvc.MixerStream;
@@ -156,7 +156,6 @@ class AudioService extends Service {
 }
 
 export default class Audio {
-    static { Service.export(this, 'Audio'); }
     static _instance: AudioService;
 
     static get instance() {

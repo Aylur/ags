@@ -37,11 +37,11 @@ class Application extends Service {
         if (!app.get_icon())
             return '';
 
-        // @ts-ignore
+        // @ts-expect-error
         if (typeof app.get_icon()?.get_names !== 'function')
             return '';
 
-        // @ts-ignore
+        // @ts-expect-error
         const name = app.get_icon()?.get_names()[0];
         return name || '';
     }
@@ -130,7 +130,6 @@ class ApplicationsService extends Service {
 }
 
 export default class Applications {
-    static { Service.export(this, 'Applications'); }
     static _instance: ApplicationsService;
 
     static get instance() {

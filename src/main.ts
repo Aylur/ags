@@ -3,16 +3,8 @@ import GLib from 'gi://GLib';
 import * as Utils from './utils.js';
 import App from './app.js';
 import client from './client.js';
-import Service from './service/service.js';
+import Service from './service.js';
 import Widget from './widget.js';
-import './service/apps.js';
-import './service/audio.js';
-import './service/battery.js';
-import './service/bluetooth.js';
-import './service/hyprland.js';
-import './service/mpris.js';
-import './service/network.js';
-import './service/notifications.js';
 
 const APP_BUS = (name: string) => 'com.github.Aylur.ags.' + name;
 const APP_PATH = (name: string) => '/com/github/Aylur/ags/' + name;
@@ -23,23 +15,14 @@ const help = (bin: string) => `USAGE:
 
 OPTIONS:
     -h, --help              Print this help and exit
-
     -v, --version           Print version and exit
-
     -q, --quit              Kill AGS
-
     -c, --config            Path to the config file. Default: ${DEFAULT_CONF}
-
     -b, --bus-name          Bus name of the process
-
     -i, --inspector         Open up the Gtk debug tool
-
     -t, --toggle-window     Show or hide a window
-
     -r, --run-js            Evaluate given string as a function and execute it
-
     -p, --run-promise       Evaluate and execute function as Promise
-
     --clear-cache           Remove ${Utils.CACHE_DIR}
 
 EXAMPLES
@@ -56,7 +39,7 @@ function isRunning(dbusName: string) {
         '/org/freedesktop/DBus',
         'org.freedesktop.DBus',
         'NameHasOwner',
-        // @ts-ignore
+        // @ts-expect-error
         GLib.Variant.new_tuple([new GLib.Variant('s', dbusName)]),
         new GLib.VariantType('(b)'),
         Gio.DBusCallFlags.NONE,
@@ -141,7 +124,7 @@ export function main(args: string[]) {
         }
     }
 
-    // @ts-ignore
+    // @ts-expect-error
     globalThis.ags = {
         App,
         Utils,
@@ -168,7 +151,7 @@ export function main(args: string[]) {
                 app.Inspector();
         });
 
-        // @ts-ignore
+        // @ts-expect-error
         return app.runAsync(null);
     }
     else {

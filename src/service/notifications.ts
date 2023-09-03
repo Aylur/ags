@@ -260,7 +260,6 @@ class NotificationsService extends Service {
 }
 
 export default class Notifications {
-    static { Service.export(this, 'Notifications'); }
     static _instance: NotificationsService;
 
     static get instance() {

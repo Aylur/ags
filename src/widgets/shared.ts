@@ -1,16 +1,18 @@
 import Gtk from 'gi://Gtk?version=3.0';
-import { interval } from '../utils.js';
+import GObject from 'gi://GObject';
+import { connect, interval } from '../utils.js';
 
 export type Command = string | ((...args: unknown[]) => boolean);
 
-interface ServiceAPI {
-    instance: {
-        connectWidget: (
-            widget: Gtk.Widget,
-            callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
-            event?: string
-        ) => void
-    }
+type ConnectWidget = (
+    widget: Gtk.Widget,
+    callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
+    event?: string
+) => void
+
+interface Connectable extends GObject.Object {
+    instance: { connectWidget: ConnectWidget }
+    connectWidget: ConnectWidget
 }
 
 interface CommonParams {
@@ -21,7 +23,7 @@ interface CommonParams {
     connections?: (
         [string, (...args: unknown[]) => unknown] |
         [number, (...args: unknown[]) => unknown] |
-        [ServiceAPI, (...args: unknown[]) => unknown, string]
+        [Connectable, (...args: unknown[]) => unknown, string]
     )[]
     properties?: [string, unknown][]
     setup?: (widget: Gtk.Widget) => void
@@ -43,16 +45,16 @@ function parseCommon(widget: Gtk.Widget, {
     connections, properties, setup,
 }: CommonParams) {
     if (className !== undefined)
-        // @ts-ignore
+        // @ts-expect-error
         widget.className = className;
 
     if (style !== undefined)
-        // @ts-ignore
+        // @ts-expect-error
         widget.style = style;
 
 
     if (typeof halign === 'string') {
-        // @ts-ignore
+        // @ts-expect-error
         const align = Gtk.Align[halign.toUpperCase()];
         if (typeof align !== 'number')
             console.error('wrong halign value');
@@ -64,7 +66,7 @@ function parseCommon(widget: Gtk.Widget, {
         widget.halign = halign;
 
     if (typeof valign === 'string') {
-        // @ts-ignore
+        // @ts-expect-error
         const align = Gtk.Align[valign.toUpperCase()];
         if (typeof align !== 'number')
             console.error('wrong valign value');
@@ -77,7 +79,7 @@ function parseCommon(widget: Gtk.Widget, {
 
     if (properties) {
         properties.forEach(([key, value]) => {
-            // @ts-ignore
+            // @ts-expect-error
             widget[`_${key}`] = value;
         });
     }
@@ -93,8 +95,14 @@ function parseCommon(widget: Gtk.Widget, {
             else if (typeof s?.instance?.connectWidget === 'function')
                 s.instance.connectWidget(widget, callback, event);
 
+            else if (typeof s?.connectWidget === 'function')
+                s.connectWidget(widget, callback, event);
+
+            else if (typeof s?.connect === 'function')
+                connect(s, widget, callback, event);
+
             else
-                logError(new Error(`${s} is not an instanceof Service`));
+                logError(new Error(`${s} is not connectable`));
         });
     }
 

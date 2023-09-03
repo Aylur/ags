@@ -6,6 +6,7 @@
     <file>client.js</file>
     <file>utils.js</file>
     <file>widget.js</file>
+    <file>service.js</file>
 
     <file>widgets/overrides.js</file>
     <file>widgets/box.js</file>
@@ -26,7 +27,7 @@
     <file>widgets/window.js</file>
 
     <file>service/service.js</file>
-    <file>service/apps.js</file>
+    <file>service/applications.js</file>
     <file>service/audio.js</file>
     <file>service/battery.js</file>
     <file>service/bluetooth.js</file>
