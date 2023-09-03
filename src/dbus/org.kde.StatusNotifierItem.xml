@@ -43,6 +43,8 @@
         <signal name="NewAttentionIcon"/>
         <signal name="NewOverlayIcon"/>
         <signal name="NewToolTip"/>
-        <signal name="NewStatus"/>
+        <signal name="NewStatus">
+            <arg name="status" type="s"/>
+        </signal>
     </interface>
 </node>

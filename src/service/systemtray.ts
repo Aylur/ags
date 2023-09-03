@@ -49,6 +49,14 @@ export class TrayItem extends Service {
         this._proxy.SecondaryActivateAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
     }
 
+    scroll(event: Gdk.EventScroll) {
+        const direction =
+            ( event.direction == 0 || event.direction == 1 ) ? 'vertical' : 'horizontal';
+        const delta =
+            ( event.direction == 0 || event.direction == 1 ) ? event.delta_y : event.delta_x;
+        this._proxy.ScrollAsync(delta, direction);
+    }
+
     openMenu(event: Gdk.Event) {
         this.menu // DbusmenuGtk3 imports the gdk type from @girs
             ? (this.menu as unknown as Gtk.Menu).popup_at_pointer(event)
@@ -112,7 +120,9 @@ export class TrayItem extends Service {
         ]);
 
         ['Title', 'Icon', 'AttentionIcon', 'OverlayIcon', 'ToolTip', 'Status']
-            .forEach(prop => proxy.connectSignal(`New${prop}`, () => this.emit('changed')));
+            .forEach(prop => proxy.connectSignal(`New${prop}`, () => {
+                this.emit('changed');
+            }));
 
         this.emit('ready');
     }
