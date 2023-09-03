@@ -115,10 +115,10 @@ export default class AgsWindow extends Gtk.Window {
 
     _margin: number[] | number = [0];
 
-    // @ts-ignore
+    // @ts-expect-error
     get margin() { return this._margin; }
 
-    // @ts-ignore
+    // @ts-expect-error
     set margin(margin: number[] | number) {
         let margins: [side: string, index: number][] = [];
         if (typeof margin === 'number')

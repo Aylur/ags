@@ -21,7 +21,7 @@ export default function Widget({ type, ...params }: { type: ctor }) {
     return constructor(type, params);
 }
 
-// @ts-ignore
+// @ts-expect-error
 export const Window = (args: object) => constructor(AgsWindow, args);
 export const Box = (args: object) => constructor(AgsBox, args);
 export const Button = (args: object) => constructor(AgsButton, args);

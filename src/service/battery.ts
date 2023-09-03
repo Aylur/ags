@@ -64,7 +64,6 @@ class BatteryService extends Service {
 }
 
 export default class Battery {
-    static { Service.export(this, 'Battery'); }
     static _instance: BatteryService;
 
     static get instance() {

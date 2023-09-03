@@ -97,8 +97,18 @@ export function connect(
     const bind = service.connect(
         event, (_s, ...args: unknown[]) => callback(widget, ...args));
 
-    widget.connect('destroy', () => service.disconnect(bind));
-    timeout(10, () => callback(widget));
+    widget.connect('destroy', () => {
+        // @ts-expect-error
+        widget._destroyed = true;
+        service.disconnect(bind);
+    });
+    GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+        // @ts-expect-error
+        if (!widget._destroyed)
+            callback(widget);
+
+        return GLib.SOURCE_REMOVE;
+    });
 }
 
 export function interval(

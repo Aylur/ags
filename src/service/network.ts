@@ -237,7 +237,6 @@ class NetworkService extends Service {
 }
 
 export default class Network {
-    static { Service.export(this, 'Network'); }
     static _instance: NetworkService;
 
     static get instance() {

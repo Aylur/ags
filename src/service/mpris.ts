@@ -168,11 +168,8 @@ class MprisPlayer extends GObject.Object {
             Gio.File.new_for_path(coverPath),
             Gio.FileCopyFlags.OVERWRITE,
             GLib.PRIORITY_DEFAULT,
-            null,
-            // @ts-ignore
-            null,
-            // @ts-ignore
-            (source, result) => {
+            // @ts-expect-error
+            null, null, (source, result) => {
                 try {
                     source.copy_finish(result);
                     this.emit('changed');
@@ -314,7 +311,6 @@ class MprisService extends Service {
 
     getPlayer(name: string | ((players: Players) => MprisPlayer) = '') {
         if (typeof name === 'function')
-            // @ts-ignore
             return name(new Map(this._players)) || null;
 
         for (const [busName, player] of this._players) {
@@ -326,7 +322,6 @@ class MprisService extends Service {
 }
 
 export default class Mpris {
-    static { Service.export(this, 'Mpris'); }
     static _instance: MprisService;
 
     static get instance() {

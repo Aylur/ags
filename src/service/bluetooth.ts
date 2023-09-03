@@ -62,7 +62,7 @@ class Device extends GObject.Object {
 class BluetoothService extends Service {
     static { Service.register(this); }
 
-    // @ts-ignore
+    // @ts-expect-error
     private _client: GnomeBluetooth.Client;
     private _devices: Map<string, Device>;
 
@@ -163,7 +163,6 @@ class BluetoothService extends Service {
 }
 
 export default class Bluetooth {
-    static { Service.export(this, 'Bluetooth'); }
     static _instance: BluetoothService;
 
     static get instance() {

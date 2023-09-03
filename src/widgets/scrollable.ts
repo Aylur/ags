@@ -62,9 +62,9 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
 
     policy() {
         this.set_policy(
-            // @ts-ignore
+            // @ts-expect-error
             Gtk.PolicyType[this._hscroll?.toUpperCase() || 'AUTOMATIC'],
-            // @ts-ignore
+            // @ts-expect-error
             Gtk.PolicyType[this._vscroll?.toUpperCase() || 'AUTOMATIC'],
         );
     }

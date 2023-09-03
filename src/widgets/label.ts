@@ -38,7 +38,7 @@ export default class AgsLabel extends Gtk.Label {
             return;
         }
 
-        // @ts-ignore
+        // @ts-expect-error
         this.ellipsize = Pango.EllipsizeMode[truncate.toUpperCase()];
     }
 
@@ -52,7 +52,7 @@ export default class AgsLabel extends Gtk.Label {
             return;
         }
 
-        // @ts-ignore
+        // @ts-expect-error
         this.justify = Gtk.Justification[justify.toUpperCase()];
     }
 }
