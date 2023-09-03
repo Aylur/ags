@@ -3,8 +3,8 @@ import GObject from 'gi://GObject';
 import { execAsync, interval, subprocess } from './utils.js';
 
 interface Options {
-    poll?: [interval: number, cmd: string[]],
-    listen?: string[],
+    poll?: [interval: number, cmd: string[] | string | (() => unknown)],
+    listen?: string[] | string,
 }
 
 class AgsVariable extends GObject.Object {
@@ -21,9 +21,13 @@ class AgsVariable extends GObject.Object {
 
         if (option.poll) {
             const [time, cmd] = option.poll;
-            interval(time, () => execAsync(cmd)
-                .catch(logError)
-                .then(this.setValue.bind(this)));
+            if (Array.isArray(cmd) || typeof cmd === 'string') {
+                interval(time, () => execAsync(cmd)
+                    .catch(logError)
+                    .then(this.setValue.bind(this)));
+            }
+            if (typeof cmd === 'function')
+                interval(time, () => this.setValue(cmd()));
         }
 
         if (option.listen)
