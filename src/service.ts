@@ -8,6 +8,7 @@ import Hyprland from './service/hyprland.js';
 import Mpris from './service/mpris.js';
 import Network from './service/network.js';
 import Notifications from './service/notifications.js';
+import SystemTray from './service/systemtray.js';
 
 export {
     Applications,
@@ -18,6 +19,7 @@ export {
     Mpris,
     Network,
     Notifications,
+    SystemTray,
     Service,
 };
 
@@ -30,5 +32,6 @@ Service.Mpris = Mpris;
 Service.Network = Network;
 Service.Notifications = Notifications;
 Service.Service = Service;
+Service.SystemTray = SystemTray;
 
 export default Service;
