@@ -29,6 +29,7 @@
 , glib-networking
 , gtk-layer-shell
 , libdbusmenu-gtk3
+, libsoup_3
 }:
 
 let
@@ -79,6 +80,7 @@ in stdenv.mkDerivation rec {
     libsysprof-capture
     spidermonkey_102
     libdbusmenu-gtk3
+    libsoup_3
   ];
 
   nativeCheckInputs = [
