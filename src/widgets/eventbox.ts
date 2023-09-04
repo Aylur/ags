@@ -2,7 +2,7 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import { runCmd } from '../utils.js';
-import { Command } from './shared.js';
+import { Command } from './constructor.js';
 
 export default class AgsEventBox extends Gtk.EventBox {
     static {

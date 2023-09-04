@@ -1,8 +1,8 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
-import { EventButton, EventKey, EventScroll } from 'gi-types/gdk3';
-import { Command } from './shared.js';
+import { EventButton, EventScroll, EventKey } from 'gi-types/gdk3';
+import { Command } from './constructor.js';
 
 interface Params {
     onChange?: Command

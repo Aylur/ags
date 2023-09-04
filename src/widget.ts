@@ -14,8 +14,7 @@ import AgsProgressBar from './widgets/progressbar.js';
 import AgsEntry from './widgets/entry.js';
 import { AgsMenu, AgsMenuItem } from './widgets/menu.js';
 import AgsWindow from './widgets/window.js';
-import constructor from './widgets/shared.js';
-import { ctor } from './widgets/shared.js';
+import { constructor, type ctor } from './widgets/constructor.js';
 
 export default function Widget({ type, ...params }: { type: ctor }) {
     return constructor(type, params);

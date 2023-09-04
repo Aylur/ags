@@ -2,7 +2,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import { Command } from './widgets/shared.js';
+import { Command } from './widgets/constructor.js';
 
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name}`;
@@ -113,15 +113,16 @@ export function connect(
 
 export function interval(
     interval: number,
-    callback: () => void, widget: Gtk.Widget,
+    callback: () => void,
+    bind?: Gtk.Widget,
 ) {
     callback();
     const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, interval, () => {
         callback();
         return true;
     });
-    if (widget)
-        widget.connect('destroy', () => GLib.source_remove(id));
+    if (bind)
+        bind.connect('destroy', () => GLib.source_remove(id));
 
     return id;
 }
@@ -211,6 +212,7 @@ export function subprocess(
     cmd: string | string[],
     callback: (out: string) => void,
     onError = logError,
+    bind?: Gtk.Widget,
 ) {
     try {
         const read = (stdout: Gio.DataInputStream) => {
@@ -245,6 +247,10 @@ export function subprocess(
         });
 
         read(stdout);
+
+        if (bind)
+            bind.connect('destroy', () => proc.force_exit());
+
         return proc;
     } catch (e) {
         onError(e as Error);
