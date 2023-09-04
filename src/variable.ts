@@ -51,9 +51,6 @@ class AgsVariable extends GObject.Object {
 
     getValue() { return this._value; }
     setValue(value: any) {
-        if (this._value === value)
-            return;
-
         this._value = value;
         this.emit('changed');
     }
