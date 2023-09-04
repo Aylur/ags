@@ -99,8 +99,8 @@ export class TrayItem extends Service {
     private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
         if (proxy.Menu) {
             const menu = Widget({
-                // @ts-expect-error
                 type: DbusmenuGtk3.Menu,
+                // @ts-expect-error
                 dbus_name: proxy.g_name_owner,
                 dbus_object: proxy.Menu,
             });
@@ -264,36 +264,4 @@ export default class SystemTray {
     static get items() { return Array.from(SystemTray.instance.items.values()); }
     static getItem(name: string) { return SystemTray._instance.getItem(name); }
 }
-        
-            
-            
-                    
-                    
-                
-            
-            
-                    
-                    
-                
-            
-            
-        
-            
-                
-            
-            
-                
-            
-        
-                
-                
-            
-        
-
-
-
-
- 
-                
-
 
