@@ -99,8 +99,8 @@ export class TrayItem extends Service {
     private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
         if (proxy.Menu) {
             const menu = Widget({
-                type: DbusmenuGtk3.Menu,
                 // @ts-expect-error
+                type: DbusmenuGtk3.Menu,
                 dbus_name: proxy.g_name_owner,
                 dbus_object: proxy.Menu,
             });
