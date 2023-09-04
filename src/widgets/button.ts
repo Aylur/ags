@@ -35,6 +35,8 @@ export default class AgsButton extends Gtk.Button {
 
         super(typeof params === 'string' ? { label: params } : rest);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
+        this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
+
         this.onClicked = onClicked;
         this.onPrimaryClick = onPrimaryClick;
         this.onSecondaryClick = onSecondaryClick;
@@ -74,17 +76,12 @@ export default class AgsButton extends Gtk.Button {
                 event.get_button()[1] === Gdk.BUTTON_MIDDLE)
                 return runCmd(this.onMiddleClickRelease, this, event);
         });
-    }
 
-    vfunc_scroll_event(event: Gdk.EventScroll): boolean {
-        if (this.onScrollUp &&
-            event.direction === Gdk.ScrollDirection.UP)
-            return runCmd(this.onScrollUp, this, event);
-
-        else if (this.onScrollDown &&
-            event.direction === Gdk.ScrollDirection.DOWN)
-            return runCmd(this.onScrollDown, this, event);
-
-        return super.vfunc_scroll_event(event);
+        this.connect('scroll-event', (box, event) => {
+            if (event.get_scroll_deltas()[2] < 0)
+                return runCmd(this.onScrollUp, box, event);
+            else if (event.get_scroll_deltas()[2] > 0)
+                return runCmd(this.onScrollDown, box, event);
+        });
     }
 }
