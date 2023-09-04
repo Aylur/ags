@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/com/github/Aylur/ags">
-    <file>main.js</file>
     <file>app.js</file>
     <file>client.js</file>
-    <file>utils.js</file>
-    <file>widget.js</file>
+    <file>main.js</file>
     <file>service.js</file>
+    <file>utils.js</file>
+    <file>variable.js</file>
+    <file>widget.js</file>
 
+    <file>widgets/constructor.js</file>
     <file>widgets/overrides.js</file>
     <file>widgets/box.js</file>
     <file>widgets/button.js</file>
@@ -21,7 +23,6 @@
     <file>widgets/progressbar.js</file>
     <file>widgets/revealer.js</file>
     <file>widgets/scrollable.js</file>
-    <file>widgets/shared.js</file>
     <file>widgets/slider.js</file>
     <file>widgets/stack.js</file>
     <file>widgets/window.js</file>

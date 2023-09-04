@@ -25,16 +25,17 @@ interface CommonParams {
         [number, (...args: unknown[]) => unknown] |
         [Connectable, (...args: unknown[]) => unknown, string]
     )[]
-    properties?: [string, unknown][]
+    properties?: [prop: string, value: unknown][]
+    binds?: [prop: string, obj: Connectable, objProp?: string, signal?: string][],
     setup?: (widget: Gtk.Widget) => void
 }
 
 function separateCommon({
-    className, style, halign, valign, connections, properties, setup,
+    className, style, halign, valign, connections, properties, binds, setup,
     ...rest
 }: CommonParams) {
     return [
-        { className, style, halign, valign, connections, properties, setup },
+        { className, style, halign, valign, connections, properties, binds, setup },
         rest,
     ];
 }
@@ -42,7 +43,7 @@ function separateCommon({
 function parseCommon(widget: Gtk.Widget, {
     className, style,
     halign, valign,
-    connections, properties, setup,
+    connections = [], properties, binds, setup,
 }: CommonParams) {
     if (className !== undefined)
         // @ts-expect-error
@@ -84,8 +85,28 @@ function parseCommon(widget: Gtk.Widget, {
         });
     }
 
+    if (binds) {
+        binds.forEach(([prop, obj, value = 'value', signal = 'changed']) => {
+            if (!prop || !obj) {
+                logError(new Error('missing arguments to connections'));
+                return;
+            }
+
+            const callback = () => {
+                // @ts-expect-error
+                widget[prop] = obj[value];
+            };
+            connections.push([obj, callback, signal]);
+        });
+    }
+
     if (connections) {
         connections.forEach(([s, callback, event]) => {
+            if (!s || !callback) {
+                logError(new Error('missing arguments to connections'));
+                return;
+            }
+
             if (typeof s === 'string')
                 widget.connect(s, callback);
 
@@ -112,7 +133,7 @@ function parseCommon(widget: Gtk.Widget, {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ctor = { new(...args: any[]): Gtk.Widget }
-export default function constructor(
+export function constructor(
     ctor: ctor,
     params: CommonParams | string = {},
 ) {

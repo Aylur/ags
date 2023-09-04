@@ -4,6 +4,7 @@ import * as Utils from './utils.js';
 import App from './app.js';
 import client from './client.js';
 import Service from './service.js';
+import Variable from './variable.js';
 import Widget from './widget.js';
 
 const APP_BUS = (name: string) => 'com.github.Aylur.ags.' + name;
@@ -130,6 +131,7 @@ export function main(args: string[]) {
         Utils,
         Widget,
         Service,
+        Variable,
     };
 
     const bus = APP_BUS(flags.busName);
