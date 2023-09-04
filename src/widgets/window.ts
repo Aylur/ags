@@ -126,20 +126,16 @@ export default class AgsWindow extends Gtk.Window {
 
         switch (margin.length) {
             case 1:
-                margins = [
-                    ['TOP', 0], ['RIGHT', 0], ['BOTTOM', 0], ['LEFT', 0]];
+                margins = [['TOP', 0], ['RIGHT', 0], ['BOTTOM', 0], ['LEFT', 0]];
                 break;
             case 2:
-                margins = [
-                    ['TOP', 0], ['RIGHT', 1], ['BOTTOM', 0], ['LEFT', 1]];
+                margins = [['TOP', 0], ['RIGHT', 1], ['BOTTOM', 0], ['LEFT', 1]];
                 break;
             case 3:
-                margins = [
-                    ['TOP', 0], ['RIGHT', 1], ['BOTTOM', 2], ['LEFT', 1]];
+                margins = [['TOP', 0], ['RIGHT', 1], ['BOTTOM', 2], ['LEFT', 1]];
                 break;
             case 4:
-                margins = [
-                    ['TOP', 0], ['RIGHT', 1], ['BOTTOM', 2], ['LEFT', 3]];
+                margins = [['TOP', 0], ['RIGHT', 1], ['BOTTOM', 2], ['LEFT', 3]];
                 break;
             default:
                 break;

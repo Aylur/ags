@@ -1,17 +1,15 @@
-{ 
-  lib,
-  stdenv,
-  system,
-  inputs,
-  buildNpmPackage,
-  fetchFromGitLab,
-  nodePackages,
-  meson,
-  pkg-config,
-  ninja,
-  gobject-introspection,
-  gtk3,
-  libpulseaudio
+{ lib
+, stdenv
+, buildNpmPackage
+, fetchFromGitLab
+, nodePackages
+, meson
+, pkg-config
+, ninja
+, gobject-introspection
+, gtk3
+, libpulseaudio
+, gjs
 }:
 
 let
@@ -40,7 +38,7 @@ stdenv.mkDerivation {
 
     dontBuild = true;
 
-    npmDepsHash = "sha256-uNdmlQIwXoO8Ls0qjJnwRGqpfiJK1PajAvoiHfJXcxg=";
+    npmDepsHash = "sha256-4BNbFi/Ltg/8tuicrrMBIdOhteEIs85Zqj9oI/hYbl0=";
 
     installPhase = ''
       mkdir $out
@@ -56,7 +54,7 @@ stdenv.mkDerivation {
   '';
 
   patches = [
-    ./lib-path.patch
+    ./gvc-path.patch
   ];
   
   nativeBuildInputs = [
@@ -68,7 +66,7 @@ stdenv.mkDerivation {
 
   buildInputs = [
     gobject-introspection
-    inputs.dongsu8142-nur.packages.${system}.gtk-gjs
+    gjs
     gtk3
     libpulseaudio
   ];

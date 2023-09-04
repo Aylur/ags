@@ -6,66 +6,56 @@ import { Context } from 'gi-types/cairo1';
 
 export default class AgsIcon extends Gtk.Image {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsIcon',
-            Properties: {
-                'size': GObject.ParamSpec.int(
-                    'size', 'Size', 'Size',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    0, 1024, 0,
-                ),
-                'icon': GObject.ParamSpec.string(
-                    'icon', 'Icon', 'Icon',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    '',
-                ),
-            },
-        }, this);
+        GObject.registerClass({ GTypeName: 'AgsIcon' }, this);
     }
 
-    constructor(params: object | string) {
+    constructor(params: object | string | GdkPixbuf.Pixbuf) {
         const {
             icon = '',
             size = 0,
-        } = params as { icon: string, size: number };
-        super(typeof params === 'string' ? { icon: params } : params);
+            ...rest
+        } = params as { icon: string | GdkPixbuf.Pixbuf, size: number };
+        super(typeof params === 'string' || params instanceof GdkPixbuf.Pixbuf ? {} : rest);
 
-        // set correct size after construct
-        if (typeof params === 'object') {
-            this.size = size;
-            this.icon = icon;
-        }
+        this.size = size;
+        this.icon = typeof params === 'string' || params instanceof GdkPixbuf.Pixbuf
+            ? params : icon;
     }
 
     _size = 0;
     _previousSize = 0;
     get size() { return this._size || this._previousSize || 13; }
     set size(size: number) {
-        size ||= 0;
         this._size = size;
         this.queue_draw();
     }
 
-    _file = false;
-    _icon = '';
+    _type!: 'file' | 'named' | 'pixbuf';
+    _icon: string | GdkPixbuf.Pixbuf = '';
     get icon() { return this._icon; }
-    set icon(icon: string) {
+    set icon(icon: string | GdkPixbuf.Pixbuf) {
         if (!icon || this._icon === icon)
             return;
 
         this._icon = icon;
-        if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
-            this._file = true;
+        if (typeof icon === 'string') {
+            if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
+                this._type = 'file';
+                this.set_from_pixbuf(
+                    GdkPixbuf.Pixbuf.new_from_file_at_size(icon, this.size, this.size));
+            } else {
+                this._type = 'named';
+                this.icon_name = icon;
+                this.pixel_size = this.size;
+            }
+        }
+        else if (icon instanceof GdkPixbuf.Pixbuf) {
+            this._type = 'pixbuf';
             this.set_from_pixbuf(
-                GdkPixbuf.Pixbuf.new_from_file_at_size(
-                    icon, this.size, this.size,
-                ),
-            );
+                icon.scale_simple(this.size, this.size, GdkPixbuf.InterpType.BILINEAR));
         }
         else {
-            this._file = false;
-            this.icon_name = icon;
-            this.pixel_size = this.size;
+            logError(new Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));
         }
     }
 
@@ -81,12 +71,20 @@ export default class AgsIcon extends Gtk.Image {
 
         this._previousSize = size;
 
-        if (this._file) {
-            this.set_from_pixbuf(
-                GdkPixbuf.Pixbuf.new_from_file_at_size(this.icon, size, size),
-            );
-        } else {
-            this.pixel_size = size;
+        switch (this._type) {
+            case 'file':
+                this.set_from_pixbuf(
+                    GdkPixbuf.Pixbuf.new_from_file_at_size(this.icon as string, size, size));
+                break;
+            case 'pixbuf':
+                this.set_from_pixbuf((this.icon as GdkPixbuf.Pixbuf).scale_simple(
+                    this.size, this.size, GdkPixbuf.InterpType.BILINEAR));
+                break;
+            case 'named':
+                this.set_pixel_size(size);
+                break;
+            default:
+                break;
         }
 
         return super.vfunc_draw(cr);

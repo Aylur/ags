@@ -45,6 +45,27 @@ export interface BatteryProxy extends Gio.DBusProxy {
     IsPresent: boolean
 }
 
+export interface StatusNotifierItemProxy extends Gio.DBusProxy {
+    new(...args: unknown[]): StatusNotifierItemProxy;
+    Category: string;
+    Id: string;
+    Title: string;
+    Status: string;
+    WindowId: number;
+    IconThemePath: string;
+    ItemIsMenu: boolean;
+    Menu: string;
+    IconName: string;
+    IconPixmap: [number, number, Uint8Array][];
+    AttentionIconName: string;
+    AttentionIconPixmap: [number, number, Uint8Array][];
+    ToolTip: [string, [number, number, Uint8Array], string, string];
+    ContextMenuAsync: (x: number, y: number) => Promise<void>;
+    ActivateAsync: (x: number, y: number) => Promise<void>;
+    SecondaryActivateAsync: (x: number, y: number) => Promise<void>;
+    ScrollAsync: (delta: number, orientation: string) => Promise<void>;
+}
+
 export interface AgsProxy extends Gio.DBusProxy {
     new(...args: unknown[]): AgsProxy
     InspectorRemote: () => void;
@@ -56,3 +77,25 @@ export interface AgsProxy extends Gio.DBusProxy {
         busName?: string,
         objPath?: string) => void
 }
+
+export interface StatusNotifierItemProxy extends Gio.DBusProxy {
+    new(...args: unknown[]): StatusNotifierItemProxy;
+    Category: string;
+    Id: string;
+    Title: string;
+    Status: string;
+    WindowId: number;
+    IconThemePath: string;
+    ItemIsMenu: boolean;
+    Menu: string;
+    IconName: string;
+    IconPixmap: [number, number, Uint8Array][];
+    AttentionIconName: string;
+    AttentionIconPixmap: [number, number, Uint8Array][];
+    ToolTip: [string, [number, number, Uint8Array], string, string];
+    ContextMenuAsync: (x: number, y: number) => Promise<void>;
+    ActivateAsync: (x: number, y: number) => Promise<void>;
+    SecondaryActivateAsync: (x: number, y: number) => Promise<void>;
+    ScrollAsync: (delta: number, orientation: string) => Promise<void>;
+}
+

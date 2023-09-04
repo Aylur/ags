@@ -4,27 +4,16 @@ import Notifications from 'resource:///com/github/Aylur/ags/service/notification
 import Mpris from 'resource:///com/github/Aylur/ags/service/mpris.js';
 import Audio from 'resource:///com/github/Aylur/ags/service/audio.js';
 import Battery from 'resource:///com/github/Aylur/ags/service/battery.js';
+import SystemTray from 'resource:///com/github/Aylur/ags/service/systemtray.js';
 import App from 'resource:///com/github/Aylur/ags/app.js';
-import {
-    Box, Button, Stack, Label, Icon, CenterBox, Window, Slider, ProgressBar
-} from 'resource:///com/github/Aylur/ags/widget.js';
+import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import { exec, execAsync } from 'resource:///com/github/Aylur/ags/utils.js';
-
-// import statements are long, so there is also the global ags object you can import from
-// const { Hyprland, Notifications, Mpris, Audio, Battery } = ags.Service;
-// const { App } = ags;
-// const { exec } = ags.Utils;
-// const {
-//     Box, Button, Stack, Label, Icon, CenterBox, Window, Slider, ProgressBar
-// } = ags.Widget;
-
-// every widget is a subclass of Gtk.<widget>
-// with a few extra available properties
-// for example Box is a subclass of Gtk.Box
+const { Box, Button, Stack, Label, Icon, CenterBox, Window, Slider, ProgressBar } = Widget;
 
 // widgets can be only assigned as a child in one container
 // so to make a reuseable widget, just make it a function
 // then you can use it by calling simply calling it
+
 const Workspaces = () => Box({
     className: 'workspaces',
     connections: [[Hyprland, box => {
@@ -161,6 +150,20 @@ const BatteryLabel = () => Box({
     ],
 });
 
+const SysTray = () => Box({
+    connections: [[SystemTray, box => {
+        box.children = SystemTray.items.map(item => Button({
+            child: Icon(),
+            onPrimaryClick: (_, event) => item.activate(event),
+            onSecondaryClick: (_, event) => item.openMenu(event),
+            connections: [[item, button => {
+                button.child.icon = item.icon;
+                button.tooltipMarkup = item.tooltipMarkup;
+            }]],
+        }));
+    }]],
+});
+
 // layout of the bar
 const Left = () => Box({
     children: [
@@ -182,11 +185,12 @@ const Right = () => Box({
         Volume(),
         BatteryLabel(),
         Clock(),
+        SysTray(),
     ],
 });
 
 const Bar = ({ monitor } = {}) => Window({
-    name: `bar${monitor || ''}`, // name has to be unique
+    name: `bar-${monitor}`, // name has to be unique
     className: 'bar',
     monitor,
     anchor: ['top', 'left', 'right'],
