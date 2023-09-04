@@ -6,18 +6,6 @@ import client from './client.js';
 import Service from './service.js';
 import Variable from './variable.js';
 import Widget from './widget.js';
-<<<<<<< HEAD
-import './service/apps.js';
-import './service/audio.js';
-import './service/battery.js';
-import './service/bluetooth.js';
-import './service/hyprland.js';
-import './service/mpris.js';
-import './service/network.js';
-import './service/notifications.js';
-import './service/systemtray.js';
-=======
->>>>>>> 4761a23 (quality of life changes)
 
 const APP_BUS = (name: string) => 'com.github.Aylur.ags.' + name;
 const APP_PATH = (name: string) => '/com/github/Aylur/ags/' + name;
