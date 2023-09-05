@@ -273,8 +273,12 @@ export default class Notifications {
     static clear() { Notifications.instance.Clear(); }
     static close(id: number) { Notifications.instance.CloseNotification(id); }
 
+    static getPopup(id: number) { return Notifications.instance.popups.get(id); }
+    static getNotification(id: number) { return Notifications.instance.notifications.get(id); }
+
+    static get popups() { return Array.from(Notifications.instance.popups.values()); }
+    static get notifications() { return Array.from(Notifications.instance.notifications.values()); }
+
     static get dnd() { return Notifications.instance.dnd; }
     static set dnd(value: boolean) { Notifications.instance.dnd = value; }
-    static get popups() { return Notifications.instance.popups; }
-    static get notifications() { return Notifications.instance.notifications; }
 }

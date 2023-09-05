@@ -252,6 +252,8 @@ class MprisService extends Service {
     private _players!: Players;
     private _proxy: DBusProxy;
 
+    get players() { return Array.from(this._players.values()); }
+
     constructor() {
         super();
 
@@ -330,6 +332,8 @@ export default class Mpris {
     }
 
     static getPlayer(name: string | ((players: Players) => MprisPlayer)) {
-        return Mpris._instance.getPlayer(name);
+        return Mpris.instance.getPlayer(name);
     }
+
+    static get players() { return Mpris.instance.players; }
 }

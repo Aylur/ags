@@ -79,7 +79,7 @@ class ApplicationsService extends Service {
     }
 
     private _list!: Application[];
-    frequents: { [app: string]: number };
+    private _frequents: { [app: string]: number };
 
     query(term: string) {
         return this._list.filter(app => app.match(term)).sort((a, b) => {
@@ -92,25 +92,28 @@ class ApplicationsService extends Service {
         Gio.AppInfoMonitor.get().connect('changed', this._sync.bind(this));
 
         try {
-            this.frequents =
+            this._frequents =
                 JSON.parse(readFile(CACHE_FILE)) as { [app: string]: number };
         } catch (_) {
-            this.frequents = {};
+            this._frequents = {};
         }
 
         this._sync();
     }
 
+    get list() { return [...this._list]; }
+    get frequents() { return this._frequents; }
+
     private _launched(id: string | null) {
         if (!id)
             return;
 
-        typeof this.frequents[id] === 'number'
-            ? this.frequents[id] += 1
-            : this.frequents[id] = 1;
+        typeof this._frequents[id] === 'number'
+            ? this._frequents[id] += 1
+            : this._frequents[id] = 1;
 
         ensureDirectory(APPS_CACHE_DIR);
-        const json = JSON.stringify(this.frequents, null, 2);
+        const json = JSON.stringify(this._frequents, null, 2);
         writeFile(json, CACHE_FILE).catch(logError);
     }
 
@@ -137,6 +140,7 @@ export default class Applications {
         return Applications._instance;
     }
 
-    static frequents() { return Applications.instance.frequents; }
     static query(term: string) { return Applications.instance.query(term); }
+    static get list() { return Applications.instance.list; }
+    static get frequents() { return Applications.instance.frequents; }
 }

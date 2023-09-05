@@ -143,6 +143,8 @@ class BluetoothService extends Service {
         );
     }
 
+    getDevice(address: string) { return this._devices.get(address); }
+
     set enabled(v) { this._client.default_adapter_powered = v; }
     get enabled() { return this.state === 'on' || this.state === 'turning-on'; }
 
@@ -156,14 +158,14 @@ class BluetoothService extends Service {
         }
     }
 
-    get devices() { return this._devices; }
+    get devices() { return Array.from(this._devices.values()); }
     get connectedDevices() {
-        const map = new Map();
-        for (const [address, device] of this._devices) {
+        const list = [];
+        for (const [, device] of this._devices) {
             if (device.connected)
-                map.set(address, device);
+                list.push(device);
         }
-        return map;
+        return list;
     }
 }
 
@@ -175,8 +177,10 @@ export default class Bluetooth {
         return Bluetooth._instance;
     }
 
+    static getDevice(address: string) { return Bluetooth.instance.getDevice(address); }
+
+    static get devices() { return Bluetooth.instance.devices; }
     static get connectedDevices() { return Bluetooth.instance.connectedDevices; }
     static get enabled() { return Bluetooth.instance.enabled; }
     static set enabled(enable: boolean) { Bluetooth.instance.enabled = enable; }
-    static get devices() { return Bluetooth.instance.devices; }
 }

@@ -229,10 +229,14 @@ export default class Hyprland {
         return Hyprland._instance;
     }
 
+    static getMonitor(id: number) { return Hyprland.instance.monitors.get(id); }
+    static getWorkspace(id: number) { return Hyprland.instance.workspaces.get(id); }
+    static getClient(address: string) { return Hyprland.instance.clients.get(address); }
+
+    static get monitors() { return Array.from(Hyprland.instance.monitors.values()); }
+    static get workspaces() { return Array.from(Hyprland.instance.workspaces.values()); }
+    static get clients() { return Array.from(Hyprland.instance.clients.values()); }
     static get active() { return Hyprland.instance.active; }
-    static get monitors() { return Hyprland.instance.monitors; }
-    static get workspaces() { return Hyprland.instance.workspaces; }
-    static get clients() { return Hyprland.instance.clients; }
 
     static HyprctlGet(cmd: string): unknown | object {
         const [success, out, err] =
