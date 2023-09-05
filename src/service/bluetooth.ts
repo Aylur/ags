@@ -15,6 +15,7 @@ class Device extends GObject.Object {
 
     private _device: any;
     private _ids: number[];
+    private _connecting = false;
 
     get device() { return this._device; }
 
@@ -43,6 +44,7 @@ class Device extends GObject.Object {
 
     get address() { return this._device.address; }
     get alias() { return this._device.alias; }
+    get connecting() { return this._connecting; }
     get connected() { return this._device.connected; }
     get batteryLevel() { return this._device.battery_level; }
     get batteryPercentage() { return this._device.battery_percentage; }
@@ -53,9 +55,12 @@ class Device extends GObject.Object {
     get type() { return GnomeBluetooth.type_to_string(this._device.type); }
 
     setConnection(connect: boolean) {
+        this._connecting = true;
         Bluetooth.instance.connectDevice(this, connect, () => {
+            this._connecting = false;
             this.emit('changed');
         });
+        this.emit('changed');
     }
 }
 
