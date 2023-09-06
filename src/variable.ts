@@ -20,7 +20,7 @@ class AgsVariable extends GObject.Object {
     _inerval?: number;
     _subprocess?: Gio.Subprocess | null;
 
-    constructor(value: any, option: Options) {
+    constructor(value: any, option: Options = {}) {
         super();
         this.value = value;
 
