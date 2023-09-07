@@ -3,7 +3,7 @@ import GObject from 'gi://GObject';
 import Service from './service.js';
 import { bulkConnect } from '../utils.js';
 
-const _INTERNET = (device: NM.Device) => {
+const INTERNET = (device: NM.Device) => {
     switch (device?.active_connection?.state) {
         case NM.ActiveConnectionState.ACTIVATED: return 'connected';
         case NM.ActiveConnectionState.ACTIVATING: return 'connecting';
@@ -13,7 +13,7 @@ const _INTERNET = (device: NM.Device) => {
     }
 };
 
-const _DEVICE_STATE = (device: NM.Device) => {
+const DEVICE_STATE = (device: NM.Device) => {
     switch (device?.state) {
         case NM.DeviceState.UNMANAGED: return 'unmanaged';
         case NM.DeviceState.UNAVAILABLE: return 'unavailable';
@@ -31,7 +31,7 @@ const _DEVICE_STATE = (device: NM.Device) => {
     }
 };
 
-const _CONNECTIVITY_STATE = (client: NM.Client) => {
+const CONNECTIVITY_STATE = (client: NM.Client) => {
     switch (client.connectivity) {
         case NM.ConnectivityState.NONE: return 'none';
         case NM.ConnectivityState.PORTAL: return 'portal';
@@ -41,7 +41,15 @@ const _CONNECTIVITY_STATE = (client: NM.Client) => {
     }
 };
 
-const _DEVICE = (device: string) => {
+const STRENGHT_ICONS = [
+    { value: 80, icon: 'network-wireless-signal-excellent-symbolic' },
+    { value: 60, icon: 'network-wireless-signal-good-symbolic' },
+    { value: 40, icon: 'network-wireless-signal-ok-symbolic' },
+    { value: 20, icon: 'network-wireless-signal-weak-symbolic' },
+    { value: 0, icon: 'network-wireless-signal-none-symbolic' },
+];
+
+const DEVICE = (device: string) => {
     switch (device) {
         case '802-11-wireless': return 'wifi';
         case '802-3-ethernet': return 'wired';
@@ -101,6 +109,7 @@ class Wifi extends Service {
                 : 'Unknown',
             active: ap === this._ap,
             strength: ap.strength,
+            iconName: STRENGHT_ICONS.find(({ value }) => value <= ap.strength)?.icon,
         }));
     }
 
@@ -108,7 +117,7 @@ class Wifi extends Service {
     set enabled(v) { this._client.wireless_enabled = v; }
 
     get strength() { return this._ap?.strength || -1; }
-    get internet() { return _INTERNET(this._device); }
+    get internet() { return INTERNET(this._device); }
     get ssid() {
         if (!this._ap)
             return '';
@@ -120,7 +129,7 @@ class Wifi extends Service {
         return NM.utils_ssid_to_utf8(ssid);
     }
 
-    get state() { return _DEVICE_STATE(this._device); }
+    get state() { return DEVICE_STATE(this._device); }
     get iconName() {
         const iconNames: [number, string][] = [
             [80, 'excellent'],
@@ -158,8 +167,8 @@ class Wired extends Service {
     }
 
     get speed() { return this._device.get_speed(); }
-    get internet() { return _INTERNET(this._device); }
-    get state() { return _DEVICE_STATE(this._device); }
+    get internet() { return INTERNET(this._device); }
+    get state() { return DEVICE_STATE(this._device); }
     get iconName() {
         if (this.internet === 'connecting')
             return 'network-wired-acquiring-symbolic';
@@ -230,8 +239,8 @@ class NetworkService extends Service {
             this._client.get_primary_connection() ||
             this._client.get_activating_connection();
 
-        this._primary = _DEVICE(mainConnection?.type || '');
-        this._connectivity = _CONNECTIVITY_STATE(this._client);
+        this._primary = DEVICE(mainConnection?.type || '');
+        this._connectivity = CONNECTIVITY_STATE(this._client);
         this.emit('changed');
     }
 }
