@@ -1,6 +1,7 @@
 import Service from './service.js';
 import GObject from 'gi://GObject';
 import Gvc from 'gi://Gvc';
+import App from '../app.js';
 import { bulkConnect, bulkDisconnect } from '../utils.js';
 
 class Stream extends Service {
@@ -47,8 +48,8 @@ class Stream extends Service {
     }
 
     set volume(value) { // 0..100
-        if (value > 1.5)
-            value = 1.5;
+        if (value > (App.config.maxStreamVolume || 1.5))
+            value = (App.config.maxStreamVolume || 1.5);
 
         if (value < 0)
             value = 0;
