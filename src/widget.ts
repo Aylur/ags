@@ -14,6 +14,7 @@ import AgsProgressBar from './widgets/progressbar.js';
 import AgsEntry from './widgets/entry.js';
 import { AgsMenu, AgsMenuItem } from './widgets/menu.js';
 import AgsWindow from './widgets/window.js';
+import CircularProgressBarFixed from './widgets/circularprogress.js';
 import { constructor, type ctor } from './widgets/constructor.js';
 
 export default function Widget({ type, ...params }: { type: ctor }) {
@@ -37,6 +38,7 @@ export const Revealer = (args: object) => constructor(AgsRevealer, args);
 export const Scrollable = (args: object) => constructor(AgsScrollable, args);
 export const Slider = (args: object) => constructor(AgsSlider, args);
 export const Stack = (args: object) => constructor(AgsStack, args);
+export const CircularProgress = (args: object) => constructor(CircularProgressBarFixed, args);
 
 // so it is still in global scope through ags.Widget
 Widget.Widget = Widget;
@@ -56,3 +58,4 @@ Widget.Scrollable = Scrollable;
 Widget.Slider = Slider;
 Widget.Stack = Stack;
 Widget.Window = Window;
+Widget.CircularProgress = CircularProgress;
