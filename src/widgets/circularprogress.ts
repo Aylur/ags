@@ -1,49 +1,60 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import cairo from 'gi://cairo';
 
-export default class CircularProgressBarFixed extends Gtk.Fixed {
+export default class CircularProgressBarBin extends Gtk.Bin {
     static {
         GObject.registerClass({
-            GTypeName: 'CircularProgressBarFixed',
+            GTypeName: 'CircularProgressBarBin',
+            Properties: {
+                'angle': GObject.ParamSpec.double(
+                    'angle',
+                    'Angle',
+                    'The angle of progress in degrees',
+                    GObject.ParamFlags.READWRITE,
+                    0, 360, 0,
+                ),
+                'value': GObject.ParamSpec.double(
+                    'value',
+                    'Value',
+                    'The progress percentage',
+                    GObject.ParamFlags.READWRITE,
+                    0, 100, 0,
+                ),
+                'child': GObject.ParamSpec.object(
+                    'child',
+                    'Child Widget',
+                    'The child widget of the CircularProgressBarBin',
+                    GObject.ParamFlags.READWRITE,
+                    Gtk.Widget.$gtype,
+                ),
+            },
         }, this);
     }
 
     private angle: number;
-    private progress: number;
-    private _className: string[];
-    private childWidget?: Gtk.Widget;
 
-    constructor(args: { className?: string[]; childWidget?: Gtk.Widget } = {}) {
+    constructor() {
         super();
         this.angle = 0;
-        this.progress = 0;
-        this._className = [];
-
-        if (args.className) {
-            this._className.push(...args.className);
-        }
-
-        if (args.childWidget) {
-            this.childWidget = args.childWidget;
-            this.put(args.childWidget, 0, 0);
-        }
 
         this.connect('draw', this.onDraw.bind(this));
     }
 
-    updateProgress(newProgress: number): boolean {
-        this.progress = newProgress;
-        if (this.progress > 100)
-            this.progress = 0;
+    set value(newValue: number) {
+        if (newValue > 100)
+            newValue = 0;
 
-        this.angle = this.progress * 3.6; // Each percent corresponds to 3.6 degrees
+        this.angle = newValue * 3.6;
         this.queue_draw();
-        return true;
+    }
+
+    get value(): number {
+        return (this.angle / 3.6);
     }
 
     vfunc_get_preferred_height(): [number, number] {
-        let minHeight = this.get_style_context().get_property('min-height', Gtk.StateFlags.NORMAL) as number;
+        let minHeight = this.get_style_context()
+            .get_property('min-height', Gtk.StateFlags.NORMAL) as number;
         if (minHeight <= 0)
             minHeight = 40;
 
@@ -51,7 +62,8 @@ export default class CircularProgressBarFixed extends Gtk.Fixed {
     }
 
     vfunc_get_preferred_width(): [number, number] {
-        let minWidth = this.get_style_context().get_property('min-width', Gtk.StateFlags.NORMAL) as number;
+        let minWidth = this.get_style_context()
+            .get_property('min-width', Gtk.StateFlags.NORMAL) as number;
         if (minWidth <= 0)
             minWidth = 40;
 
@@ -65,17 +77,15 @@ export default class CircularProgressBarFixed extends Gtk.Fixed {
         const radius = Math.min(width, height) / 2.5;
         const centerX = width / 2;
         const centerY = height / 2;
-        let startAngle = -Math.PI / 90;
+        const startAngle = -Math.PI / 2;
 
+        const child = this.get_child();
         const styles = this.get_style_context();
-
-        this._className.forEach((element) => {
-            styles.add_class(element);
-        });
 
         const progressColor = styles.get_color(Gtk.StateFlags.NORMAL);
         const progressBackgroundColor = styles.get_background_color(Gtk.StateFlags.NORMAL);
-        let fontSize = styles.get_property('font-size', Gtk.StateFlags.NORMAL) as number; // Get font size
+        let fontSize = styles
+            .get_property('font-size', Gtk.StateFlags.NORMAL) as number; // Get font size
 
         if (fontSize === 14.666666666666666)
             fontSize = 2;
@@ -87,9 +97,19 @@ export default class CircularProgressBarFixed extends Gtk.Fixed {
             progressBackgroundColor.blue,
             progressBackgroundColor.alpha,
         );
-        cr.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-        cr.setLineWidth(fontSize); // Set the outline width as desired
-        cr.stroke(); // Stroke the outline
+        cr.arc(
+            centerX,
+            centerY,
+            radius,
+            0,
+            2 * Math.PI,
+        );
+        if (child) {
+            cr.setLineWidth(fontSize); // Set the outline width as desired
+            cr.stroke(); // Stroke the outline
+        } else {
+            cr.fill();
+        }
 
         // Draw progress arc outline
         cr.setSourceRGBA(
@@ -105,16 +125,17 @@ export default class CircularProgressBarFixed extends Gtk.Fixed {
             startAngle,
             startAngle + (Math.PI / 180) * this.angle,
         );
-        cr.setLineWidth(fontSize); // Set the outline width as desired
-        cr.stroke(); // Stroke the outline
+        if (child) {
+            cr.setLineWidth(fontSize); // Set the outline width as desired
+            cr.stroke(); // Stroke the outline
+        } else {
+            cr.lineTo(centerX, centerY);
+            cr.fill();
+        }
 
-        if (this.childWidget) {
-            const label_width = this.childWidget.get_allocation().width;
-            const label_height = this.childWidget.get_allocation().height;
-            const label_x = centerX - (label_width / 2);
-            const label_y = centerY - (label_height / 2);
-
-            this.move(this.childWidget, label_x, label_y);
+        if (child) {
+            child.size_allocate(allocation);
+            this.propagate_draw(child, cr);
         }
     }
 }
