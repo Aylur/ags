@@ -81,8 +81,6 @@ export class TrayItem extends Service {
     }
 
     get icon() {
-        if (this._proxy.IconThemePath)
-            Gtk.IconTheme.get_default().append_search_path(this._proxy.IconThemePath);
         let icon;
         if (this.status === 'NeedsAttention') {
             icon = this._proxy.AttentionIconName
@@ -108,6 +106,9 @@ export class TrayItem extends Service {
             });
             this.menu = (menu as unknown) as DbusmenuGtk3.Menu;
         }
+
+        if (this._proxy.IconThemePath)
+            Gtk.IconTheme.get_default().append_search_path(this._proxy.IconThemePath);
 
         bulkConnect(proxy, [
             ['notify::g-name-owner', () => {
