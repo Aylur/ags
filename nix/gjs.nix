@@ -30,6 +30,7 @@
 , gtk-layer-shell
 , libdbusmenu-gtk3
 , libsoup_3
+, gvfs
 }:
 
 let
@@ -81,6 +82,7 @@ in stdenv.mkDerivation rec {
     spidermonkey_102
     libdbusmenu-gtk3
     libsoup_3
+    gvfs
   ];
 
   nativeCheckInputs = [
