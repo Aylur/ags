@@ -4,7 +4,7 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import { execAsync, interval, subprocess } from './utils.js';
 
-type poll = [interval: number, cmd: string[] | string | (() => unknown)];
+type poll = [number, string[] | string | (() => unknown), (out: string) => string];
 type listen = [string[] | string, (out: string) => string] | string[] | string;
 
 interface Options {
@@ -48,11 +48,11 @@ class AgsVariable extends GObject.Object {
         if (this._interval)
             return console.error(`${this} is already polling`);
 
-        const [time, cmd] = this._poll;
+        const [time, cmd, transform = out => out] = this._poll;
         if (Array.isArray(cmd) || typeof cmd === 'string') {
             this._interval = interval(time, () => execAsync(cmd)
-                .catch(logError)
-                .then(this.setValue.bind(this)));
+                .then(out => this.setValue(transform(out)))
+                .catch(logError));
         }
         if (typeof cmd === 'function')
             this._interval = interval(time, () => this.setValue(cmd()));
