@@ -25,6 +25,7 @@ export class TrayItem extends Service {
     private _proxy: StatusNotifierItemProxy;
     private _busName: string;
 
+    private _iconTheme?: Gtk.IconTheme;
     menu?: DbusmenuGtk3.Menu;
 
     constructor(busName: string, objectPath: string) {
@@ -50,10 +51,12 @@ export class TrayItem extends Service {
     }
 
     scroll(event: Gdk.EventScroll) {
-        const direction =
-            (event.direction == 0 || event.direction == 1) ? 'vertical' : 'horizontal';
-        const delta =
-            (event.direction == 0 || event.direction == 1) ? event.delta_y : event.delta_x;
+        const direction = (event.direction == 0 || event.direction == 1)
+            ? 'vertical' : 'horizontal';
+
+        const delta = (event.direction == 0 || event.direction == 1)
+            ? event.delta_y : event.delta_x;
+
         this._proxy.ScrollAsync(delta, direction);
     }
 
@@ -77,23 +80,28 @@ export class TrayItem extends Service {
         let tooltipMarkup = this._proxy.ToolTip[2];
         if (this._proxy.ToolTip[3] !== '')
             tooltipMarkup += '\n' + this._proxy.ToolTip[3];
+
         return tooltipMarkup;
     }
 
     get icon() {
-        let icon;
-        if (this.status === 'NeedsAttention') {
-            icon = this._proxy.AttentionIconName
-                ? this._proxy.AttentionIconName
-                : this._getPixbuf(this._proxy.AttentionIconPixmap);
-        }
-        else {
-            icon = this._proxy.IconName
-                ? this._proxy.IconName
-                : this._getPixbuf(this._proxy.IconPixmap);
-        }
+        const iconName = this.status === 'NeedsAttention'
+            ? this._proxy.AttentionIconName
+            : this._proxy.IconName;
 
-        return icon || 'image-missing';
+        if (this._iconTheme && iconName) {
+            const size = Math.max(...this._iconTheme.get_icon_sizes(iconName));
+            const iconInfo = this._iconTheme.lookup_icon(
+                iconName, size, Gtk.IconLookupFlags.FORCE_SIZE);
+
+            if (iconInfo)
+                return iconInfo.load_icon();
+        }
+        const iconPixmap = this.status === 'NeedsAttention'
+            ? this._proxy.AttentionIconPixmap
+            : this._proxy.IconPixmap;
+
+        return iconName || this._getPixbuf(iconPixmap) || 'image-missing';
     }
 
     private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
@@ -105,6 +113,11 @@ export class TrayItem extends Service {
                 dbus_object: proxy.Menu,
             });
             this.menu = (menu as unknown) as DbusmenuGtk3.Menu;
+        }
+
+        if (this._proxy.IconThemePath) {
+            this._iconTheme = Gtk.IconTheme.new();
+            this._iconTheme?.set_search_path([this._proxy.IconThemePath]);
         }
 
         bulkConnect(proxy, [
