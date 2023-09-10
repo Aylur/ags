@@ -49,7 +49,7 @@ export default class AgsCircularProgress extends Gtk.Bin {
     }
 
     constructor({ startAt, start_at, inverted, value, rounded, ...rest }: Params) {
-        super({ name: 'circularprogress', ...rest });
+        super(rest);
 
         if (start_at || startAt)
             this.start_at = start_at || startAt;
