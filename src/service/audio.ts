@@ -70,6 +70,8 @@ class AudioService extends Service {
         Service.register(this, {
             'speaker-changed': [],
             'microphone-changed': [],
+            'stream-added': ['int'],
+            'stream-removed': ['int'],
         });
     }
 
@@ -77,8 +79,8 @@ class AudioService extends Service {
     private _streams: Map<number, Stream>;
     private _speaker!: Stream;
     private _microphone!: Stream;
-    private _speakerID!: number;
-    private _microphoneID!: number;
+    private _speakerBinding!: number;
+    private _microphoneBinding!: number;
 
     get speaker() { return this._speaker; }
     get microphone() { return this._microphone; }
@@ -104,13 +106,13 @@ class AudioService extends Service {
 
     private _defaultChanged(id: number, type: 'speaker' | 'microphone') {
         if (this[`_${type}`])
-            this[`_${type}`].disconnect(this[`_${type}ID`]);
+            this[`_${type}`].disconnect(this[`_${type}Binding`]);
 
         const stream = this._streams.get(id);
         if (!stream)
             return;
 
-        this[`_${type}ID`] = stream.connect(
+        this[`_${type}Binding`] = stream.connect(
             'changed',
             () => this.emit(`${type}-changed`),
         );
@@ -127,6 +129,7 @@ class AudioService extends Service {
 
         this._streams.set(id, new Stream(stream));
         this.emit('changed');
+        this.emit('stream-added', id);
     }
 
     private _streamRemoved(_c: Gvc.MixerControl, id: number) {
@@ -136,15 +139,7 @@ class AudioService extends Service {
         this._streams.get(id)?.close();
         this._streams.delete(id);
         this.emit('changed');
-    }
-
-    getStreams(filter: { new(): Gvc.MixerStream }) {
-        const map = new Map();
-        for (const [id, stream] of this._streams) {
-            if (stream.stream instanceof filter)
-                map.set(id, stream);
-        }
-        return map;
+        this.emit('stream-removed', id);
     }
 
     setSpeaker(stream: Stream) {
@@ -153,6 +148,19 @@ class AudioService extends Service {
 
     setMicrophone(stream: Stream) {
         this._control.set_default_source(stream.stream);
+    }
+
+    getStream(id: number) {
+        return this._streams.get(id);
+    }
+
+    getStreams(filter: { new(): Gvc.MixerStream }) {
+        const list = [];
+        for (const [, stream] of this._streams) {
+            if (stream.stream instanceof filter)
+                list.push(stream);
+        }
+        return list;
     }
 }
 
@@ -164,13 +172,15 @@ export default class Audio {
         return Audio._instance;
     }
 
+    static getStream(id: number) { return Audio.instance.getStream(id); }
+
     static get microphones() { return Audio.instance.getStreams(Gvc.MixerSource); }
-    static get apps() { return Audio.instance.getStreams(Gvc.MixerSinkInput); }
     static get speakers() { return Audio.instance.getStreams(Gvc.MixerSink); }
+    static get apps() { return Audio.instance.getStreams(Gvc.MixerSinkInput); }
+
+    static get microphone() { return Audio.instance.microphone; }
+    static set microphone(stream: Stream) { Audio.instance.setMicrophone(stream); }
 
     static get speaker() { return Audio.instance.speaker; }
     static set speaker(stream: Stream) { Audio.instance.setSpeaker(stream); }
-
-    static set microphone(stream: Stream) { Audio.instance.setMicrophone(stream); }
-    static get microphone() { return Audio.instance.microphone; }
 }

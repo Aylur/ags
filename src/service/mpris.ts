@@ -252,6 +252,8 @@ class MprisService extends Service {
     private _players!: Players;
     private _proxy: DBusProxy;
 
+    get players() { return Array.from(this._players.values()); }
+
     constructor() {
         super();
 
@@ -309,10 +311,7 @@ class MprisService extends Service {
             this._addPlayer(name);
     }
 
-    getPlayer(name: string | ((players: Players) => MprisPlayer) = '') {
-        if (typeof name === 'function')
-            return name(new Map(this._players)) || null;
-
+    getPlayer(name: string) {
         for (const [busName, player] of this._players) {
             if (busName.includes(name))
                 return player;
@@ -329,7 +328,9 @@ export default class Mpris {
         return Mpris._instance;
     }
 
-    static getPlayer(name: string | ((players: Players) => MprisPlayer)) {
-        return Mpris._instance.getPlayer(name);
+    static getPlayer(name: string) {
+        return Mpris.instance.getPlayer(name);
     }
+
+    static get players() { return Mpris.instance.players; }
 }
