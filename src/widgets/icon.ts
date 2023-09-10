@@ -98,6 +98,7 @@ export default class AgsIcon extends Gtk.Image {
             return;
         const itp = iconThemePath.filter(path => path && path !== '');
         if (itp.length > 0) {
+            print(itp);
             this._iconTheme = Gtk.IconTheme.new();
             this._iconTheme.set_search_path(itp);
         }
