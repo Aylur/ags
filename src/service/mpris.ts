@@ -311,10 +311,7 @@ class MprisService extends Service {
             this._addPlayer(name);
     }
 
-    getPlayer(name: string | ((players: Players) => MprisPlayer) = '') {
-        if (typeof name === 'function')
-            return name(new Map(this._players)) || null;
-
+    getPlayer(name: string) {
         for (const [busName, player] of this._players) {
             if (busName.includes(name))
                 return player;
@@ -331,7 +328,7 @@ export default class Mpris {
         return Mpris._instance;
     }
 
-    static getPlayer(name: string | ((players: Players) => MprisPlayer)) {
+    static getPlayer(name: string) {
         return Mpris.instance.getPlayer(name);
     }
 
