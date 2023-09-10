@@ -1,3 +1,4 @@
+import { Widget } from 'gi-types/gtk4';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 
@@ -33,9 +34,13 @@ export default class CircularProgressBarBin extends Gtk.Bin {
 
     private angle: number;
 
-    constructor() {
+    constructor(args: { child?: Gtk.Widget } = {}) {
+        const { child } = args;
         super();
         this.angle = 0;
+
+        if (child)
+            this.add(child);
 
         this.connect('draw', this.onDraw.bind(this));
     }
@@ -133,9 +138,8 @@ export default class CircularProgressBarBin extends Gtk.Bin {
             cr.fill();
         }
 
-        if (child) {
-            child.size_allocate(allocation);
+
+        if (child)
             this.propagate_draw(child, cr);
-        }
     }
 }
