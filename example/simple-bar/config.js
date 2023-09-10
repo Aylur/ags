@@ -59,13 +59,12 @@ const Notification = () => Box({
         Icon({
             icon: 'preferences-system-notifications-symbolic',
             connections: [
-                [Notifications, icon => icon.visible = Notifications.popups.size > 0],
+                [Notifications, icon => icon.visible = Notifications.popups.length > 0],
             ],
         }),
         Label({
             connections: [[Notifications, label => {
-                // notifications is a map, to get the last elememnt lets make an array
-                label.label = Array.from(Notifications.popups.values())?.pop()?.summary || '';
+                label.label = Notifications.popups[0]?.summary || '';
             }]],
         }),
     ],

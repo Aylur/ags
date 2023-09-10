@@ -7,10 +7,11 @@ const List = () => Box({
     vertical: true,
     vexpand: true,
     connections: [[Notifications, box => {
-        box.children = Array.from(Notifications.notifications.values())
+        box.children = Notifications.notifications
+            .reverse()
             .map(n => Notification(n));
 
-        box.visible = Notifications.notifications.size > 0;
+        box.visible = Notifications.notifications.length > 0;
     }]],
 });
 
@@ -25,7 +26,7 @@ const Placeholder = () => Box({
     ],
     connections: [
         [Notifications, box => {
-            box.visible = Notifications.notifications.size === 0;
+            box.visible = Notifications.notifications.length === 0;
         }],
     ],
 });
@@ -46,7 +47,7 @@ export const NotificationList = () => Scrollable({
 export const ClearButton = () => Button({
     onClicked: Notifications.clear,
     connections: [[Notifications, button => {
-        button.sensitive = Notifications.notifications.size > 0;
+        button.sensitive = Notifications.notifications.length > 0;
     }]],
     child: Box({
         children: [
@@ -57,7 +58,7 @@ export const ClearButton = () => Button({
                     ['false', Icon('user-trash-symbolic')],
                 ],
                 connections: [[Notifications, stack => {
-                    stack.shown = `${Notifications.notifications.size > 0}`;
+                    stack.shown = `${Notifications.notifications.length > 0}`;
                 }]],
             }),
         ],

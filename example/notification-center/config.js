@@ -1,4 +1,4 @@
-const { Window, Box, Label } = ags.Widget;
+const { Window, Box, Label, EventBox } = ags.Widget;
 import {
     NotificationList, DNDSwitch, ClearButton, PopupList,
 } from './widgets.js';
@@ -19,10 +19,19 @@ const NotificationCenter = () => Window({
     popup: true,
     focusable: true,
     child: Box({
-        vertical: true,
         children: [
-            Header(),
-            NotificationList(),
+            EventBox({
+                hexpand: true,
+                connections: [['button-press-event', () =>
+                    ags.App.closeWindow('notification-center')]]
+            }),
+            Box({
+                vertical: true,
+                children: [
+                    Header(),
+                    NotificationList(),
+                ],
+            }),
         ],
     }),
 });
