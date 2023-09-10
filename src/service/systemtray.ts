@@ -69,7 +69,6 @@ export class TrayItem extends Service {
     get status() { return this._proxy.Status; }
     get windowId() { return this._proxy.WindowId; }
     get isMenu() { return this._proxy.ItemIsMenu; }
-    get iconThemePath() { return this._proxy.IconThemePath; }
 
     get tooltipMarkup() {
         if (!this._proxy.ToolTip)
@@ -107,6 +106,9 @@ export class TrayItem extends Service {
             });
             this.menu = (menu as unknown) as DbusmenuGtk3.Menu;
         }
+
+        if (this._proxy.IconThemePath)
+            Gtk.IconTheme.get_default().append_search_path(this._proxy.IconThemePath);
 
         bulkConnect(proxy, [
             ['notify::g-name-owner', () => {

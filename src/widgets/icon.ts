@@ -9,32 +9,15 @@ export default class AgsIcon extends Gtk.Image {
         GObject.registerClass({ GTypeName: 'AgsIcon' }, this);
     }
 
-    _iconTheme?: Gtk.IconTheme;
-
     constructor(params: object | string | GdkPixbuf.Pixbuf) {
         const {
             icon = '',
             size = 0,
-            iconThemePath = [],
             ...rest
-        } = params as { icon: string | GdkPixbuf.Pixbuf, size: number,
-            iconThemePath: string[] | string };
+        } = params as { icon: string | GdkPixbuf.Pixbuf, size: number };
         super(typeof params === 'string' || params instanceof GdkPixbuf.Pixbuf ? {} : rest);
 
         this.size = size;
-        if (iconThemePath) {
-            if (typeof iconThemePath === 'string') {
-                this._iconTheme = Gtk.IconTheme.new();
-                this._iconTheme.set_search_path([iconThemePath]);
-            }
-            else {
-                const itp = iconThemePath.filter(path => path && path !== '');
-                if (itp.length > 0) {
-                    this._iconTheme = Gtk.IconTheme.new();
-                    this._iconTheme.set_search_path(itp);
-                }
-            }
-        }
         this.icon = typeof params === 'string' || params instanceof GdkPixbuf.Pixbuf
             ? params : icon;
     }
@@ -61,24 +44,9 @@ export default class AgsIcon extends Gtk.Image {
                 this.set_from_pixbuf(
                     GdkPixbuf.Pixbuf.new_from_file_at_size(icon, this.size, this.size));
             } else {
-                if (this._iconTheme &&
-                    this._iconTheme.lookup_icon(
-                        icon, this.size, Gtk.IconLookupFlags.FORCE_SIZE)) {
-                    this._type = 'pixbuf';
-                    //get the biggest size to avoid upscaling, which results in bad quality,
-                    //alternatively reload icon in draw function.
-                    const sizes = this._iconTheme.get_icon_sizes(icon);
-                    const pixbuf = this._iconTheme.load_icon(
-                        icon, Math.max(...sizes), Gtk.IconLookupFlags.FORCE_SIZE);
-                    // @ts-expect-error
-                    this._icon = pixbuf;
-                    this.set_from_pixbuf(pixbuf);
-                }
-                else {
-                    this._type = 'named';
-                    this.icon_name = icon;
-                    this.pixel_size = this.size;
-                }
+                this._type = 'named';
+                this.icon_name = icon;
+                this.pixel_size = this.size;
             }
         }
         else if (icon instanceof GdkPixbuf.Pixbuf) {
@@ -88,19 +56,6 @@ export default class AgsIcon extends Gtk.Image {
         }
         else {
             logError(new Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));
-        }
-    }
-
-    get iconTheme() { return this._iconTheme?.get_search_path() || []; }
-
-    set iconTheme(iconThemePath: string[]) {
-        if (!iconThemePath || iconThemePath.length === 0)
-            return;
-        const itp = iconThemePath.filter(path => path && path !== '');
-        if (itp.length > 0) {
-            print(itp);
-            this._iconTheme = Gtk.IconTheme.new();
-            this._iconTheme.set_search_path(itp);
         }
     }
 
