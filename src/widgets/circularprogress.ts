@@ -1,60 +1,92 @@
-import { Widget } from 'gi-types/gtk4';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 
-export default class CircularProgressBarBin extends Gtk.Bin {
+// type from gi-types is wrong
+interface Context {
+    setSourceRGBA: (r: number, g: number, b: number, a: number) => void
+    arc: (x: number, y: number, r: number, a1: number, a2: number) => void
+    setLineWidth: (w: number) => void
+    lineTo: (x: number, y: number) => void
+    stroke: () => void
+    fill: () => void
+}
+
+interface Params {
+    start_at: number,
+    startAt: number,
+    value: number,
+    clockwise: boolean,
+}
+
+export default class AgsCircularProgress extends Gtk.Bin {
     static {
         GObject.registerClass({
-            GTypeName: 'CircularProgressBarBin',
+            GTypeName: 'AgsCircularProgress',
             Properties: {
-                'angle': GObject.ParamSpec.double(
-                    'angle',
-                    'Angle',
-                    'The angle of progress in degrees',
-                    GObject.ParamFlags.READWRITE,
-                    0, 360, 0,
+                'start-at': GObject.ParamSpec.double(
+                    'start-at', 'Start At', 'The percentage that the circle should start at',
+                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                    0, 1, 0,
+                ),
+                'clockwise': GObject.ParamSpec.boolean(
+                    'clockwise', 'Clockwise',
+                    'Wether the progress bar spins clockwise or counter clockwise',
+                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                    true,
                 ),
                 'value': GObject.ParamSpec.double(
-                    'value',
-                    'Value',
-                    'The progress percentage',
-                    GObject.ParamFlags.READWRITE,
-                    0, 100, 0,
-                ),
-                'child': GObject.ParamSpec.object(
-                    'child',
-                    'Child Widget',
-                    'The child widget of the CircularProgressBarBin',
-                    GObject.ParamFlags.READWRITE,
-                    Gtk.Widget.$gtype,
+                    'value', 'Value', 'The progress percentage',
+                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                    0, 1, 0,
                 ),
             },
         }, this);
     }
 
-    private angle: number;
+    constructor({ startAt, start_at, clockwise, value, ...rest }: Params) {
+        super({ name: 'circularprogress', ...rest });
 
-    constructor(args: { child?: Gtk.Widget } = {}) {
-        const { child } = args;
-        super();
-        this.angle = 0;
+        if (start_at || startAt)
+            this.start_at = start_at || startAt;
 
-        if (child)
-            this.add(child);
+        if (typeof clockwise === 'boolean')
+            this.clockwise = clockwise;
 
-        this.connect('draw', this.onDraw.bind(this));
+        if (value)
+            this.value = value;
     }
 
-    set value(newValue: number) {
-        if (newValue > 100)
-            newValue = 0;
-
-        this.angle = newValue * 3.6;
+    private _clockwise = true;
+    get clockwise() { return this._clockwise; }
+    set clockwise(c: boolean) {
+        this._clockwise = c;
         this.queue_draw();
     }
 
-    get value(): number {
-        return (this.angle / 3.6);
+    private _startAt = 0;
+    get start_at() { return this._startAt; }
+    set start_at(value: number) {
+        if (value > 1)
+            value = 1;
+
+        if (value < 0)
+            value = 0;
+
+        this._startAt = value;
+        this.queue_draw();
+    }
+
+    private _value = 0;
+    get value() { return this._value; }
+    set value(value: number) {
+        if (value > 1)
+            value = 1;
+
+        if (value < 0)
+            value = 0;
+
+        this._value = value;
+        this.queue_draw();
     }
 
     vfunc_get_preferred_height(): [number, number] {
@@ -75,71 +107,46 @@ export default class CircularProgressBarBin extends Gtk.Bin {
         return [minWidth, minWidth];
     }
 
-    onDraw(_widget: Gtk.Widget, cr: any) {
+    private _toRadian(percentage: number) {
+        percentage = Math.floor(percentage * 100);
+        return (percentage / 100) * (2 * Math.PI);
+    }
+
+    vfunc_draw(cr: Context): boolean {
         const allocation = this.get_allocation();
+        const styles = this.get_style_context();
         const width = allocation.width;
         const height = allocation.height;
-        const radius = Math.min(width, height) / 2.5;
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const startAngle = -Math.PI / 2;
+        const thickness = styles.get_property('font-size', Gtk.StateFlags.NORMAL) as number;
+        const margin = styles.get_margin(Gtk.StateFlags.NORMAL);
+        const fg = styles.get_color(Gtk.StateFlags.NORMAL);
+        const bg = styles.get_background_color(Gtk.StateFlags.NORMAL);
+        const bgStroke = thickness + Math.min(margin.bottom, margin.top, margin.left, margin.right);
+        const fgStroke = thickness;
+        const radius = Math.min(width, height) / 2.0 - Math.max(bgStroke, fgStroke) / 2.0;
+        const center = { x: width / 2, y: height / 2 };
 
-        const child = this.get_child();
-        const styles = this.get_style_context();
+        // TODO figure out starting and ending angles
+        const from = this._toRadian(this.start_at);
+        const to = this._toRadian(this.value);
 
-        const progressColor = styles.get_color(Gtk.StateFlags.NORMAL);
-        const progressBackgroundColor = styles.get_background_color(Gtk.StateFlags.NORMAL);
-        let fontSize = styles
-            .get_property('font-size', Gtk.StateFlags.NORMAL) as number; // Get font size
+        // Draw background
+        cr.setSourceRGBA(bg.red, bg.green, bg.blue, bg.alpha);
+        cr.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+        cr.setLineWidth(bgStroke);
+        cr.stroke();
 
-        if (fontSize === 14.666666666666666)
-            fontSize = 2;
+        // Draw progress
+        cr.setSourceRGBA(fg.red, fg.green, fg.blue, fg.alpha);
+        cr.arc(center.x, center.y, radius, this.clockwise ? from : to, this.clockwise ? to : from);
+        cr.setLineWidth(fgStroke);
+        cr.stroke();
 
-        // Draw background circle outline
-        cr.setSourceRGBA(
-            progressBackgroundColor.red,
-            progressBackgroundColor.green,
-            progressBackgroundColor.blue,
-            progressBackgroundColor.alpha,
-        );
-        cr.arc(
-            centerX,
-            centerY,
-            radius,
-            0,
-            2 * Math.PI,
-        );
-        if (child) {
-            cr.setLineWidth(fontSize); // Set the outline width as desired
-            cr.stroke(); // Stroke the outline
-        } else {
-            cr.fill();
+        if (this.child) {
+            this.child.size_allocate(allocation);
+            this.propagate_draw(this.child, cr);
         }
 
-        // Draw progress arc outline
-        cr.setSourceRGBA(
-            progressColor.red,
-            progressColor.green,
-            progressColor.blue,
-            progressColor.alpha,
-        );
-        cr.arc(
-            centerX,
-            centerY,
-            radius,
-            startAngle,
-            startAngle + (Math.PI / 180) * this.angle,
-        );
-        if (child) {
-            cr.setLineWidth(fontSize); // Set the outline width as desired
-            cr.stroke(); // Stroke the outline
-        } else {
-            cr.lineTo(centerX, centerY);
-            cr.fill();
-        }
-
-
-        if (child)
-            this.propagate_draw(child, cr);
+        return true;
     }
 }
