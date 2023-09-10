@@ -16,6 +16,7 @@ interface Params {
     startAt: number,
     value: number,
     inverted: boolean,
+    rounded: boolean,
 }
 
 export default class AgsCircularProgress extends Gtk.Bin {
@@ -33,6 +34,11 @@ export default class AgsCircularProgress extends Gtk.Bin {
                     GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
                     true,
                 ),
+                'rounded': GObject.ParamSpec.boolean(
+                    'rounded', 'Rounded', 'Rounded',
+                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                    true,
+                ),
                 'value': GObject.ParamSpec.double(
                     'value', 'Value', 'The progress percentage',
                     GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
@@ -42,7 +48,7 @@ export default class AgsCircularProgress extends Gtk.Bin {
         }, this);
     }
 
-    constructor({ startAt, start_at, inverted, value, ...rest }: Params) {
+    constructor({ startAt, start_at, inverted, value, rounded, ...rest }: Params) {
         super({ name: 'circularprogress', ...rest });
 
         if (start_at || startAt)
@@ -51,8 +57,18 @@ export default class AgsCircularProgress extends Gtk.Bin {
         if (typeof inverted === 'boolean')
             this.inverted = inverted;
 
+        if (typeof rounded === 'boolean')
+            this.rounded = rounded;
+
         if (value)
             this.value = value;
+    }
+
+    private _rounded = true;
+    get rounded() { return this._rounded; }
+    set rounded(r: boolean) {
+        this._rounded = r;
+        this.queue_draw();
     }
 
     private _inverted = true;
@@ -138,6 +154,23 @@ export default class AgsCircularProgress extends Gtk.Bin {
         cr.arc(center.x, center.y, radius, this.inverted ? from : to, this.inverted ? to : from);
         cr.setLineWidth(fgStroke);
         cr.stroke();
+
+        // Draw rounded ends
+        if (this.rounded) {
+            const start = {
+                x: center.x + Math.cos(from) * radius,
+                y: center.y + Math.sin(from) * radius,
+            };
+            const end = {
+                x: center.x + Math.cos(to) * radius,
+                y: center.y + Math.sin(to) * radius,
+            };
+            cr.setLineWidth(0);
+            cr.arc(start.x, start.y, fgStroke / 2, 0, 0 - 0.01);
+            cr.fill();
+            cr.arc(end.x, end.y, fgStroke / 2, 0, 0 - 0.01);
+            cr.fill();
+        }
 
         if (this.child) {
             this.child.size_allocate(allocation);
