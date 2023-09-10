@@ -51,10 +51,12 @@ export class TrayItem extends Service {
     }
 
     scroll(event: Gdk.EventScroll) {
-        const direction =
-            (event.direction == 0 || event.direction == 1) ? 'vertical' : 'horizontal';
-        const delta =
-            (event.direction == 0 || event.direction == 1) ? event.delta_y : event.delta_x;
+        const direction = (event.direction == 0 || event.direction == 1)
+            ? 'vertical' : 'horizontal';
+
+        const delta = (event.direction == 0 || event.direction == 1)
+            ? event.delta_y : event.delta_x;
+
         this._proxy.ScrollAsync(delta, direction);
     }
 
@@ -78,31 +80,28 @@ export class TrayItem extends Service {
         let tooltipMarkup = this._proxy.ToolTip[2];
         if (this._proxy.ToolTip[3] !== '')
             tooltipMarkup += '\n' + this._proxy.ToolTip[3];
+
         return tooltipMarkup;
     }
 
     get icon() {
-        let icon;
         const iconName = this.status === 'NeedsAttention'
             ? this._proxy.AttentionIconName
             : this._proxy.IconName;
+
         if (this._iconTheme && iconName) {
             const size = Math.max(...this._iconTheme.get_icon_sizes(iconName));
             const iconInfo = this._iconTheme.lookup_icon(
                 iconName, size, Gtk.IconLookupFlags.FORCE_SIZE);
-            if (iconInfo) {
-                icon = iconInfo.load_icon();
-                return icon;
-            }
+
+            if (iconInfo)
+                return iconInfo.load_icon();
         }
         const iconPixmap = this.status === 'NeedsAttention'
             ? this._proxy.AttentionIconPixmap
             : this._proxy.IconPixmap;
-        icon = iconName
-            ? iconName
-            : this._getPixbuf(iconPixmap);
 
-        return icon || 'image-missing';
+        return iconName || this._getPixbuf(iconPixmap) || 'image-missing';
     }
 
     private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
