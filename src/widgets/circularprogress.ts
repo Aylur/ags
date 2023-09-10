@@ -15,7 +15,7 @@ interface Params {
     start_at: number,
     startAt: number,
     value: number,
-    clockwise: boolean,
+    inverted: boolean,
 }
 
 export default class AgsCircularProgress extends Gtk.Bin {
@@ -28,9 +28,8 @@ export default class AgsCircularProgress extends Gtk.Bin {
                     GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
                     0, 1, 0,
                 ),
-                'clockwise': GObject.ParamSpec.boolean(
-                    'clockwise', 'Clockwise',
-                    'Wether the progress bar spins clockwise or counter clockwise',
+                'inverted': GObject.ParamSpec.boolean(
+                    'inverted', 'Inverted', 'Inverted',
                     GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
                     true,
                 ),
@@ -43,23 +42,23 @@ export default class AgsCircularProgress extends Gtk.Bin {
         }, this);
     }
 
-    constructor({ startAt, start_at, clockwise, value, ...rest }: Params) {
+    constructor({ startAt, start_at, inverted, value, ...rest }: Params) {
         super({ name: 'circularprogress', ...rest });
 
         if (start_at || startAt)
             this.start_at = start_at || startAt;
 
-        if (typeof clockwise === 'boolean')
-            this.clockwise = clockwise;
+        if (typeof inverted === 'boolean')
+            this.inverted = inverted;
 
         if (value)
             this.value = value;
     }
 
-    private _clockwise = true;
-    get clockwise() { return this._clockwise; }
-    set clockwise(c: boolean) {
-        this._clockwise = c;
+    private _inverted = true;
+    get inverted() { return this._inverted; }
+    set inverted(c: boolean) {
+        this._inverted = c;
         this.queue_draw();
     }
 
@@ -125,10 +124,8 @@ export default class AgsCircularProgress extends Gtk.Bin {
         const fgStroke = thickness;
         const radius = Math.min(width, height) / 2.0 - Math.max(bgStroke, fgStroke) / 2.0;
         const center = { x: width / 2, y: height / 2 };
-
-        // TODO figure out starting and ending angles
         const from = this._toRadian(this.start_at);
-        const to = this._toRadian(this.value);
+        const to = this._toRadian(this.value + this.start_at);
 
         // Draw background
         cr.setSourceRGBA(bg.red, bg.green, bg.blue, bg.alpha);
@@ -138,7 +135,7 @@ export default class AgsCircularProgress extends Gtk.Bin {
 
         // Draw progress
         cr.setSourceRGBA(fg.red, fg.green, fg.blue, fg.alpha);
-        cr.arc(center.x, center.y, radius, this.clockwise ? from : to, this.clockwise ? to : from);
+        cr.arc(center.x, center.y, radius, this.inverted ? from : to, this.inverted ? to : from);
         cr.setLineWidth(fgStroke);
         cr.stroke();
 
