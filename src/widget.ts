@@ -26,6 +26,7 @@ export const Window = (args: object) => constructor(AgsWindow, args);
 export const Box = (args: object) => constructor(AgsBox, args);
 export const Button = (args: object) => constructor(AgsButton, args);
 export const CenterBox = (args: object) => constructor(AgsCenterBox, args);
+export const CircularProgress = (args: object) => constructor(AgsCircularProgress, args);
 export const Entry = (args: object) => constructor(AgsEntry, args);
 export const EventBox = (args: object) => constructor(AgsEventBox, args);
 export const Icon = (args: object) => constructor(AgsIcon, args);
@@ -38,13 +39,13 @@ export const Revealer = (args: object) => constructor(AgsRevealer, args);
 export const Scrollable = (args: object) => constructor(AgsScrollable, args);
 export const Slider = (args: object) => constructor(AgsSlider, args);
 export const Stack = (args: object) => constructor(AgsStack, args);
-export const CircularProgress = (args: object) => constructor(AgsCircularProgress, args);
 
 // so it is still in global scope through ags.Widget
 Widget.Widget = Widget;
 Widget.Box = Box;
 Widget.Button = Button;
 Widget.CenterBox = CenterBox;
+Widget.CircularProgress = CircularProgress;
 Widget.Entry = Entry;
 Widget.EventBox = EventBox;
 Widget.Icon = Icon;
@@ -58,4 +59,3 @@ Widget.Scrollable = Scrollable;
 Widget.Slider = Slider;
 Widget.Stack = Stack;
 Widget.Window = Window;
-Widget.CircularProgress = CircularProgress;
