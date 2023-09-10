@@ -14,6 +14,7 @@
     <file>widgets/box.js</file>
     <file>widgets/button.js</file>
     <file>widgets/centerbox.js</file>
+    <file>widgets/circularprogress.js</file>
     <file>widgets/entry.js</file>
     <file>widgets/eventbox.js</file>
     <file>widgets/icon.js</file>
@@ -21,7 +22,6 @@
     <file>widgets/menu.js</file>
     <file>widgets/overlay.js</file>
     <file>widgets/progressbar.js</file>
-    <file>widgets/circularprogress.js</file>
     <file>widgets/revealer.js</file>
     <file>widgets/scrollable.js</file>
     <file>widgets/slider.js</file>
