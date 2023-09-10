@@ -25,6 +25,7 @@ export class TrayItem extends Service {
     private _proxy: StatusNotifierItemProxy;
     private _busName: string;
 
+    private _iconTheme?: Gtk.IconTheme;
     menu?: DbusmenuGtk3.Menu;
 
     constructor(busName: string, objectPath: string) {
@@ -82,16 +83,24 @@ export class TrayItem extends Service {
 
     get icon() {
         let icon;
-        if (this.status === 'NeedsAttention') {
-            icon = this._proxy.AttentionIconName
-                ? this._proxy.AttentionIconName
-                : this._getPixbuf(this._proxy.AttentionIconPixmap);
+        const iconName = this.status === 'NeedsAttention'
+            ? this._proxy.AttentionIconName
+            : this._proxy.IconName;
+        if (this._iconTheme && iconName) {
+            const size = Math.max(...this._iconTheme.get_icon_sizes(iconName));
+            const iconInfo = this._iconTheme.lookup_icon(
+                iconName, size, Gtk.IconLookupFlags.FORCE_SIZE);
+            if (iconInfo) {
+                icon = iconInfo.load_icon();
+                return icon;
+            }
         }
-        else {
-            icon = this._proxy.IconName
-                ? this._proxy.IconName
-                : this._getPixbuf(this._proxy.IconPixmap);
-        }
+        const iconPixmap = this.status === 'NeedsAttention'
+            ? this._proxy.AttentionIconPixmap
+            : this._proxy.IconPixmap;
+        icon = iconName
+            ? iconName
+            : this._getPixbuf(iconPixmap);
 
         return icon || 'image-missing';
     }
@@ -107,8 +116,10 @@ export class TrayItem extends Service {
             this.menu = (menu as unknown) as DbusmenuGtk3.Menu;
         }
 
-        if (this._proxy.IconThemePath)
-            Gtk.IconTheme.get_default().append_search_path(this._proxy.IconThemePath);
+        if (this._proxy.IconThemePath) {
+            this._iconTheme = Gtk.IconTheme.new();
+            this._iconTheme?.set_search_path([this._proxy.IconThemePath]);
+        }
 
         bulkConnect(proxy, [
             ['notify::g-name-owner', () => {
