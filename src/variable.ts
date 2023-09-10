@@ -4,9 +4,12 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import { execAsync, interval, subprocess } from './utils.js';
 
+type poll = [number, string[] | string | (() => unknown), (out: string) => string];
+type listen = [string[] | string, (out: string) => string] | string[] | string;
+
 interface Options {
-    poll?: [interval: number, cmd: string[] | string | (() => unknown)],
-    listen?: string[] | string,
+    poll?: poll
+    listen?: listen
 }
 
 class AgsVariable extends GObject.Object {
@@ -17,37 +20,104 @@ class AgsVariable extends GObject.Object {
         }, this);
     }
 
-    _inerval?: number;
-    _subprocess?: Gio.Subprocess | null;
+    private _value: any;
+    private _poll?: poll;
+    private _listen?: listen;
+    private _interval?: number;
+    private _subprocess?: Gio.Subprocess | null;
 
-    constructor(value: any, option: Options = {}) {
+    constructor(value: any, { poll, listen }: Options = {}) {
         super();
         this.value = value;
 
-        if (option.poll) {
-            const [time, cmd] = option.poll;
-            if (Array.isArray(cmd) || typeof cmd === 'string') {
-                this._inerval = interval(time, () => execAsync(cmd)
-                    .catch(logError)
-                    .then(this.setValue.bind(this)));
-            }
-            if (typeof cmd === 'function')
-                this._inerval = interval(time, () => this.setValue(cmd()));
+        if (poll) {
+            this._poll = poll;
+            this.startPoll();
         }
 
-        if (option.listen)
-            this._subprocess = subprocess(option.listen, this.setValue.bind(this), logError);
+        if (listen) {
+            this._listen = listen;
+            this.startListen();
+        }
     }
+
+    startPoll() {
+        if (!this._poll)
+            return console.error(`${this} has no poll defined`);
+
+        if (this._interval)
+            return console.error(`${this} is already polling`);
+
+        const [time, cmd, transform = out => out] = this._poll;
+        if (Array.isArray(cmd) || typeof cmd === 'string') {
+            this._interval = interval(time, () => execAsync(cmd)
+                .then(out => this.setValue(transform(out)))
+                .catch(logError));
+        }
+        if (typeof cmd === 'function')
+            this._interval = interval(time, () => this.setValue(cmd()));
+    }
+
+    stopPoll() {
+        if (this._interval) {
+            GLib.source_remove(this._interval);
+            this._interval = 0;
+        } else {
+            console.error(`${this} has no poll running`);
+        }
+    }
+
+    startListen() {
+        if (!this._listen)
+            return console.error(`${this} has no listen defined`);
+
+        if (this._subprocess)
+            return console.error(`${this} is already listening`);
+
+        let cmd: string | string[];
+        const transform = typeof this._listen[1] === 'function'
+            ? this._listen[1]
+            : (out: string) => out;
+
+        // listen: string
+        if (typeof this._listen === 'string')
+            cmd = this._listen;
+
+        // listen: [string, fn]
+        else if (Array.isArray(this._listen) && typeof this._listen[0] === 'string')
+            cmd = this._listen[0];
+
+        // listen: [string[], fn]
+        else if (Array.isArray(this._listen) && Array.isArray(this._listen[0]))
+            cmd = this._listen[0];
+
+        else
+            return console.error(`${this._listen} is not a valid type for Variable.listen`);
+
+        this._subprocess = subprocess(cmd, out => this.setValue(transform(out)));
+    }
+
+    stopListen() {
+        if (this._subprocess) {
+            this._subprocess.force_exit();
+            this._subprocess = null;
+        } else {
+            console.error(`${this} has no listen running`);
+        }
+    }
+
+    get isListening() { return !!this._subprocess; }
+    get isPolling() { return !!this._listen; }
 
     dispose() {
-        if (this._inerval)
-            GLib.source_remove(this._inerval);
+        if (this._interval)
+            GLib.source_remove(this._interval);
 
-        this._subprocess?.force_exit();
+        if (this._subprocess)
+            this._subprocess.force_exit();
+
         this.run_dispose();
     }
-
-    private _value: any;
 
     getValue() { return this._value; }
     setValue(value: any) {
