@@ -68,8 +68,8 @@ class Stream extends Service {
 class AudioService extends Service {
     static {
         Service.register(this, {
-            'sink-changed': [],
-            'source-changed': [],
+            'speaker-changed': [],
+            'microphone-changed': [],
             'stream-added': ['int'],
             'stream-removed': ['int'],
         });
@@ -77,13 +77,13 @@ class AudioService extends Service {
 
     private _control: Gvc.MixerControl;
     private _streams: Map<number, Stream>;
-    private _sink!: Stream;
-    private _source!: Stream;
-    private _sinkBinding!: number;
-    private _sourceBinding!: number;
+    private _speaker!: Stream;
+    private _microphone!: Stream;
+    private _speakerBinding!: number;
+    private _microphoneBinding!: number;
 
-    get sink() { return this._sink; }
-    get source() { return this._source; }
+    get speaker() { return this._speaker; }
+    get microphone() { return this._microphone; }
 
     get control() { return this._control; }
 
@@ -95,8 +95,8 @@ class AudioService extends Service {
         this._streams = new Map();
 
         bulkConnect((this._control as unknown) as GObject.Object, [
-            ['default-sink-changed', (_c, id: number) => this._defaultChanged(id, 'sink')],
-            ['default-source-changed', (_c, id: number) => this._defaultChanged(id, 'source')],
+            ['default-sink-changed', (_c, id: number) => this._defaultChanged(id, 'speaker')],
+            ['default-source-changed', (_c, id: number) => this._defaultChanged(id, 'microphone')],
             ['stream-added', this._streamAdded.bind(this)],
             ['stream-removed', this._streamRemoved.bind(this)],
         ]);
@@ -104,7 +104,7 @@ class AudioService extends Service {
         this._control.open();
     }
 
-    private _defaultChanged(id: number, type: 'sink' | 'source') {
+    private _defaultChanged(id: number, type: 'speaker' | 'microphone') {
         if (this[`_${type}`])
             this[`_${type}`].disconnect(this[`_${type}Binding`]);
 
@@ -112,9 +112,10 @@ class AudioService extends Service {
         if (!stream)
             return;
 
-        this[`_${type}Binding`] = stream.connect('changed',
-            () => this.emit(`${type}-changed`));
-
+        this[`_${type}Binding`] = stream.connect(
+            'changed',
+            () => this.emit(`${type}-changed`),
+        );
         this[`_${type}`] = stream;
         this.emit(`${type}-changed`);
         this.emit('changed');
@@ -141,6 +142,14 @@ class AudioService extends Service {
         this.emit('stream-removed', id);
     }
 
+    setSpeaker(stream: Stream) {
+        this._control.set_default_sink(stream.stream);
+    }
+
+    setMicrophone(stream: Stream) {
+        this._control.set_default_source(stream.stream);
+    }
+
     getStream(id: number) {
         return this._streams.get(id);
     }
@@ -152,14 +161,6 @@ class AudioService extends Service {
                 list.push(stream);
         }
         return list;
-    }
-
-    setSink(stream: Stream) {
-        this._control.set_default_sink(stream.stream);
-    }
-
-    setSource(stream: Stream) {
-        this._control.set_default_source(stream.stream);
     }
 }
 
@@ -173,13 +174,13 @@ export default class Audio {
 
     static getStream(id: number) { return Audio.instance.getStream(id); }
 
-    static get sources() { return Audio.instance.getStreams(Gvc.MixerSource); }
+    static get microphones() { return Audio.instance.getStreams(Gvc.MixerSource); }
+    static get speakers() { return Audio.instance.getStreams(Gvc.MixerSink); }
     static get apps() { return Audio.instance.getStreams(Gvc.MixerSinkInput); }
-    static get sinks() { return Audio.instance.getStreams(Gvc.MixerSink); }
 
-    static get sink() { return Audio.instance.sink; }
-    static set sink(stream: Stream) { Audio.instance.setSink(stream); }
+    static get microphone() { return Audio.instance.microphone; }
+    static set microphone(stream: Stream) { Audio.instance.setMicrophone(stream); }
 
-    static get source() { return Audio.instance.source; }
-    static set source(stream: Stream) { Audio.instance.setSource(stream); }
+    static get speaker() { return Audio.instance.speaker; }
+    static set speaker(stream: Stream) { Audio.instance.setSpeaker(stream); }
 }
