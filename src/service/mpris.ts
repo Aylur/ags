@@ -311,7 +311,7 @@ class MprisService extends Service {
             this._addPlayer(name);
     }
 
-    getPlayer(name: string) {
+    getPlayer(name = '') {
         for (const [busName, player] of this._players) {
             if (busName.includes(name))
                 return player;
