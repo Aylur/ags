@@ -138,6 +138,9 @@ export function main(args: string[]) {
     const path = APP_PATH(flags.busName);
 
     if (!isRunning(bus)) {
+        if (flags.quit)
+            return;
+
         const app = new App(bus, path, flags.config);
         app.connect('config-parsed', () => {
             if (flags.toggleWindow)
