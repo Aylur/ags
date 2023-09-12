@@ -16,24 +16,26 @@ export default class AgsButton extends Gtk.Button {
     onPrimaryClickRelease: Command;
     onSecondaryClickRelease: Command;
     onMiddleClickRelease: Command;
+    onHover: Command;
+    onHoverLost: Command;
     onScrollUp: Command;
     onScrollDown: Command;
 
-    constructor(params: object | string) {
-        const {
-            onClicked = '',
-            onPrimaryClick = '',
-            onSecondaryClick = '',
-            onMiddleClick = '',
-            onPrimaryClickRelease = '',
-            onSecondaryClickRelease = '',
-            onMiddleClickRelease = '',
-            onScrollUp = '',
-            onScrollDown = '',
-            ...rest
-        } = params as { [key: string]: Command };
-
-        super(typeof params === 'string' ? { label: params } : rest);
+    constructor({
+        onClicked = '',
+        onPrimaryClick = '',
+        onSecondaryClick = '',
+        onMiddleClick = '',
+        onPrimaryClickRelease = '',
+        onSecondaryClickRelease = '',
+        onMiddleClickRelease = '',
+        onHover = '',
+        onHoverLost = '',
+        onScrollUp = '',
+        onScrollDown = '',
+        ...rest
+    } = {}) {
+        super(rest);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
 
@@ -44,10 +46,20 @@ export default class AgsButton extends Gtk.Button {
         this.onPrimaryClickRelease = onPrimaryClickRelease;
         this.onSecondaryClickRelease = onSecondaryClickRelease;
         this.onMiddleClickRelease = onMiddleClickRelease;
+        this.onHover = onHover;
+        this.onHoverLost = onHoverLost;
         this.onScrollUp = onScrollUp;
         this.onScrollDown = onScrollDown;
 
         this.connect('clicked', (...args) => runCmd(this.onClicked, ...args));
+
+        this.connect('enter-notify-event', (btn, event) => {
+            return runCmd(this.onHover, btn, event);
+        });
+
+        this.connect('leave-notify-event', (btn, event) => {
+            return runCmd(this.onHoverLost, btn, event);
+        });
 
         this.connect('button-press-event', (_, event: Gdk.Event) => {
             if (this.onPrimaryClick &&
