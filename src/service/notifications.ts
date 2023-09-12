@@ -202,12 +202,12 @@ class NotificationsService extends Service {
         try {
             const file = await readFileAsync(CACHE_FILE);
             const notifications = JSON.parse(file as string) as Notification[];
-            notifications.forEach(n => {
+            for (const n of notifications) {
                 if (n.id > this._idCount)
                     this._idCount = n.id + 1;
 
                 this._notifications.set(n.id, n);
-            });
+            }
 
             this.emit('changed');
         } catch (_) {
@@ -247,11 +247,8 @@ class NotificationsService extends Service {
     }
 
     private _cache() {
-        const notifications = [];
-        for (const [, notification] of this._notifications) {
-            const n = { ...notification, action: [], popup: false };
-            notifications.push(n);
-        }
+        const notifications = Array.from(this._notifications.values())
+            .map(n => ({ ...n, actions: [], popup: false }));
 
         ensureDirectory(NOTIFICATIONS_CACHE_PATH);
         const json = JSON.stringify(notifications, null, 2);
