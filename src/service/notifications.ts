@@ -54,7 +54,6 @@ class NotificationsService extends Service {
     private _notifications: Map<number, Notification>;
     private _dnd = false;
     private _idCount = 0;
-    private _timeout = App.config?.notificationPopupTimeout || 3000;
 
     constructor() {
         super();
@@ -123,7 +122,7 @@ class NotificationsService extends Service {
                 this._isFile(appIcon),
         });
 
-        timeout(this._timeout, () => this.DismissNotification(id));
+        timeout(App.config.notificationPopupTimeout, () => this.DismissNotification(id));
 
         this._cache();
         this.emit('notified', id);

@@ -48,8 +48,8 @@ class Stream extends Service {
     }
 
     set volume(value) { // 0..100
-        if (value > (App.config.maxStreamVolume || 1.5))
-            value = (App.config.maxStreamVolume || 1.5);
+        if (value > (App.config.maxStreamVolume))
+            value = (App.config.maxStreamVolume);
 
         if (value < 0)
             value = 0;

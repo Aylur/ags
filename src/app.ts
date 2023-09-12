@@ -12,8 +12,8 @@ const AgsIFace = (bus: string) =>
 interface Config {
     windows?: Gtk.Window[]
     style?: string
-    notificationPopupTimeout?: number
-    closeWindowDelay?: { [key: string]: number }
+    notificationPopupTimeout: number
+    closeWindowDelay: { [key: string]: number }
     maxStreamVolume: number
 }
 
@@ -186,6 +186,9 @@ export default class App extends Gtk.Application {
         try {
             const mod = await import(`file://${App.configPath}`);
             const config = mod.default as Config;
+            config.closeWindowDelay ||= {};
+            config.notificationPopupTimeout ||= 3000;
+            config.maxStreamVolume ||= 1.5;
             App.config = config;
 
             if (!config) {
@@ -194,7 +197,7 @@ export default class App extends Gtk.Application {
                 return;
             }
 
-            this._closeDelay = config.closeWindowDelay || {};
+            this._closeDelay = config.closeWindowDelay;
 
             if (config.style)
                 App.applyCss(config.style);
