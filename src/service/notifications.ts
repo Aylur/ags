@@ -246,8 +246,9 @@ class NotificationsService extends Service {
     }
 
     private _cache() {
-        const notifications = Array.from(this._notifications.values())
-            .map(n => ({ ...n, actions: [], popup: false }));
+        const arr = Array.from(this._notifications.values());
+        const notifications = App.config.cacheNotificationActions
+            ? arr : arr.map(n => ({ ...n, actions: [], popup: false }));
 
         ensureDirectory(NOTIFICATIONS_CACHE_PATH);
         const json = JSON.stringify(notifications, null, 2);
