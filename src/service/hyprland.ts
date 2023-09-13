@@ -131,8 +131,7 @@ class HyprlandService extends Service {
             this._clients = new Map();
             const json = JSON.parse(clients) as { address: string }[];
             json.forEach(client => {
-                this._clients.set(
-                    client.address.substring(2), client);
+                this._clients.set(client.address, client);
             });
         } catch (error) {
             logError(error as Error);
@@ -178,7 +177,7 @@ class HyprlandService extends Service {
                     break;
 
                 case 'activewindowv2':
-                    this._active.client.address = argv[0];
+                    this._active.client.address = '0x' + argv[0];
                     break;
 
                 case 'closewindow':
@@ -192,7 +191,7 @@ class HyprlandService extends Service {
                     break;
 
                 case 'urgent':
-                    this.emit('urgent-window', argv[0]);
+                    this.emit('urgent-window', '0x' + argv[0]);
                     break;
 
                 case 'activelayout':
@@ -200,7 +199,7 @@ class HyprlandService extends Service {
                     break;
 
                 case 'changefloating': {
-                    const client = this._clients.get(argv[0]);
+                    const client = this._clients.get('0x' + argv[0]);
                     if (client)
                         // @ts-expect-error
                         client.floating = argv[1] === '1';
