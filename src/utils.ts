@@ -128,7 +128,7 @@ export function interval(
 }
 
 export function timeout(ms: number, callback: () => void) {
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => {
+    return GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => {
         callback();
         return GLib.SOURCE_REMOVE;
     });
