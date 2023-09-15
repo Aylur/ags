@@ -24,6 +24,8 @@ class HyprlandService extends Service {
             'urgent-window': ['string'],
             'submap': ['string'],
             'keyboard-layout': ['string', 'string'],
+            'monitor-added': ['string'],
+            'monitor-removed': ['string'],
         });
     }
 
@@ -149,11 +151,19 @@ class HyprlandService extends Service {
             switch (e) {
                 case 'workspace':
                 case 'focusedmon':
-                case 'monitorremoved':
-                case 'monitoradded':
                     await this._syncMonitors();
                     break;
-
+                    
+                case 'monitorremoved':
+                    await this._syncMonitors();
+                    this.emit('monitor-removed', argv[0])
+                    break;
+                    
+                case 'monitoradded':
+                    await this._syncMonitors();
+                    this.emit('monitor-added', argv[0])
+                    break;
+                    
                 case 'createworkspace':
                 case 'destroyworkspace':
                     await this._syncWorkspaces();
