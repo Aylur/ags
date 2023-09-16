@@ -1,5 +1,6 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
 
 const justification = ['left', 'center', 'right', 'fill'];
@@ -25,7 +26,12 @@ export default class AgsLabel extends Gtk.Label {
     }
 
     constructor(params: object | string) {
-        super(typeof params === 'string' ? { label: params } : params);
+        if (typeof params === 'string')
+            params = { label: AgsLabel._sanitize_label(params, false) };
+        else
+            // @ts-expect-error
+            params.label = AgsLabel._sanitize_label(params.label, params.useMarkup);
+        super(params);
     }
 
     get truncate() { return truncate[this.ellipsize]; }
@@ -40,6 +46,24 @@ export default class AgsLabel extends Gtk.Label {
 
         // @ts-expect-error
         this.ellipsize = Pango.EllipsizeMode[truncate.toUpperCase()];
+    }
+
+    static _sanitize_label(label: string, use_markup: boolean) {
+        if (!label)
+            return '';
+        if (use_markup) {
+            try {
+                // @ts-expect-error
+                Pango.parse_markup(label, label.length, '0');
+            } catch {
+                label = GLib.markup_escape_text(label, label.length);
+            }
+        }
+        return label;
+    }
+
+    set label(label: string) {
+        super.label = AgsLabel._sanitize_label(label, this.use_markup);
     }
 
     get justification() { return justification[this.justify]; }
