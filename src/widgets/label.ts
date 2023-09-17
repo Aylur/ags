@@ -42,9 +42,13 @@ export default class AgsLabel extends Gtk.Label {
     set label(label: string) {
         if (this.useMarkup) {
             try {
-                Pango.parse_markup(label, label.length, 0);
-            } catch {
-                label = GLib.markup_escape_text(label, label.length);
+                // @ts-expect-error
+                Pango.parse_markup(label, label.length, '0');
+            } catch (e) {
+                if (e instanceof GLib.MarkupError)
+                    label = GLib.markup_escape_text(label, label.length);
+                else
+                    logError(e as Error);
             }
         }
         super.label = label;
