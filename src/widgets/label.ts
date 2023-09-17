@@ -6,6 +6,11 @@ import Pango from 'gi://Pango';
 const justification = ['left', 'center', 'right', 'fill'];
 const truncate = ['none', 'start', 'middle', 'end'];
 
+interface Params {
+    label?: string
+    [key: string]: unknown
+}
+
 export default class AgsLabel extends Gtk.Label {
     static {
         GObject.registerClass({
@@ -25,13 +30,24 @@ export default class AgsLabel extends Gtk.Label {
         }, this);
     }
 
-    constructor(params: object | string) {
-        if (typeof params === 'string')
-            params = { label: AgsLabel._sanitize_label(params, false) };
-        else
-            // @ts-expect-error
-            params.label = AgsLabel._sanitize_label(params.label, params.useMarkup);
-        super(params);
+    constructor(params: Params | string) {
+        const label = typeof params === 'string' ? params : params.label;
+        if (typeof params === 'object')
+            delete params.label;
+
+        super(typeof params === 'string' ? {} : params);
+        this.label = label || '';
+    }
+
+    set label(label: string) {
+        if (this.useMarkup) {
+            try {
+                Pango.parse_markup(label, label.length, 0);
+            } catch {
+                label = GLib.markup_escape_text(label, label.length);
+            }
+        }
+        super.label = label;
     }
 
     get truncate() { return truncate[this.ellipsize]; }
@@ -46,24 +62,6 @@ export default class AgsLabel extends Gtk.Label {
 
         // @ts-expect-error
         this.ellipsize = Pango.EllipsizeMode[truncate.toUpperCase()];
-    }
-
-    static _sanitize_label(label: string, use_markup: boolean) {
-        if (!label)
-            return '';
-        if (use_markup) {
-            try {
-                // @ts-expect-error
-                Pango.parse_markup(label, label.length, '0');
-            } catch {
-                label = GLib.markup_escape_text(label, label.length);
-            }
-        }
-        return label;
-    }
-
-    set label(label: string) {
-        super.label = AgsLabel._sanitize_label(label, this.use_markup);
     }
 
     get justification() { return justification[this.justify]; }
