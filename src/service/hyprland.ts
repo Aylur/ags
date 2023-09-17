@@ -153,17 +153,17 @@ class HyprlandService extends Service {
                 case 'focusedmon':
                     await this._syncMonitors();
                     break;
-                    
+
                 case 'monitorremoved':
                     await this._syncMonitors();
-                    this.emit('monitor-removed', argv[0])
+                    this.emit('monitor-removed', argv[0]);
                     break;
-                    
+
                 case 'monitoradded':
                     await this._syncMonitors();
-                    this.emit('monitor-added', argv[0])
+                    this.emit('monitor-added', argv[0]);
                     break;
-                    
+
                 case 'createworkspace':
                 case 'destroyworkspace':
                     await this._syncWorkspaces();
