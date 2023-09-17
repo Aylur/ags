@@ -18,6 +18,7 @@ interface Connectable extends GObject.Object {
 interface CommonParams {
     className?: string
     style?: string
+    css?: string
     halign?: 'start' | 'center' | 'end' | 'fill'
     valign?: 'start' | 'center' | 'end' | 'fill'
     connections?: (
@@ -31,17 +32,17 @@ interface CommonParams {
 }
 
 function separateCommon({
-    className, style, halign, valign, connections, properties, binds, setup,
+    className, style, css, halign, valign, connections, properties, binds, setup,
     ...rest
 }: CommonParams) {
     return [
-        { className, style, halign, valign, connections, properties, binds, setup },
+        { className, style, css, halign, valign, connections, properties, binds, setup },
         rest,
     ];
 }
 
 function parseCommon(widget: Gtk.Widget, {
-    className, style,
+    className, style, css,
     halign, valign,
     connections = [], properties, binds, setup,
 }: CommonParams) {
@@ -52,6 +53,10 @@ function parseCommon(widget: Gtk.Widget, {
     if (style !== undefined)
         // @ts-expect-error
         widget.style = style;
+
+    if (css !== undefined)
+        // @ts-expect-error
+        widget.css = css;
 
 
     if (typeof halign === 'string') {

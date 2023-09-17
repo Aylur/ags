@@ -66,6 +66,40 @@ Object.defineProperty(Gtk.Widget.prototype, 'style', {
     },
 });
 
+function setCSS(widget: Gtk.Widget, css: string) {
+    if (typeof css !== 'string') {
+        console.error('css has to be a string');
+        return false;
+    }
+
+    const previous = widgetProviders.get(widget);
+    if (previous)
+        widget.get_style_context().remove_provider(previous);
+
+    const provider = new Gtk.CssProvider();
+    widgetProviders.set(widget, provider);
+    provider.load_from_data(`${css}`);
+    widget.get_style_context()
+        .add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+}
+
+Object.defineProperty(Gtk.Widget.prototype, 'css', {
+    get: function() {
+        return this._css || '';
+    },
+    set: function(css: string) {
+        if (!setCSS(this, css))
+            return;
+
+        this._css = css;
+    },
+});
+
+// @ts-expect-error
+Gtk.Widget.prototype.setCSS = function(css: string) {
+    setCSS(this, css);
+};
+
 // @ts-expect-error
 Gtk.Widget.prototype.setStyle = function(css: string) {
     setStyle(this, css);
