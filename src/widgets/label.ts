@@ -1,9 +1,15 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
 
 const justification = ['left', 'center', 'right', 'fill'];
 const truncate = ['none', 'start', 'middle', 'end'];
+
+interface Params {
+    label?: string
+    [key: string]: unknown
+}
 
 export default class AgsLabel extends Gtk.Label {
     static {
@@ -24,8 +30,28 @@ export default class AgsLabel extends Gtk.Label {
         }, this);
     }
 
-    constructor(params: object | string) {
-        super(typeof params === 'string' ? { label: params } : params);
+    constructor(params: Params | string) {
+        const label = typeof params === 'string' ? params : params.label;
+        if (typeof params === 'object')
+            delete params.label;
+
+        super(typeof params === 'string' ? {} : params);
+        this.label = label || '';
+    }
+
+    set label(label: string) {
+        if (this.useMarkup) {
+            try {
+                // @ts-expect-error
+                Pango.parse_markup(label, label.length, '0');
+            } catch (e) {
+                if (e instanceof GLib.MarkupError)
+                    label = GLib.markup_escape_text(label, label.length);
+                else
+                    logError(e as Error);
+            }
+        }
+        super.label = label;
     }
 
     get truncate() { return truncate[this.ellipsize]; }
