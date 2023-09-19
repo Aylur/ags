@@ -39,6 +39,7 @@ export default class AgsLabel extends Gtk.Label {
         this.label = label || '';
     }
 
+    get label() { return super.label; }
     set label(label: string) {
         if (this.useMarkup) {
             try {
