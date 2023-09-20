@@ -1,0 +1,25 @@
+name: Create Release
+
+permissions:
+  contents: write
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Create tar file
+        run: |
+            cd ..
+            tar -czf "ags-${{ github.ref_name }}.tar.gz" "ags"
+      - name: Upload assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ../ags-${{ github.ref_name }}.tar.gz
