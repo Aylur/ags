@@ -43,6 +43,7 @@ export class TrayItem extends Service {
     }
 
     activate(event: Gdk.Event) {
+        this._proxy.has
         this._proxy.ActivateAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
     }
 
@@ -151,6 +152,8 @@ export class TrayItem extends Service {
             null,
             (proxy, result) => {
                 const variant = this._proxy.call_finish(result) as GLib.Variant<'(a{sv})'>;
+                if (!variant)
+                    return;
                 const [properties] = variant.deep_unpack();
                 Object.entries(properties).map(([propertyName, value]) => {
                     this._proxy.set_cached_property(propertyName, value);
