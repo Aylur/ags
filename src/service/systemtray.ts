@@ -43,7 +43,6 @@ export class TrayItem extends Service {
     }
 
     activate(event: Gdk.Event) {
-        this._proxy.has
         this._proxy.ActivateAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
     }
 
