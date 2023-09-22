@@ -34,6 +34,7 @@
     <file>service/battery.js</file>
     <file>service/bluetooth.js</file>
     <file>service/hyprland.js</file>
+    <file>service/sway.js</file>
     <file>service/mpris.js</file>
     <file>service/network.js</file>
     <file>service/notifications.js</file>
