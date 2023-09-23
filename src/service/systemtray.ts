@@ -205,6 +205,8 @@ class SystemTrayService extends Service {
         Service.register(this, {
             'added': ['string'],
             'removed': ['string'],
+        }, {
+            'items': ['jsobject'],
         });
     }
 
@@ -214,7 +216,9 @@ class SystemTrayService extends Service {
     get IsStatusNotifierHostRegistered() { return true; }
     get ProtocolVersion() { return 0; }
     get RegisteredStatusNotifierItems() { return Array.from(this._items.keys()); }
-    get items() { return this._items; }
+
+    get items() { return Array.from(this._items.values()); }
+    getItem(name: string) { return this._items.get(name); }
 
     constructor() {
         super();
@@ -273,10 +277,6 @@ class SystemTrayService extends Service {
             );
         });
     }
-
-    getItem(name: string) {
-        return this._items.get(name);
-    }
 }
 
 
@@ -288,7 +288,7 @@ export default class SystemTray {
         return SystemTray._instance;
     }
 
-    static get items() { return Array.from(SystemTray.instance.items.values()); }
-    static getItem(name: string) { return SystemTray._instance.getItem(name); }
+    static get items() { return SystemTray.instance.items; }
+    static getItem(name: string) { return SystemTray.instance.getItem(name); }
 }
 

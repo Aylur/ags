@@ -315,6 +315,10 @@ class MprisService extends Service {
             this.connect(signal, () => this.emit('changed'));
         });
 
+        ['player-closed', 'player-added'].map(signal => {
+            this.connect(signal, () => this.notify('players'));
+        });
+
         this._onProxyReady();
     }
 
