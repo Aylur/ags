@@ -3,7 +3,7 @@ import GObject from 'gi://GObject';
 import Service from './service.js';
 import { bulkConnect } from '../utils.js';
 
-const INTERNET = (device: NM.Device) => {
+const _INTERNET = (device: NM.Device) => {
     switch (device?.active_connection?.state) {
         case NM.ActiveConnectionState.ACTIVATED: return 'connected';
         case NM.ActiveConnectionState.ACTIVATING: return 'connecting';
@@ -13,7 +13,7 @@ const INTERNET = (device: NM.Device) => {
     }
 };
 
-const DEVICE_STATE = (device: NM.Device) => {
+const _DEVICE_STATE = (device: NM.Device) => {
     switch (device?.state) {
         case NM.DeviceState.UNMANAGED: return 'unmanaged';
         case NM.DeviceState.UNAVAILABLE: return 'unavailable';
@@ -31,7 +31,7 @@ const DEVICE_STATE = (device: NM.Device) => {
     }
 };
 
-const CONNECTIVITY_STATE = (client: NM.Client) => {
+const _CONNECTIVITY_STATE = (client: NM.Client) => {
     switch (client.connectivity) {
         case NM.ConnectivityState.NONE: return 'none';
         case NM.ConnectivityState.PORTAL: return 'portal';
@@ -41,7 +41,7 @@ const CONNECTIVITY_STATE = (client: NM.Client) => {
     }
 };
 
-const STRENGHT_ICONS = [
+const _STRENGTH_ICONS = [
     { value: 80, icon: 'network-wireless-signal-excellent-symbolic' },
     { value: 60, icon: 'network-wireless-signal-good-symbolic' },
     { value: 40, icon: 'network-wireless-signal-ok-symbolic' },
@@ -58,7 +58,17 @@ const DEVICE = (device: string) => {
 };
 
 class Wifi extends Service {
-    static { Service.register(this); }
+    static {
+        Service.register(this, {}, {
+            'enabled': ['boolean', 'rw'],
+            'internet': ['boolean'],
+            'strength': ['int'],
+            'access-points': ['jsobject'],
+            'ssid': ['string'],
+            'state': ['string'],
+            'icon-name': ['string'],
+        });
+    }
 
     private _client: NM.Client;
     private _device: NM.DeviceWifi;
@@ -78,6 +88,12 @@ class Wifi extends Service {
             ]);
             this._activeAp();
         }
+
+        // TODO optimize notify signals
+        this.connect('changed', () => {
+            ['enabled', 'internet', 'strength', 'access-points', 'ssid', 'state', 'icon-name']
+                .map(prop => this.notify(prop));
+        });
     }
 
     scan() {
@@ -99,6 +115,7 @@ class Wifi extends Service {
             'notify::strength', () => this.emit('changed'));
     }
 
+    get access_points() { return this.accessPoints; }
     get accessPoints() {
         return this._device.get_access_points().map(ap => ({
             bssid: ap.bssid,
@@ -109,7 +126,7 @@ class Wifi extends Service {
                 : 'Unknown',
             active: ap === this._ap,
             strength: ap.strength,
-            iconName: STRENGHT_ICONS.find(({ value }) => value <= ap.strength)?.icon,
+            iconName: _STRENGTH_ICONS.find(({ value }) => value <= ap.strength)?.icon,
         }));
     }
 
@@ -117,7 +134,7 @@ class Wifi extends Service {
     set enabled(v) { this._client.wireless_enabled = v; }
 
     get strength() { return this._ap?.strength || -1; }
-    get internet() { return INTERNET(this._device); }
+    get internet() { return _INTERNET(this._device); }
     get ssid() {
         if (!this._ap)
             return '';
@@ -129,7 +146,9 @@ class Wifi extends Service {
         return NM.utils_ssid_to_utf8(ssid);
     }
 
-    get state() { return DEVICE_STATE(this._device); }
+    get state() { return _DEVICE_STATE(this._device); }
+
+    get icon_name() { return this.iconName; }
     get iconName() {
         const iconNames: [number, string][] = [
             [80, 'excellent'],
@@ -157,18 +176,33 @@ class Wifi extends Service {
 }
 
 class Wired extends Service {
-    static { Service.register(this); }
+    static {
+        Service.register(this, {}, {
+            'speed': ['int'],
+            'internet': ['string'],
+            'state': ['string'],
+            'icon-name': ['string'],
+        });
+    }
 
     private _device: NM.DeviceEthernet;
 
     constructor(device: NM.DeviceEthernet) {
         super();
         this._device = device;
+
+        // TODO optimize notify signals
+        this._device.connect('notify::speed', () => {
+            this.emit('changed');
+            ['speed', 'internet', 'state', 'icon-name']
+                .map(prop => this.notify(prop));
+        });
     }
 
     get speed() { return this._device.get_speed(); }
-    get internet() { return INTERNET(this._device); }
-    get state() { return DEVICE_STATE(this._device); }
+    get internet() { return _INTERNET(this._device); }
+    get state() { return _DEVICE_STATE(this._device); }
+    get icon_name() { return this.iconName; }
     get iconName() {
         if (this.internet === 'connecting')
             return 'network-wired-acquiring-symbolic';
@@ -184,13 +218,21 @@ class Wired extends Service {
 }
 
 class NetworkService extends Service {
-    static { Service.register(this); }
+    static {
+        Service.register(this, {}, {
+            'wifi': ['jsobject'],
+            'wired': ['jsobject'],
+            'primary': ['string'],
+            'connectivity': ['string'],
+        });
+    }
 
     private _client!: NM.Client;
-    _wifi!: Wifi;
-    _wired!: Wired;
-    _primary?: string;
-    _connectivity!: string;
+
+    wifi!: Wifi;
+    wired!: Wired;
+    primary?: string;
+    connectivity!: string;
 
     constructor() {
         super();
@@ -216,20 +258,21 @@ class NetworkService extends Service {
     }
 
     private _clientReady() {
-        bulkConnect((this._client as unknown) as GObject.Object, [
+        bulkConnect(this._client as unknown as GObject.Object, [
             ['notify::wireless-enabled', this._sync.bind(this)],
             ['notify::connectivity', this._sync.bind(this)],
             ['notify::primary-connection', this._sync.bind(this)],
             ['notify::activating-connection', this._sync.bind(this)],
         ]);
 
-        this._wifi = new Wifi(this._client,
+        this.wifi = new Wifi(this._client,
             this._getDevice(NM.DeviceType.WIFI) as NM.DeviceWifi);
-        this._wifi.connect('changed', this._sync.bind(this));
 
-        this._wired = new Wired(
+        this.wired = new Wired(
             this._getDevice(NM.DeviceType.ETHERNET) as NM.DeviceEthernet);
-        this._wired.connect('changed', this._sync.bind(this));
+
+        this.wifi.connect('changed', this._sync.bind(this));
+        this.wired.connect('changed', this._sync.bind(this));
 
         this._sync();
     }
@@ -239,8 +282,11 @@ class NetworkService extends Service {
             this._client.get_primary_connection() ||
             this._client.get_activating_connection();
 
-        this._primary = DEVICE(mainConnection?.type || '');
-        this._connectivity = CONNECTIVITY_STATE(this._client);
+        this.primary = DEVICE(mainConnection?.type || '');
+        this.connectivity = _CONNECTIVITY_STATE(this._client);
+
+        this.notify('primary');
+        this.notify('connectivity');
         this.emit('changed');
     }
 }
@@ -254,8 +300,8 @@ export default class Network {
     }
 
     static toggleWifi() { Network.instance.toggleWifi(); }
-    static get connectivity() { return Network.instance._connectivity; }
-    static get primary() { return Network.instance._primary; }
-    static get wifi() { return Network.instance._wifi; }
-    static get wired() { return Network.instance._wired; }
+    static get connectivity() { return Network.instance.connectivity; }
+    static get primary() { return Network.instance.primary; }
+    static get wifi() { return Network.instance.wifi; }
+    static get wired() { return Network.instance.wired; }
 }

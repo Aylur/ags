@@ -7,7 +7,18 @@ const CACHE_FILE = APPS_CACHE_DIR + '/apps_frequency.json';
 
 class Application extends Service {
     static {
-        Service.register(this, { 'launched': [] });
+        Service.register(this, {
+            'launched': [],
+        }, {
+            'app': ['jsobject'],
+            'frequency': ['int'],
+            'name': ['string'],
+            'desktop': ['jsobject'],
+            'description': ['jsobject'],
+            'wm-class': ['jsobject'],
+            'executable': ['string'],
+            'icon-name': ['string'],
+        });
     }
 
     app: Gio.DesktopAppInfo;
@@ -19,6 +30,10 @@ class Application extends Service {
     executable: string;
     iconName: string;
     service: ApplicationsService;
+
+    // for binds compatibility
+    get icon_name() { return this.iconName; }
+    get wm_class() { return this.wmClass; }
 
     constructor(app: Gio.DesktopAppInfo, service: ApplicationsService) {
         super();
@@ -72,11 +87,7 @@ class Application extends Service {
 }
 
 class ApplicationsService extends Service {
-    static {
-        Service.register(this, {
-            'launched': ['string'],
-        });
-    }
+    static { Service.register(this); }
 
     private _list!: Application[];
     private _frequents: { [app: string]: number };

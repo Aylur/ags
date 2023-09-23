@@ -14,15 +14,28 @@ const DeviceState = {
 };
 
 class BatteryService extends Service {
-    static { Service.register(this); }
+    static {
+        Service.register(this, {
+            'closed': [],
+        }, {
+            'available': ['boolean'],
+            'percent': ['int'],
+            'charging': ['boolean'],
+            'charged': ['boolean'],
+            'icon-name': ['string'],
+        });
+    }
+
+    private _proxy: BatteryProxy;
 
     available = false;
     percent = -1;
     charging = false;
     charged = false;
     iconName = 'battery-missing-symbolic';
-    private _proxy: BatteryProxy;
 
+    // for binds compatibility
+    get icon_name() { return this.iconName; }
 
     constructor() {
         super();
@@ -50,6 +63,7 @@ class BatteryService extends Service {
             DeviceState.CHARGING ? '-charging' : '';
 
         const level = Math.floor(percent / 10) * 10;
+
         this.iconName = charged
             ? 'battery-level-100-charged-symbolic'
             : `battery-level-${level}${state}-symbolic`;
@@ -58,6 +72,12 @@ class BatteryService extends Service {
         this.percent = percent;
         this.charged = charged;
         this.available = true;
+
+        this.notify('available');
+        this.notify('icon-name');
+        this.notify('percent');
+        this.notify('charging');
+        this.notify('charged');
 
         this.emit('changed');
     }
@@ -76,4 +96,5 @@ export default class Battery {
     static get charging() { return Battery.instance.charging; }
     static get charged() { return Battery.instance.charged; }
     static get iconName() { return Battery.instance.iconName; }
+    static get icon_name() { return Battery.instance.icon_name; }
 }

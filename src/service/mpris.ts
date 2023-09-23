@@ -29,13 +29,30 @@ type MprisMetadata = {
 
 class MprisPlayer extends GObject.Object {
     static {
-        GObject.registerClass({
-            Signals: {
-                'changed': {},
-                'closed': {},
-                'position': { param_types: [GObject.TYPE_INT] },
-            },
-        }, this);
+        Service.register(this, {
+            'changed': [],
+            'closed': [],
+            'position': ['int'],
+        }, {
+            'bus-name': ['string'],
+            'name': ['string'],
+            'entry': ['string'],
+            'identity': ['string'],
+            'trackid': ['string'],
+            'track-artists': ['jsobject'],
+            'track-title': ['string'],
+            'track-cover-url': ['string'],
+            'cover-path': ['string'],
+            'play-back-status': ['string'],
+            'can-go-next': ['boolean'],
+            'can-go-prev': ['boolean'],
+            'can-play': ['boolean'],
+            'shuffle-status': ['jsobject'],
+            'loop-status': ['jsobject'],
+            'length': ['int'],
+            'position': ['float', 'rw'],
+            'volume': ['float', 'rw'],
+        });
     }
 
     busName: string;
@@ -55,6 +72,18 @@ class MprisPlayer extends GObject.Object {
     shuffleStatus!: boolean | null;
     loopStatus!: LoopStatus | null;
     length!: number;
+
+    get bus_name() { return this.busName; }
+    get track_artists() { return this.trackArtists; }
+    get track_title() { return this.trackTitle; }
+    get track_cover_url() { return this.trackCoverUrl; }
+    get cover_path() { return this.coverPath; }
+    get play_back_status() { return this.playBackStatus; }
+    get can_go_next() { return this.canGoNext; }
+    get can_go_prev() { return this.canGoPrev; }
+    get can_play() { return this.canPlay; }
+    get shuffle_status() { return this.shuffleStatus; }
+    get loop_status() { return this.loopStatus; }
 
     private _binding: { mpris: number, player: number };
     private _mprisProxy: MprisProxy;
@@ -145,6 +174,23 @@ class MprisPlayer extends GObject.Object {
         this.trackCoverUrl = trackCoverUrl;
         this.length = length;
         this._cacheCoverArt();
+
+        [
+            'trackid',
+            'track-artists',
+            'track-title',
+            'track-cover-url',
+            'cover-path',
+            'play-back-status',
+            'can-go-next',
+            'can-go-prev',
+            'can-play',
+            'shuffle-status',
+            'loop-status',
+            'length',
+            'position',
+            'volume',
+        ].map(prop => this.notify(prop));
         this.emit('changed');
     }
 
@@ -172,6 +218,7 @@ class MprisPlayer extends GObject.Object {
             null, null, (source, result) => {
                 try {
                     source.copy_finish(result);
+                    this.notify('cover-path');
                     this.emit('changed');
                 }
                 catch (e) {
@@ -246,6 +293,8 @@ class MprisService extends Service {
             'player-changed': ['string'],
             'player-closed': ['string'],
             'player-added': ['string'],
+        }, {
+            'players': ['jsobject'],
         });
     }
 
@@ -262,6 +311,10 @@ class MprisService extends Service {
             'org.freedesktop.DBus',
             '/org/freedesktop/DBus');
 
+        ['player-closed', 'player-added', 'player-changed'].map(signal => {
+            this.connect(signal, () => this.emit('changed'));
+        });
+
         this._onProxyReady();
     }
 
@@ -274,12 +327,10 @@ class MprisService extends Service {
         player.connect('closed', () => {
             this._players.delete(busName);
             this.emit('player-closed', busName);
-            this.emit('changed');
         });
 
         player.connect('changed', () => {
             this.emit('player-changed', busName);
-            this.emit('changed');
         });
 
         this._players.set(busName, player);
@@ -328,9 +379,6 @@ export default class Mpris {
         return Mpris._instance;
     }
 
-    static getPlayer(name: string) {
-        return Mpris.instance.getPlayer(name);
-    }
-
+    static getPlayer(name: string) { return Mpris.instance.getPlayer(name); }
     static get players() { return Mpris.instance.players; }
 }

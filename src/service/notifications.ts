@@ -47,6 +47,10 @@ class NotificationsService extends Service {
             'dismissed': ['int'],
             'notified': ['int'],
             'closed': ['int'],
+        }, {
+            'notifications': ['jsobject'],
+            'popups': ['jsobject'],
+            'dnd': ['boolean'],
         });
     }
 
@@ -67,17 +71,27 @@ class NotificationsService extends Service {
     get dnd() { return this._dnd; }
     set dnd(value: boolean) {
         this._dnd = value;
+        this.notify('dnd');
         this.emit('changed');
     }
 
-    get notifications() { return this._notifications; }
+    get notifications() { return Array.from(this._notifications.values()); }
     get popups() {
-        const map: Map<number, Notification> = new Map();
-        for (const [id, notification] of this._notifications) {
+        const list = [];
+        for (const [, notification] of this._notifications) {
             if (notification.popup)
-                map.set(id, notification);
+                list.push(notification);
         }
-        return map;
+        return list;
+    }
+
+    getPopup(id: number) {
+        const n = this._notifications.get(id);
+        return n?.popup ? n : null;
+    }
+
+    getNotification(id: number) {
+        return this._notifications.get(id);
     }
 
     Clear() {
@@ -125,6 +139,9 @@ class NotificationsService extends Service {
         timeout(App.config.notificationPopupTimeout, () => this.DismissNotification(id));
 
         this._cache();
+        this.notify('notifications');
+        !this._dnd && this.notify('popups');
+
         this.emit('notified', id);
         this.emit('changed');
         return id;
@@ -136,6 +153,7 @@ class NotificationsService extends Service {
             return;
 
         n.popup = false;
+        this.notify('popups');
         this.emit('dismissed', id);
         this.emit('changed');
     }
@@ -148,6 +166,8 @@ class NotificationsService extends Service {
             GLib.Variant.new('(uu)', [id, 3]));
 
         this._notifications.delete(id);
+        this.notify('notifications');
+        this.notify('popups');
         this.emit('closed', id);
         this.emit('changed');
         this._cache();
@@ -270,11 +290,11 @@ export default class Notifications {
     static clear() { Notifications.instance.Clear(); }
     static close(id: number) { Notifications.instance.CloseNotification(id); }
 
-    static getPopup(id: number) { return Notifications.instance.popups.get(id); }
-    static getNotification(id: number) { return Notifications.instance.notifications.get(id); }
+    static getPopup(id: number) { return Notifications.instance.getPopup(id); }
+    static getNotification(id: number) { return Notifications.instance.getNotification(id); }
 
-    static get popups() { return Array.from(Notifications.instance.popups.values()); }
-    static get notifications() { return Array.from(Notifications.instance.notifications.values()); }
+    static get popups() { return Notifications.instance.popups; }
+    static get notifications() { return Notifications.instance.notifications; }
 
     static get dnd() { return Notifications.instance.dnd; }
     static set dnd(value: boolean) { Notifications.instance.dnd = value; }

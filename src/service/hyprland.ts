@@ -26,6 +26,11 @@ class HyprlandService extends Service {
             'keyboard-layout': ['string', 'string'],
             'monitor-added': ['string'],
             'monitor-removed': ['string'],
+        }, {
+            'active': ['jsobject'],
+            'monitors': ['jsobject'],
+            'workspaces': ['jsobject'],
+            'clients': ['jsobject'],
         });
     }
 
@@ -36,9 +41,13 @@ class HyprlandService extends Service {
     private _decoder = new TextDecoder();
 
     get active() { return this._active; }
-    get monitors() { return this._monitors; }
-    get workspaces() { return this._workspaces; }
-    get clients() { return this._clients; }
+    get monitors() { return Array.from(this._monitors.values()); }
+    get workspaces() { return Array.from(this._workspaces.values()); }
+    get clients() { return Array.from(this._clients.values()); }
+
+    getMonitor(id: number) { return this._monitors.get(id); }
+    getWorkspace(id: number) { return this._workspaces.get(id); }
+    getClient(address: string) { return this._clients.get(address); }
 
     constructor() {
         if (!HIS)
@@ -75,18 +84,16 @@ class HyprlandService extends Service {
     }
 
     private _watchSocket(stream: Gio.DataInputStream) {
-        stream.read_line_async(
-            0, null,
-            (stream, result) => {
-                if (!stream) {
-                    console.error('Error reading Hyprland socket');
-                    return;
-                }
+        stream.read_line_async(0, null, (stream, result) => {
+            if (!stream) {
+                console.error('Error reading Hyprland socket');
+                return;
+            }
 
-                const [line] = stream.read_line_finish(result);
-                this._onEvent(this._decoder.decode(line));
-                this._watchSocket(stream);
-            });
+            const [line] = stream.read_line_finish(result);
+            this._onEvent(this._decoder.decode(line));
+            this._watchSocket(stream);
+        });
     }
 
     private async _syncMonitors() {
@@ -109,6 +116,7 @@ class HyprlandService extends Service {
                     this._active.workspace = monitor.activeWorkspace;
                 }
             });
+            this.notify('monitors');
         } catch (error) {
             logError(error as Error);
         }
@@ -122,6 +130,7 @@ class HyprlandService extends Service {
             json.forEach(ws => {
                 this._workspaces.set(ws.id, ws);
             });
+            this.notify('workspaces');
         } catch (error) {
             logError(error as Error);
         }
@@ -135,6 +144,7 @@ class HyprlandService extends Service {
             json.forEach(client => {
                 this._clients.set(client.address, client);
             });
+            this.notify('clients');
         } catch (error) {
             logError(error as Error);
         }
@@ -238,16 +248,16 @@ export default class Hyprland {
         return Hyprland._instance;
     }
 
-    static getMonitor(id: number) { return Hyprland.instance.monitors.get(id); }
-    static getWorkspace(id: number) { return Hyprland.instance.workspaces.get(id); }
-    static getClient(address: string) { return Hyprland.instance.clients.get(address); }
+    static getMonitor(id: number) { return Hyprland.instance.getMonitor(id); }
+    static getWorkspace(id: number) { return Hyprland.instance.getWorkspace(id); }
+    static getClient(address: string) { return Hyprland.instance.getClient(address); }
 
-    static get monitors() { return Array.from(Hyprland.instance.monitors.values()); }
-    static get workspaces() { return Array.from(Hyprland.instance.workspaces.values()); }
-    static get clients() { return Array.from(Hyprland.instance.clients.values()); }
+    static get monitors() { return Hyprland.instance.monitors; }
+    static get workspaces() { return Hyprland.instance.workspaces; }
+    static get clients() { return Hyprland.instance.clients; }
     static get active() { return Hyprland.instance.active; }
 
-    static HyprctlGet(cmd: string): unknown | object {
+    static hyprctlGet(cmd: string): unknown | object {
         const [success, out, err] =
             GLib.spawn_command_line_sync(`hyprctl -j ${cmd}`);
 
