@@ -150,7 +150,7 @@ export class TrayItem extends Service {
             Gio.DBusCallFlags.NONE, -1,
             null,
             (proxy, result) => {
-                const variant = this._proxy.call_finish(result) as GLib.Variant<'(a{sv})'>;
+                const variant = proxy?.call_finish(result) as GLib.Variant<'(a{sv})'>;
                 if (!variant)
                     return;
                 const [properties] = variant.deep_unpack();
