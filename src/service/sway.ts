@@ -65,11 +65,12 @@ interface Node {
     geometry: Geometry
     urgent: boolean
     sticky: boolean
-    marks: [string]
+    marks: string[]
     focused: boolean
-    focus: [number]
-    nodes: [Node]
-    floating_nodes: [Node]
+    active: boolean
+    focus: number[]
+    nodes: Node[]
+    floating_nodes: Node[]
     representation: string
     fullscreen_mode: number
     app_id: string
@@ -154,13 +155,13 @@ class SwayService extends Service {
         this._watchSocket(socket.get_input_stream());
 
         this._output_stream = socket.get_output_stream();
-        //TODO init everything by mybe using get_tree
+        this.send(PAYLOAD_TYPE.MESSAGE_GET_TREE, '');
         this.send(PAYLOAD_TYPE.MESSAGE_SUBSCRIBE, JSON.stringify(['window', 'workspace']));
     }
 
-    send(payload_type: PAYLOAD_TYPE, payload: string) {
+    send(payloadType: PAYLOAD_TYPE, payload: string) {
         const pb = this._encoder.encode(payload);
-        const type = new Uint32Array([payload_type]);
+        const type = new Uint32Array([payloadType]);
         const pl = new Uint32Array([pb.length]);
         const magic_string = this._encoder.encode('i3-ipc');
         const data = new Uint8Array([
@@ -172,21 +173,21 @@ class SwayService extends Service {
     }
 
     private _watchSocket(stream: Gio.InputStream) {
-        stream.read_bytes_async(14, GLib.PRIORITY_DEFAULT, null, (_, result_header) => {
-            const data = stream.read_bytes_finish(result_header).get_data();
+        stream.read_bytes_async(14, GLib.PRIORITY_DEFAULT, null, (_, resultHeader) => {
+            const data = stream.read_bytes_finish(resultHeader).get_data();
             if (!data)
                 return;
-            const payload_length = new Uint32Array(data.slice(6, 10).buffer)[0];
-            const payload_type = new Uint32Array(data.slice(10, 14).buffer)[0];
+            const payloadLength = new Uint32Array(data.slice(6, 10).buffer)[0];
+            const payloadType = new Uint32Array(data.slice(10, 14).buffer)[0];
             stream.read_bytes_async(
-                payload_length,
+                payloadLength,
                 GLib.PRIORITY_DEFAULT,
                 null,
-                (_, result_payload) => {
-                    const data = stream.read_bytes_finish(result_payload).get_data();
+                (_, resultPayload) => {
+                    const data = stream.read_bytes_finish(resultPayload).get_data();
                     if (!data)
                         return;
-                    this._onEvent(payload_type, JSON.parse(this._decoder.decode(data)));
+                    this._onEvent(payloadType, JSON.parse(this._decoder.decode(data)));
                     this._watchSocket(stream);
                 });
         });
@@ -198,10 +199,13 @@ class SwayService extends Service {
         try {
             switch (event_type) {
                 case PAYLOAD_TYPE.EVENT_WORKSPACE:
-                    this._handle_workspace_event(event as Workspace_Event);
+                    this._handleWorkspaceEvent(event as Workspace_Event);
                     break;
                 case PAYLOAD_TYPE.EVENT_WINDOW:
-                    this._handle_window_event(event as Client_Event);
+                    this._handleWindowEvent(event as Client_Event);
+                    break;
+                case PAYLOAD_TYPE.MESSAGE_GET_TREE:
+                    this._handleTreeMessage(event as Node);
                     break;
                 default:
                     break;
@@ -212,9 +216,9 @@ class SwayService extends Service {
         this.emit('changed');
     }
 
-    private _handle_workspace_event(workspace_event: Workspace_Event) {
-        const workspace = workspace_event.current;
-        switch (workspace_event.change) {
+    private _handleWorkspaceEvent(workspaceEvent: Workspace_Event) {
+        const workspace = workspaceEvent.current;
+        switch (workspaceEvent.change) {
             case 'init':
                 this._workspaces.set(workspace.id, workspace);
                 break;
@@ -226,7 +230,7 @@ class SwayService extends Service {
                 this._active.workspace.name = workspace.name;
                 this._active.monitor = workspace.output;
                 this._workspaces.set(workspace.id, workspace);
-                this._workspaces.set(workspace_event.old.id, workspace_event.old);
+                this._workspaces.set(workspaceEvent.old.id, workspaceEvent.old);
                 break;
             case 'rename':
                 if (this._active.workspace.id === workspace.id)
@@ -242,10 +246,10 @@ class SwayService extends Service {
         }
     }
 
-    private _handle_window_event(client_event: Client_Event) {
-        const client = client_event.container;
+    private _handleWindowEvent(clientEvent: Client_Event) {
+        const client = clientEvent.container;
         const id = client.id;
-        switch (client_event.change) {
+        switch (clientEvent.change) {
             case 'new':
                 this._clients.set(id, client);
                 break;
@@ -279,6 +283,47 @@ class SwayService extends Service {
                 this._clients.set(id, client);
         }
     }
+
+    private _handleTreeMessage(node: Node) {
+        switch (node.type ) {
+            case 'root':
+                this._workspaces.clear();
+                this._clients.clear();
+                this._monitors.clear();
+                node.nodes.map(n => this._handleTreeMessage(n));
+                break;
+            case 'output':
+                this._monitors.set(node.id, node);
+                if (node.active)
+                    this._active.monitor = node.name;
+                node.nodes.map(n => this._handleTreeMessage(n));
+                break;
+            case 'workspace':
+                this._workspaces.set(node.id, node);
+                // I think I'm missing something. There has to be a better way.
+                // eslint-disable-next-line no-case-declarations
+                const hasFocusedChild: (n: Node) => boolean =
+                    (n: Node) => n.nodes.some(c => c.focused || hasFocusedChild(c));
+                if (hasFocusedChild(node)) {
+                    this._active.workspace.id = node.id;
+                    this._active.workspace.name = node.name;
+                }
+                node.nodes.map(n => this._handleTreeMessage(n));
+                break;
+            case 'con':
+            case 'floating_con':
+                this._clients.set(node.id, node);
+                if (node.focused) {
+                    this._active.client.id = node.id;
+                    this._active.client.title = node.name;
+                    this._active.client.class = node.shell === 'xwayland'
+                        ? node.window_properties?.class || ''
+                        : node.app_id;
+                }
+                node.nodes.map(n => this._handleTreeMessage(n));
+                break;
+        }
+    }
 }
 
 export default class Sway {
@@ -290,7 +335,10 @@ export default class Sway {
     }
 
     static get monitors() { return Array.from(Sway.instance.monitors.values()); }
+    static getMonitor(id: number) { return Sway.instance.monitors.get(id); }
     static get workspaces() { return Array.from(Sway.instance.workspaces.values()); }
+    static getWorkspace(id: number) { return Sway.instance.workspaces.get(id); }
     static get clients() { return Array.from(Sway.instance.clients.values()); }
+    static getClient(id: number) { return Sway.instance.clients.get(id); }
     static get active() { return Sway.instance.active; }
 }
