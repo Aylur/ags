@@ -88,12 +88,6 @@ class Wifi extends Service {
             ]);
             this._activeAp();
         }
-
-        // TODO optimize notify signals
-        this.connect('changed', () => {
-            ['enabled', 'internet', 'strength', 'access-points', 'ssid', 'state', 'icon-name']
-                .map(prop => this.notify(prop));
-        });
     }
 
     scan() {
@@ -111,8 +105,13 @@ class Wifi extends Service {
         if (!this._ap)
             return;
 
-        this._apBind = this._ap.connect(
-            'notify::strength', () => this.emit('changed'));
+
+        // TODO make signals acutally signal when they should
+        this._apBind = this._ap.connect('notify::strength', () => {
+            this.emit('changed');
+            ['enabled', 'internet', 'strength', 'access-points', 'ssid', 'state', 'icon-name']
+                .map(prop => this.notify(prop));
+        });
     }
 
     get access_points() { return this.accessPoints; }
@@ -191,7 +190,7 @@ class Wired extends Service {
         super();
         this._device = device;
 
-        // TODO optimize notify signals
+        // TODO make signals acutally signal when they should
         this._device.connect('notify::speed', () => {
             this.emit('changed');
             ['speed', 'internet', 'state', 'icon-name']

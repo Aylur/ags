@@ -73,11 +73,8 @@ class BatteryService extends Service {
         this.charged = charged;
         this.available = true;
 
-        this.notify('available');
-        this.notify('icon-name');
-        this.notify('percent');
-        this.notify('charging');
-        this.notify('charged');
+        ['available', 'icon-name', 'percent', 'charging', 'charged']
+            .map(prop => this.notify(prop));
 
         this.emit('changed');
     }

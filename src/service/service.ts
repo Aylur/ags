@@ -95,5 +95,10 @@ export default class Service extends GObject.Object {
     ) {
         connect(this, widget, callback, event);
     }
+
+    changed(property: string) {
+        this.notify(property);
+        this.emit('changed');
+    }
 }
 

@@ -1,4 +1,3 @@
-import GObject from 'gi://GObject';
 import Service from './service.js';
 import Gio from 'gi://Gio';
 import { bulkConnect, bulkDisconnect } from '../utils.js';
@@ -14,11 +13,9 @@ const _ADAPTER_STATE = {
     [GnomeBluetooth.AdapterState.OFF]: 'off',
 };
 
-class BluetoothDevice extends GObject.Object {
+class BluetoothDevice extends Service {
     static {
-        Service.register(this, {
-            'changed': [],
-        }, {
+        Service.register(this, {}, {
             'address': ['string'],
             'alias': ['string'],
             'battery-level': ['int'],
@@ -55,13 +52,11 @@ class BluetoothDevice extends GObject.Object {
             'paired',
             'trusted',
         ].map(prop => device.connect(`notify::${prop}`, () => {
-            this.notify(prop);
-            this.emit('changed');
+            this.changed(prop);
         }));
 
         this._ids.push(device.connect('notify::icon', () => {
-            this.notify('icon-name');
-            this.emit('changed');
+            this.changed('icon-name');
         }));
     }
 
@@ -90,11 +85,9 @@ class BluetoothDevice extends GObject.Object {
         this._connecting = true;
         Bluetooth.instance.connectDevice(this, connect, () => {
             this._connecting = false;
-            this.notify('connecting');
-            this.emit('changed');
+            this.changed('connecting');
         });
-        this.notify('connecting');
-        this.emit('changed');
+        this.changed('connecting');
     }
 }
 
@@ -120,14 +113,8 @@ class BluetoothService extends Service {
         bulkConnect(this._client, [
             ['device-added', this._deviceAdded.bind(this)],
             ['device-removed', this._deviceRemoved.bind(this)],
-            ['notify::default-adapter-state', () => {
-                this.notify('state');
-                this.emit('changed');
-            }],
-            ['notify::default-adapter-powered', () => {
-                this.notify('enabled');
-                this.emit('changed');
-            }],
+            ['notify::default-adapter-state', () => this.changed('state')],
+            ['notify::default-adapter-powered', () => this.changed('enabled')],
         ]);
 
         this._getDevices().forEach(device => this._deviceAdded(this, device));
@@ -159,8 +146,7 @@ class BluetoothService extends Service {
         const d = new BluetoothDevice(device);
         d.connect('changed', () => this.emit('changed'));
         this._devices.set(device.address, d);
-        this.notify('devices');
-        this.emit('changed');
+        this.changed('devices');
     }
 
     // @ts-expect-error
@@ -170,8 +156,7 @@ class BluetoothService extends Service {
 
         this._devices.get(device.address)?.close();
         this._devices.delete(device.address);
-        this.notify('devices');
-        this.emit('changed');
+        this.changed('devices');
     }
 
     connectDevice(

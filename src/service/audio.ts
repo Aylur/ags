@@ -42,11 +42,8 @@ class Stream extends Service {
             'id',
             'state',
         ].map(prop => stream.connect(`notify::${prop}`, () => {
-            this.notify(prop);
-            this.emit('changed');
+            this.changed(prop);
         }));
-
-        this.emit('changed');
     }
 
     get description() { return this._stream.description; }
@@ -121,13 +118,6 @@ class AudioService extends Service {
             ['stream-removed', this._streamRemoved.bind(this)],
         ]);
 
-        bulkConnect(this, [
-            ['speaker-changed', () => this.emit('changed')],
-            ['microphone-changed', () => this.emit('changed')],
-            ['stream-added', () => this.emit('changed')],
-            ['stream-added', () => this.emit('changed')],
-        ]);
-
         this._control.open();
     }
 
@@ -161,7 +151,7 @@ class AudioService extends Service {
 
         this[`_${type}Binding`] = stream.connect('changed', () => this.emit(`${type}-changed`));
         this[`_${type}`] = stream;
-        this.notify(type);
+        this.changed(type);
         this.emit(`${type}-changed`);
     }
 
@@ -176,6 +166,7 @@ class AudioService extends Service {
         this._streams.set(id, stream);
         this._streamBindings.set(id, binding);
         this.emit('stream-added', id);
+        this.emit('changed');
     }
 
     private _streamRemoved(_c: Gvc.MixerControl, id: number) {
@@ -189,6 +180,7 @@ class AudioService extends Service {
         this._streams.delete(id);
         this._streamBindings.delete(id);
         this.emit('stream-removed', id);
+        this.emit('changed');
     }
 
     private _getStreams(filter: { new(): Gvc.MixerStream }) {

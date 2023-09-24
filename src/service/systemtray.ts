@@ -139,19 +139,24 @@ export class TrayItem extends Service {
                 if (!proxy.g_name_owner)
                     this.emit('removed', this._busName);
             }],
-            ['g-signal', () => {
-                this._refreshAllProperties();
-                this.emit('changed');
-            }],
+            ['g-signal', this._refreshAllProperties.bind(this)],
             ['g-properties-changed', () => this.emit('changed')],
         ]);
 
         ['Title', 'Icon', 'AttentionIcon', 'OverlayIcon', 'ToolTip', 'Status']
             .forEach(prop => proxy.connectSignal(`New${prop}`, () => {
-                this.emit('changed');
+                this._notify();
             }));
 
         this.emit('ready');
+    }
+
+    _notify() {
+        [
+            'menu', 'category', 'id', 'title', 'status',
+            'window-id', 'is-menu', 'tooltip-markup', 'icon',
+        ].forEach(prop => this.notify(prop));
+        this.emit('changed');
     }
 
     private _refreshAllProperties() {
@@ -170,6 +175,8 @@ export class TrayItem extends Service {
         Object.entries(properties).map(([propertyName, value]) => {
             this._proxy.set_cached_property(propertyName, value);
         });
+
+        this._notify();
     }
 
     private _getPixbuf(pixMapArray: [number, number, Uint8Array][]) {

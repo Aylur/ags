@@ -71,8 +71,7 @@ class NotificationsService extends Service {
     get dnd() { return this._dnd; }
     set dnd(value: boolean) {
         this._dnd = value;
-        this.notify('dnd');
-        this.emit('changed');
+        this.changed('dnd');
     }
 
     get notifications() { return Array.from(this._notifications.values()); }
@@ -141,7 +140,6 @@ class NotificationsService extends Service {
         this._cache();
         this.notify('notifications');
         !this._dnd && this.notify('popups');
-
         this.emit('notified', id);
         this.emit('changed');
         return id;
@@ -153,9 +151,8 @@ class NotificationsService extends Service {
             return;
 
         n.popup = false;
-        this.notify('popups');
         this.emit('dismissed', id);
-        this.emit('changed');
+        this.changed('popups');
     }
 
     CloseNotification(id: number) {
@@ -228,7 +225,7 @@ class NotificationsService extends Service {
                 this._notifications.set(n.id, n);
             }
 
-            this.emit('changed');
+            this.changed('notifications');
         } catch (_) {
             // most likely there is no cache yet
         }

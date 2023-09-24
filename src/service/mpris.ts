@@ -191,7 +191,6 @@ class MprisPlayer extends GObject.Object {
             'position',
             'volume',
         ].map(prop => this.notify(prop));
-        this.emit('changed');
     }
 
     private _cacheCoverArt() {
@@ -219,7 +218,6 @@ class MprisPlayer extends GObject.Object {
                 try {
                     source.copy_finish(result);
                     this.notify('cover-path');
-                    this.emit('changed');
                 }
                 catch (e) {
                     logError(e as Error, `failed to cache ${coverPath}`);
@@ -311,14 +309,6 @@ class MprisService extends Service {
             'org.freedesktop.DBus',
             '/org/freedesktop/DBus');
 
-        ['player-closed', 'player-added', 'player-changed'].map(signal => {
-            this.connect(signal, () => this.emit('changed'));
-        });
-
-        ['player-closed', 'player-added'].map(signal => {
-            this.connect(signal, () => this.notify('players'));
-        });
-
         this._onProxyReady();
     }
 
@@ -331,14 +321,17 @@ class MprisService extends Service {
         player.connect('closed', () => {
             this._players.delete(busName);
             this.emit('player-closed', busName);
+            this.changed('players');
         });
 
         player.connect('changed', () => {
             this.emit('player-changed', busName);
+            this.emit('changed');
         });
 
         this._players.set(busName, player);
         this.emit('player-added', busName);
+        this.changed('players');
     }
 
     private _onProxyReady() {
