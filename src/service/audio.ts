@@ -27,6 +27,7 @@ class Stream extends Service {
 
     private _stream: Gvc.MixerStream;
     private _ids: number[];
+    private _oldVolume = 0;
 
     get stream() { return this._stream; }
 
@@ -47,15 +48,21 @@ class Stream extends Service {
     }
 
     get description() { return this._stream.description; }
-    get iconName() { return this._stream.icon_name; }
+    get icon_name() { return this._stream.icon_name; }
     get id() { return this._stream.id; }
     get name() { return this._stream.name; }
     get state() { return _MIXER_CONTROL_STATE[this._stream.state]; }
-    get isMuted() { return this._stream.is_muted; }
 
-    // for binds compatibility
-    get icon_name() { return this.iconName; }
-    get is_muted() { return this.isMuted; }
+    get is_muted() { return this.volume === 0; }
+    set is_muted(mute: boolean) {
+        if (mute) {
+            this._oldVolume = this.volume;
+            this.volume = 0;
+        }
+        else if (this.volume === 0) {
+            this.volume = this._oldVolume;
+        }
+    }
 
     get volume() {
         const max = Audio.instance.control.get_vol_max_norm();

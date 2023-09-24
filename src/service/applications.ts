@@ -21,44 +21,22 @@ class Application extends Service {
         });
     }
 
-    app: Gio.DesktopAppInfo;
-    frequency: number;
-    name: string;
-    desktop: string | null;
-    description: string | null;
-    wmClass: string | null;
-    executable: string;
-    iconName: string;
-    service: ApplicationsService;
+    _app: Gio.DesktopAppInfo;
+    _frequency: number;
 
-    // for binds compatibility
-    get icon_name() { return this.iconName; }
-    get wm_class() { return this.wmClass; }
+    get app() { return this._app; }
+    get frequency() { return this._frequency; }
+    get name() { return this._app.get_name(); }
+    get desktop() { return this._app.get_id(); }
+    get description() { return this._app.get_description(); }
+    get wm_class() { return this._app.get_startup_wm_class(); }
+    get executable() { return this._app.get_executable(); }
+    get icon_name() { return this._app.get_string('Icon'); }
 
-    constructor(app: Gio.DesktopAppInfo, service: ApplicationsService) {
+    constructor(app: Gio.DesktopAppInfo, frequency: number) {
         super();
-        this.service = service;
-        this.app = app;
-        this.name = app.get_name();
-        this.desktop = app.get_id();
-        this.executable = app.get_executable();
-        this.description = app.get_description();
-        this.iconName = this._iconName(app);
-        this.wmClass = app.get_startup_wm_class();
-        this.frequency = this.desktop && service.frequents[this.desktop] || 0;
-    }
-
-    private _iconName(app: Gio.DesktopAppInfo): string {
-        if (!app.get_icon())
-            return '';
-
-        // @ts-expect-error
-        if (typeof app.get_icon()?.get_names !== 'function')
-            return '';
-
-        // @ts-expect-error
-        const name = app.get_icon()?.get_names()[0];
-        return name || '';
+        this._app = app;
+        this._frequency = frequency;
     }
 
     private _match(prop: string | null, search: string) {
@@ -71,6 +49,10 @@ class Application extends Service {
         return prop?.toLowerCase().includes(search.toLowerCase());
     }
 
+    getKey(key: string) {
+        return this._app.get_string(key);
+    }
+
     match(term: string) {
         const { name, desktop, description, executable } = this;
         return this._match(name, term) ||
@@ -80,7 +62,7 @@ class Application extends Service {
     }
 
     launch() {
-        this.frequency++;
+        this._frequency++;
         this.app.launch([], null);
         this.emit('launched');
     }
@@ -133,7 +115,7 @@ class ApplicationsService extends Service {
             .filter(app => app.should_show())
             .map(app => Gio.DesktopAppInfo.new(app.get_id() || ''))
             .filter(app => app)
-            .map(app => new Application(app, this));
+            .map(app => new Application(app, this.frequents[app.get_id() || ''] || 0));
 
         this._list.forEach(app => app.connect('launched', () => {
             this._launched(app.desktop);

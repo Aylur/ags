@@ -66,20 +66,15 @@ class BluetoothDevice extends Service {
 
     get address() { return this._device.address; }
     get alias() { return this._device.alias; }
-    get batteryLevel() { return this._device.battery_level; }
-    get batteryPercentage() { return this._device.battery_percentage; }
+    get battery_level() { return this._device.battery_level; }
+    get battery_percentage() { return this._device.battery_percentage; }
     get connected() { return this._device.connected; }
-    get iconName() { return this._device.icon; }
+    get icon_name() { return this._device.icon; }
     get name() { return this._device.name; }
     get paired() { return this._device.paired; }
     get trusted() { return this._device.trusted; }
     get type() { return GnomeBluetooth.type_to_string(this._device.type); }
     get connecting() { return this._connecting || false; }
-
-    // for binds compatibility
-    get battery_level() { return this.batteryLevel; }
-    get battery_percentage() { return this.batteryPercentage; }
-    get icon_name() { return this.iconName; }
 
     setConnection(connect: boolean) {
         this._connecting = true;
@@ -190,7 +185,7 @@ class BluetoothService extends Service {
     get state() { return _ADAPTER_STATE[this._client.default_adapter_state]; }
 
     get devices() { return Array.from(this._devices.values()); }
-    get connectedDevices() {
+    get connected_devices() {
         const list = [];
         for (const [, device] of this._devices) {
             if (device.connected)
@@ -198,8 +193,6 @@ class BluetoothService extends Service {
         }
         return list;
     }
-
-    get connected_devices() { return this.connectedDevices; }
 }
 
 export default class Bluetooth {
@@ -213,7 +206,7 @@ export default class Bluetooth {
     static getDevice(address: string) { return Bluetooth.instance.getDevice(address); }
 
     static get devices() { return Bluetooth.instance.devices; }
-    static get connectedDevices() { return Bluetooth.instance.connectedDevices; }
+    static get connectedDevices() { return Bluetooth.instance.connected_devices; }
     static get connected_devices() { return Bluetooth.instance.connected_devices; }
     static get enabled() { return Bluetooth.instance.enabled; }
     static set enabled(enable: boolean) { Bluetooth.instance.enabled = enable; }

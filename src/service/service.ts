@@ -80,14 +80,6 @@ export default class Service extends GObject.Object {
         GObject.registerClass({ Signals, Properties }, service);
     }
 
-    static export(api: { instance: object }, name: string) {
-        // @ts-expect-error
-        Service[name] = api;
-        console.error('Service.register is DEPRECATED.\n' +
-            "Simply do Service['YourService'] = YourService\n" +
-            'or just export and import your YourService');
-    }
-
     connectWidget(
         widget: Gtk.Widget,
         callback: (widget: Gtk.Widget, ...args: unknown[]) => void,

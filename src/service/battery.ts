@@ -32,10 +32,7 @@ class BatteryService extends Service {
     percent = -1;
     charging = false;
     charged = false;
-    iconName = 'battery-missing-symbolic';
-
-    // for binds compatibility
-    get icon_name() { return this.iconName; }
+    icon_name = 'battery-missing-symbolic';
 
     constructor() {
         super();
@@ -64,7 +61,7 @@ class BatteryService extends Service {
 
         const level = Math.floor(percent / 10) * 10;
 
-        this.iconName = charged
+        this.icon_name = charged
             ? 'battery-level-100-charged-symbolic'
             : `battery-level-${level}${state}-symbolic`;
 
@@ -92,6 +89,6 @@ export default class Battery {
     static get percent() { return Battery.instance.percent; }
     static get charging() { return Battery.instance.charging; }
     static get charged() { return Battery.instance.charged; }
-    static get iconName() { return Battery.instance.iconName; }
+    static get iconName() { return Battery.instance.icon_name; }
     static get icon_name() { return Battery.instance.icon_name; }
 }

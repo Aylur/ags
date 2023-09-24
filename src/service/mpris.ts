@@ -55,35 +55,41 @@ class MprisPlayer extends GObject.Object {
         });
     }
 
-    busName: string;
-    name: string;
-    entry!: string;
-    identity!: string;
+    get bus_name() { return this._busName; }
+    get name() { return this._name; }
+    get entry() { return this._entry; }
+    get identity() { return this._identity; }
 
-    trackid!: string;
-    trackArtists!: string[];
-    trackTitle!: string;
-    trackCoverUrl!: string;
-    coverPath!: string;
-    playBackStatus!: PlaybackStatus;
-    canGoNext!: boolean;
-    canGoPrev!: boolean;
-    canPlay!: boolean;
-    shuffleStatus!: boolean | null;
-    loopStatus!: LoopStatus | null;
-    length!: number;
+    get trackid() { return this._trackid; }
+    get track_artists() { return this._trackArtists; }
+    get track_title() { return this._trackTitle; }
+    get track_cover_url() { return this._trackCoverUrl; }
+    get cover_path() { return this._coverPath; }
+    get play_back_status() { return this._playBackStatus; }
+    get can_go_next() { return this._canGoNext; }
+    get can_go_prev() { return this._canGoPrev; }
+    get can_play() { return this._canPlay; }
+    get shuffle_status() { return this._shuffleStatus; }
+    get loop_status() { return this._loopStatus; }
+    get length() { return this._length; }
 
-    get bus_name() { return this.busName; }
-    get track_artists() { return this.trackArtists; }
-    get track_title() { return this.trackTitle; }
-    get track_cover_url() { return this.trackCoverUrl; }
-    get cover_path() { return this.coverPath; }
-    get play_back_status() { return this.playBackStatus; }
-    get can_go_next() { return this.canGoNext; }
-    get can_go_prev() { return this.canGoPrev; }
-    get can_play() { return this.canPlay; }
-    get shuffle_status() { return this.shuffleStatus; }
-    get loop_status() { return this.loopStatus; }
+    private _busName: string;
+    private _name: string;
+    private _entry!: string;
+    private _identity!: string;
+
+    private _trackid!: string;
+    private _trackArtists!: string[];
+    private _trackTitle!: string;
+    private _trackCoverUrl!: string;
+    private _coverPath!: string;
+    private _playBackStatus!: PlaybackStatus;
+    private _canGoNext!: boolean;
+    private _canGoPrev!: boolean;
+    private _canPlay!: boolean;
+    private _shuffleStatus!: boolean | null;
+    private _loopStatus!: LoopStatus | null;
+    private _length!: number;
 
     private _binding: { mpris: number, player: number };
     private _mprisProxy: MprisProxy;
@@ -92,8 +98,8 @@ class MprisPlayer extends GObject.Object {
     constructor(busName: string) {
         super();
 
-        this.busName = busName;
-        this.name = busName.substring(23).split('.')[0];
+        this._busName = busName;
+        this._name = busName.substring(23).split('.')[0];
 
         this._binding = { mpris: 0, player: 0 };
         this._mprisProxy = new MprisProxy(
@@ -124,8 +130,8 @@ class MprisPlayer extends GObject.Object {
                     this.close();
             });
 
-        this.identity = this._mprisProxy.Identity;
-        this.entry = this._mprisProxy.DesktopEntry;
+        this._identity = this._mprisProxy.Identity;
+        this._entry = this._mprisProxy.DesktopEntry;
         if (!this._mprisProxy.g_name_owner)
             this.close();
     }
@@ -160,19 +166,19 @@ class MprisPlayer extends GObject.Object {
             ? -1
             : Number.parseInt(`${length}`.substring(0, 3));
 
-        this.shuffleStatus = this._playerProxy.Shuffle;
-        this.loopStatus = this._playerProxy.LoopStatus as LoopStatus;
-        this.canGoNext = this._playerProxy.CanGoNext;
-        this.canGoPrev = this._playerProxy.CanGoPrevious;
-        this.canPlay = this._playerProxy.CanPlay;
-        this.playBackStatus =
+        this._shuffleStatus = this._playerProxy.Shuffle;
+        this._loopStatus = this._playerProxy.LoopStatus as LoopStatus;
+        this._canGoNext = this._playerProxy.CanGoNext;
+        this._canGoPrev = this._playerProxy.CanGoPrevious;
+        this._canPlay = this._playerProxy.CanPlay;
+        this._playBackStatus =
             this._playerProxy.PlaybackStatus as PlaybackStatus;
 
-        this.trackid = metadata['mpris:trackid'];
-        this.trackArtists = trackArtists;
-        this.trackTitle = trackTitle;
-        this.trackCoverUrl = trackCoverUrl;
-        this.length = length;
+        this._trackid = metadata['mpris:trackid'];
+        this._trackArtists = trackArtists;
+        this._trackTitle = trackTitle;
+        this._trackCoverUrl = trackCoverUrl;
+        this._length = length;
         this._cacheCoverArt();
 
         [
@@ -194,23 +200,22 @@ class MprisPlayer extends GObject.Object {
     }
 
     private _cacheCoverArt() {
-        this.coverPath = MEDIA_CACHE_PATH + '/' +
-            `${this.trackArtists.join(', ')}-${this.trackTitle}`
+        this._coverPath = MEDIA_CACHE_PATH + '/' +
+            `${this._trackArtists.join(', ')}-${this._trackTitle}`
                 .replace(/[\,\*\?\"\<\>\|\#\:\?\/\'\(\)]/g, '');
 
-        if (this.coverPath.length > 255)
-            this.coverPath = this.coverPath.substring(0, 255);
+        if (this._coverPath.length > 255)
+            this._coverPath = this._coverPath.substring(0, 255);
 
-        const { trackCoverUrl, coverPath } = this;
-        if (trackCoverUrl === '' || coverPath === '')
+        if (this._trackCoverUrl === '' || this._coverPath === '')
             return;
 
-        if (GLib.file_test(coverPath, GLib.FileTest.EXISTS))
+        if (GLib.file_test(this._coverPath, GLib.FileTest.EXISTS))
             return;
 
         ensureDirectory(MEDIA_CACHE_PATH);
-        Gio.File.new_for_uri(trackCoverUrl).copy_async(
-            Gio.File.new_for_path(coverPath),
+        Gio.File.new_for_uri(this._trackCoverUrl).copy_async(
+            Gio.File.new_for_path(this._coverPath),
             Gio.FileCopyFlags.OVERWRITE,
             GLib.PRIORITY_DEFAULT,
             // @ts-expect-error
@@ -220,7 +225,7 @@ class MprisPlayer extends GObject.Object {
                     this.notify('cover-path');
                 }
                 catch (e) {
-                    logError(e as Error, `failed to cache ${coverPath}`);
+                    logError(e as Error, `failed to cache ${this._coverPath}`);
                 }
             },
         );
@@ -243,7 +248,7 @@ class MprisPlayer extends GObject.Object {
             Gio.BusType.SESSION,
             Gio.DBusProxyFlags.NONE,
             null,
-            this.busName,
+            this._busName,
             '/org/mpris/MediaPlayer2',
             'org.mpris.MediaPlayer2.Player',
             null,

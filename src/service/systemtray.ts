@@ -76,18 +76,14 @@ export class TrayItem extends Service {
             : this._proxy.ContextMenuAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
     }
 
-    get window_id() { return this.windowId; }
-    get is_menu() { return this.isMenu; }
-    get tooltip_markup() { return this.tooltipMarkup; }
-
     get category() { return this._proxy.Category; }
     get id() { return this._proxy.Id; }
     get title() { return this._proxy.Title; }
     get status() { return this._proxy.Status; }
-    get windowId() { return this._proxy.WindowId; }
-    get isMenu() { return this._proxy.ItemIsMenu; }
+    get window_id() { return this._proxy.WindowId; }
+    get is_menu() { return this._proxy.ItemIsMenu; }
 
-    get tooltipMarkup() {
+    get tooltip_markup() {
         if (!this._proxy.ToolTip)
             return '';
 

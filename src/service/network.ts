@@ -114,8 +114,7 @@ class Wifi extends Service {
         });
     }
 
-    get access_points() { return this.accessPoints; }
-    get accessPoints() {
+    get access_points() {
         return this._device.get_access_points().map(ap => ({
             bssid: ap.bssid,
             address: ap.hw_address,
@@ -147,8 +146,7 @@ class Wifi extends Service {
 
     get state() { return _DEVICE_STATE(this._device); }
 
-    get icon_name() { return this.iconName; }
-    get iconName() {
+    get icon_name() {
         const iconNames: [number, string][] = [
             [80, 'excellent'],
             [60, 'good'],
@@ -201,8 +199,7 @@ class Wired extends Service {
     get speed() { return this._device.get_speed(); }
     get internet() { return _INTERNET(this._device); }
     get state() { return _DEVICE_STATE(this._device); }
-    get icon_name() { return this.iconName; }
-    get iconName() {
+    get icon_name() {
         if (this.internet === 'connecting')
             return 'network-wired-acquiring-symbolic';
 
