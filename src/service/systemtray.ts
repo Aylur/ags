@@ -160,7 +160,7 @@ export class TrayItem extends Service {
     }
 
     private _refreshAllProperties() {
-        const variant = this._proxy.g_connection.call_sync(
+        this._proxy.g_connection.call(
             this._proxy.g_name,
             this._proxy.g_object_path,
             'org.freedesktop.DBus.Properties',
@@ -169,14 +169,17 @@ export class TrayItem extends Service {
             GLib.VariantType.new('(a{sv})'),
             Gio.DBusCallFlags.NONE, -1,
             null,
-        ) as GLib.Variant<'(a{sv})'>;
-
-        const [properties] = variant.deep_unpack();
-        Object.entries(properties).map(([propertyName, value]) => {
-            this._proxy.set_cached_property(propertyName, value);
-        });
-
-        this._notify();
+            (proxy, result) => {
+                const variant = proxy?.call_finish(result) as GLib.Variant<'(a{sv})'>;
+                if (!variant)
+                    return;
+                const [properties] = variant.deep_unpack();
+                Object.entries(properties).map(([propertyName, value]) => {
+                    this._proxy.set_cached_property(propertyName, value);
+                });
+                this._notify();
+            },
+        );
     }
 
     private _getPixbuf(pixMapArray: [number, number, Uint8Array][]) {
