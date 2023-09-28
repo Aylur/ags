@@ -39,6 +39,9 @@ interface Notification {
     time: number
     image: string | null
     popup: boolean
+    dismiss: () => void
+    close: () => void
+    invoke: (id: string) => void
 }
 
 class NotificationsService extends Service {
@@ -119,7 +122,7 @@ class NotificationsService extends Service {
 
         const id = replacesId || this._idCount++;
         const urgency = _URGENCY[hints['urgency']?.unpack() || 1];
-        this._notifications.set(id, {
+        const notification = {
             id,
             appName,
             appEntry: hints['desktop-entry']?.unpack(),
@@ -133,7 +136,12 @@ class NotificationsService extends Service {
             image: this._parseImage(
                 id, hints['image-data']) ||
                 this._isFile(appIcon),
-        });
+
+            dismiss: () => this.DismissNotification(id),
+            close: () => this.CloseNotification(id),
+            invoke: (actionId: string) => this.InvokeAction(id, actionId),
+        };
+        this._notifications.set(id, notification);
 
         timeout(App.config.notificationPopupTimeout, () => this.DismissNotification(id));
 
@@ -222,6 +230,10 @@ class NotificationsService extends Service {
                 if (n.id > this._idCount)
                     this._idCount = n.id + 1;
 
+                n.dismiss = () => this.DismissNotification(n.id);
+                n.close = () => this.CloseNotification(n.id);
+                n.invoke = (actionId: string) => this.InvokeAction(n.id, actionId);
+
                 this._notifications.set(n.id, n);
             }
 
@@ -273,6 +285,11 @@ class NotificationsService extends Service {
     }
 }
 
+const depracate = (method: string) => console.error(
+    `Notifications.${method} is DEPRECATED` +
+    `use the ${method} method on the notification object instead`,
+);
+
 export default class Notifications {
     static _instance: NotificationsService;
 
@@ -281,11 +298,22 @@ export default class Notifications {
         return Notifications._instance;
     }
 
-    // eslint-disable-next-line max-len
-    static invoke(id: number, actionId: string) { Notifications.instance.InvokeAction(id, actionId); }
-    static dismiss(id: number) { Notifications.instance.DismissNotification(id); }
+    static invoke(id: number, actionId: string) {
+        depracate('invoke');
+        Notifications.instance.InvokeAction(id, actionId);
+    }
+
+    static dismiss(id: number) {
+        depracate('dismiss');
+        Notifications.instance.DismissNotification(id);
+    }
+
+    static close(id: number) {
+        depracate('close');
+        Notifications.instance.CloseNotification(id);
+    }
+
     static clear() { Notifications.instance.Clear(); }
-    static close(id: number) { Notifications.instance.CloseNotification(id); }
 
     static getPopup(id: number) { return Notifications.instance.getPopup(id); }
     static getNotification(id: number) { return Notifications.instance.getNotification(id); }
