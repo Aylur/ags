@@ -28,11 +28,17 @@ class BatteryService extends Service {
 
     private _proxy: BatteryProxy;
 
-    available = false;
-    percent = -1;
-    charging = false;
-    charged = false;
-    icon_name = 'battery-missing-symbolic';
+    private _available = false;
+    private _percent = -1;
+    private _charging = false;
+    private _charged = false;
+    private _iconName = 'battery-missing-symbolic';
+
+    get available() { return this._available; }
+    get percent() { return this._percent; }
+    get charging() { return this._charging; }
+    get charged() { return this._charged; }
+    get icon_name() { return this._iconName; }
 
     constructor() {
         super();
@@ -61,14 +67,14 @@ class BatteryService extends Service {
 
         const level = Math.floor(percent / 10) * 10;
 
-        this.icon_name = charged
+        this._iconName = charged
             ? 'battery-level-100-charged-symbolic'
             : `battery-level-${level}${state}-symbolic`;
 
-        this.charging = this._proxy.State === DeviceState.CHARGING;
-        this.percent = percent;
-        this.charged = charged;
-        this.available = true;
+        this._charging = this._proxy.State === DeviceState.CHARGING;
+        this._percent = percent;
+        this._charged = charged;
+        this._available = true;
 
         ['available', 'icon-name', 'percent', 'charging', 'charged']
             .map(prop => this.notify(prop));
@@ -89,6 +95,8 @@ export default class Battery {
     static get percent() { return Battery.instance.percent; }
     static get charging() { return Battery.instance.charging; }
     static get charged() { return Battery.instance.charged; }
+
     static get iconName() { return Battery.instance.icon_name; }
     static get icon_name() { return Battery.instance.icon_name; }
+    static get ['icon-name']() { return Battery.instance.icon_name; }
 }
