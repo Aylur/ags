@@ -151,7 +151,9 @@ class BluetoothService extends Service {
 
         this._devices.get(device.address)?.close();
         this._devices.delete(device.address);
-        this.changed('devices');
+        this.notify('devices');
+        this.notify('connected-devices');
+        this.emit('changed');
     }
 
     connectDevice(
