@@ -29,8 +29,6 @@ class Stream extends Service {
     private _ids: number[];
     private _oldVolume = 0;
 
-    get stream() { return this._stream; }
-
     constructor(stream: Gvc.MixerStream) {
         super();
 
@@ -47,6 +45,7 @@ class Stream extends Service {
         }));
     }
 
+    get stream() { return this._stream; }
     get description() { return this._stream.description; }
     get icon_name() { return this._stream.icon_name; }
     get id() { return this._stream.id; }
@@ -60,7 +59,7 @@ class Stream extends Service {
             this.volume = 0;
         }
         else if (this.volume === 0) {
-            this.volume = this._oldVolume;
+            this.volume = this._oldVolume || 0.25;
         }
     }
 
@@ -95,6 +94,9 @@ class AudioService extends Service {
             'stream-added': ['int'],
             'stream-removed': ['int'],
         }, {
+            'apps': ['jsobject', 'rw'],
+            'speakers': ['jsobject', 'rw'],
+            'microphones': ['jsobject', 'rw'],
             'speaker': ['jsobject', 'rw'],
             'microphone': ['jsobject', 'rw'],
         });
@@ -172,6 +174,16 @@ class AudioService extends Service {
 
         this._streams.set(id, stream);
         this._streamBindings.set(id, binding);
+
+        if (gvcstream instanceof Gvc.MixerSource)
+            this.notify('microphones');
+
+        if (gvcstream instanceof Gvc.MixerSink)
+            this.notify('speakers');
+
+        if (gvcstream instanceof Gvc.MixerSinkInput)
+            this.notify('apps');
+
         this.emit('stream-added', id);
         this.emit('changed');
     }
@@ -187,6 +199,16 @@ class AudioService extends Service {
         this._streams.delete(id);
         this._streamBindings.delete(id);
         this.emit('stream-removed', id);
+
+        if (stream.stream instanceof Gvc.MixerSource)
+            this.notify('microphones');
+
+        if (stream.stream instanceof Gvc.MixerSink)
+            this.notify('speakers');
+
+        if (stream.stream instanceof Gvc.MixerSinkInput)
+            this.notify('apps');
+
         this.emit('changed');
     }
 
