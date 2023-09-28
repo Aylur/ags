@@ -168,7 +168,7 @@ class BluetoothService extends Service {
                 try {
                     const s = client.connect_service_finish(res);
                     callback(s);
-                    this.notify('connected-devices');
+                    this.changed('connected-devices');
                 } catch (error) {
                     logError(error as Error);
                     callback(false);
@@ -205,10 +205,11 @@ export default class Bluetooth {
 
     static getDevice(address: string) { return Bluetooth.instance.getDevice(address); }
 
-    static get devices() { return Bluetooth.instance.devices; }
-    static get connectedDevices() { return Bluetooth.instance.connected_devices; }
-    static get connected_devices() { return Bluetooth.instance.connected_devices; }
     static get enabled() { return Bluetooth.instance.enabled; }
     static set enabled(enable: boolean) { Bluetooth.instance.enabled = enable; }
     static get state() { return Bluetooth.instance.state; }
+    static get devices() { return Bluetooth.instance.devices; }
+    static get connectedDevices() { return Bluetooth.instance.connected_devices; }
+    static get connected_devices() { return Bluetooth.instance.connected_devices; }
+    static get ['connected-devices']() { return Bluetooth.instance.connected_devices; }
 }
