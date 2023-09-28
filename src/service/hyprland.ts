@@ -5,16 +5,87 @@ import { execAsync } from '../utils.js';
 
 const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
 
-interface Active {
-    client: {
-        address: string
-        title: string
-        class: string
+class ActiveClient extends Service {
+    static {
+        Service.register(this, {}, {
+            'address': ['string'],
+            'title': ['string'],
+            'class': ['string'],
+        });
     }
-    monitor: string
-    workspace: {
-        id: number
-        name: string
+
+    private _address = '';
+    private _title = '';
+    private _class = '';
+
+    get address() { return this._address; }
+    get title() { return this._title; }
+    get class() { return this._class; }
+
+    _set(attr: 'address' | 'title' | 'class', value: string) {
+        this[`_${attr}`] = value;
+        this.changed(attr);
+    }
+}
+
+class ActiveWorkspace extends Service {
+    static {
+        Service.register(this, {}, {
+            'id': ['int'],
+            'name': ['string'],
+        });
+    }
+
+    private _id = 1;
+    private _name = '';
+
+    get id() { return this._id; }
+    get name() { return this._name; }
+
+    _set(attr: 'id' | 'name', value: unknown) {
+        if (attr === 'id')
+            this._id = value as number;
+
+        if (attr === 'name')
+            this._name = value as string;
+
+        this.changed(attr);
+    }
+}
+
+class Actives extends Service {
+    static {
+        Service.register(this, {}, {
+            'client': ['jsobject'],
+            'monitor': ['string'],
+            'workspace': ['jsobject'],
+        });
+    }
+
+    constructor() {
+        super();
+
+        [this._client, this._workspace].forEach(s =>
+            s.connect('changed', () => this.emit('changed')));
+
+        ['id', 'name'].forEach(attr =>
+            this._workspace.connect(`notify::${attr}`, () => this.changed('workspace')));
+
+        ['address', 'title', 'class'].forEach(attr =>
+            this._client.connect(`notify::${attr}`, () => this.changed('client')));
+    }
+
+    private _client = new ActiveClient();
+    private _monitor = '';
+    private _workspace = new ActiveWorkspace();
+
+    get client() { return this._client; }
+    get monitor() { return this._monitor; }
+    get workspace() { return this._workspace; }
+
+    _setMonitor(mon: string) {
+        this._monitor = mon;
+        this.changed('monitor');
     }
 }
 
@@ -26,6 +97,10 @@ class HyprlandService extends Service {
             'keyboard-layout': ['string', 'string'],
             'monitor-added': ['string'],
             'monitor-removed': ['string'],
+            'client-added': ['string'],
+            'client-removed': ['string'],
+            'workspace-added': ['string'],
+            'workspace-removed': ['string'],
         }, {
             'active': ['jsobject'],
             'monitors': ['jsobject'],
@@ -34,7 +109,7 @@ class HyprlandService extends Service {
         });
     }
 
-    private _active: Active;
+    private _active: Actives;
     private _monitors: Map<number, object>;
     private _workspaces: Map<number, object>;
     private _clients: Map<string, object>;
@@ -54,18 +129,7 @@ class HyprlandService extends Service {
             console.error('Hyprland is not running');
 
         super();
-        this._active = {
-            client: {
-                address: '',
-                title: '',
-                class: '',
-            },
-            monitor: '',
-            workspace: {
-                id: 0,
-                name: '',
-            },
-        };
+        this._active = new Actives();
         this._monitors = new Map();
         this._workspaces = new Map();
         this._clients = new Map();
@@ -81,6 +145,10 @@ class HyprlandService extends Service {
                 }), null)
                 .get_input_stream(),
         }));
+
+        this._active.connect('changed', () => this.emit('changed'));
+        ['monitor', 'workspace', 'client'].forEach(active =>
+            this._active.connect(`notify::${active}`, () => this.changed('active')));
     }
 
     private _watchSocket(stream: Gio.DataInputStream) {
@@ -112,8 +180,9 @@ class HyprlandService extends Service {
             json.forEach(monitor => {
                 this._monitors.set(monitor.id, monitor);
                 if (monitor.focused) {
-                    this._active.monitor = monitor.name;
-                    this._active.workspace = monitor.activeWorkspace;
+                    this._active._setMonitor(monitor.name);
+                    this._active.workspace._set('id', monitor.activeWorkspace.id);
+                    this._active.workspace._set('name', monitor.activeWorkspace.name);
                 }
             });
             this.notify('monitors');
@@ -175,11 +244,21 @@ class HyprlandService extends Service {
                     break;
 
                 case 'createworkspace':
+                    await this._syncWorkspaces();
+                    this.emit('workspace-added', argv[0]);
+                    break;
+
                 case 'destroyworkspace':
                     await this._syncWorkspaces();
+                    this.emit('workspace-removed', argv[0]);
                     break;
 
                 case 'openwindow':
+                    await this._syncClients();
+                    await this._syncWorkspaces();
+                    this.emit('client-added', '0x' + argv[0]);
+                    break;
+
                 case 'movewindow':
                 case 'windowtitle':
                     await this._syncClients();
@@ -192,22 +271,21 @@ class HyprlandService extends Service {
                     break;
 
                 case 'activewindow':
-                    this._active.client.class = argv[0];
-                    this._active.client.title = argv[1];
+                    this._active.client._set('class', argv[0]);
+                    this._active.client._set('title', argv.slice(1).join(','));
                     break;
 
                 case 'activewindowv2':
-                    this._active.client.address = '0x' + argv[0];
+                    this._active.client._set('address', '0x' + argv[0]);
                     break;
 
                 case 'closewindow':
-                    this._active.client = {
-                        class: '',
-                        title: '',
-                        address: '',
-                    };
+                    this._active.client._set('class', '');
+                    this._active.client._set('title', '');
+                    this._active.client._set('address', '');
                     await this._syncClients();
                     await this._syncWorkspaces();
+                    this.emit('client-removed', '0x' + argv[0]);
                     break;
 
                 case 'urgent':
