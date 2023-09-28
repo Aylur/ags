@@ -183,7 +183,7 @@ class HyprlandService extends Service {
 
                 case 'activewindow':
                     this._active.client.class = argv[0];
-                    this._active.client.title = argv[1];
+                    this._active.client.title = argv.slice(1).join(',');
                     break;
 
                 case 'activewindowv2':
