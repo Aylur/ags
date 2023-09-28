@@ -1,6 +1,5 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import GObject from 'gi://GObject';
 import Service from './service.js';
 import { ensureDirectory, timeout } from '../utils.js';
 import { CACHE_DIR } from '../utils.js';
@@ -27,10 +26,9 @@ type MprisMetadata = {
     [key: string]: unknown
 }
 
-class MprisPlayer extends GObject.Object {
+class MprisPlayer extends Service {
     static {
         Service.register(this, {
-            'changed': [],
             'closed': [],
             'position': ['int'],
         }, {
@@ -197,6 +195,7 @@ class MprisPlayer extends GObject.Object {
             'position',
             'volume',
         ].map(prop => this.notify(prop));
+        this.emit('changed');
     }
 
     private _cacheCoverArt() {
@@ -222,7 +221,7 @@ class MprisPlayer extends GObject.Object {
             null, null, (source, result) => {
                 try {
                     source.copy_finish(result);
-                    this.notify('cover-path');
+                    this.changed('cover-path');
                 }
                 catch (e) {
                     logError(e as Error, `failed to cache ${this._coverPath}`);
