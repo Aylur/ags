@@ -147,7 +147,9 @@ class Notification extends Service {
     }
 
     static fromJson(json: NotifcationJson) {
-        const { id, appName, appEntry, appIcon, summary, body, actions, urgency, time, image } = json;
+        const { id, appName, appEntry, appIcon, summary,
+            body, actions, urgency, time, image } = json;
+
         const n = new Notification(appName, id, appIcon, summary, body, [], {}, false);
         n._actions = actions;
         n._appEntry = appEntry;
@@ -337,7 +339,7 @@ class NotificationsService extends Service {
                 .map((n: NotifcationJson) => Notification.fromJson(n));
 
             for (const n of notifications) {
-                this._addNotification(n)
+                this._addNotification(n);
                 if (n.id > this._idCount)
                     this._idCount = n.id + 1;
             }
