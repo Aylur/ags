@@ -335,7 +335,10 @@ export default class Hyprland {
     static get clients() { return Hyprland.instance.clients; }
     static get active() { return Hyprland.instance.active; }
 
-    static hyprctlGet(cmd: string): unknown | object {
+    static HyprctlGet(cmd: string): unknown | object {
+        console.error('Hyprland.HyprctlGet is DEPRECATED' +
+            "use JSON.parse(Utils.exec('hyprctl -j')) instead");
+
         const [success, out, err] =
             GLib.spawn_command_line_sync(`hyprctl -j ${cmd}`);
 
