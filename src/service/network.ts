@@ -106,7 +106,7 @@ class Wifi extends Service {
             return;
 
 
-        // TODO make signals acutally signal when they should
+        // TODO make signals actually signal when they should
         this._apBind = this._ap.connect('notify::strength', () => {
             this.emit('changed');
             ['enabled', 'internet', 'strength', 'access-points', 'ssid', 'state', 'icon-name']
@@ -188,7 +188,7 @@ class Wired extends Service {
         super();
         this._device = device;
 
-        // TODO make signals acutally signal when they should
+        // TODO make signals actually signal when they should
         this._device.connect('notify::speed', () => {
             this.emit('changed');
             ['speed', 'internet', 'state', 'icon-name']
