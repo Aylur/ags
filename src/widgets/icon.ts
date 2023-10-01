@@ -2,6 +2,7 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
+import Gdk from 'gi://Gdk?version=3.0';
 import { Context } from 'gi-types/cairo1';
 
 export default class AgsIcon extends Gtk.Image {
@@ -41,8 +42,13 @@ export default class AgsIcon extends Gtk.Image {
         if (typeof icon === 'string') {
             if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
                 this._type = 'file';
-                this.set_from_pixbuf(
-                    GdkPixbuf.Pixbuf.new_from_file_at_size(icon, this.size, this.size));
+                const pb =
+                    GdkPixbuf.Pixbuf.new_from_file_at_size(
+                        this.icon as string,
+                        this.size * this.scale_factor,
+                        this.size  * this.scale_factor);
+                const cs = Gdk.cairo_surface_create_from_pixbuf(pb, 0, this.get_window());
+                this.set_from_surface(cs);
             } else {
                 this._type = 'named';
                 this.icon_name = icon;
@@ -51,8 +57,15 @@ export default class AgsIcon extends Gtk.Image {
         }
         else if (icon instanceof GdkPixbuf.Pixbuf) {
             this._type = 'pixbuf';
-            this.set_from_pixbuf(
-                icon.scale_simple(this.size, this.size, GdkPixbuf.InterpType.BILINEAR));
+            const pb_scaled =
+                icon.scale_simple(
+                    this.size * this.scale_factor,
+                    this.size * this.scale_factor,
+                    GdkPixbuf.InterpType.BILINEAR);
+            if (pb_scaled) {
+                const cs = Gdk.cairo_surface_create_from_pixbuf(pb_scaled, 0, this.get_window());
+                this.set_from_surface(cs);
+            }
         }
         else {
             logError(new Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));
@@ -73,12 +86,27 @@ export default class AgsIcon extends Gtk.Image {
 
         switch (this._type) {
             case 'file':
-                this.set_from_pixbuf(
-                    GdkPixbuf.Pixbuf.new_from_file_at_size(this.icon as string, size, size));
+                // eslint-disable-next-line no-case-declarations
+                const pb = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                    this.icon as string,
+                    size * this.scale_factor,
+                    size * this.scale_factor);
+                // eslint-disable-next-line no-case-declarations
+                const cs = Gdk.cairo_surface_create_from_pixbuf(pb, 0, this.get_window());
+                this.set_from_surface(cs);
                 break;
             case 'pixbuf':
-                this.set_from_pixbuf((this.icon as GdkPixbuf.Pixbuf).scale_simple(
-                    this.size, this.size, GdkPixbuf.InterpType.BILINEAR));
+                // eslint-disable-next-line no-case-declarations
+                const pb_scaled =
+                    (this.icon as GdkPixbuf.Pixbuf).scale_simple(
+                        size * this.scale_factor,
+                        size * this.scale_factor,
+                        GdkPixbuf.InterpType.BILINEAR);
+                if (pb_scaled) {
+                    const cs = Gdk.cairo_surface_create_from_pixbuf(
+                        pb_scaled, 0, this.get_window());
+                    this.set_from_surface(cs);
+                }
                 break;
             case 'named':
                 this.set_pixel_size(size);
