@@ -5,17 +5,75 @@ import { execAsync } from '../utils.js';
 
 const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
 
-interface Active {
-    client: {
-        address: string
-        title: string
-        class: string
+class Active extends Service {
+    updateProperty(prop: string, value: unknown): void {
+        super.updateProperty(prop, value);
+        this.emit('changed');
     }
-    monitor: string
-    workspace: {
-        id: number
-        name: string
+}
+
+class ActiveClient extends Active {
+    static {
+        Service.register(this, {}, {
+            'address': ['string'],
+            'title': ['string'],
+            'class': ['string'],
+        });
     }
+
+    private _address = '';
+    private _title = '';
+    private _class = '';
+
+    get address() { return this._address; }
+    get title() { return this._title; }
+    get class() { return this._class; }
+}
+
+class ActiveWorkspace extends Active {
+    static {
+        Service.register(this, {}, {
+            'id': ['int'],
+            'name': ['string'],
+        });
+    }
+
+    private _id = 1;
+    private _name = '';
+
+    get id() { return this._id; }
+    get name() { return this._name; }
+}
+
+class Actives extends Service {
+    static {
+        Service.register(this, {}, {
+            'client': ['jsobject'],
+            'monitor': ['string'],
+            'workspace': ['jsobject'],
+        });
+    }
+
+    constructor() {
+        super();
+
+        [this._client, this._workspace].forEach(s =>
+            s.connect('changed', () => this.emit('changed')));
+
+        ['id', 'name'].forEach(attr =>
+            this._workspace.connect(`notify::${attr}`, () => this.changed('workspace')));
+
+        ['address', 'title', 'class'].forEach(attr =>
+            this._client.connect(`notify::${attr}`, () => this.changed('client')));
+    }
+
+    private _client = new ActiveClient();
+    private _monitor = '';
+    private _workspace = new ActiveWorkspace();
+
+    get client() { return this._client; }
+    get monitor() { return this._monitor; }
+    get workspace() { return this._workspace; }
 }
 
 class HyprlandService extends Service {
@@ -26,37 +84,39 @@ class HyprlandService extends Service {
             'keyboard-layout': ['string', 'string'],
             'monitor-added': ['string'],
             'monitor-removed': ['string'],
+            'client-added': ['string'],
+            'client-removed': ['string'],
+            'workspace-added': ['string'],
+            'workspace-removed': ['string'],
+        }, {
+            'active': ['jsobject'],
+            'monitors': ['jsobject'],
+            'workspaces': ['jsobject'],
+            'clients': ['jsobject'],
         });
     }
 
-    private _active: Active;
+    private _active: Actives;
     private _monitors: Map<number, object>;
     private _workspaces: Map<number, object>;
     private _clients: Map<string, object>;
     private _decoder = new TextDecoder();
 
     get active() { return this._active; }
-    get monitors() { return this._monitors; }
-    get workspaces() { return this._workspaces; }
-    get clients() { return this._clients; }
+    get monitors() { return Array.from(this._monitors.values()); }
+    get workspaces() { return Array.from(this._workspaces.values()); }
+    get clients() { return Array.from(this._clients.values()); }
+
+    getMonitor(id: number) { return this._monitors.get(id); }
+    getWorkspace(id: number) { return this._workspaces.get(id); }
+    getClient(address: string) { return this._clients.get(address); }
 
     constructor() {
         if (!HIS)
             console.error('Hyprland is not running');
 
         super();
-        this._active = {
-            client: {
-                address: '',
-                title: '',
-                class: '',
-            },
-            monitor: '',
-            workspace: {
-                id: 0,
-                name: '',
-            },
-        };
+        this._active = new Actives();
         this._monitors = new Map();
         this._workspaces = new Map();
         this._clients = new Map();
@@ -72,21 +132,23 @@ class HyprlandService extends Service {
                 }), null)
                 .get_input_stream(),
         }));
+
+        this._active.connect('changed', () => this.emit('changed'));
+        ['monitor', 'workspace', 'client'].forEach(active =>
+            this._active.connect(`notify::${active}`, () => this.changed('active')));
     }
 
     private _watchSocket(stream: Gio.DataInputStream) {
-        stream.read_line_async(
-            0, null,
-            (stream, result) => {
-                if (!stream) {
-                    console.error('Error reading Hyprland socket');
-                    return;
-                }
+        stream.read_line_async(0, null, (stream, result) => {
+            if (!stream) {
+                console.error('Error reading Hyprland socket');
+                return;
+            }
 
-                const [line] = stream.read_line_finish(result);
-                this._onEvent(this._decoder.decode(line));
-                this._watchSocket(stream);
-            });
+            const [line] = stream.read_line_finish(result);
+            this._onEvent(this._decoder.decode(line));
+            this._watchSocket(stream);
+        });
     }
 
     private async _syncMonitors() {
@@ -105,10 +167,12 @@ class HyprlandService extends Service {
             json.forEach(monitor => {
                 this._monitors.set(monitor.id, monitor);
                 if (monitor.focused) {
-                    this._active.monitor = monitor.name;
-                    this._active.workspace = monitor.activeWorkspace;
+                    this._active.updateProperty('monitor', monitor.name);
+                    this._active.workspace.updateProperty('id', monitor.activeWorkspace.id);
+                    this._active.workspace.updateProperty('name', monitor.activeWorkspace.name);
                 }
             });
+            this.notify('monitors');
         } catch (error) {
             logError(error as Error);
         }
@@ -122,6 +186,7 @@ class HyprlandService extends Service {
             json.forEach(ws => {
                 this._workspaces.set(ws.id, ws);
             });
+            this.notify('workspaces');
         } catch (error) {
             logError(error as Error);
         }
@@ -135,6 +200,7 @@ class HyprlandService extends Service {
             json.forEach(client => {
                 this._clients.set(client.address, client);
             });
+            this.notify('clients');
         } catch (error) {
             logError(error as Error);
         }
@@ -165,11 +231,21 @@ class HyprlandService extends Service {
                     break;
 
                 case 'createworkspace':
+                    await this._syncWorkspaces();
+                    this.emit('workspace-added', argv[0]);
+                    break;
+
                 case 'destroyworkspace':
                     await this._syncWorkspaces();
+                    this.emit('workspace-removed', argv[0]);
                     break;
 
                 case 'openwindow':
+                    await this._syncClients();
+                    await this._syncWorkspaces();
+                    this.emit('client-added', '0x' + argv[0]);
+                    break;
+
                 case 'movewindow':
                 case 'windowtitle':
                     await this._syncClients();
@@ -182,22 +258,21 @@ class HyprlandService extends Service {
                     break;
 
                 case 'activewindow':
-                    this._active.client.class = argv[0];
-                    this._active.client.title = argv.slice(1).join(',');
+                    this._active.client.updateProperty('class', argv[0]);
+                    this._active.client.updateProperty('title', argv.slice(1).join(','));
                     break;
 
                 case 'activewindowv2':
-                    this._active.client.address = '0x' + argv[0];
+                    this._active.client.updateProperty('address', '0x' + argv[0]);
                     break;
 
                 case 'closewindow':
-                    this._active.client = {
-                        class: '',
-                        title: '',
-                        address: '',
-                    };
+                    this._active.client.updateProperty('class', '');
+                    this._active.client.updateProperty('title', '');
+                    this._active.client.updateProperty('address', '');
                     await this._syncClients();
                     await this._syncWorkspaces();
+                    this.emit('client-removed', '0x' + argv[0]);
                     break;
 
                 case 'urgent':
@@ -238,16 +313,19 @@ export default class Hyprland {
         return Hyprland._instance;
     }
 
-    static getMonitor(id: number) { return Hyprland.instance.monitors.get(id); }
-    static getWorkspace(id: number) { return Hyprland.instance.workspaces.get(id); }
-    static getClient(address: string) { return Hyprland.instance.clients.get(address); }
+    static getMonitor(id: number) { return Hyprland.instance.getMonitor(id); }
+    static getWorkspace(id: number) { return Hyprland.instance.getWorkspace(id); }
+    static getClient(address: string) { return Hyprland.instance.getClient(address); }
 
-    static get monitors() { return Array.from(Hyprland.instance.monitors.values()); }
-    static get workspaces() { return Array.from(Hyprland.instance.workspaces.values()); }
-    static get clients() { return Array.from(Hyprland.instance.clients.values()); }
+    static get monitors() { return Hyprland.instance.monitors; }
+    static get workspaces() { return Hyprland.instance.workspaces; }
+    static get clients() { return Hyprland.instance.clients; }
     static get active() { return Hyprland.instance.active; }
 
     static HyprctlGet(cmd: string): unknown | object {
+        console.error('Hyprland.HyprctlGet is DEPRECATED' +
+            "use JSON.parse(Utils.exec('hyprctl -j')) instead");
+
         const [success, out, err] =
             GLib.spawn_command_line_sync(`hyprctl -j ${cmd}`);
 

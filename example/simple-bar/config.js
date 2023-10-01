@@ -8,177 +8,166 @@ import SystemTray from 'resource:///com/github/Aylur/ags/service/systemtray.js';
 import App from 'resource:///com/github/Aylur/ags/app.js';
 import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import { exec, execAsync } from 'resource:///com/github/Aylur/ags/utils.js';
-const { Box, Button, Stack, Label, Icon, CenterBox, Window, Slider, ProgressBar } = Widget;
 
 // widgets can be only assigned as a child in one container
 // so to make a reuseable widget, just make it a function
 // then you can use it by calling simply calling it
 
-const Workspaces = () => Box({
+const Workspaces = () => Widget.Box({
     className: 'workspaces',
-    connections: [[Hyprland, box => {
+    connections: [[Hyprland.active.workspace, self => {
         // generate an array [1..10] then make buttons from the index
         const arr = Array.from({ length: 10 }, (_, i) => i + 1);
-        box.children = arr.map(i => Button({
+        self.children = arr.map(i => Widget.Button({
             onClicked: () => execAsync(`hyprctl dispatch workspace ${i}`),
-            child: Label({ label: `${i}` }),
+            child: Widget.Label(`${i}`),
             className: Hyprland.active.workspace.id == i ? 'focused' : '',
         }));
     }]],
 });
 
-const ClientTitle = () => Label({
+const ClientTitle = () => Widget.Label({
     className: 'client-title',
-    // an initial label value can be given but its pointless
-    // because callbacks from connections are run on construction
-    // so in this case this is redundant
-    label: Hyprland.active.client.title || '',
-    connections: [[Hyprland, label => {
-        label.label = Hyprland.active.client.title || '';
-    }]],
+    binds: [
+        ['label', Hyprland.active.client, 'title'],
+    ],
 });
 
-const Clock = () => Label({
+const Clock = () => Widget.Label({
     className: 'clock',
     connections: [
         // this is bad practice, since exec() will block the main event loop
         // in the case of a simple date its not really a problem
-        [1000, label => label.label = exec('date "+%H:%M:%S %b %e."')],
+        [1000, self => self.label = exec('date "+%H:%M:%S %b %e."')],
 
         // this is what you should do
-        [1000, label => execAsync(['date', '+%H:%M:%S %b %e.'])
-            .then(date => label.label = date).catch(console.error)],
+        [1000, self => execAsync(['date', '+%H:%M:%S %b %e.'])
+            .then(date => self.label = date).catch(console.error)],
     ],
 });
 
 // we don't need dunst or any other notification daemon
-// because ags has a notification daemon built in
-const Notification = () => Box({
+// because the Notifications module is a notification daemon itself
+const Notification = () => Widget.Box({
     className: 'notification',
     children: [
-        Icon({
+        Widget.Icon({
             icon: 'preferences-system-notifications-symbolic',
             connections: [
-                [Notifications, icon => icon.visible = Notifications.popups.length > 0],
+                [Notifications, self => self.visible = Notifications.popups.length > 0],
             ],
         }),
-        Label({
-            connections: [[Notifications, label => {
-                label.label = Notifications.popups[0]?.summary || '';
+        Widget.Label({
+            connections: [[Notifications, self => {
+                self.label = Notifications.popups[0]?.summary || '';
             }]],
         }),
     ],
 });
 
-const Media = () => Button({
+const Media = () => Widget.Button({
     className: 'media',
     onPrimaryClick: () => Mpris.getPlayer('')?.playPause(),
     onScrollUp: () => Mpris.getPlayer('')?.next(),
     onScrollDown: () => Mpris.getPlayer('')?.previous(),
-    child: Label({
-        connections: [[Mpris, label => {
+    child: Widget.Label({
+        connections: [[Mpris, self => {
             const mpris = Mpris.getPlayer('');
             // mpris player can be undefined
             if (mpris)
-                label.label = `${mpris.trackArtists.join(', ')} - ${mpris.trackTitle}`;
+                self.label = `${mpris.trackArtists.join(', ')} - ${mpris.trackTitle}`;
             else
-                label.label = 'Nothing is playing';
+                self.label = 'Nothing is playing';
         }]],
     }),
 });
 
-const Volume = () => Box({
+const Volume = () => Widget.Box({
     className: 'volume',
     style: 'min-width: 180px',
     children: [
-        Stack({
+        Widget.Stack({
             items: [
                 // tuples of [string, Widget]
-                ['101', Icon('audio-volume-overamplified-symbolic')],
-                ['67', Icon('audio-volume-high-symbolic')],
-                ['34', Icon('audio-volume-medium-symbolic')],
-                ['1', Icon('audio-volume-low-symbolic')],
-                ['0', Icon('audio-volume-muted-symbolic')],
+                ['101', Widget.Icon('audio-volume-overamplified-symbolic')],
+                ['67', Widget.Icon('audio-volume-high-symbolic')],
+                ['34', Widget.Icon('audio-volume-medium-symbolic')],
+                ['1', Widget.Icon('audio-volume-low-symbolic')],
+                ['0', Widget.Icon('audio-volume-muted-symbolic')],
             ],
-            connections: [[Audio, stack => {
+            connections: [[Audio, self => {
                 if (!Audio.speaker)
                     return;
 
                 if (Audio.speaker.isMuted) {
-                    stack.shown = '0';
+                    self.shown = '0';
                     return;
                 }
 
                 const show = [101, 67, 34, 1, 0].find(
                     threshold => threshold <= Audio.speaker.volume * 100);
 
-                stack.shown = `${show}`;
+                self.shown = `${show}`;
             }, 'speaker-changed']],
         }),
-        Slider({
+        Widget.Slider({
             hexpand: true,
             drawValue: false,
             onChange: ({ value }) => Audio.speaker.volume = value,
-            connections: [[Audio, slider => {
-                if (!Audio.speaker)
-                    return;
-
-                slider.value = Audio.speaker.volume;
+            connections: [[Audio, self => {
+                self.value = Audio.speaker?.volume || 0;
             }, 'speaker-changed']],
         }),
     ],
 });
 
-const BatteryLabel = () => Box({
+const BatteryLabel = () => Widget.Box({
     className: 'battery',
     children: [
-        Icon({
-            connections: [[Battery, icon => {
-                icon.icon = `battery-level-${Math.floor(Battery.percent / 10) * 10}-symbolic`;
+        Widget.Icon({
+            connections: [[Battery, self => {
+                self.icon = `battery-level-${Math.floor(Battery.percent / 10) * 10}-symbolic`;
             }]],
         }),
-        ProgressBar({
+        Widget.ProgressBar({
             valign: 'center',
-            connections: [[Battery, progress => {
+            connections: [[Battery, self => {
                 if (Battery.percent < 0)
                     return;
 
-                progress.fraction = Battery.percent / 100;
+                self.fraction = Battery.percent / 100;
             }]],
         }),
     ],
 });
 
-const SysTray = () => Box({
-    connections: [[SystemTray, box => {
-        box.children = SystemTray.items.map(item => Button({
-            child: Icon(),
+const SysTray = () => Widget.Box({
+    connections: [[SystemTray, self => {
+        self.children = SystemTray.items.map(item => Widget.Button({
+            child: Widget.Icon({ binds: [['icon', item, 'icon']] }),
             onPrimaryClick: (_, event) => item.activate(event),
             onSecondaryClick: (_, event) => item.openMenu(event),
-            connections: [[item, button => {
-                button.child.icon = item.icon;
-                button.tooltipMarkup = item.tooltipMarkup;
-            }]],
+            binds: [['tooltip-markup', item, 'tooltip-markup']],
         }));
     }]],
 });
 
 // layout of the bar
-const Left = () => Box({
+const Left = () => Widget.Box({
     children: [
         Workspaces(),
         ClientTitle(),
     ],
 });
 
-const Center = () => Box({
+const Center = () => Widget.Box({
     children: [
         Media(),
         Notification(),
     ],
 });
 
-const Right = () => Box({
+const Right = () => Widget.Box({
     halign: 'end',
     children: [
         Volume(),
@@ -188,13 +177,13 @@ const Right = () => Box({
     ],
 });
 
-const Bar = ({ monitor } = {}) => Window({
+const Bar = ({ monitor } = {}) => Widget.Window({
     name: `bar-${monitor}`, // name has to be unique
     className: 'bar',
     monitor,
     anchor: ['top', 'left', 'right'],
     exclusive: true,
-    child: CenterBox({
+    child: Widget.CenterBox({
         startWidget: Left(),
         centerWidget: Center(),
         endWidget: Right(),

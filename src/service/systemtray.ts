@@ -19,6 +19,16 @@ export class TrayItem extends Service {
         Service.register(this, {
             'removed': ['string'],
             'ready': [],
+        }, {
+            'menu': ['jsobject'],
+            'category': ['string'],
+            'id': ['string'],
+            'title': ['string'],
+            'status': ['string'],
+            'window-id': ['int'],
+            'is-menu': ['boolean'],
+            'tooltip-markup': ['string'],
+            'icon': ['jsobject'],
         });
     }
 
@@ -70,10 +80,10 @@ export class TrayItem extends Service {
     get id() { return this._proxy.Id; }
     get title() { return this._proxy.Title; }
     get status() { return this._proxy.Status; }
-    get windowId() { return this._proxy.WindowId; }
-    get isMenu() { return this._proxy.ItemIsMenu; }
+    get window_id() { return this._proxy.WindowId; }
+    get is_menu() { return this._proxy.ItemIsMenu; }
 
-    get tooltipMarkup() {
+    get tooltip_markup() {
         if (!this._proxy.ToolTip)
             return '';
 
@@ -125,18 +135,24 @@ export class TrayItem extends Service {
                 if (!proxy.g_name_owner)
                     this.emit('removed', this._busName);
             }],
-            ['g-signal', () => {
-                this._refreshAllProperties();
-            }],
+            ['g-signal', this._refreshAllProperties.bind(this)],
             ['g-properties-changed', () => this.emit('changed')],
         ]);
 
         ['Title', 'Icon', 'AttentionIcon', 'OverlayIcon', 'ToolTip', 'Status']
             .forEach(prop => proxy.connectSignal(`New${prop}`, () => {
-                this.emit('changed');
+                this._notify();
             }));
 
         this.emit('ready');
+    }
+
+    _notify() {
+        [
+            'menu', 'category', 'id', 'title', 'status',
+            'window-id', 'is-menu', 'tooltip-markup', 'icon',
+        ].forEach(prop => this.notify(prop));
+        this.emit('changed');
     }
 
     private _refreshAllProperties() {
@@ -157,8 +173,9 @@ export class TrayItem extends Service {
                 Object.entries(properties).map(([propertyName, value]) => {
                     this._proxy.set_cached_property(propertyName, value);
                 });
-                this.emit('changed');
-            });
+                this._notify();
+            },
+        );
     }
 
     private _getPixbuf(pixMapArray: [number, number, Uint8Array][]) {
@@ -194,6 +211,8 @@ class SystemTrayService extends Service {
         Service.register(this, {
             'added': ['string'],
             'removed': ['string'],
+        }, {
+            'items': ['jsobject'],
         });
     }
 
@@ -203,7 +222,9 @@ class SystemTrayService extends Service {
     get IsStatusNotifierHostRegistered() { return true; }
     get ProtocolVersion() { return 0; }
     get RegisteredStatusNotifierItems() { return Array.from(this._items.keys()); }
-    get items() { return this._items; }
+
+    get items() { return Array.from(this._items.values()); }
+    getItem(name: string) { return this._items.get(name); }
 
     constructor() {
         super();
@@ -246,6 +267,7 @@ class SystemTrayService extends Service {
         item.connect('ready', () => {
             this._items.set(busName, item);
             this.emit('added', busName);
+            this.notify('items');
             this.emit('changed');
             this._dbus.emit_signal(
                 'StatusNotifierItemRegistered',
@@ -255,16 +277,13 @@ class SystemTrayService extends Service {
         item.connect('removed', () => {
             this._items.delete(busName);
             this.emit('removed', busName);
+            this.notify('items');
             this.emit('changed');
             this._dbus.emit_signal(
                 'StatusNotifierItemUnregistered',
                 new GLib.Variant('(s)', [busName]),
             );
         });
-    }
-
-    getItem(name: string) {
-        return this._items.get(name);
     }
 }
 
@@ -277,7 +296,7 @@ export default class SystemTray {
         return SystemTray._instance;
     }
 
-    static get items() { return Array.from(SystemTray.instance.items.values()); }
-    static getItem(name: string) { return SystemTray._instance.getItem(name); }
+    static get items() { return SystemTray.instance.items; }
+    static getItem(name: string) { return SystemTray.instance.getItem(name); }
 }
 

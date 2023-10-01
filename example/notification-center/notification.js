@@ -1,10 +1,9 @@
-const { Notifications } = ags.Service;
-const { lookUpIcon, timeout } = ags.Utils;
-const { Box, Icon, Label, EventBox, Button } = ags.Widget;
+import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+import { lookUpIcon, timeout } from 'resource:///com/github/Aylur/ags/utils.js';
 
 const NotificationIcon = ({ appEntry, appIcon, image }) => {
     if (image) {
-        return Box({
+        return Widget.Box({
             valign: 'start',
             hexpand: false,
             className: 'icon img',
@@ -26,7 +25,7 @@ const NotificationIcon = ({ appEntry, appIcon, image }) => {
     if (lookUpIcon(appEntry))
         icon = appEntry;
 
-    return Box({
+    return Widget.Box({
         valign: 'start',
         hexpand: false,
         className: 'icon',
@@ -34,7 +33,7 @@ const NotificationIcon = ({ appEntry, appIcon, image }) => {
             min-width: 78px;
             min-height: 78px;
         `,
-        children: [Icon({
+        children: [Widget.Icon({
             icon, size: 58,
             halign: 'center', hexpand: true,
             valign: 'center', vexpand: true,
@@ -42,40 +41,40 @@ const NotificationIcon = ({ appEntry, appIcon, image }) => {
     });
 };
 
-export const Notification = ({ id, summary, body, actions, urgency, ...icon }) => EventBox({
-    className: `notification ${urgency}`,
-    onPrimaryClick: () => Notifications.dismiss(id),
+export const Notification = n => Widget.EventBox({
+    className: `notification ${n.urgency}`,
+    onPrimaryClick: () => n.dismiss(),
     properties: [['hovered', false]],
-    onHover: w => {
-        if (w._hovered)
+    onHover: self => {
+        if (self._hovered)
             return;
 
         // if there are action buttons and they are hovered
         // EventBox onHoverLost will fire off immediately,
         // so to prevent this we delay it
-        timeout(300, () => w._hovered = true);
+        timeout(300, () => self._hovered = true);
     },
-    onHoverLost: w => {
-        if (!w._hovered)
+    onHoverLost: self => {
+        if (!self._hovered)
             return;
 
-        w._hovered = false;
-        Notifications.dismiss(id);
+        self._hovered = false;
+        n.dismiss();
     },
     vexpand: false,
-    child: Box({
+    child: Widget.Box({
         vertical: true,
         children: [
-            Box({
+            Widget.Box({
                 children: [
-                    NotificationIcon(icon),
-                    Box({
+                    NotificationIcon(n),
+                    Widget.Box({
                         hexpand: true,
                         vertical: true,
                         children: [
-                            Box({
+                            Widget.Box({
                                 children: [
-                                    Label({
+                                    Widget.Label({
                                         className: 'title',
                                         xalign: 0,
                                         justification: 'left',
@@ -83,37 +82,37 @@ export const Notification = ({ id, summary, body, actions, urgency, ...icon }) =
                                         maxWidthChars: 24,
                                         truncate: 'end',
                                         wrap: true,
-                                        label: summary,
-                                        useMarkup: summary.startsWith('<'),
+                                        label: n.summary,
+                                        useMarkup: true,
                                     }),
-                                    Button({
+                                    Widget.Button({
                                         className: 'close-button',
                                         valign: 'start',
-                                        child: Icon('window-close-symbolic'),
-                                        onClicked: () => Notifications.close(id),
+                                        child: Widget.Icon('window-close-symbolic'),
+                                        onClicked: n.close.bind(n),
                                     }),
                                 ],
                             }),
-                            Label({
+                            Widget.Label({
                                 className: 'description',
                                 hexpand: true,
                                 useMarkup: true,
                                 xalign: 0,
                                 justification: 'left',
-                                label: body,
+                                label: n.body,
                                 wrap: true,
                             }),
                         ],
                     }),
                 ],
             }),
-            Box({
+            Widget.Box({
                 className: 'actions',
-                children: actions.map(action => Button({
+                children: n.actions.map(({ id, label }) => Button({
                     className: 'action-button',
-                    onClicked: () => Notifications.invoke(id, action.id),
+                    onClicked: () => n.invoke(id),
                     hexpand: true,
-                    child: Label(action.label),
+                    child: Widget.Label(label),
                 })),
             }),
         ],

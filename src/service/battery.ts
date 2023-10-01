@@ -14,15 +14,31 @@ const DeviceState = {
 };
 
 class BatteryService extends Service {
-    static { Service.register(this); }
+    static {
+        Service.register(this, {
+            'closed': [],
+        }, {
+            'available': ['boolean'],
+            'percent': ['int'],
+            'charging': ['boolean'],
+            'charged': ['boolean'],
+            'icon-name': ['string'],
+        });
+    }
 
-    available = false;
-    percent = -1;
-    charging = false;
-    charged = false;
-    iconName = 'battery-missing-symbolic';
     private _proxy: BatteryProxy;
 
+    private _available = false;
+    private _percent = -1;
+    private _charging = false;
+    private _charged = false;
+    private _iconName = 'battery-missing-symbolic';
+
+    get available() { return this._available; }
+    get percent() { return this._percent; }
+    get charging() { return this._charging; }
+    get charged() { return this._charged; }
+    get icon_name() { return this._iconName; }
 
     constructor() {
         super();
@@ -39,26 +55,27 @@ class BatteryService extends Service {
 
     private _sync() {
         if (!this._proxy.IsPresent)
-            return;
+            return this.updateProperty('available', false);
 
+        const charging = this._proxy.State === DeviceState.CHARGING;
         const percent = this._proxy.Percentage;
         const charged =
             this._proxy.State === DeviceState.FULLY_CHARGED ||
             (this._proxy.State === DeviceState.CHARGING && percent === 100);
 
+        const level = Math.floor(percent / 10) * 10;
         const state = this._proxy.State ===
             DeviceState.CHARGING ? '-charging' : '';
 
-        const level = Math.floor(percent / 10) * 10;
-        this.iconName = charged
+        const iconName = charged
             ? 'battery-level-100-charged-symbolic'
             : `battery-level-${level}${state}-symbolic`;
 
-        this.charging = this._proxy.State === DeviceState.CHARGING;
-        this.percent = percent;
-        this.charged = charged;
-        this.available = true;
-
+        this.updateProperty('available', true);
+        this.updateProperty('icon-name', iconName);
+        this.updateProperty('percent', percent);
+        this.updateProperty('charging', charging);
+        this.updateProperty('charged', charged);
         this.emit('changed');
     }
 }
@@ -75,5 +92,8 @@ export default class Battery {
     static get percent() { return Battery.instance.percent; }
     static get charging() { return Battery.instance.charging; }
     static get charged() { return Battery.instance.charged; }
-    static get iconName() { return Battery.instance.iconName; }
+
+    static get iconName() { return Battery.instance.icon_name; }
+    static get icon_name() { return Battery.instance.icon_name; }
+    static get ['icon-name']() { return Battery.instance.icon_name; }
 }

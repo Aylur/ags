@@ -4,12 +4,12 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import { execAsync, interval, subprocess } from './utils.js';
 
-type poll = [number, string[] | string | (() => unknown), (out: string) => string];
-type listen = [string[] | string, (out: string) => string] | string[] | string;
+type Poll = [number, string[] | string | (() => unknown), (out: string) => string];
+type Listen = [string[] | string, (out: string) => string] | string[] | string;
 
 interface Options {
-    poll?: poll
-    listen?: listen
+    poll?: Poll
+    listen?: Listen
 }
 
 class AgsVariable extends GObject.Object {
@@ -17,12 +17,19 @@ class AgsVariable extends GObject.Object {
         GObject.registerClass({
             GTypeName: 'AgsVariable',
             Signals: { 'changed': {} },
+            Properties: {
+                // @ts-expect-error
+                'value': GObject.ParamSpec.jsobject(
+                    'value', 'value', 'value',
+                    GObject.ParamFlags.READWRITE, null,
+                ),
+            },
         }, this);
     }
 
     private _value: any;
-    private _poll?: poll;
-    private _listen?: listen;
+    private _poll?: Poll;
+    private _listen?: Listen;
     private _interval?: number;
     private _subprocess?: Gio.Subprocess | null;
 
@@ -122,6 +129,7 @@ class AgsVariable extends GObject.Object {
     getValue() { return this._value; }
     setValue(value: any) {
         this._value = value;
+        this.notify('value');
         this.emit('changed');
     }
 

@@ -1,40 +1,38 @@
 import { Notification } from './notification.js';
-const { Gtk } = imports.gi;
-const { Notifications } = ags.Service;
-const { Scrollable, Box, Icon, Label, Widget, Button, Stack } = ags.Widget;
+import Notifications from 'resource:///com/github/Aylur/ags/service/notifications.js';
+import Gtk from 'gi://Gtk';
+import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 
-const List = () => Box({
+const List = () => Widget.Box({
     vertical: true,
     vexpand: true,
-    connections: [[Notifications, box => {
-        box.children = Notifications.notifications
+    connections: [[Notifications, self => {
+        self.children = Notifications.notifications
             .reverse()
-            .map(n => Notification(n));
+            .map(Notification);
 
-        box.visible = Notifications.notifications.length > 0;
+        self.visible = Notifications.notifications.length > 0;
     }]],
 });
 
-const Placeholder = () => Box({
+const Placeholder = () => Widget.Box({
     className: 'placeholder',
     vertical: true,
     vexpand: true,
     valign: 'center',
     children: [
-        Icon('notifications-disabled-symbolic'),
-        Label('Your inbox is empty'),
+        Widget.Icon('notifications-disabled-symbolic'),
+        Widget.Label('Your inbox is empty'),
     ],
-    connections: [
-        [Notifications, box => {
-            box.visible = Notifications.notifications.length === 0;
-        }],
+    binds: [
+        ['visible', Notifications, 'notifications', n => n.length === 0],
     ],
 });
 
-export const NotificationList = () => Scrollable({
+export const NotificationList = () => Widget.Scrollable({
     hscroll: 'never',
     vscroll: 'automatic',
-    child: Box({
+    child: Widget.Box({
         className: 'list',
         vertical: true,
         children: [
@@ -44,22 +42,19 @@ export const NotificationList = () => Scrollable({
     }),
 });
 
-export const ClearButton = () => Button({
-    onClicked: Notifications.clear,
-    connections: [[Notifications, button => {
-        button.sensitive = Notifications.notifications.length > 0;
-    }]],
-    child: Box({
+export const ClearButton = () => Widget.Button({
+    onClicked: () => Notifications.clear(),
+    binds: [
+        ['sensitive', Notifications, 'notifications', n => n.length > 0],
+    ],
+    child: Widget.Box({
         children: [
-            Label('Clear'),
-            Stack({
-                items: [
-                    ['true', Icon('user-trash-full-symbolic')],
-                    ['false', Icon('user-trash-symbolic')],
+            Widget.Label('Clear'),
+            Widget.Icon({
+                binds: [
+                    ['icon', Notifications, 'notifications', n =>
+                        `user-trash-${n.length > 0 ? 'full-' : ''}symbolic`],
                 ],
-                connections: [[Notifications, stack => {
-                    stack.shown = `${Notifications.notifications.length > 0}`;
-                }]],
             }),
         ],
     }),
@@ -68,19 +63,15 @@ export const ClearButton = () => Button({
 export const DNDSwitch = () => Widget({
     type: Gtk.Switch,
     valign: 'center',
-    connections: [
-        ['notify::active', ({ active }) => {
-            Notifications.dnd = active;
-        }],
-    ],
+    connections: [['notify::active', ({ active }) => {
+        Notifications.dnd = active;
+    }]],
 });
 
-export const PopupList = () => Box({
+export const PopupList = () => Widget.Box({
     className: 'list',
     style: 'padding: 1px;', // so it shows up
     vertical: true,
-    connections: [[Notifications, box => {
-        box.children = Array.from(Notifications.popups.values())
-            .map(n => Notification(n));
-    }]],
+    binds: [['children', Notifications, 'popups',
+        popups => popups.map(Notification)]],
 });

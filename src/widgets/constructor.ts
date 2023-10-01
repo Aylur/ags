@@ -27,7 +27,11 @@ interface CommonParams {
         [Connectable, (...args: unknown[]) => unknown, string]
     )[]
     properties?: [prop: string, value: unknown][]
-    binds?: [prop: string, obj: Connectable, objProp?: string, signal?: string][],
+    binds?: [
+        prop: string,
+        obj: Connectable,
+        objProp?: string,
+        transform?: (value: unknown) => unknown][],
     setup?: (widget: Gtk.Widget) => void
 }
 
@@ -91,17 +95,15 @@ function parseCommon(widget: Gtk.Widget, {
     }
 
     if (binds) {
-        binds.forEach(([prop, obj, value = 'value', signal = 'changed']) => {
+        binds.forEach(([prop, obj, objProp = 'value', transform = out => out]) => {
             if (!prop || !obj) {
-                logError(new Error('missing arguments to connections'));
+                logError(new Error('missing arguments to binds'));
                 return;
             }
 
-            const callback = () => {
-                // @ts-expect-error
-                widget[prop] = obj[value];
-            };
-            connections.push([obj, callback, signal]);
+            // @ts-expect-error
+            const callback = () => widget[prop] = transform(obj[objProp]);
+            connections.push([obj, callback, `notify::${objProp}`]);
         });
     }
 

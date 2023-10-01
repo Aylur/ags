@@ -22,6 +22,14 @@ plugins:
 rules:
   '@typescript-eslint/ban-ts-comment':
     - 'off'
+
+
+  '@typescript-eslint/no-unused-vars':
+    - error
+    # Vars use a suffix _ instead of a prefix because of file-scope private vars
+    - varsIgnorePattern: (^unused|_$)
+      argsIgnorePattern: ^(unused|_)
+
   arrow-parens:
     - error
     - as-needed
