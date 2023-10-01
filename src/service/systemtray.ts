@@ -267,6 +267,7 @@ class SystemTrayService extends Service {
         item.connect('ready', () => {
             this._items.set(busName, item);
             this.emit('added', busName);
+            this.notify('items');
             this.emit('changed');
             this._dbus.emit_signal(
                 'StatusNotifierItemRegistered',
@@ -276,6 +277,7 @@ class SystemTrayService extends Service {
         item.connect('removed', () => {
             this._items.delete(busName);
             this.emit('removed', busName);
+            this.notify('items');
             this.emit('changed');
             this._dbus.emit_signal(
                 'StatusNotifierItemUnregistered',

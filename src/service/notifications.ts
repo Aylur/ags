@@ -56,7 +56,6 @@ class Notification extends Service {
             'urgency': ['string'],
             'time': ['int'],
             'image': ['string'],
-            'hints': ['jsobject'],
             'popup': ['boolean'],
         });
     }
@@ -237,11 +236,6 @@ class NotificationsService extends Service {
         return this._notifications.get(id);
     }
 
-    Clear() {
-        for (const [id] of this._notifications)
-            this.CloseNotification(id);
-    }
-
     Notify(
         appName: string,
         replacesId: number,
@@ -252,7 +246,7 @@ class NotificationsService extends Service {
         hints: Hints,
     ) {
         const id = replacesId || this._idCount++;
-        const n = new Notification(appName, id, appIcon, summary, body, acts, hints, this.dnd);
+        const n = new Notification(appName, id, appIcon, summary, body, acts, hints, !this.dnd);
         timeout(App.config.notificationPopupTimeout, () => this.DismissNotification(id));
         this._addNotification(n);
         !this._dnd && this.notify('popups');
@@ -262,6 +256,8 @@ class NotificationsService extends Service {
         this._cache();
         return id;
     }
+
+    Clear() { this.clear(); }
 
     DismissNotification(id: number) {
         this._notifications.get(id)?.dismiss();
@@ -281,6 +277,11 @@ class NotificationsService extends Service {
 
     GetServerInformation() {
         return new GLib.Variant('(ssss)', [pkg.name, 'Aylur', pkg.version, '1.2']);
+    }
+
+    clear() {
+        for (const [id] of this._notifications)
+            this.CloseNotification(id);
     }
 
     private _addNotification(n: Notification) {
@@ -385,7 +386,7 @@ export default class Notifications {
         Notifications.instance.CloseNotification(id);
     }
 
-    static clear() { Notifications.instance.Clear(); }
+    static clear() { Notifications.instance.clear(); }
 
     static getPopup(id: number) { return Notifications.instance.getPopup(id); }
     static getNotification(id: number) { return Notifications.instance.getNotification(id); }

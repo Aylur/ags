@@ -55,7 +55,7 @@ class BatteryService extends Service {
 
     private _sync() {
         if (!this._proxy.IsPresent)
-            return;
+            return this.updateProperty('available', false);
 
         const charging = this._proxy.State === DeviceState.CHARGING;
         const percent = this._proxy.Percentage;
