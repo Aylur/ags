@@ -57,28 +57,25 @@ class BatteryService extends Service {
         if (!this._proxy.IsPresent)
             return;
 
+        const charging = this._proxy.State === DeviceState.CHARGING;
         const percent = this._proxy.Percentage;
         const charged =
             this._proxy.State === DeviceState.FULLY_CHARGED ||
             (this._proxy.State === DeviceState.CHARGING && percent === 100);
 
+        const level = Math.floor(percent / 10) * 10;
         const state = this._proxy.State ===
             DeviceState.CHARGING ? '-charging' : '';
 
-        const level = Math.floor(percent / 10) * 10;
-
-        this._iconName = charged
+        const iconName = charged
             ? 'battery-level-100-charged-symbolic'
             : `battery-level-${level}${state}-symbolic`;
 
-        this._charging = this._proxy.State === DeviceState.CHARGING;
-        this._percent = percent;
-        this._charged = charged;
-        this._available = true;
-
-        ['available', 'icon-name', 'percent', 'charging', 'charged']
-            .map(prop => this.notify(prop));
-
+        this.updateProperty('available', true);
+        this.updateProperty('icon-name', iconName);
+        this.updateProperty('percent', percent);
+        this.updateProperty('charging', charging);
+        this.updateProperty('charged', charged);
         this.emit('changed');
     }
 }

@@ -88,6 +88,21 @@ export default class Service extends GObject.Object {
         connect(this, widget, callback, event);
     }
 
+    updateProperty(prop: string, value: unknown) {
+        // @ts-expect-error
+        if (this[`_${prop}`] === value)
+            return;
+
+        const privateProp = prop
+            .split('-')
+            .map((w, i) => i > 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w)
+            .join('');
+
+        // @ts-expect-error
+        this[`_${privateProp}`] = value;
+        this.notify(prop);
+    }
+
     changed(property: string) {
         this.notify(property);
         this.emit('changed');

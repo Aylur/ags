@@ -69,7 +69,12 @@ class Application extends Service {
 }
 
 class ApplicationsService extends Service {
-    static { Service.register(this); }
+    static {
+        Service.register(this, {}, {
+            'list': ['jsobject'],
+            'frequents': ['jsobject'],
+        });
+    }
 
     private _list!: Application[];
     private _frequents: { [app: string]: number };
@@ -94,7 +99,7 @@ class ApplicationsService extends Service {
         this._sync();
     }
 
-    get list() { return [...this._list]; }
+    get list() { return this._list; }
     get frequents() { return this._frequents; }
 
     private _launched(id: string | null) {
@@ -108,6 +113,8 @@ class ApplicationsService extends Service {
         ensureDirectory(APPS_CACHE_DIR);
         const json = JSON.stringify(this._frequents, null, 2);
         writeFile(json, CACHE_FILE).catch(logError);
+        this.notify('frequents');
+        this.emit('changed');
     }
 
     private _sync() {
@@ -121,6 +128,7 @@ class ApplicationsService extends Service {
             this._launched(app.desktop);
         }));
 
+        this.notify('list');
         this.emit('changed');
     }
 }

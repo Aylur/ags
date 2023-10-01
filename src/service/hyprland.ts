@@ -21,11 +21,6 @@ class ActiveClient extends Service {
     get address() { return this._address; }
     get title() { return this._title; }
     get class() { return this._class; }
-
-    _set(attr: 'address' | 'title' | 'class', value: string) {
-        this[`_${attr}`] = value;
-        this.changed(attr);
-    }
 }
 
 class ActiveWorkspace extends Service {
@@ -41,16 +36,6 @@ class ActiveWorkspace extends Service {
 
     get id() { return this._id; }
     get name() { return this._name; }
-
-    _set(attr: 'id' | 'name', value: unknown) {
-        if (attr === 'id')
-            this._id = value as number;
-
-        if (attr === 'name')
-            this._name = value as string;
-
-        this.changed(attr);
-    }
 }
 
 class Actives extends Service {
@@ -82,11 +67,6 @@ class Actives extends Service {
     get client() { return this._client; }
     get monitor() { return this._monitor; }
     get workspace() { return this._workspace; }
-
-    _setMonitor(mon: string) {
-        this._monitor = mon;
-        this.changed('monitor');
-    }
 }
 
 class HyprlandService extends Service {
@@ -180,9 +160,9 @@ class HyprlandService extends Service {
             json.forEach(monitor => {
                 this._monitors.set(monitor.id, monitor);
                 if (monitor.focused) {
-                    this._active._setMonitor(monitor.name);
-                    this._active.workspace._set('id', monitor.activeWorkspace.id);
-                    this._active.workspace._set('name', monitor.activeWorkspace.name);
+                    this._active.updateProperty('monitor', monitor.name);
+                    this._active.workspace.updateProperty('id', monitor.activeWorkspace.id);
+                    this._active.workspace.updateProperty('name', monitor.activeWorkspace.name);
                 }
             });
             this.notify('monitors');
@@ -271,18 +251,18 @@ class HyprlandService extends Service {
                     break;
 
                 case 'activewindow':
-                    this._active.client._set('class', argv[0]);
-                    this._active.client._set('title', argv.slice(1).join(','));
+                    this._active.client.updateProperty('class', argv[0]);
+                    this._active.client.updateProperty('title', argv.slice(1).join(','));
                     break;
 
                 case 'activewindowv2':
-                    this._active.client._set('address', '0x' + argv[0]);
+                    this._active.client.updateProperty('address', '0x' + argv[0]);
                     break;
 
                 case 'closewindow':
-                    this._active.client._set('class', '');
-                    this._active.client._set('title', '');
-                    this._active.client._set('address', '');
+                    this._active.client.updateProperty('class', '');
+                    this._active.client.updateProperty('title', '');
+                    this._active.client.updateProperty('address', '');
                     await this._syncClients();
                     await this._syncWorkspaces();
                     this.emit('client-removed', '0x' + argv[0]);

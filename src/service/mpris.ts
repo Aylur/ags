@@ -164,37 +164,18 @@ class MprisPlayer extends Service {
             ? -1
             : Number.parseInt(`${length}`.substring(0, 3));
 
-        this._shuffleStatus = this._playerProxy.Shuffle;
-        this._loopStatus = this._playerProxy.LoopStatus as LoopStatus;
-        this._canGoNext = this._playerProxy.CanGoNext;
-        this._canGoPrev = this._playerProxy.CanGoPrevious;
-        this._canPlay = this._playerProxy.CanPlay;
-        this._playBackStatus =
-            this._playerProxy.PlaybackStatus as PlaybackStatus;
-
-        this._trackid = metadata['mpris:trackid'];
-        this._trackArtists = trackArtists;
-        this._trackTitle = trackTitle;
-        this._trackCoverUrl = trackCoverUrl;
-        this._length = length;
+        this.updateProperty('shuffle-status', this._playerProxy.Shuffle);
+        this.updateProperty('loop-status', this._playerProxy.LoopStatus);
+        this.updateProperty('can-go-next', this._playerProxy.CanGoNext);
+        this.updateProperty('can-go-prev', this._playerProxy.CanGoPrevious);
+        this.updateProperty('can-play', this._playerProxy.CanPlay);
+        this.updateProperty('play-back-status', this._playerProxy.PlaybackStatus);
+        this.updateProperty('trackid', metadata['mpris:trackid']);
+        this.updateProperty('track-artists', trackArtists);
+        this.updateProperty('track-title', trackTitle);
+        this.updateProperty('track-cover-url', trackCoverUrl);
+        this.updateProperty('length', length);
         this._cacheCoverArt();
-
-        [
-            'trackid',
-            'track-artists',
-            'track-title',
-            'track-cover-url',
-            'cover-path',
-            'play-back-status',
-            'can-go-next',
-            'can-go-prev',
-            'can-play',
-            'shuffle-status',
-            'loop-status',
-            'length',
-            'position',
-            'volume',
-        ].map(prop => this.notify(prop));
         this.emit('changed');
     }
 
@@ -260,6 +241,7 @@ class MprisPlayer extends Service {
     set position(time: number) {
         const micro = Math.floor(time * 1_000_000);
         this._playerProxy.SetPositionAsync(this.trackid, micro);
+        this.notify('position');
         this.emit('position', time);
     }
 
