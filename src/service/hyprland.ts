@@ -5,7 +5,14 @@ import { execAsync } from '../utils.js';
 
 const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
 
-class ActiveClient extends Service {
+class Active extends Service {
+    updateProperty(prop: string, value: unknown): void {
+        super.updateProperty(prop, value);
+        this.emit('changed');
+    }
+}
+
+class ActiveClient extends Active {
     static {
         Service.register(this, {}, {
             'address': ['string'],
@@ -23,7 +30,7 @@ class ActiveClient extends Service {
     get class() { return this._class; }
 }
 
-class ActiveWorkspace extends Service {
+class ActiveWorkspace extends Active {
     static {
         Service.register(this, {}, {
             'id': ['int'],
