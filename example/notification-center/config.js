@@ -1,31 +1,33 @@
-const { Window, Box, Label, EventBox } = ags.Widget;
 import {
     NotificationList, DNDSwitch, ClearButton, PopupList,
 } from './widgets.js';
+import Widget from 'resource:///com/github/Aylur/ags/widget.js';
+import App from 'resource:///com/github/Aylur/ags/app.js';
+import { execAsync, timeout } from 'resource:///com/github/Aylur/ags/utils.js';
 
-const Header = () => Box({
+const Header = () => Widget.Box({
     className: 'header',
     children: [
-        Label('Do Not Disturb'),
+        Widget.Label('Do Not Disturb'),
         DNDSwitch(),
-        Box({ hexpand: true }),
+        Widget.Box({ hexpand: true }),
         ClearButton(),
     ],
 });
 
-const NotificationCenter = () => Window({
+const NotificationCenter = () => Widget.Window({
     name: 'notification-center',
     anchor: 'right top bottom',
     popup: true,
     focusable: true,
-    child: Box({
+    child: Widget.Box({
         children: [
-            EventBox({
+            Widget.EventBox({
                 hexpand: true,
                 connections: [['button-press-event', () =>
-                    ags.App.closeWindow('notification-center')]]
+                    App.closeWindow('notification-center')]]
             }),
-            Box({
+            Widget.Box({
                 vertical: true,
                 children: [
                     Header(),
@@ -36,13 +38,13 @@ const NotificationCenter = () => Window({
     }),
 });
 
-const NotificationsPopupWindow = () => Window({
+const NotificationsPopupWindow = () => Widget.Window({
     name: 'popup-window',
     anchor: 'top',
     child: PopupList(),
 });
 
-ags.Utils.timeout(1000, () => ags.Utils.execAsync([
+timeout(500, () => execAsync([
     'notify-send',
     'Notification Center example',
     'To have the panel popup run "ags toggle-window notification-center"' +
@@ -50,7 +52,7 @@ ags.Utils.timeout(1000, () => ags.Utils.execAsync([
 ]).catch(console.error));
 
 export default {
-    style: ags.App.configDir + '/style.css',
+    style: App.configDir + '/style.css',
     windows: [
         NotificationsPopupWindow(),
         NotificationCenter(),
