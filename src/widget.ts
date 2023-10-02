@@ -17,7 +17,8 @@ import AgsWindow from './widgets/window.js';
 import AgsCircularProgress from './widgets/circularprogress.js';
 import { constructor, type ctor } from './widgets/constructor.js';
 
-export default function Widget({ type, ...params }: { type: ctor }) {
+export default Widget;
+export function Widget({ type, ...params }: { type: ctor }) {
     return constructor(type, params);
 }
 
@@ -39,3 +40,22 @@ export const Revealer = (args: object) => constructor(AgsRevealer, args);
 export const Scrollable = (args: object) => constructor(AgsScrollable, args);
 export const Slider = (args: object) => constructor(AgsSlider, args);
 export const Stack = (args: object) => constructor(AgsStack, args);
+
+Widget.Widget = Widget;
+Widget.Box = Box;
+Widget.Button = Button;
+Widget.CenterBox = CenterBox;
+Widget.CircularProgress = CircularProgress;
+Widget.Entry = Entry;
+Widget.EventBox = EventBox;
+Widget.Icon = Icon;
+Widget.Label = Label;
+Widget.Menu = Menu;
+Widget.MenuItem = MenuItem;
+Widget.Overlay = Overlay;
+Widget.ProgressBar = ProgressBar;
+Widget.Revealer = Revealer;
+Widget.Scrollable = Scrollable;
+Widget.Slider = Slider;
+Widget.Stack = Stack;
+Widget.Window = Window;
