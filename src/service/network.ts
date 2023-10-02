@@ -189,7 +189,7 @@ class Wired extends Service {
         this._device = device;
 
         // TODO make signals actually signal when they should
-        this._device.connect('notify::speed', () => {
+        this._device?.connect('notify::speed', () => {
             this.emit('changed');
             ['speed', 'internet', 'state', 'icon-name']
                 .map(prop => this.notify(prop));
