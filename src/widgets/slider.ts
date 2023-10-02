@@ -3,7 +3,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
 import { EventButton, EventScroll, EventKey } from 'gi-types/gdk3';
 import { Command } from './constructor.js';
-import Service from '../service/service.js';
+import Service from '../service.js';
 
 interface Params {
     onChange?: Command
