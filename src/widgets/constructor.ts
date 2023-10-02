@@ -120,9 +120,6 @@ function parseCommon(widget: Gtk.Widget, {
             else if (typeof s === 'number')
                 interval(s, () => callback(widget), widget);
 
-            else if (typeof s?.instance?.connectWidget === 'function')
-                s.instance.connectWidget(widget, callback, event);
-
             else if (typeof s?.connectWidget === 'function')
                 s.connectWidget(widget, callback, event);
 

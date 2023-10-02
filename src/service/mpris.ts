@@ -1,6 +1,6 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import Service from './service.js';
+import Service from '../service.js';
 import { ensureDirectory, timeout } from '../utils.js';
 import { CACHE_DIR } from '../utils.js';
 import { loadInterfaceXML } from '../utils.js';
@@ -271,7 +271,7 @@ class MprisPlayer extends Service {
 }
 
 type Players = Map<string, MprisPlayer>;
-class MprisService extends Service {
+class Mpris extends Service {
     static {
         Service.register(this, {
             'player-changed': ['string'],
@@ -354,14 +354,4 @@ class MprisService extends Service {
     }
 }
 
-export default class Mpris {
-    static _instance: MprisService;
-
-    static get instance() {
-        Service.ensureInstance(Mpris, MprisService);
-        return Mpris._instance;
-    }
-
-    static getPlayer(name: string) { return Mpris.instance.getPlayer(name); }
-    static get players() { return Mpris.instance.players; }
-}
+export default new Mpris();

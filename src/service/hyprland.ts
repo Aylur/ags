@@ -1,6 +1,6 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import Service from './service.js';
+import Service from '../service.js';
 import { execAsync } from '../utils.js';
 
 const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
@@ -76,7 +76,7 @@ class Actives extends Service {
     get workspace() { return this._workspace; }
 }
 
-class HyprlandService extends Service {
+class Hyprland extends Service {
     static {
         Service.register(this, {
             'urgent-window': ['string'],
@@ -305,34 +305,4 @@ class HyprlandService extends Service {
     }
 }
 
-export default class Hyprland {
-    static _instance: HyprlandService;
-
-    static get instance() {
-        Service.ensureInstance(Hyprland, HyprlandService);
-        return Hyprland._instance;
-    }
-
-    static getMonitor(id: number) { return Hyprland.instance.getMonitor(id); }
-    static getWorkspace(id: number) { return Hyprland.instance.getWorkspace(id); }
-    static getClient(address: string) { return Hyprland.instance.getClient(address); }
-
-    static get monitors() { return Hyprland.instance.monitors; }
-    static get workspaces() { return Hyprland.instance.workspaces; }
-    static get clients() { return Hyprland.instance.clients; }
-    static get active() { return Hyprland.instance.active; }
-
-    static HyprctlGet(cmd: string): unknown | object {
-        console.error('Hyprland.HyprctlGet is DEPRECATED' +
-            "use JSON.parse(Utils.exec('hyprctl -j')) instead");
-
-        const [success, out, err] =
-            GLib.spawn_command_line_sync(`hyprctl -j ${cmd}`);
-
-        const decoder = new TextDecoder();
-        if (!success)
-            throw `Error spawning hyprctl: ${decoder.decode(err)}`;
-
-        return JSON.parse(decoder.decode(out));
-    }
-}
+export default new Hyprland();

@@ -28,7 +28,6 @@
     <file>widgets/stack.js</file>
     <file>widgets/window.js</file>
 
-    <file>service/service.js</file>
     <file>service/applications.js</file>
     <file>service/audio.js</file>
     <file>service/battery.js</file>

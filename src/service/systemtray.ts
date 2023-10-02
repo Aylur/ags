@@ -4,7 +4,7 @@ import Gdk from 'gi://Gdk?version=3.0';
 import Gtk from 'gi://Gtk?version=3.0';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import DbusmenuGtk3 from 'gi://DbusmenuGtk3';
-import Service from './service.js';
+import Service from '../service.js';
 import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
 import Widget from '../widget.js';
@@ -206,7 +206,7 @@ export class TrayItem extends Service {
     }
 }
 
-class SystemTrayService extends Service {
+class SystemTray extends Service {
     static {
         Service.register(this, {
             'added': ['string'],
@@ -288,15 +288,4 @@ class SystemTrayService extends Service {
 }
 
 
-export default class SystemTray {
-    static _instance: SystemTrayService;
-
-    static get instance() {
-        Service.ensureInstance(SystemTray, SystemTrayService);
-        return SystemTray._instance;
-    }
-
-    static get items() { return SystemTray.instance.items; }
-    static getItem(name: string) { return SystemTray.instance.getItem(name); }
-}
-
+export default new SystemTray();
