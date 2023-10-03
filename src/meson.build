@@ -10,31 +10,29 @@ typescript = custom_target(
   output: ['tsc-output'],
 )
 
+# launcher binary
+configure_file(
+  input : app_id + '.js.in',
+  output : app_id,
+  configuration: {
+    'GJS': find_program('gjs').full_path(),
+    'APP_ID': app_id,
+    'PACKAGE_VERSION': meson.project_version(),
+    'PREFIX': prefix,
+    'LIBDIR': libdir,
+    'RESOURCE_PATH': '/com/github/Aylur/ags',
+  },
+  install: true,
+  install_dir: pkgdatadir
+)
+
 # gresource
-src_res = import('gnome').compile_resources(
-  APP + '.src',
-  APP + '.src.gresource.xml',
+import('gnome').compile_resources(
+  app_id + '.src',
+  app_id + '.src.gresource.xml',
   dependencies: typescript,
   source_dir: tsc_out,
   gresource_bundle: true,
   install: true,
-  install_dir : get_option('datadir') / APP
-)
-
-# launcher binary
-app_launcher = configure_file(
-  input : APP + '.js.in',
-  output : APP,
-  configuration: {
-    'GJS': find_program('gjs').full_path(),
-    'GVC_GIR': get_option('prefix') / get_option('libdir') / APP,
-    'PACKAGE_NAME': APP,
-    'PACKAGE_VERSION': meson.project_version(),
-    'PREFIX': get_option('prefix'),
-    'LIBDIR': get_option('prefix') / get_option('libdir'),
-    'RESOURCE_PATH': '/com/github/Aylur/' + APP,
-  },
-  install: true,
-  install_dir: get_option('bindir'),
-  install_mode: 'rwxr-xr-x'
+  install_dir : pkgdatadir
 )

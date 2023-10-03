@@ -4,9 +4,10 @@ import * as Utils from './utils.js';
 import app from './app.js';
 import client from './client.js';
 
-const APP_BUS = (name: string) => 'com.github.Aylur.ags.' + name;
-const APP_PATH = (name: string) => '/com/github/Aylur/ags/' + name;
-const DEFAULT_CONF = `${GLib.get_user_config_dir()}/${pkg.name}/config.js`;
+const BIN_NAME = pkg.name.split('.').pop() as string;
+const APP_BUS = (name: string) => `${pkg.name}.${name}`;
+const APP_PATH = (name: string) => `/${pkg.name.split('.').join('/')}/${name}`;
+const DEFAULT_CONF = `${GLib.get_user_config_dir()}/${BIN_NAME}/config.js`;
 
 const help = (bin: string) => `USAGE:
     ${bin} [OPTIONS]
@@ -40,7 +41,7 @@ function isRunning(dbusName: string) {
 
 export function main(args: string[]) {
     const flags = {
-        busName: pkg.name,
+        busName: BIN_NAME,
         config: DEFAULT_CONF,
         inspector: false,
         runJs: '',
