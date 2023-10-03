@@ -4,8 +4,9 @@ import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import { Command } from './widgets/constructor.js';
 
+
 export const USER = GLib.get_user_name();
-export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name}`;
+export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name.split('.').pop()}`;
 
 export function readFile(path: string) {
     const f = Gio.File.new_for_path(path);
