@@ -10,6 +10,15 @@
 , gtk3
 , libpulseaudio
 , gjs
+, python3
+, wrapGAppsHook
+, upower
+, gnome
+, gtk-layer-shell
+, glib-networking
+, networkmanager
+, libdbusmenu-gtk3
+, gvfs
 }:
 
 let
@@ -53,22 +62,32 @@ stdenv.mkDerivation {
     cp -r ${gi-types-src}/* ./gi-types
   '';
 
-  patches = [
-    ./gvc-path.patch
-  ];
-  
+  postPatch = ''
+    chmod +x meson_post_install.py
+    patchShebangs meson_post_install.py
+  '';
+
   nativeBuildInputs = [
-    nodePackages.typescript
-    meson
     pkg-config
+    meson
     ninja
+    nodePackages.typescript
+    python3
+    wrapGAppsHook
+    gobject-introspection
   ];
 
   buildInputs = [
-    gobject-introspection
     gjs
     gtk3
     libpulseaudio
+    upower
+    gnome.gnome-bluetooth
+    gtk-layer-shell
+    glib-networking
+    networkmanager
+    libdbusmenu-gtk3
+    gvfs
   ];
 
   meta = with lib; {
