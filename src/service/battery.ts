@@ -122,15 +122,15 @@ export default class Battery {
     static get icon_name() { return Battery.instance.icon_name; }
     static get ['icon-name']() { return Battery.instance.icon_name; }
 
-    static get time_remaining() { return Battery.instance.time_remaining; }
     static get timeRemaining() { return Battery.instance.time_remaining; }
+    static get time_remaining() { return Battery.instance.time_remaining; }
     static get ['time-remaining']() { return Battery.instance.time_remaining; }
 
-    static get energy_full() { return Battery.instance.energy_full; }
     static get energyFull() { return Battery.instance.energy_full; }
+    static get energy_full() { return Battery.instance.energy_full; }
     static get ['energy-full']() { return Battery.instance.energy_full; }
 
-    static get energy_rate() { return Battery.instance.energy_rate; }
     static get energyRate() { return Battery.instance.energy_rate; }
+    static get energy_rate() { return Battery.instance.energy_rate; }
     static get ['energy-rate']() { return Battery.instance.energy_rate; }
 }
