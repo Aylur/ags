@@ -23,6 +23,10 @@ class Battery extends Service {
             'charging': ['boolean'],
             'charged': ['boolean'],
             'icon-name': ['string'],
+            'time-remaining': ['float'],
+            'energy': ['float'],
+            'energy-full': ['float'],
+            'energy-rate': ['float'],
         });
     }
 
@@ -33,12 +37,20 @@ class Battery extends Service {
     private _charging = false;
     private _charged = false;
     private _iconName = 'battery-missing-symbolic';
+    private _timeRemaining = 0;
+    private _energy = 0.0;
+    private _energyFull = 0.0;
+    private _energyRate = 0.0;
 
     get available() { return this._available; }
     get percent() { return this._percent; }
     get charging() { return this._charging; }
     get charged() { return this._charged; }
     get icon_name() { return this._iconName; }
+    get time_remaining() { return this._timeRemaining; }
+    get energy() { return this._energy; }
+    get energy_full() { return this._energyFull; }
+    get energy_rate() { return this._energyRate; }
 
     constructor() {
         super();
@@ -71,11 +83,23 @@ class Battery extends Service {
             ? 'battery-level-100-charged-symbolic'
             : `battery-level-${level}${state}-symbolic`;
 
+        const timeRemaining = charging ? this._proxy.TimeToFull : this._proxy.TimeToEmpty;
+
+        const energy = this._proxy.Energy;
+
+        const energyFull = this._proxy.EnergyFull;
+
+        const energyRate = this._proxy.EnergyRate;
+
         this.updateProperty('available', true);
         this.updateProperty('icon-name', iconName);
         this.updateProperty('percent', percent);
         this.updateProperty('charging', charging);
         this.updateProperty('charged', charged);
+        this.updateProperty('time-remaining', timeRemaining);
+        this.updateProperty('energy', energy);
+        this.updateProperty('energy-full', energyFull);
+        this.updateProperty('energy-rate', energyRate);
         this.emit('changed');
     }
 }
