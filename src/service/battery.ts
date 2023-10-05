@@ -83,7 +83,7 @@ class BatteryService extends Service {
             ? 'battery-level-100-charged-symbolic'
             : `battery-level-${level}${state}-symbolic`;
 
-        const timeRemaining = charged ? this._proxy.TimeToFull : this._proxy.TimeToEmpty;
+        const timeRemaining = charging ? this._proxy.TimeToFull : this._proxy.TimeToEmpty;
 
         const energy = this._proxy.Energy;
 
