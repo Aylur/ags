@@ -43,6 +43,11 @@ export interface BatteryProxy extends Gio.DBusProxy {
     State: number
     Percentage: number
     IsPresent: boolean
+    TimeToEmpty: number
+    TimeToFull: number
+    Energy: number
+    EnergyFull: number
+    EnergyRate: number
 }
 
 export interface StatusNotifierItemProxy extends Gio.DBusProxy {
