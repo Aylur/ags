@@ -45,13 +45,14 @@ export default class AgsCenterBox extends AgsBox {
             this.end_widget = children[2];
     }
 
-    _start!: Gtk.Widget | null;
-    get start_widget() { return this._start || null; }
+    // @ts-expect-error
+    get start_widget() { return this._startWidget || null; }
     set start_widget(child: Gtk.Widget | null) {
-        if (this._start)
-            this._start.destroy();
+        if (this.start_widget)
+            this.start_widget.destroy();
 
-        this._start = child;
+        // @ts-expect-error
+        this._startWidget = child;
 
         if (!child)
             return;
@@ -60,13 +61,14 @@ export default class AgsCenterBox extends AgsBox {
         this.show_all();
     }
 
-    _end!: Gtk.Widget | null;
-    get end_widget() { return this._end || null; }
+    // @ts-expect-error
+    get end_widget() { return this._endWidget || null; }
     set end_widget(child: Gtk.Widget | null) {
-        if (this._end)
-            this._end.destroy();
+        if (this.end_widget)
+            this.end_widget.destroy();
 
-        this._end = child;
+        // @ts-expect-error
+        this._endWidget = child;
 
         if (!child)
             return;

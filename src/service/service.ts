@@ -3,7 +3,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import { connect } from '../utils.js';
 import { type Ctor } from 'gi-types/gobject2.js';
 
-type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'boolean';
+type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'boolean' | 'double';
 type PspecFlag = 'rw' | 'r' | 'w';
 
 export default class Service extends GObject.Object {
@@ -40,6 +40,10 @@ export default class Service extends GObject.Object {
             case 'float': return GObject.ParamSpec.float(
                 name, name, name, flags,
                 -1, 1, 0);
+
+            case 'double': return GObject.ParamSpec.double(
+                name, name, name, flags,
+                Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, 0);
 
             case 'boolean': return GObject.ParamSpec.boolean(
                 name, name, name, flags, false);
