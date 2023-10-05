@@ -1,21 +1,14 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import Service from '../service/service.js';
 
 export default class AgsProgressBar extends Gtk.ProgressBar {
     static {
         GObject.registerClass({
             GTypeName: 'AgsProgressBar',
             Properties: {
-                'vertical': GObject.ParamSpec.boolean(
-                    'vertical', 'Vertical', 'Vertical',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    false,
-                ),
-                'value': GObject.ParamSpec.int(
-                    'value', 'Value', 'Same as fraction',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    0, 1, 0,
-                ),
+                'vertical': Service.pspec('vertical', 'boolean', 'rw'),
+                'value': Service.pspec('value', 'float', 'rw'),
             },
         }, this);
     }

@@ -3,6 +3,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
 import { EventButton, EventScroll, EventKey } from 'gi-types/gdk3';
 import { Command } from './constructor.js';
+import Service from '../service/service.js';
 
 interface Params {
     onChange?: Command
@@ -17,16 +18,8 @@ export default class AgsSlider extends Gtk.Scale {
         GObject.registerClass({
             GTypeName: 'AgsSlider',
             Properties: {
-                'dragging': GObject.ParamSpec.boolean(
-                    'dragging', 'Dragging', 'Dragging',
-                    GObject.ParamFlags.READABLE,
-                    false,
-                ),
-                'vertical': GObject.ParamSpec.boolean(
-                    'vertical', 'Vertical', 'Vertical',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    false,
-                ),
+                'dragging': Service.pspec('dragging', 'boolean', 'r'),
+                'vertical': Service.pspec('vertical', 'boolean', 'rw'),
             },
         }, this);
     }
@@ -82,9 +75,10 @@ export default class AgsSlider extends Gtk.Scale {
     get step() { return this.adjustment.stepIncrement; }
     set step(step: number) { this.adjustment.stepIncrement = step; }
 
-    _dragging = false;
+    // @ts-expect-error
     get dragging() { return this._dragging; }
     set dragging(dragging: boolean) {
+        // @ts-expect-error
         this._dragging = dragging;
         this.notify('dragging');
     }

@@ -1,5 +1,6 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import Service from '../service/service.js';
 
 const policy = ['automatic', 'always', 'never', 'external'];
 
@@ -8,16 +9,8 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
         GObject.registerClass({
             GTypeName: 'AgsScrollable',
             Properties: {
-                'hscroll': GObject.ParamSpec.string(
-                    'hscroll', 'HScroll', 'Horizontal Scroll Policy',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    'automatic',
-                ),
-                'vscroll': GObject.ParamSpec.string(
-                    'vscroll', 'VScroll', 'Vertical Scroll Policy',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    'automatic',
-                ),
+                'hscroll': Service.pspec('hscroll', 'string', 'rw'),
+                'vscroll': Service.pspec('vscroll', 'string', 'rw'),
             },
         }, this);
     }
@@ -30,7 +23,7 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
         });
     }
 
-    _hscroll = 'automatic';
+    // @ts-expect-error
     get hscroll() { return this._hscroll; }
     set hscroll(hscroll: string) {
         if (!hscroll)
@@ -41,11 +34,13 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
             return;
         }
 
+        // @ts-expect-error
         this._hscroll = hscroll;
+        this.notify('hscroll');
         this.policy();
     }
 
-    _vscroll = 'automatic';
+    // @ts-expect-error
     get vscroll() { return this._vscroll; }
     set vscroll(vscroll: string) {
         if (!vscroll)
@@ -56,16 +51,18 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
             return;
         }
 
+        // @ts-expect-error
         this._vscroll = vscroll;
+        this.notify('vscroll');
         this.policy();
     }
 
     policy() {
         this.set_policy(
             // @ts-expect-error
-            Gtk.PolicyType[this._hscroll?.toUpperCase() || 'AUTOMATIC'],
+            Gtk.PolicyType[this.hscroll?.toUpperCase() || 'AUTOMATIC'],
             // @ts-expect-error
-            Gtk.PolicyType[this._vscroll?.toUpperCase() || 'AUTOMATIC'],
+            Gtk.PolicyType[this.vscroll?.toUpperCase() || 'AUTOMATIC'],
         );
     }
 }

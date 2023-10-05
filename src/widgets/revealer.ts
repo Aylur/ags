@@ -1,5 +1,6 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import Service from '../service/service.js';
 
 const transitions = [
     'none', 'crossfade',
@@ -12,11 +13,7 @@ export default class AgsRevealer extends Gtk.Revealer {
         GObject.registerClass({
             GTypeName: 'AgsRevealer',
             Properties: {
-                'transition': GObject.ParamSpec.string(
-                    'transition', 'Transition', 'transition-type as a string',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    'none',
-                ),
+                'transition': Service.pspec('transition', 'string', 'rw'),
             },
         }, this);
     }
@@ -31,7 +28,6 @@ export default class AgsRevealer extends Gtk.Revealer {
             return;
         }
 
-        // @ts-expect-error
-        this.transitionType = Gtk.RevealerTransitionType[transition.toUpperCase()];
+        this.transitionType = transitions.findIndex(t => t === transition);
     }
 }

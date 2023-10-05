@@ -1,5 +1,6 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import Service from '../service/service.js';
 
 // type from gi-types is wrong
 interface Context {
@@ -9,14 +10,7 @@ interface Context {
     lineTo: (x: number, y: number) => void
     stroke: () => void
     fill: () => void
-}
-
-interface Params {
-    start_at: number,
-    startAt: number,
-    value: number,
-    inverted: boolean,
-    rounded: boolean,
+    $dispose: () => void
 }
 
 export default class AgsCircularProgress extends Gtk.Bin {
@@ -24,61 +18,33 @@ export default class AgsCircularProgress extends Gtk.Bin {
         GObject.registerClass({
             GTypeName: 'AgsCircularProgress',
             Properties: {
-                'start-at': GObject.ParamSpec.double(
-                    'start-at', 'Start At', 'The percentage that the circle should start at',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    0, 1, 0,
-                ),
-                'inverted': GObject.ParamSpec.boolean(
-                    'inverted', 'Inverted', 'Inverted',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    true,
-                ),
-                'rounded': GObject.ParamSpec.boolean(
-                    'rounded', 'Rounded', 'Rounded',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    true,
-                ),
-                'value': GObject.ParamSpec.double(
-                    'value', 'Value', 'The progress percentage',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    0, 1, 0,
-                ),
+                'start-at': Service.pspec('start-at', 'float', 'rw'),
+                'inverted': Service.pspec('inverted', 'boolean', 'rw'),
+                'rounded': Service.pspec('rounded', 'boolean', 'rw'),
+                'value': Service.pspec('value', 'float', 'rw'),
             },
         }, this);
     }
 
-    constructor({ startAt, start_at, inverted, value, rounded, ...rest }: Params) {
-        super(rest);
-
-        if (start_at || startAt)
-            this.start_at = start_at || startAt;
-
-        if (typeof inverted === 'boolean')
-            this.inverted = inverted;
-
-        if (typeof rounded === 'boolean')
-            this.rounded = rounded;
-
-        if (value)
-            this.value = value;
-    }
-
-    private _rounded = true;
+    // @ts-expect-error
     get rounded() { return this._rounded; }
     set rounded(r: boolean) {
+        // @ts-expect-error
         this._rounded = r;
+        this.notify('rounded');
         this.queue_draw();
     }
 
-    private _inverted = true;
+    // @ts-expect-error
     get inverted() { return this._inverted; }
     set inverted(c: boolean) {
+        // @ts-expect-error
         this._inverted = c;
+        this.notify('inverted');
         this.queue_draw();
     }
 
-    private _startAt = 0;
+    // @ts-expect-error
     get start_at() { return this._startAt; }
     set start_at(value: number) {
         if (value > 1)
@@ -87,11 +53,13 @@ export default class AgsCircularProgress extends Gtk.Bin {
         if (value < 0)
             value = 0;
 
+        // @ts-expect-error
         this._startAt = value;
+        this.notify('start-at');
         this.queue_draw();
     }
 
-    private _value = 0;
+    // @ts-expect-error
     get value() { return this._value; }
     set value(value: number) {
         if (value > 1)
@@ -100,6 +68,8 @@ export default class AgsCircularProgress extends Gtk.Bin {
         if (value < 0)
             value = 0;
 
+
+        // @ts-expect-error
         this._value = value;
         this.queue_draw();
     }
@@ -177,6 +147,7 @@ export default class AgsCircularProgress extends Gtk.Bin {
             this.propagate_draw(this.child, cr);
         }
 
+        cr.$dispose();
         return true;
     }
 }

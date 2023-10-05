@@ -1,9 +1,6 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-
-interface Params {
-    items?: [string, Gtk.Widget][]
-}
+import Service from '../service/service.js';
 
 const transitions = [
     'none', 'crossfade',
@@ -19,48 +16,47 @@ export default class AgsStack extends Gtk.Stack {
         GObject.registerClass({
             GTypeName: 'AgsStack',
             Properties: {
-                'transition': GObject.ParamSpec.string(
-                    'transition', 'Transition', 'Transition',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    'none',
-                ),
-                'shown': GObject.ParamSpec.string(
-                    'shown', 'Shown', 'Shown',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    '',
-                ),
+                'transition': Service.pspec('transition', 'string', 'rw'),
+                'shown': Service.pspec('shown', 'string', 'rw'),
+                'items': Service.pspec('items', 'jsobject', 'rw'),
             },
         }, this);
     }
 
-    constructor({ items = [], ...params }: Params = {}) {
-        super(params);
-        this.items = items;
-    }
-
     add_named(child: Gtk.Widget, name: string): void {
-        this._items.push([name, child]);
+        this.items.push([name, child]);
         super.add_named(child, name);
     }
 
-    _items: [string, Gtk.Widget][] = [];
-    get items() { return this._items; }
+    get items() {
+        // @ts-expect-error
+        if (!Array.isArray(this._items))
+            // @ts-expect-error
+            this._items = [];
+
+        // @ts-expect-error
+        return this._items;
+    }
+
     set items(items: [string, Gtk.Widget][]) {
-        this._items
+        this.items
             .filter(([name]) => !items.find(([n]) => n === name))
             .forEach(([, ch]) => ch.destroy());
 
         // remove any children that weren't destroyed so
         // we can re-add everything without trying to add
         // items multiple times
-        this._items
+        this.items
             .filter(([, ch]) => this.get_children().includes(ch))
             .forEach(([, ch]) => this.remove(ch));
 
+        // @ts-expect-error
         this._items = [];
         items.forEach(([name, widget]) => {
             widget && this.add_named(widget, name);
         });
+
+        this.notify('items');
         this.show_all();
     }
 
@@ -74,8 +70,8 @@ export default class AgsStack extends Gtk.Stack {
             return;
         }
 
-        // @ts-expect-error
-        this.transitionType = Gtk.StackTransitionType[transition.toUpperCase()];
+        this.transitionType = transitions.findIndex(t => t === transition);
+        this.notify('transition');
     }
 
     get shown() { return this.visible_child_name; }
@@ -90,5 +86,6 @@ export default class AgsStack extends Gtk.Stack {
 
         this.visible = true;
         this.set_visible_child_name(name);
+        this.notify('shown');
     }
 }

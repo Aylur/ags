@@ -2,9 +2,10 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
+import Service from '../service/service.js';
 
-const justification = ['left', 'center', 'right', 'fill'];
-const truncate = ['none', 'start', 'middle', 'end'];
+const justifications = ['left', 'center', 'right', 'fill'];
+const truncates = ['none', 'start', 'middle', 'end'];
 
 interface Params {
     label?: string
@@ -16,16 +17,8 @@ export default class AgsLabel extends Gtk.Label {
         GObject.registerClass({
             GTypeName: 'AgsLabel',
             Properties: {
-                'justification': GObject.ParamSpec.string(
-                    'justification', 'Justification', 'Justification',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    '',
-                ),
-                'truncate': GObject.ParamSpec.string(
-                    'truncate', 'Truncate', 'Truncate',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    '',
-                ),
+                'justification': Service.pspec('justification', 'string', 'rw'),
+                'truncate': Service.pspec('truncate', 'string', 'rw'),
             },
         }, this);
     }
@@ -55,7 +48,7 @@ export default class AgsLabel extends Gtk.Label {
         super.label = label;
     }
 
-    get truncate() { return truncate[this.ellipsize]; }
+    get truncate() { return truncates[this.ellipsize]; }
     set truncate(truncate: string) {
         if (!truncate)
             return;
@@ -65,21 +58,19 @@ export default class AgsLabel extends Gtk.Label {
             return;
         }
 
-        // @ts-expect-error
-        this.ellipsize = Pango.EllipsizeMode[truncate.toUpperCase()];
+        this.ellipsize = truncates.findIndex(t => t === truncate);
     }
 
-    get justification() { return justification[this.justify]; }
+    get justification() { return justifications[this.justify]; }
     set justification(justify: string) {
         if (!justify)
             return;
 
-        if (!justification.includes(justify)) {
+        if (!justifications.includes(justify)) {
             console.error('wrong justification value for Label');
             return;
         }
 
-        // @ts-expect-error
-        this.justify = Gtk.Justification[justify.toUpperCase()];
+        this.justify = justifications.findIndex(j => j === justify);
     }
 }

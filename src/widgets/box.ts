@@ -1,16 +1,14 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import Service from '../service/service.js';
 
 export default class AgsBox extends Gtk.Box {
     static {
         GObject.registerClass({
             GTypeName: 'AgsBox',
             Properties: {
-                'vertical': GObject.ParamSpec.boolean(
-                    'vertical', 'Vertical', 'Vertical',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-                    false,
-                ),
+                'vertical': Service.pspec('vertical', 'boolean', 'rw'),
+                'children': Service.pspec('children', 'jsobject', 'rw'),
             },
         }, this);
     }
@@ -39,6 +37,7 @@ export default class AgsBox extends Gtk.Box {
             return;
 
         children.forEach(w => w && this.add(w));
+        this.notify('children');
         this.show_all();
     }
 
