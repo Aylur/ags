@@ -7,11 +7,6 @@ import Service from '../service/service.js';
 const justifications = ['left', 'center', 'right', 'fill'];
 const truncates = ['none', 'start', 'middle', 'end'];
 
-interface Params {
-    label?: string
-    [key: string]: unknown
-}
-
 export default class AgsLabel extends Gtk.Label {
     static {
         GObject.registerClass({
@@ -23,13 +18,8 @@ export default class AgsLabel extends Gtk.Label {
         }, this);
     }
 
-    constructor(params: Params | string) {
-        const label = typeof params === 'string' ? params : params.label;
-        if (typeof params === 'object')
-            delete params.label;
-
-        super(typeof params === 'string' ? {} : params);
-        this.label = label || '';
+    constructor(params: object | string) {
+        super(typeof params === 'string' ? { label: params } : params);
     }
 
     get label() { return super.label; }
@@ -59,6 +49,7 @@ export default class AgsLabel extends Gtk.Label {
         }
 
         this.ellipsize = truncates.findIndex(t => t === truncate);
+        this.notify('truncate');
     }
 
     get justification() { return justifications[this.justify]; }
@@ -72,5 +63,6 @@ export default class AgsLabel extends Gtk.Label {
         }
 
         this.justify = justifications.findIndex(j => j === justify);
+        this.notify('justification');
     }
 }
