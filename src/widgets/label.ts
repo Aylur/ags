@@ -1,13 +1,12 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
 import Service from '../service/service.js';
 
 const justifications = ['left', 'center', 'right', 'fill'];
 const truncates = ['none', 'start', 'middle', 'end'];
 
-interface Params {
+export interface Params {
     label?: string
     [key: string]: unknown
 }

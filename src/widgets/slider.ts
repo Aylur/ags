@@ -6,7 +6,7 @@ import type Gdk from 'gi://Gdk?version=3.0';
 import { Command } from './constructor.js';
 import Service from '../service/service.js';
 
-interface Params {
+export interface Params {
     onChange?: Command
     value?: number
     min?: number

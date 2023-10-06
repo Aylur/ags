@@ -15,7 +15,7 @@ interface Connectable extends GObject.Object {
     connectWidget: ConnectWidget
 }
 
-interface CommonParams {
+export interface CommonParams {
     className?: string
     style?: string
     css?: string
@@ -35,10 +35,10 @@ interface CommonParams {
     setup?: (widget: Gtk.Widget) => void
 }
 
-function separateCommon({
+function separateCommon<T extends CommonParams>({
     className, style, css, halign, valign, connections, properties, binds, setup,
     ...rest
-}: CommonParams) {
+}: T) {
     return [
         { className, style, css, halign, valign, connections, properties, binds, setup },
         rest,
@@ -138,19 +138,22 @@ function parseCommon(widget: Gtk.Widget, {
         setup(widget);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ctor = { new(...args: any[]): Gtk.Widget }
-export function constructor(
-    ctor: ctor,
-    params: CommonParams | string = {},
-) {
-    let widget;
+export function constructor<
+    Output extends Gtk.Widget,
+    Params extends CommonParams & ConstructorParameters<Class>[0],
+    Class extends new (arg: Omit<Params, keyof CommonParams>) => Output | any,
+>(
+    ctor: Class,
+    params: Params,
+): InstanceType<Class> {
     if (typeof params === 'string') {
-        widget = new ctor(params);
-    } else {
-        const [common, rest] = separateCommon(params);
-        widget = new ctor(rest);
-        parseCommon(widget, common);
+        return new ctor(params);
     }
+
+    const [common, rest] = separateCommon(params);
+
+    // @ts-expect-error it works. Don't ask
+    const widget = new ctor(rest);
+    parseCommon(widget, common);
     return widget;
 }

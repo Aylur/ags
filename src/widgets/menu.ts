@@ -3,7 +3,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
 import { Command } from './constructor.js';
 
-interface Params {
+export interface Params {
     children?: Gtk.Widget[]
     onPopup?: Command
     onMoveScroll?: Command

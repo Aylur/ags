@@ -15,46 +15,40 @@ import AgsEntry from './widgets/entry.js';
 import { AgsMenu, AgsMenuItem } from './widgets/menu.js';
 import AgsWindow from './widgets/window.js';
 import AgsCircularProgress from './widgets/circularprogress.js';
-import { constructor, type ctor } from './widgets/constructor.js';
+import { constructor, CommonParams } from './widgets/constructor.js';
+import type Gtk from '@girs/gtk-3.0';
 
-export default function Widget({ type, ...params }: { type: ctor, [key: string]: unknown }) {
-    return constructor(type, params);
+export default function Widget<
+    Output extends Gtk.Widget,
+    Params extends CommonParams,
+    Class extends new(arg: Omit<Params, keyof CommonParams>) => Output,
+>(params: { type: Class } & Params): InstanceType<Class> {
+    return constructor(params.type, params);
 }
 
-// @ts-expect-error
-export const Window = (args: object) => constructor(AgsWindow, args);
-export const Box = (args: object) => constructor(AgsBox, args);
-export const Button = (args: object) => constructor(AgsButton, args);
-export const CenterBox = (args: object) => constructor(AgsCenterBox, args);
-export const CircularProgress = (args: object) => constructor(AgsCircularProgress, args);
-export const Entry = (args: object) => constructor(AgsEntry, args);
-export const EventBox = (args: object) => constructor(AgsEventBox, args);
-export const Icon = (args: object) => constructor(AgsIcon, args);
-export const Label = (args: object) => constructor(AgsLabel, args);
-export const Menu = (args: object) => constructor(AgsMenu, args);
-export const MenuItem = (args: object) => constructor(AgsMenuItem, args);
-export const Overlay = (args: object) => constructor(AgsOverlay, args);
-export const ProgressBar = (args: object) => constructor(AgsProgressBar, args);
-export const Revealer = (args: object) => constructor(AgsRevealer, args);
-export const Scrollable = (args: object) => constructor(AgsScrollable, args);
-export const Slider = (args: object) => constructor(AgsSlider, args);
-export const Stack = (args: object) => constructor(AgsStack, args);
+const createConstructor = <
+    Output extends Gtk.Widget,
+    Params extends CommonParams & ConstructorParameters<Class>[0],
+    Class extends new(arg: Omit<Params, keyof CommonParams>) => Output,
+>(widget: Class) => (args: Params) => constructor(widget, args)
 
-// so it is still in global scope through ags.Widget
-Widget.Box = Box;
-Widget.Button = Button;
-Widget.CenterBox = CenterBox;
-Widget.CircularProgress = CircularProgress;
-Widget.Entry = Entry;
-Widget.EventBox = EventBox;
-Widget.Icon = Icon;
-Widget.Label = Label;
-Widget.Menu = Menu;
-Widget.MenuItem = MenuItem;
-Widget.Overlay = Overlay;
-Widget.ProgressBar = ProgressBar;
-Widget.Revealer = Revealer;
-Widget.Scrollable = Scrollable;
-Widget.Slider = Slider;
-Widget.Stack = Stack;
-Widget.Window = Window;
+
+// @ts-expect-error
+export const Window = createConstructor(AgsWindow, args);
+
+export const Box = createConstructor(AgsBox);
+export const Button = createConstructor(AgsButton);
+export const CenterBox = createConstructor(AgsCenterBox);
+export const CircularProgress = createConstructor(AgsCircularProgress);
+export const Entry = createConstructor(AgsEntry);
+export const EventBox = createConstructor(AgsEventBox);
+export const Icon = createConstructor(AgsIcon);
+export const Label = createConstructor(AgsLabel);
+export const Menu = createConstructor(AgsMenu);
+export const MenuItem = createConstructor(AgsMenuItem);
+export const Overlay = createConstructor(AgsOverlay);
+export const ProgressBar = createConstructor(AgsProgressBar);
+export const Revealer = createConstructor(AgsRevealer);
+export const Scrollable = createConstructor(AgsScrollable);
+export const Slider = createConstructor(AgsSlider);
+export const Stack = createConstructor(AgsStack);

@@ -1,17 +1,14 @@
 env:
   es2021: true
-
 extends:
   - 'eslint:recommended'
   - 'plugin:@typescript-eslint/recommended'
-
 parser: '@typescript-eslint/parser'
-
-parserOptions: ecmaVersion: 2022
+parserOptions: 
+  ecmaVersion: 2022
   sourceType: 'module'
   project: './tsconfig.json'
   warnOnUnsupportedTypeScriptVersion: false
-
 root: true
 ignorePatterns:
   - example/
@@ -20,10 +17,8 @@ ignorePatterns:
   - _build/
   - build/
   - result/
-
 plugins:
   - '@typescript-eslint'
-
 rules:
   '@typescript-eslint/ban-ts-comment':
     - 'off'

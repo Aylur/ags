@@ -8,6 +8,7 @@ import Service from './service.js';
 import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
 import Widget from '../widget.js';
+import type { CommonParams } from 'src/widgets/constructor.js';
 
 const StatusNotifierWatcherIFace = loadInterfaceXML('org.kde.StatusNotifierWatcher')!;
 const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem')!;
@@ -116,12 +117,16 @@ export class TrayItem extends Service {
 
     private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
         if (proxy.Menu) {
-            const menu = Widget({
+            const menu = Widget<
+                Gtk.Widget, 
+                CommonParams & DbusmenuGtk3.Menu.ConstructorProperties,
+                typeof DbusmenuGtk3.Menu
+            >({
                 type: DbusmenuGtk3.Menu,
                 dbus_name: proxy.g_name_owner,
                 dbus_object: proxy.Menu,
             });
-            this.menu = (menu as unknown) as DbusmenuGtk3.Menu;
+            this.menu = menu;
         }
 
         if (this._proxy.IconThemePath) {
