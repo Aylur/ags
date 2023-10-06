@@ -19,9 +19,9 @@ interface Action {
 }
 
 interface Hints {
-    'image-data'?: GLib.Variant<'(iiibiiay)'>
-    'desktop-entry'?: GLib.Variant<'s'>
-    'urgency'?: GLib.Variant<'y'>
+    'image-data'?: GLib.Variant
+    'desktop-entry'?: GLib.Variant
+    'urgency'?: GLib.Variant
 }
 
 interface NotifcationJson {
@@ -103,7 +103,7 @@ class Notification extends Service {
             });
         }
 
-        this._urgency = _URGENCY[hints['urgency']?.unpack() || 1];
+        this._urgency = _URGENCY[hints['urgency']?.unpack<number>() || 1];
         this._id = id;
         this._appName = appName;
         this._appEntry = hints['desktop-entry']?.unpack() || null;
@@ -162,13 +162,21 @@ class Notification extends Service {
         return GLib.file_test(this._appIcon, GLib.FileTest.EXISTS) ? this._appIcon : null;
     }
 
-    private _parseImageData(imageData?: GLib.Variant<'(iiibiiay)'>) {
+    private _parseImageData(imageData?: GLib.Variant) {
         if (!imageData)
             return null;
 
         ensureDirectory(NOTIFICATIONS_CACHE_PATH);
         const fileName = NOTIFICATIONS_CACHE_PATH + `/${this._id}`;
-        const [w, h, rs, alpha, bps, _, data] = imageData.recursiveUnpack();
+        const [w, h, rs, alpha, bps, _, data] = imageData.recursiveUnpack<[
+		number,
+		number,
+		number,
+		boolean,
+		number,
+		number,
+		GLib.Bytes,
+	]>();
         const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
             data, GdkPixbuf.Colorspace.RGB, alpha, bps, w, h, rs);
 
@@ -298,7 +306,7 @@ class NotificationsService extends Service {
 
     private _onClosed(n: Notification) {
         this._dbus.emit_signal('NotificationClosed',
-            GLib.Variant.new('(uu)', [n.id, 3]));
+            new GLib.Variant('(uu)', [n.id, 3]));
 
         this._notifications.delete(n.id);
         this.notify('notifications');
@@ -310,7 +318,7 @@ class NotificationsService extends Service {
 
     private _onInvoked(n: Notification, id: string) {
         this._dbus.emit_signal('ActionInvoked',
-            GLib.Variant.new('(us)', [n.id, id]));
+            new GLib.Variant('(us)', [n.id, id]));
     }
 
     private _register() {

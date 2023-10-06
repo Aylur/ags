@@ -6,7 +6,7 @@ import { Command } from './widgets/constructor.js';
 
 
 export const USER = GLib.get_user_name();
-export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name.split('.').pop()}`;
+export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name?.split('.').pop()}`;
 
 export function readFile(path: string) {
     const f = Gio.File.new_for_path(path);
@@ -188,9 +188,10 @@ export function execAsync(cmd: string | string[]): Promise<string> {
                     return reject(null);
 
                 const [, stdout, stderr] = proc.communicate_utf8_finish(res);
+
                 proc.get_successful()
-                    ? resolve(stdout.trim())
-                    : reject(stderr.trim());
+                    ? resolve(stdout!.trim())
+                    : reject(stderr!.trim());
             } catch (e) {
                 reject(e);
             }

@@ -18,10 +18,9 @@ class AgsVariable extends GObject.Object {
             GTypeName: 'AgsVariable',
             Signals: { 'changed': {} },
             Properties: {
-                // @ts-expect-error
                 'value': GObject.ParamSpec.jsobject(
                     'value', 'value', 'value',
-                    GObject.ParamFlags.READWRITE, null,
+                    GObject.ParamFlags.READWRITE,
                 ),
             },
         }, this);

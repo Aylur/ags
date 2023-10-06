@@ -9,10 +9,10 @@ import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
 import Widget from '../widget.js';
 
-const StatusNotifierWatcherIFace = loadInterfaceXML('org.kde.StatusNotifierWatcher');
-const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem');
+const StatusNotifierWatcherIFace = loadInterfaceXML('org.kde.StatusNotifierWatcher')!;
+const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem')!;
 const StatusNotifierItemProxy =
-    Gio.DBusProxy.makeProxyWrapper(StatusNotifierItemIFace) as StatusNotifierItemProxy;
+    Gio.DBusProxy.makeProxyWrapper(StatusNotifierItemIFace) as unknown as StatusNotifierItemProxy;
 
 export class TrayItem extends Service {
     static {
@@ -117,7 +117,6 @@ export class TrayItem extends Service {
     private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
         if (proxy.Menu) {
             const menu = Widget({
-                // @ts-expect-error
                 type: DbusmenuGtk3.Menu,
                 dbus_name: proxy.g_name_owner,
                 dbus_object: proxy.Menu,
@@ -161,15 +160,15 @@ export class TrayItem extends Service {
             this._proxy.g_object_path,
             'org.freedesktop.DBus.Properties',
             'GetAll',
-            GLib.Variant.new('(s)', [this._proxy.g_interface_name]),
+            new GLib.Variant('(s)', [this._proxy.g_interface_name]),
             GLib.VariantType.new('(a{sv})'),
             Gio.DBusCallFlags.NONE, -1,
             null,
             (proxy, result) => {
-                const variant = proxy?.call_finish(result) as GLib.Variant<'(a{sv})'>;
+                const variant = proxy?.call_finish(result);
                 if (!variant)
                     return;
-                const [properties] = variant.deep_unpack();
+                const [properties] = variant.deepUnpack<Record<string, GLib.Variant>[]>();
                 Object.entries(properties).map(([propertyName, value]) => {
                     this._proxy.set_cached_property(propertyName, value);
                 });
@@ -186,6 +185,7 @@ export class TrayItem extends Service {
         if (!pixMap)
             return;
 
+
         const array = Uint8Array.from(pixMap[2]);
         for (let i = 0; i < 4 * pixMap[0] * pixMap[1]; i += 4) {
             const alpha = array[i];
@@ -195,7 +195,7 @@ export class TrayItem extends Service {
             array[i + 3] = alpha;
         }
         return GdkPixbuf.Pixbuf.new_from_bytes(
-            array,
+            new GLib.Bytes(array),
             GdkPixbuf.Colorspace.RGB,
             true,
             8,
@@ -255,7 +255,7 @@ class SystemTrayService extends Service {
         const [service] = serviceName;
         if (service.startsWith('/')) {
             objectPath = service;
-            busName = invocation.get_sender();
+            busName = invocation.get_sender()!;
         } else {
             busName = service;
             objectPath = '/StatusNotifierItem';

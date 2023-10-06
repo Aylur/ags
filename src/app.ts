@@ -152,7 +152,7 @@ export default class App extends Gtk.Application {
     }
 
     removeWindow(w: Gtk.Window | string) {
-        const name = typeof w === 'string' ? w : w.name;
+        const name = typeof w === 'string' ? w : w.name!;
 
         const win = this._windows.get(name);
         if (!win) {
@@ -174,13 +174,13 @@ export default class App extends Gtk.Application {
         w.connect('notify::visible',
             () => this.emit('window-toggled', w.name, w.visible));
 
-        if (this._windows.has(w.name)) {
+        if (this._windows.has(w.name!)) {
             console.error('There is already a window named' + w.name);
             this.quit();
             return;
         }
 
-        this._windows.set(w.name, w);
+        this._windows.set(w.name!, w);
     }
 
     private async _load() {

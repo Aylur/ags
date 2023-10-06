@@ -7,9 +7,9 @@ import Service from './service.js';
 import Variable from './variable.js';
 import Widget from './widget.js';
 
-const BIN_NAME = pkg.name.split('.').pop() as string;
+const BIN_NAME = pkg.name?.split('.').pop()!;
 const APP_BUS = (name: string) => `${pkg.name}.${name}`;
-const APP_PATH = (name: string) => `/${pkg.name.split('.').join('/')}/${name}`;
+const APP_PATH = (name: string) => `/${pkg.name?.split('.').join('/')}/${name}`;
 const DEFAULT_CONF = `${GLib.get_user_config_dir()}/${BIN_NAME}/config.js`;
 
 const help = (bin: string) => `USAGE:
@@ -41,7 +41,6 @@ function isRunning(dbusName: string) {
         '/org/freedesktop/DBus',
         'org.freedesktop.DBus',
         'NameHasOwner',
-        // @ts-expect-error
         GLib.Variant.new_tuple([new GLib.Variant('s', dbusName)]),
         new GLib.VariantType('(b)'),
         Gio.DBusCallFlags.NONE,

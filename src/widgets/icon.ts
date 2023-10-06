@@ -3,7 +3,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import Gdk from 'gi://Gdk?version=3.0';
-import { Context } from 'gi-types/cairo1';
+import type Cario from 'gi://cairo';
 
 export default class AgsIcon extends Gtk.Image {
     static {
@@ -72,7 +72,7 @@ export default class AgsIcon extends Gtk.Image {
         }
     }
 
-    vfunc_draw(cr: Context): boolean {
+    vfunc_draw(cr: Cario.Context): boolean {
         if (this._size > 1)
             return super.vfunc_draw(cr);
 

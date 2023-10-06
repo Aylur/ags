@@ -1,7 +1,9 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import { connect } from '../utils.js';
-import { type Ctor } from 'gi-types/gobject2.js';
+
+type Ctor = new (...a: any[]) => object;
+
 
 type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'boolean' | 'double';
 type PspecFlag = 'rw' | 'r' | 'w';
@@ -48,9 +50,8 @@ export default class Service extends GObject.Object {
             case 'boolean': return GObject.ParamSpec.boolean(
                 name, name, name, flags, false);
 
-            // @ts-expect-error
             default: return GObject.ParamSpec.jsobject(
-                name, name, name, flags, null);
+                name, name, name, flags);
         }
     }
 

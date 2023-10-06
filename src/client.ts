@@ -6,10 +6,10 @@ import { loadInterfaceXML } from './utils.js';
 import { type AgsProxy } from './dbus/types.js';
 
 const AgsIFace = (bus: string) =>
-    loadInterfaceXML('com.github.Aylur.ags')?.replace('@BUS@', bus);
+    loadInterfaceXML('com.github.Aylur.ags')?.replace('@BUS@', bus)!;
 
 const ClientIFace = (bus: string) =>
-    loadInterfaceXML('com.github.Aylur.ags.client')?.replace('@BUS@', bus);
+    loadInterfaceXML('com.github.Aylur.ags.client')?.replace('@BUS@', bus)!;
 
 const TIME = `${GLib.DateTime.new_now_local().to_unix()}`;
 
@@ -44,11 +44,11 @@ class Client extends Gtk.Application {
     private _register() {
         Gio.bus_own_name(
             Gio.BusType.SESSION,
-            this.applicationId,
+            this.get_application_id(),
             Gio.BusNameOwnerFlags.NONE,
             (connection: Gio.DBusConnection) => {
                 this._dbus = Gio.DBusExportedObject
-                    .wrapJSObject(ClientIFace(this.applicationId) as string, this);
+                    .wrapJSObject(ClientIFace(this.get_application_id()!) as string, this);
 
                 this._dbus.export(connection, this._objectPath);
             },
@@ -68,7 +68,7 @@ class Client extends Gtk.Application {
         this._register();
         this._proxy.RunPromiseRemote(
             this._promiseJs,
-            this.applicationId,
+            this.get_application_id()!,
             this._objectPath,
         );
     }
@@ -76,7 +76,7 @@ class Client extends Gtk.Application {
 
 export default function(bus: string, path: string, flags: Flags) {
     const AgsProxy = Gio.DBusProxy.makeProxyWrapper(AgsIFace(bus));
-    const proxy = new AgsProxy(Gio.DBus.session, bus, path) as AgsProxy;
+    const proxy = AgsProxy(Gio.DBus.session, bus, path) as AgsProxy;
 
     if (flags.toggleWindow)
         print(proxy.ToggleWindowSync(flags.toggleWindow));

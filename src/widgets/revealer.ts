@@ -18,7 +18,7 @@ export default class AgsRevealer extends Gtk.Revealer {
         }, this);
     }
 
-    get transition() { return transitions[this.transitionType]; }
+    get transition() { return transitions[this.transition_type]; }
     set transition(transition: string) {
         if (!transition)
             return;
@@ -28,6 +28,6 @@ export default class AgsRevealer extends Gtk.Revealer {
             return;
         }
 
-        this.transitionType = transitions.findIndex(t => t === transition);
+        this.transition_type = transitions.findIndex(t => t === transition);
     }
 }

@@ -146,7 +146,10 @@ class HyprlandService extends Service {
             }
 
             const [line] = stream.read_line_finish(result);
-            this._onEvent(this._decoder.decode(line));
+
+	    // line is either null or Uint8Array, but we need Uint8Array or undefined.
+            this._onEvent(this._decoder.decode(line ?? undefined));
+
             this._watchSocket(stream);
         });
     }

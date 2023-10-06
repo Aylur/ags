@@ -6,10 +6,15 @@ imports.gi.versions.GnomeBluetooth = '3.0';
 const { GnomeBluetooth } = imports.gi;
 
 const _ADAPTER_STATE = {
+    // @ts-expect-error
     [GnomeBluetooth.AdapterState.ABSENT]: 'absent',
+    // @ts-expect-error
     [GnomeBluetooth.AdapterState.ON]: 'on',
+    // @ts-expect-error
     [GnomeBluetooth.AdapterState.TURNING_ON]: 'turning-on',
+    // @ts-expect-error
     [GnomeBluetooth.AdapterState.TURNING_OFF]: 'turning-off',
+    // @ts-expect-error
     [GnomeBluetooth.AdapterState.OFF]: 'off',
 };
 
@@ -30,15 +35,13 @@ class BluetoothDevice extends Service {
         });
     }
 
-    // @ts-expect-error
-    private _device: GnomeBluetooth.Device;
+    private _device: any;
     private _ids: number[];
     private _connecting = false;
 
     get device() { return this._device; }
 
-    // @ts-expect-error
-    constructor(device: GnomeBluetooth.Device) {
+    constructor(device: any) {
         super();
 
         this._device = device;

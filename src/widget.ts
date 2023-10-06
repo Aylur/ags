@@ -17,7 +17,7 @@ import AgsWindow from './widgets/window.js';
 import AgsCircularProgress from './widgets/circularprogress.js';
 import { constructor, type ctor } from './widgets/constructor.js';
 
-export default function Widget({ type, ...params }: { type: ctor }) {
+export default function Widget({ type, ...params }: { type: ctor, [key: string]: unknown }) {
     return constructor(type, params);
 }
 
@@ -41,7 +41,6 @@ export const Slider = (args: object) => constructor(AgsSlider, args);
 export const Stack = (args: object) => constructor(AgsStack, args);
 
 // so it is still in global scope through ags.Widget
-Widget.Widget = Widget;
 Widget.Box = Box;
 Widget.Button = Button;
 Widget.CenterBox = CenterBox;

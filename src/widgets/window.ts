@@ -3,6 +3,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import App from '../app.js';
 
+// @ts-expect-error - no types
 const { GtkLayerShell } = imports.gi;
 
 interface Params {
@@ -158,8 +159,8 @@ export default class AgsWindow extends Gtk.Window {
         if (popup) {
             this.connect('key-press-event', (_, event) => {
                 if (event.get_keyval()[1] === Gdk.KEY_Escape) {
-                    App.getWindow(this.name)
-                        ? App.closeWindow(this.name)
+                    App.getWindow(this.name!)
+                        ? App.closeWindow(this.name!)
                         : this.hide();
                 }
             });
