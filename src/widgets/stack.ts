@@ -62,7 +62,7 @@ export default class AgsStack extends Gtk.Stack {
 
     get transition() { return transitions[this.transitionType]; }
     set transition(transition: string) {
-        if (typeof transition !== 'string')
+        if (this.transition === transition)
             return;
 
         if (!transitions.includes(transition)) {
@@ -76,13 +76,10 @@ export default class AgsStack extends Gtk.Stack {
 
     get shown() { return this.visible_child_name; }
     set shown(name: string) {
-        if (name === null || !this.get_child_by_name(name)) {
+        if (!this.get_child_by_name(name)) {
             this.visible = false;
             return;
         }
-
-        if (!name)
-            return;
 
         this.visible = true;
         this.set_visible_child_name(name);

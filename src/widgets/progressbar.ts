@@ -15,12 +15,18 @@ export default class AgsProgressBar extends Gtk.ProgressBar {
 
     get value() { return this.fraction; }
     set value(value: number) {
+        if (this.value === value)
+            return;
+
         this.fraction = value;
         this.notify('value');
     }
 
     get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
-    set vertical(vertical) {
+    set vertical(vertical: boolean) {
+        if (this.vertical === vertical)
+            return;
+
         this.orientation = vertical
             ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
 

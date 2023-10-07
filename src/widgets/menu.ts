@@ -39,7 +39,7 @@ export class AgsMenu extends Gtk.Menu {
     }
 
     get children() { return this.get_children(); }
-    set children(children: Gtk.Widget[] | null) {
+    set children(children: Gtk.Widget[]) {
         this.get_children().forEach(ch => ch.destroy());
 
         if (!children)

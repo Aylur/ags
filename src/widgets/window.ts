@@ -167,7 +167,7 @@ export default class AgsWindow extends Gtk.Window {
     // @ts-expect-error
     get popup() { return !!this._popup; }
 
-    // this will get removed in gtk4
+    // this will be removed in gtk4
     set popup(popup: boolean) {
         if (this.popup === popup)
             return;
@@ -187,7 +187,7 @@ export default class AgsWindow extends Gtk.Window {
             });
         }
 
-        this.notify('notify');
+        this.notify('popup');
     }
 
     get focusable() {

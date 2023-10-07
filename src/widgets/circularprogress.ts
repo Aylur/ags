@@ -29,6 +29,9 @@ export default class AgsCircularProgress extends Gtk.Bin {
     // @ts-expect-error
     get rounded() { return this._rounded; }
     set rounded(r: boolean) {
+        if (this.rounded === r)
+            return;
+
         // @ts-expect-error
         this._rounded = r;
         this.notify('rounded');
@@ -37,9 +40,12 @@ export default class AgsCircularProgress extends Gtk.Bin {
 
     // @ts-expect-error
     get inverted() { return this._inverted; }
-    set inverted(c: boolean) {
+    set inverted(inverted: boolean) {
+        if (this.inverted === inverted)
+            return;
+
         // @ts-expect-error
-        this._inverted = c;
+        this._inverted = inverted;
         this.notify('inverted');
         this.queue_draw();
     }
@@ -47,6 +53,9 @@ export default class AgsCircularProgress extends Gtk.Bin {
     // @ts-expect-error
     get start_at() { return this._startAt; }
     set start_at(value: number) {
+        if (this.start_at === value)
+            return;
+
         if (value > 1)
             value = 1;
 
@@ -62,6 +71,9 @@ export default class AgsCircularProgress extends Gtk.Bin {
     // @ts-expect-error
     get value() { return this._value; }
     set value(value: number) {
+        if (this.value === value)
+            return;
+
         if (value > 1)
             value = 1;
 

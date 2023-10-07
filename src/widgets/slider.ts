@@ -61,7 +61,7 @@ export default class AgsSlider extends Gtk.Scale {
 
     get value() { return this.adjustment.value; }
     set value(value: number) {
-        if (this.dragging)
+        if (this.dragging || this.value === value)
             return;
 
         this.adjustment.value = value;
@@ -70,18 +70,27 @@ export default class AgsSlider extends Gtk.Scale {
 
     get min() { return this.adjustment.lower; }
     set min(min: number) {
+        if (this.min === min)
+            return;
+
         this.adjustment.lower = min;
         this.notify('min');
     }
 
     get max() { return this.adjustment.upper; }
     set max(max: number) {
+        if (this.max === max)
+            return;
+
         this.adjustment.upper = max;
         this.notify('max');
     }
 
     get step() { return this.adjustment.stepIncrement; }
     set step(step: number) {
+        if (this.step === step)
+            return;
+
         this.adjustment.stepIncrement = step;
         this.notify('step');
     }
@@ -89,6 +98,9 @@ export default class AgsSlider extends Gtk.Scale {
     // @ts-expect-error
     get dragging() { return this._dragging; }
     set dragging(dragging: boolean) {
+        if (this.dragging === dragging)
+            return;
+
         // @ts-expect-error
         this._dragging = dragging;
         this.notify('dragging');
@@ -96,6 +108,9 @@ export default class AgsSlider extends Gtk.Scale {
 
     get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
     set vertical(vertical) {
+        if (this.vertical === vertical)
+            return;
+
         this.orientation = vertical
             ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
 

@@ -13,7 +13,7 @@ export default class AgsBox extends Gtk.Box {
         }, this);
     }
 
-    constructor({ children, ...rest }: { children?: Gtk.Widget[] | null }) {
+    constructor({ children, ...rest }: { children?: Gtk.Widget[] }) {
         super(rest);
 
         if (children)
@@ -21,7 +21,7 @@ export default class AgsBox extends Gtk.Box {
     }
 
     get children() { return this.get_children(); }
-    set children(children: Gtk.Widget[] | null) {
+    set children(children: Gtk.Widget[]) {
         const newChildren = children || [];
 
         this.get_children()
@@ -42,7 +42,10 @@ export default class AgsBox extends Gtk.Box {
     }
 
     get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
-    set vertical(vertical) {
+    set vertical(vertical: boolean) {
+        if (this.vertical === vertical)
+            return;
+
         this.orientation = vertical
             ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
 
