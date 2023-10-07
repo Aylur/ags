@@ -23,5 +23,7 @@ export default class AgsProgressBar extends Gtk.ProgressBar {
     set vertical(vertical) {
         this.orientation = vertical
             ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
+
+        this.notify('vertical');
     }
 }

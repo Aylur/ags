@@ -71,6 +71,7 @@ export default class AgsCircularProgress extends Gtk.Bin {
 
         // @ts-expect-error
         this._value = value;
+        this.notify('value');
         this.queue_draw();
     }
 

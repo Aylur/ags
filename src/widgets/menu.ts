@@ -67,8 +67,7 @@ export class AgsMenuItem extends Gtk.MenuItem {
         onSelect = '',
         onDeselect = '',
         ...rest
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    }: { [key: string]: any }) {
+    }: { [key: string]: Command }) {
         super(rest);
 
         this.onActivate = onActivate;
