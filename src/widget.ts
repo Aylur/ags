@@ -16,14 +16,18 @@ import { AgsMenu, AgsMenuItem } from './widgets/menu.js';
 import AgsWindow from './widgets/window.js';
 import AgsCircularProgress from './widgets/circularprogress.js';
 import { constructor, CommonParams } from './widgets/constructor.js';
-import type Gtk from 'gi://Gtk?version=3.0';
+import type Gtk from 'types/gtk-types/gtk-3.0.js';
+
+export interface WidgetParams<T extends Gtk.Widget> extends CommonParams {
+  type: new(arg: Omit<WidgetParams<T>, keyof CommonParams | "type">) => T;
+}
 
 export default function Widget<
     Output extends InstanceType<typeof Gtk.Widget>,
-    Params extends CommonParams,
-    Class extends new(arg: Omit<Params, keyof CommonParams>) => Output,
->(params: { type: Class } & Params): InstanceType<Class> {
-    return constructor(params.type, params);
+    Params extends WidgetParams<Output>,
+    Class extends new(arg: Omit<Params, keyof WidgetParams<Output>>) => Output,
+>({type, ...params}: { type: Class } & Params): InstanceType<Class> {
+    return constructor(type, params);
 }
 
 const createConstructor = <

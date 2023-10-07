@@ -138,7 +138,6 @@ let bundleFileDeclarations = "";
 for (let i = 0; i < entries.length; i++) {
     const entry = entries[i];
 
-
     bundleFileDeclarations += `
 declare module '${entry.importPath}' {
     const exports: typeof import('${entry.filePath.replace("/src", "")}')

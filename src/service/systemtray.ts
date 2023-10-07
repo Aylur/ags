@@ -8,7 +8,7 @@ import type DbusmenuGtk3Types from 'types/gtk-types/dbusmenugtk3-0.4.js';
 import Service from './service.js';
 import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
-import Widget from '../widget.js';
+import Widget, { WidgetParams } from '../widget.js';
 import type { CommonParams } from 'src/widgets/constructor.js';
 
 const StatusNotifierWatcherIFace = loadInterfaceXML('org.kde.StatusNotifierWatcher')!;
@@ -121,7 +121,7 @@ export class TrayItem extends Service {
             const menu = Widget<
                 InstanceType<typeof Gtk.Widget>,
                 // quick hack around the weirdness of direct types
-                CommonParams & DbusmenuGtk3Types.Menu.ConstructorProperties,
+                WidgetParams<InstanceType<typeof Gtk.Widget>> & DbusmenuGtk3Types.Menu.ConstructorProperties,
                 typeof DbusmenuGtk3.Menu
             >({
                 type: DbusmenuGtk3.Menu,
