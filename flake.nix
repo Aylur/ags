@@ -13,7 +13,7 @@
     pkgs = genSystems (system: import nixpkgs {
       inherit system;
     });
-  in rec {
+  in {
     packages = genSystems (system: {
       default = pkgs.${system}.callPackage ./nix {};
     });
@@ -34,6 +34,7 @@
         # nodeJS
         nodejs
         nodePackages.npm
+	nodePackages.typescript-language-server
 
         # Nix
         alejandra

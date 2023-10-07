@@ -19,7 +19,7 @@
     },
     "scripts": {
         "test": "eslint .",
-        "postinstall": "tsx genTypes.ts",
+        "build": "tsx genTypes.ts",
         "gen-types": "tsx genTypes.ts"
     }
 }

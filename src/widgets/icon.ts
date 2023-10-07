@@ -46,12 +46,10 @@ export default class AgsIcon extends Gtk.Image {
         if (!icon || this._icon === icon)
             return;
 
-        // @ts-expect-error
         this._icon = icon;
         this.notify('icon');
         if (typeof icon === 'string') {
             if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
-                // @ts-expect-error
                 this._type = 'file';
                 const pb =
                     GdkPixbuf.Pixbuf.new_from_file_at_size(
@@ -61,14 +59,12 @@ export default class AgsIcon extends Gtk.Image {
                 const cs = Gdk.cairo_surface_create_from_pixbuf(pb, 0, this.get_window());
                 this.set_from_surface(cs);
             } else {
-                // @ts-expect-error
                 this._type = 'named';
                 this.icon_name = icon;
                 this.pixel_size = this.size;
             }
         }
         else if (icon instanceof GdkPixbuf.Pixbuf) {
-            // @ts-expect-error
             this._type = 'pixbuf';
             const pb_scaled =
                 icon.scale_simple(
@@ -97,7 +93,6 @@ export default class AgsIcon extends Gtk.Image {
 
         this._previousSize = size;
 
-        // @ts-expect-error
         switch (this._type) {
             case 'file': {
                 const pb = GdkPixbuf.Pixbuf.new_from_file_at_size(
