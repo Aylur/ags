@@ -30,7 +30,7 @@ class AgsVariable extends GObject.Object {
     private _poll?: Poll;
     private _listen?: Listen;
     private _interval?: number;
-    private _subprocess?: Gio.Subprocess | null;
+    private _subprocess?: InstanceType<typeof Gio.Subprocess> | null;
 
     constructor(value: any, { poll, listen }: Options = {}) {
         super();

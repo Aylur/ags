@@ -10,7 +10,7 @@ const AgsIFace = (bus: string) =>
     loadInterfaceXML('com.github.Aylur.ags')?.replace('@BUS@', bus);
 
 interface Config {
-    windows?: Gtk.Window[]
+    windows?: InstanceType<typeof Gtk.Window>[]
     style?: string
     notificationPopupTimeout: number
     cacheNotificationActions: boolean
@@ -30,10 +30,10 @@ export default class App extends Gtk.Application {
         }, this);
     }
 
-    private _dbus!: Gio.DBusExportedObject;
-    private _windows: Map<string, Gtk.Window>;
+    private _dbus!: InstanceType<typeof Gio.DBusExportedObject>;
+    private _windows: Map<string, InstanceType<typeof Gtk.Window>>;
     private _closeDelay!: { [key: string]: number };
-    private _cssProviders: Gtk.CssProvider[] = [];
+    private _cssProviders: InstanceType<typeof Gtk.CssProvider>[] = [];
     private _busName: string;
     private _objectPath: string;
 
@@ -42,8 +42,8 @@ export default class App extends Gtk.Application {
     static config: Config;
     static instance: App;
 
-    static removeWindow(w: Gtk.Window | string) { App.instance.removeWindow(w); }
-    static addWindow(w: Gtk.Window) { App.instance.addWindow(w); }
+    static removeWindow(w: InstanceType<typeof Gtk.Window> | string) { App.instance.removeWindow(w); }
+    static addWindow(w: InstanceType<typeof Gtk.Window>) { App.instance.addWindow(w); }
     static get windows() { return App.instance._windows; }
     static getWindow(name: string) { return App.instance.getWindow(name); }
     static closeWindow(name: string) { App.instance.closeWindow(name); }
@@ -102,9 +102,9 @@ export default class App extends Gtk.Application {
     }
 
     connectWidget(
-        widget: Gtk.Widget,
+        widget: InstanceType<typeof Gtk.Widget>,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        callback: (widget: Gtk.Widget, ...args: any[]) => void,
+        callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: any[]) => void,
         event = 'window-toggled',
     ) {
         connect(this, widget, callback, event);
@@ -151,7 +151,7 @@ export default class App extends Gtk.Application {
         return w;
     }
 
-    removeWindow(w: Gtk.Window | string) {
+    removeWindow(w: InstanceType<typeof Gtk.Window> | string) {
         const name = typeof w === 'string' ? w : w.name!;
 
         const win = this._windows.get(name);
@@ -164,7 +164,7 @@ export default class App extends Gtk.Application {
         this._windows.delete(name);
     }
 
-    addWindow(w: Gtk.Window) {
+    addWindow(w: InstanceType<typeof Gtk.Window>) {
         if (!(w instanceof Gtk.Window)) {
             console.error(`${w} is not an instanceof Gtk.Window, ` +
                 ` but it is of type ${typeof w}`);
@@ -224,7 +224,7 @@ export default class App extends Gtk.Application {
             Gio.BusType.SESSION,
             this._busName,
             Gio.BusNameOwnerFlags.NONE,
-            (connection: Gio.DBusConnection) => {
+            (connection: InstanceType<typeof Gio.DBusConnection>) => {
                 this._dbus = Gio.DBusExportedObject
                     .wrapJSObject(AgsIFace(this._busName) as string, this);
 

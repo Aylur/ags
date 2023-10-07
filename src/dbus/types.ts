@@ -2,19 +2,21 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 
-export interface DBusProxy extends Gio.DBusProxy {
+type GioDBusProxy = InstanceType<typeof Gio.DBusProxy>;
+
+export interface DBusProxy extends GioDBusProxy {
     new(...args: unknown[]): DBusProxy
     ListNamesRemote: (callback: (names: string[][]) => void) => void
 }
 
-export interface PlayerProxy extends Gio.DBusProxy {
+export interface PlayerProxy extends GioDBusProxy {
     new(...args: unknown[]): PlayerProxy
     CanControl: boolean
     CanGoNext: boolean
     CanGoPrevious: boolean
     CanPlay: boolean
     CanPause: boolean
-    Metadata: { [key: string]: GLib.Variant }
+    Metadata: { [key: string]: InstanceType<typeof GLib.Variant> }
     PlaybackStatus: string
     Shuffle: boolean | null
     LoopStatus: string | null
@@ -28,7 +30,7 @@ export interface PlayerProxy extends Gio.DBusProxy {
     PlayAsync: () => Promise<void>
 }
 
-export interface MprisProxy extends Gio.DBusProxy {
+export interface MprisProxy extends GioDBusProxy {
     new(...args: unknown[]): MprisProxy
     Raise: () => void
     Quit: () => void
@@ -38,7 +40,7 @@ export interface MprisProxy extends Gio.DBusProxy {
     DesktopEntry: string
 }
 
-export interface BatteryProxy extends Gio.DBusProxy {
+export interface BatteryProxy extends GioDBusProxy {
     new(...args: unknown[]): BatteryProxy
     State: number
     Percentage: number
@@ -50,7 +52,7 @@ export interface BatteryProxy extends Gio.DBusProxy {
     EnergyRate: number
 }
 
-export interface StatusNotifierItemProxy extends Gio.DBusProxy {
+export interface StatusNotifierItemProxy extends GioDBusProxy {
     new(...args: unknown[]): StatusNotifierItemProxy;
     Category: string;
     Id: string;
@@ -71,7 +73,7 @@ export interface StatusNotifierItemProxy extends Gio.DBusProxy {
     ScrollAsync: (delta: number, orientation: string) => Promise<void>;
 }
 
-export interface AgsProxy extends Gio.DBusProxy {
+export interface AgsProxy extends GioDBusProxy {
     new(...args: unknown[]): AgsProxy
     InspectorRemote: () => void;
     QuitRemote: () => void;
@@ -83,7 +85,7 @@ export interface AgsProxy extends Gio.DBusProxy {
         objPath?: string) => void
 }
 
-export interface StatusNotifierItemProxy extends Gio.DBusProxy {
+export interface StatusNotifierItemProxy extends GioDBusProxy {
     new(...args: unknown[]): StatusNotifierItemProxy;
     Category: string;
     Id: string;
@@ -103,4 +105,3 @@ export interface StatusNotifierItemProxy extends Gio.DBusProxy {
     SecondaryActivateAsync: (x: number, y: number) => Promise<void>;
     ScrollAsync: (delta: number, orientation: string) => Promise<void>;
 }
-

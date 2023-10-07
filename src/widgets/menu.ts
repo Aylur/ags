@@ -4,7 +4,7 @@ import { runCmd } from '../utils.js';
 import { Command } from './constructor.js';
 
 export interface Params {
-    children?: Gtk.Widget[]
+    children?: InstanceType<typeof Gtk.Widget>[]
     onPopup?: Command
     onMoveScroll?: Command
 }
@@ -39,7 +39,7 @@ export class AgsMenu extends Gtk.Menu {
     }
 
     get children() { return this.get_children(); }
-    set children(children: Gtk.Widget[] | null) {
+    set children(children: InstanceType<typeof Gtk.Widget>[] | null) {
         this.get_children().forEach(ch => ch.destroy());
 
         if (!children)

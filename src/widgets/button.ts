@@ -61,7 +61,7 @@ export default class AgsButton extends Gtk.Button {
             return runCmd(this.onHoverLost, btn, event);
         });
 
-        this.connect('button-press-event', (_, event: Gdk.Event) => {
+        this.connect('button-press-event', (_, event: InstanceType<typeof Gdk.Event>) => {
             if (this.onPrimaryClick &&
                 event.get_button()[1] === Gdk.BUTTON_PRIMARY)
                 return runCmd(this.onPrimaryClick, this, event);
@@ -75,7 +75,7 @@ export default class AgsButton extends Gtk.Button {
                 return runCmd(this.onMiddleClick, this, event);
         });
 
-        this.connect('button-release-event', (_, event: Gdk.Event) => {
+        this.connect('button-release-event', (_, event: InstanceType<typeof Gdk.Event>) => {
             if (this.onPrimaryClickRelease &&
                 event.get_button()[1] === Gdk.BUTTON_PRIMARY)
                 return runCmd(this.onPrimaryClickRelease, this, event);

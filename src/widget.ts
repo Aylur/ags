@@ -16,10 +16,10 @@ import { AgsMenu, AgsMenuItem } from './widgets/menu.js';
 import AgsWindow from './widgets/window.js';
 import AgsCircularProgress from './widgets/circularprogress.js';
 import { constructor, CommonParams } from './widgets/constructor.js';
-import type Gtk from '@girs/gtk-3.0';
+import type Gtk from 'gi://Gtk?version=3.0';
 
 export default function Widget<
-    Output extends Gtk.Widget,
+    Output extends InstanceType<typeof Gtk.Widget>,
     Params extends CommonParams,
     Class extends new(arg: Omit<Params, keyof CommonParams>) => Output,
 >(params: { type: Class } & Params): InstanceType<Class> {
@@ -27,14 +27,14 @@ export default function Widget<
 }
 
 const createConstructor = <
-    Output extends Gtk.Widget,
+    Output extends InstanceType<typeof Gtk.Widget>,
     Params extends CommonParams & ConstructorParameters<Class>[0],
     Class extends new(arg: Omit<Params, keyof CommonParams>) => Output,
 >(widget: Class) => (args: Params) => constructor(widget, args)
 
 
-// @ts-expect-error
-export const Window = createConstructor(AgsWindow, args);
+// @ts-expect-error custom overrides
+export const Window = createConstructor(AgsWindow);
 
 export const Box = createConstructor(AgsBox);
 export const Button = createConstructor(AgsButton);

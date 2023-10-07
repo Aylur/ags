@@ -19,9 +19,9 @@ interface Action {
 }
 
 interface Hints {
-    'image-data'?: GLib.Variant
-    'desktop-entry'?: GLib.Variant
-    'urgency'?: GLib.Variant
+    'image-data'?: InstanceType<typeof GLib.Variant>
+    'desktop-entry'?: InstanceType<typeof GLib.Variant>
+    'urgency'?: InstanceType<typeof GLib.Variant>
 }
 
 interface NotifcationJson {
@@ -162,7 +162,7 @@ class Notification extends Service {
         return GLib.file_test(this._appIcon, GLib.FileTest.EXISTS) ? this._appIcon : null;
     }
 
-    private _parseImageData(imageData?: GLib.Variant) {
+    private _parseImageData(imageData?: InstanceType<typeof GLib.Variant>) {
         if (!imageData)
             return null;
 
@@ -175,7 +175,7 @@ class Notification extends Service {
 		boolean,
 		number,
 		number,
-		GLib.Bytes,
+		InstanceType<typeof GLib.Bytes>,
 	]>();
         const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
             data, GdkPixbuf.Colorspace.RGB, alpha, bps, w, h, rs);
@@ -203,7 +203,7 @@ class NotificationsService extends Service {
         });
     }
 
-    private _dbus!: Gio.DBusExportedObject;
+    private _dbus!: InstanceType<typeof Gio.DBusExportedObject>;
     private _notifications: Map<number, Notification>;
     private _dnd = false;
     private _idCount = 0;
@@ -326,7 +326,7 @@ class NotificationsService extends Service {
             Gio.BusType.SESSION,
             'org.freedesktop.Notifications',
             Gio.BusNameOwnerFlags.NONE,
-            (connection: Gio.DBusConnection) => {
+            (connection: InstanceType<typeof Gio.DBusConnection>) => {
                 this._dbus = Gio.DBusExportedObject
                     .wrapJSObject(NotificationIFace as string, this);
 

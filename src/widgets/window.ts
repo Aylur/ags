@@ -6,13 +6,13 @@ import App from '../app.js';
 // @ts-expect-error - no types
 const { GtkLayerShell } = imports.gi;
 
-interface Params {
+export interface Params {
     anchor?: string[] | string
     exclusive?: boolean
     focusable?: boolean
     layer?: string
     margin?: number[] | number
-    monitor?: null | Gdk.Monitor | number
+    monitor?: null | InstanceType<typeof Gdk.Monitor> | number
     popup?: boolean
     visible?: null | boolean
 }
@@ -48,9 +48,9 @@ export default class AgsWindow extends Gtk.Window {
         this.visible = visible === true || visible === null && !popup;
     }
 
-    _monitor: Gdk.Monitor | null = null;
+    _monitor: InstanceType<typeof Gdk.Monitor> | null = null;
     get monitor() { return this._monitor; }
-    set monitor(monitor: number | null | Gdk.Monitor) {
+    set monitor(monitor: number | null | InstanceType<typeof Gdk.Monitor>) {
         if (monitor === null) {
             this._monitor = monitor;
             return;

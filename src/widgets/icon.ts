@@ -10,12 +10,12 @@ export default class AgsIcon extends Gtk.Image {
         GObject.registerClass({ GTypeName: 'AgsIcon' }, this);
     }
 
-    constructor(params: object | string | GdkPixbuf.Pixbuf) {
+    constructor(params: object | string | InstanceType<typeof GdkPixbuf.Pixbuf>) {
         const {
             icon = '',
             size = 0,
             ...rest
-        } = params as { icon: string | GdkPixbuf.Pixbuf, size: number };
+        } = params as { icon: string | InstanceType<typeof GdkPixbuf.Pixbuf>, size: number };
         super(typeof params === 'string' || params instanceof GdkPixbuf.Pixbuf ? {} : rest);
 
         this.size = size;
@@ -32,9 +32,9 @@ export default class AgsIcon extends Gtk.Image {
     }
 
     _type!: 'file' | 'named' | 'pixbuf';
-    _icon: string | GdkPixbuf.Pixbuf = '';
+    _icon: string | InstanceType<typeof GdkPixbuf.Pixbuf> = '';
     get icon() { return this._icon; }
-    set icon(icon: string | GdkPixbuf.Pixbuf) {
+    set icon(icon: string | InstanceType<typeof GdkPixbuf.Pixbuf>) {
         if (!icon || this._icon === icon)
             return;
 
@@ -72,7 +72,7 @@ export default class AgsIcon extends Gtk.Image {
         }
     }
 
-    vfunc_draw(cr: Cario.Context): boolean {
+    vfunc_draw(cr: InstanceType<typeof Cario.Context>): boolean {
         if (this._size > 1)
             return super.vfunc_draw(cr);
 
@@ -98,7 +98,7 @@ export default class AgsIcon extends Gtk.Image {
             case 'pixbuf':
                 // eslint-disable-next-line no-case-declarations
                 const pb_scaled =
-                    (this.icon as GdkPixbuf.Pixbuf).scale_simple(
+                    (this.icon as InstanceType<typeof GdkPixbuf.Pixbuf>).scale_simple(
                         size * this.scale_factor,
                         size * this.scale_factor,
                         GdkPixbuf.InterpType.BILINEAR);

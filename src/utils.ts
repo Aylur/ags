@@ -32,7 +32,7 @@ export function readFileAsync(path: string): Promise<string> {
     });
 }
 
-export function writeFile(string: string, path: string): Promise<Gio.File> {
+export function writeFile(string: string, path: string): Promise<InstanceType<typeof Gio.File>> {
     const file = Gio.File.new_for_path(path);
 
     return new Promise((resolve, reject) => {
@@ -70,7 +70,7 @@ export function loadInterfaceXML(iface: string) {
 
 
 export function bulkConnect(
-    service: GObject.Object,
+    service: InstanceType<typeof GObject.Object>,
     list: [
         event: string,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -84,15 +84,15 @@ export function bulkConnect(
     return ids;
 }
 
-export function bulkDisconnect(service: GObject.Object, ids: number[]) {
+export function bulkDisconnect(service: InstanceType<typeof GObject.Object>, ids: number[]) {
     for (const id of ids)
         service.disconnect(id);
 }
 
 export function connect(
-    service: GObject.Object,
-    widget: Gtk.Widget,
-    callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
+    service: InstanceType<typeof GObject.Object>,
+    widget: InstanceType<typeof Gtk.Widget>,
+    callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: unknown[]) => void,
     event = 'changed',
 ) {
     const bind = service.connect(
@@ -115,7 +115,7 @@ export function connect(
 export function interval(
     interval: number,
     callback: () => void,
-    bind?: Gtk.Widget,
+    bind?: InstanceType<typeof Gtk.Widget>,
 ) {
     callback();
     const id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, interval, () => {
@@ -214,10 +214,10 @@ export function subprocess(
     cmd: string | string[],
     callback: (out: string) => void,
     onError = logError,
-    bind?: Gtk.Widget,
+    bind?: InstanceType<typeof Gtk.Widget>,
 ) {
     try {
-        const read = (stdout: Gio.DataInputStream) => {
+        const read = (stdout: InstanceType<typeof Gio.DataInputStream>) => {
             stdout.read_line_async(GLib.PRIORITY_LOW, null, (stdout, res) => {
                 try {
                     const output = stdout?.read_line_finish_utf8(res)[0];

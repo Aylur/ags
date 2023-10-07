@@ -4,6 +4,15 @@ import { connect } from '../utils.js';
 
 type Ctor = new (...a: any[]) => object;
 
+// A few things here are inspired by gi.ts 
+// See https://gitlab.gnome.org/ewlsh/gi.ts/-/blob/master/packages/lib/src/generators/dts/gobject.ts
+// Copyright Evan Welsh
+
+export type GType<T = unknown> = {
+    __type__(arg: never): T
+    name: string
+};
+
 
 type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'boolean' | 'double';
 type PspecFlag = 'rw' | 'r' | 'w';
@@ -61,11 +70,11 @@ export default class Service extends GObject.Object {
         properties?: { [prop: string]: [type?: PspecType, handle?: PspecFlag] },
     ) {
         const Signals: {
-            [signal: string]: { param_types: GObject.GType<unknown>[] }
+            [signal: string]: { param_types: GType<unknown>[] }
         } = {};
 
         const Properties: {
-            [prop: string]: GObject.ParamSpec,
+            [prop: string]: InstanceType<typeof GObject.ParamSpec>,
         } = {};
 
         if (signals) {
@@ -86,8 +95,8 @@ export default class Service extends GObject.Object {
     }
 
     connectWidget(
-        widget: Gtk.Widget,
-        callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
+        widget: InstanceType<typeof Gtk.Widget>,
+        callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: unknown[]) => void,
         event = 'changed',
     ) {
         connect(this, widget, callback, event);
@@ -113,4 +122,3 @@ export default class Service extends GObject.Object {
         this.emit('changed');
     }
 }
-

@@ -4,3 +4,4 @@ build
 run.sh
 tmp
 result
+.direnv/

@@ -5,12 +5,12 @@ import { connect, interval } from '../utils.js';
 export type Command = string | ((...args: unknown[]) => boolean);
 
 type ConnectWidget = (
-    widget: Gtk.Widget,
-    callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
+    widget: InstanceType<typeof Gtk.Widget>,
+    callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: unknown[]) => void,
     event?: string
 ) => void
 
-interface Connectable extends GObject.Object {
+export interface Connectable extends InstanceType<typeof GObject.Object> {
     instance: { connectWidget: ConnectWidget }
     connectWidget: ConnectWidget
 }
@@ -32,7 +32,7 @@ export interface CommonParams {
         obj: Connectable,
         objProp?: string,
         transform?: (value: unknown) => unknown][],
-    setup?: (widget: Gtk.Widget) => void
+    setup?: (widget: InstanceType<typeof Gtk.Widget>) => void
 }
 
 function separateCommon<T extends CommonParams>({
@@ -45,7 +45,7 @@ function separateCommon<T extends CommonParams>({
     ];
 }
 
-function parseCommon(widget: Gtk.Widget, {
+function parseCommon(widget: InstanceType<typeof Gtk.Widget>, {
     className, style, css,
     halign, valign,
     connections = [], properties, binds, setup,
@@ -139,7 +139,7 @@ function parseCommon(widget: Gtk.Widget, {
 }
 
 export function constructor<
-    Output extends Gtk.Widget,
+    Output extends InstanceType<typeof Gtk.Widget>,
     Params extends CommonParams & ConstructorParameters<Class>[0],
     Class extends new (arg: Omit<Params, keyof CommonParams>) => Output | any,
 >(

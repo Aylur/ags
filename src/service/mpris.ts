@@ -335,7 +335,7 @@ class MprisService extends Service {
     }
 
     private _onNameOwnerChanged(
-        _proxy: Gio.DBusProxy,
+        _proxy: InstanceType<typeof Gio.DBusProxy>,
         _sender: string,
         [name, oldOwner, newOwner]: string[],
     ) {

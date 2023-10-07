@@ -3,7 +3,7 @@ import GObject from 'gi://GObject';
 import Service from './service.js';
 import { bulkConnect } from '../utils.js';
 
-const _INTERNET = (device: NM.Device) => {
+const _INTERNET = (device: InstanceType<typeof NM.Device>) => {
     switch (device?.active_connection?.state) {
         case NM.ActiveConnectionState.ACTIVATED: return 'connected';
         case NM.ActiveConnectionState.ACTIVATING: return 'connecting';
@@ -13,7 +13,7 @@ const _INTERNET = (device: NM.Device) => {
     }
 };
 
-const _DEVICE_STATE = (device: NM.Device) => {
+const _DEVICE_STATE = (device: InstanceType<typeof NM.Device>) => {
     switch (device?.state) {
         case NM.DeviceState.UNMANAGED: return 'unmanaged';
         case NM.DeviceState.UNAVAILABLE: return 'unavailable';
@@ -31,7 +31,7 @@ const _DEVICE_STATE = (device: NM.Device) => {
     }
 };
 
-const _CONNECTIVITY_STATE = (client: NM.Client) => {
+const _CONNECTIVITY_STATE = (client: InstanceType<typeof NM.Client>) => {
     switch (client.connectivity) {
         case NM.ConnectivityState.NONE: return 'none';
         case NM.ConnectivityState.PORTAL: return 'portal';
@@ -70,12 +70,12 @@ class Wifi extends Service {
         });
     }
 
-    private _client: NM.Client;
-    private _device: NM.DeviceWifi;
-    private _ap!: NM.AccessPoint;
+    private _client: InstanceType<typeof NM.Client>;
+    private _device: InstanceType<typeof NM.DeviceWifi>;
+    private _ap!: InstanceType<typeof NM.AccessPoint>;
     private _apBind!: number;
 
-    constructor(client: NM.Client, device: NM.DeviceWifi) {
+    constructor(client: InstanceType<typeof NM.Client>, device: InstanceType<typeof NM.DeviceWifi>) {
         super();
         this._client = client;
         this._device = device;
@@ -182,9 +182,9 @@ class Wired extends Service {
         });
     }
 
-    private _device: NM.DeviceEthernet;
+    private _device: InstanceType<typeof NM.DeviceEthernet>;
 
-    constructor(device: NM.DeviceEthernet) {
+    constructor(device: InstanceType<typeof NM.DeviceEthernet>) {
         super();
         this._device = device;
 
@@ -223,7 +223,7 @@ class NetworkService extends Service {
         });
     }
 
-    private _client!: NM.Client;
+    private _client!: InstanceType<typeof NM.Client>;
 
     wifi!: Wifi;
     wired!: Wired;
@@ -247,14 +247,14 @@ class NetworkService extends Service {
         this._client.wireless_enabled = !this._client.wireless_enabled;
     }
 
-    private _getDevice(devType: NM.DeviceType) {
+    private _getDevice(devType: typeof NM.DeviceType[keyof typeof NM.DeviceType]) {
         return this._client
             .get_devices()
             .find(device => device.get_device_type() === devType);
     }
 
     private _clientReady() {
-        bulkConnect(this._client as unknown as GObject.Object, [
+        bulkConnect(this._client, [
             ['notify::wireless-enabled', this._sync.bind(this)],
             ['notify::connectivity', this._sync.bind(this)],
             ['notify::primary-connection', this._sync.bind(this)],
@@ -262,10 +262,10 @@ class NetworkService extends Service {
         ]);
 
         this.wifi = new Wifi(this._client,
-            this._getDevice(NM.DeviceType.WIFI) as NM.DeviceWifi);
+            this._getDevice(NM.DeviceType.WIFI) as InstanceType<typeof NM.DeviceWifi>);
 
         this.wired = new Wired(
-            this._getDevice(NM.DeviceType.ETHERNET) as NM.DeviceEthernet);
+            this._getDevice(NM.DeviceType.ETHERNET) as InstanceType<typeof NM.DeviceEthernet>);
 
         this.wifi.connect('changed', this._sync.bind(this));
         this.wired.connect('changed', this._sync.bind(this));

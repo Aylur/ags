@@ -138,7 +138,7 @@ class HyprlandService extends Service {
             this._active.connect(`notify::${active}`, () => this.changed('active')));
     }
 
-    private _watchSocket(stream: Gio.DataInputStream) {
+    private _watchSocket(stream: InstanceType<typeof Gio.DataInputStream>) {
         stream.read_line_async(0, null, (stream, result) => {
             if (!stream) {
                 console.error('Error reading Hyprland socket');

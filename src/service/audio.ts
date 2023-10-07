@@ -25,11 +25,11 @@ class Stream extends Service {
         });
     }
 
-    private _stream: Gvc.MixerStream;
+    private _stream: InstanceType<typeof Gvc.MixerStream>;
     private _ids: number[];
     private _oldVolume = 0;
 
-    constructor(stream: Gvc.MixerStream) {
+    constructor(stream: InstanceType<typeof Gvc.MixerStream>) {
         super();
 
         this._stream = stream;
@@ -81,7 +81,7 @@ class Stream extends Service {
     }
 
     close() {
-        bulkDisconnect((this._stream as unknown) as GObject.Object, this._ids);
+        bulkDisconnect((this._stream as unknown) as InstanceType<typeof GObject.Object>, this._ids);
         this.emit('closed');
     }
 }
@@ -102,7 +102,7 @@ class AudioService extends Service {
         });
     }
 
-    private _control: Gvc.MixerControl;
+    private _control: InstanceType<typeof Gvc.MixerControl>;
     private _streams: Map<number, Stream>;
     private _streamBindings: Map<number, number>;
     private _speaker!: Stream;
@@ -120,7 +120,7 @@ class AudioService extends Service {
         this._streams = new Map();
         this._streamBindings = new Map();
 
-        bulkConnect((this._control as unknown) as GObject.Object, [
+        bulkConnect((this._control as unknown) as InstanceType<typeof GObject.Object>, [
             ['default-sink-changed', (_c, id: number) => this._defaultChanged(id, 'speaker')],
             ['default-source-changed', (_c, id: number) => this._defaultChanged(id, 'microphone')],
             ['stream-added', this._streamAdded.bind(this)],
@@ -164,7 +164,7 @@ class AudioService extends Service {
         this.emit(`${type}-changed`);
     }
 
-    private _streamAdded(_c: Gvc.MixerControl, id: number) {
+    private _streamAdded(_c: InstanceType<typeof Gvc.MixerControl>, id: number) {
         if (this._streams.has(id))
             return;
 
@@ -188,7 +188,7 @@ class AudioService extends Service {
         this.emit('changed');
     }
 
-    private _streamRemoved(_c: Gvc.MixerControl, id: number) {
+    private _streamRemoved(_c: InstanceType<typeof Gvc.MixerControl>, id: number) {
         const stream = this._streams.get(id);
         if (!stream)
             return;
@@ -212,7 +212,7 @@ class AudioService extends Service {
         this.emit('changed');
     }
 
-    private _getStreams(filter: { new(): Gvc.MixerStream }) {
+    private _getStreams(filter: { new(): InstanceType<typeof Gvc.MixerStream> }) {
         const list = [];
         for (const [, stream] of this._streams) {
             if (stream.stream instanceof filter)

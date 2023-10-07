@@ -10,12 +10,35 @@
       "aarch64-linux"
       "x86_64-linux"
     ];
-    pkgs = genSystems (system: import nixpkgs {inherit system;});
-  in {
+    pkgs = genSystems (system: import nixpkgs {
+      inherit system;
+    });
+  in rec {
     packages = genSystems (system: {
       default = pkgs.${system}.callPackage ./nix {};
     });
 
     homeManagerModules.default = import ./nix/hm-module.nix self;
+
+    devShell = genSystems (system: pkgs.${system}.mkShell {
+      nativeBuildInputs = with pkgs.${system}; [
+        # typegen
+        gobject-introspection.dev
+        gtk3.dev
+        gnome.gnome-bluetooth.dev
+        libdbusmenu-gtk3
+        networkmanager.dev
+      ];
+
+      packages = with pkgs.${system}; [
+        # nodeJS
+        nodejs
+        nodePackages.npm
+
+        # Nix
+        alejandra
+        nil
+      ];
+    });
   };
 }

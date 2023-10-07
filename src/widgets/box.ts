@@ -13,7 +13,7 @@ export default class AgsBox extends Gtk.Box {
         }, this);
     }
 
-    constructor({ children, ...rest }: { children?: Gtk.Widget[] | null }) {
+    constructor({ children, ...rest }: { children?: InstanceType<typeof Gtk.Widget>[] | null }) {
         super(rest);
 
         if (children)
@@ -21,7 +21,7 @@ export default class AgsBox extends Gtk.Box {
     }
 
     get children() { return this.get_children(); }
-    set children(children: Gtk.Widget[] | null) {
+    set children(children: InstanceType<typeof Gtk.Widget>[] | null) {
         const newChildren = children || [];
 
         this.get_children()

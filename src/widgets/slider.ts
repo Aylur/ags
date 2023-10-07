@@ -90,27 +90,27 @@ export default class AgsSlider extends Gtk.Scale {
             ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
     }
 
-    vfunc_button_release_event(event: Gdk.EventButton): boolean {
+    vfunc_button_release_event(event: InstanceType<typeof Gdk.EventButton>): boolean {
         this.dragging = false;
         return super.vfunc_button_release_event(event);
     }
 
-    vfunc_button_press_event(event: Gdk.EventButton): boolean {
+    vfunc_button_press_event(event: InstanceType<typeof Gdk.EventButton>): boolean {
         this.dragging = true;
         return super.vfunc_button_press_event(event);
     }
 
-    vfunc_key_press_event(event: Gdk.EventKey): boolean {
+    vfunc_key_press_event(event: InstanceType<typeof Gdk.EventKey>): boolean {
         this.dragging = true;
         return super.vfunc_key_press_event(event);
     }
 
-    vfunc_key_release_event(event: Gdk.EventKey): boolean {
+    vfunc_key_release_event(event: InstanceType<typeof Gdk.EventKey>): boolean {
         this.dragging = false;
         return super.vfunc_key_release_event(event);
     }
 
-    vfunc_scroll_event(event: Gdk.EventScroll): boolean {
+    vfunc_scroll_event(event: InstanceType<typeof Gdk.EventScroll>): boolean {
         this.dragging = true;
         event.delta_y > 0
             ? this.adjustment.value -= this.step

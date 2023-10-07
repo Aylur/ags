@@ -4,6 +4,7 @@ import Gdk from 'gi://Gdk?version=3.0';
 import Gtk from 'gi://Gtk?version=3.0';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import DbusmenuGtk3 from 'gi://DbusmenuGtk3';
+import type DbusmenuGtk3Types from 'types/gtk-types/dbusmenugtk3-0.4.js';
 import Service from './service.js';
 import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
@@ -36,8 +37,8 @@ export class TrayItem extends Service {
     private _proxy: StatusNotifierItemProxy;
     private _busName: string;
 
-    private _iconTheme?: Gtk.IconTheme;
-    menu?: DbusmenuGtk3.Menu;
+    private _iconTheme?: InstanceType<typeof Gtk.IconTheme>;
+    menu?: InstanceType<typeof DbusmenuGtk3.Menu>;
 
     constructor(busName: string, objectPath: string) {
         super();
@@ -53,15 +54,15 @@ export class TrayItem extends Service {
             Gio.DBusProxyFlags.NONE);
     }
 
-    activate(event: Gdk.Event) {
+    activate(event: InstanceType<typeof Gdk.Event>) {
         this._proxy.ActivateAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
     }
 
-    secondaryActivate(event: Gdk.Event) {
+    secondaryActivate(event: InstanceType<typeof Gdk.Event>) {
         this._proxy.SecondaryActivateAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
     }
 
-    scroll(event: Gdk.EventScroll) {
+    scroll(event: InstanceType<typeof Gdk.EventScroll>) {
         const direction = (event.direction == 0 || event.direction == 1)
             ? 'vertical' : 'horizontal';
 
@@ -71,9 +72,9 @@ export class TrayItem extends Service {
         this._proxy.ScrollAsync(delta, direction);
     }
 
-    openMenu(event: Gdk.Event) {
-        this.menu // DbusmenuGtk3 imports the gdk type from @girs
-            ? (this.menu as unknown as Gtk.Menu).popup_at_pointer(event)
+    openMenu(event: InstanceType<typeof Gdk.Event>) {
+        this.menu
+            ? this.menu.popup_at_pointer(event)
             : this._proxy.ContextMenuAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
     }
 
@@ -118,8 +119,9 @@ export class TrayItem extends Service {
     private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
         if (proxy.Menu) {
             const menu = Widget<
-                Gtk.Widget, 
-                CommonParams & DbusmenuGtk3.Menu.ConstructorProperties,
+                InstanceType<typeof Gtk.Widget>,
+                // quick hack around the weirdness of direct types
+                CommonParams & DbusmenuGtk3Types.Menu.ConstructorProperties,
                 typeof DbusmenuGtk3.Menu
             >({
                 type: DbusmenuGtk3.Menu,
@@ -173,7 +175,7 @@ export class TrayItem extends Service {
                 const variant = proxy?.call_finish(result);
                 if (!variant)
                     return;
-                const [properties] = variant.deepUnpack<Record<string, GLib.Variant>[]>();
+                const [properties] = variant.deepUnpack<Record<string, InstanceType<typeof GLib.Variant>>[]>();
                 Object.entries(properties).map(([propertyName, value]) => {
                     this._proxy.set_cached_property(propertyName, value);
                 });
@@ -221,7 +223,7 @@ class SystemTrayService extends Service {
         });
     }
 
-    private _dbus!: Gio.DBusExportedObject;
+    private _dbus!: InstanceType<typeof Gio.DBusExportedObject>;
     private _items: Map<string, TrayItem>;
 
     get IsStatusNotifierHostRegistered() { return true; }
@@ -242,7 +244,7 @@ class SystemTrayService extends Service {
             Gio.BusType.SESSION,
             'org.kde.StatusNotifierWatcher',
             Gio.BusNameOwnerFlags.NONE,
-            (connection: Gio.DBusConnection) => {
+            (connection: InstanceType<typeof Gio.DBusConnection>) => {
                 this._dbus = Gio.DBusExportedObject
                     .wrapJSObject(StatusNotifierWatcherIFace as string, this);
 
@@ -255,7 +257,7 @@ class SystemTrayService extends Service {
         );
     }
 
-    RegisterStatusNotifierItemAsync(serviceName: string[], invocation: Gio.DBusMethodInvocation) {
+    RegisterStatusNotifierItemAsync(serviceName: string[], invocation: InstanceType<typeof Gio.DBusMethodInvocation>) {
         let busName: string, objectPath: string;
         const [service] = serviceName;
         if (service.startsWith('/')) {
@@ -304,4 +306,3 @@ export default class SystemTray {
     static get items() { return SystemTray.instance.items; }
     static getItem(name: string) { return SystemTray.instance.getItem(name); }
 }
-

@@ -21,7 +21,7 @@ class Application extends Service {
         });
     }
 
-    _app: Gio.DesktopAppInfo;
+    _app: InstanceType<typeof Gio.DesktopAppInfo>;
     _frequency: number;
 
     get app() { return this._app; }
@@ -33,7 +33,7 @@ class Application extends Service {
     get executable() { return this._app.get_executable(); }
     get icon_name() { return this._app.get_string('Icon'); }
 
-    constructor(app: Gio.DesktopAppInfo, frequency: number) {
+    constructor(app: InstanceType<typeof Gio.DesktopAppInfo>, frequency: number) {
         super();
         this._app = app;
         this._frequency = frequency;

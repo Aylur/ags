@@ -1,7 +1,7 @@
 import Gtk from 'gi://Gtk?version=3.0';
 
 function toggleClassName(
-    widget: Gtk.Widget,
+    widget: InstanceType<typeof Gtk.Widget>,
     className: string,
     condition = true,
 ) {
@@ -36,8 +36,8 @@ Object.defineProperty(Gtk.Widget.prototype, 'className', {
     },
 });
 
-const widgetProviders: Map<Gtk.Widget, Gtk.CssProvider> = new Map();
-function setCss(widget: Gtk.Widget, css: string) {
+const widgetProviders: Map<InstanceType<typeof Gtk.Widget>, InstanceType<typeof Gtk.CssProvider>> = new Map();
+function setCss(widget: InstanceType<typeof Gtk.Widget>, css: string) {
     const previous = widgetProviders.get(widget);
     if (previous)
         widget.get_style_context().remove_provider(previous);
@@ -98,7 +98,7 @@ Object.defineProperty(Gtk.Bin.prototype, 'child', {
     get: function() {
         return this.get_child();
     },
-    set: function(child: Gtk.Widget | null) {
+    set: function(child: InstanceType<typeof Gtk.Widget> | null) {
         const widget = this.get_child();
         if (widget === child)
             return;

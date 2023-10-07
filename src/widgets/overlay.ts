@@ -28,7 +28,7 @@ export default class AgsOverlay extends Gtk.Overlay {
         return this.get_children().filter(ch => ch === this.child);
     }
 
-    set overlays(overlays: Gtk.Widget[]) {
+    set overlays(overlays: InstanceType<typeof Gtk.Widget>[]) {
         this.get_children()
             .filter(ch => ch !== this.child && !overlays.includes(ch))
             .forEach(ch => ch.destroy());

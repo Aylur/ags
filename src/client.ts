@@ -26,7 +26,7 @@ class Client extends Gtk.Application {
     static { GObject.registerClass(this); }
 
     private _objectPath: string;
-    private _dbus!: Gio.DBusExportedObject;
+    private _dbus!: InstanceType<typeof Gio.DBusExportedObject>;
     private _proxy: AgsProxy;
     private _promiseJs: string;
 
@@ -46,7 +46,7 @@ class Client extends Gtk.Application {
             Gio.BusType.SESSION,
             this.get_application_id(),
             Gio.BusNameOwnerFlags.NONE,
-            (connection: Gio.DBusConnection) => {
+            (connection: InstanceType<typeof Gio.DBusConnection>) => {
                 this._dbus = Gio.DBusExportedObject
                     .wrapJSObject(ClientIFace(this.get_application_id()!) as string, this);
 

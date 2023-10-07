@@ -4,32 +4,18 @@
         "module": "es2022",
         "lib": [
             "ES2017",
-            "DOM",
-            "DOM.Iterable",
         ],
         "allowJs": true,
         "checkJs": false,
         "outDir": "_build/tsc-out",
-        "esModuleInterop": true,
         "strict": true,
-        "moduleResolution": "bundler",
+        "moduleResolution": "Bundler",
         "declaration": true,
         "baseUrl": ".",
-        "types": [
-            "@girs/gjs",
-            "@girs/gtk-3.0",
-            "@girs/cairo-1.0",
-            "@girs/gnomebluetooth-1.0",
-            "@girs/dbusmenugtk3-0.4",
-            "@girs/nm-1.0",
-            "@girs/gvc-1.0",
-            "@types/node"
-        ],
         "forceConsistentCasingInFileNames": true
     },
     "include": [
-        "genTypes.ts",
-        "src/*",
-        "src/*/*"
+        "types/gtk-types/*.ts",
+        "src/**/*",
     ]
 }

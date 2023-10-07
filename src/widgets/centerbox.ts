@@ -26,7 +26,7 @@ export default class AgsCenterBox extends AgsBox {
         }, this);
     }
 
-    set children(children: Gtk.Widget[] | null) {
+    set children(children: InstanceType<typeof Gtk.Widget>[] | null) {
         const newChildren = children || [];
 
         newChildren.filter(ch => !newChildren?.includes(ch))
@@ -47,7 +47,7 @@ export default class AgsCenterBox extends AgsBox {
 
     // @ts-expect-error
     get start_widget() { return this._startWidget || null; }
-    set start_widget(child: Gtk.Widget | null) {
+    set start_widget(child: InstanceType<typeof Gtk.Widget> | null) {
         if (this.start_widget)
             this.start_widget.destroy();
 
@@ -63,7 +63,7 @@ export default class AgsCenterBox extends AgsBox {
 
     // @ts-expect-error
     get end_widget() { return this._endWidget || null; }
-    set end_widget(child: Gtk.Widget | null) {
+    set end_widget(child: InstanceType<typeof Gtk.Widget> | null) {
         if (this.end_widget)
             this.end_widget.destroy();
 
@@ -78,7 +78,7 @@ export default class AgsCenterBox extends AgsBox {
     }
 
     get center_widget() { return this.get_center_widget(); }
-    set center_widget(child: Gtk.Widget | null) {
+    set center_widget(child: InstanceType<typeof Gtk.Widget> | null) {
         const center_widget = this.get_center_widget();
         if (!child && center_widget) {
             center_widget.destroy();

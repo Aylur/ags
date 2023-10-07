@@ -23,7 +23,7 @@ export default class AgsStack extends Gtk.Stack {
         }, this);
     }
 
-    add_named(child: Gtk.Widget, name: string): void {
+    add_named(child: InstanceType<typeof Gtk.Widget>, name: string): void {
         this.items.push([name, child]);
         super.add_named(child, name);
     }
@@ -38,7 +38,7 @@ export default class AgsStack extends Gtk.Stack {
         return this._items;
     }
 
-    set items(items: [string, Gtk.Widget][]) {
+    set items(items: [string, InstanceType<typeof Gtk.Widget>][]) {
         this.items
             .filter(([name]) => !items.find(([n]) => n === name))
             .forEach(([, ch]) => ch.destroy());
