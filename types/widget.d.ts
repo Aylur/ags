@@ -59,7 +59,7 @@ export declare const Icon: (args: CommonParams & (string | object | import("../t
 export declare const Label: (args: CommonParams & (string | import("./widgets/label.js").Params)) => AgsLabel;
 export declare const Menu: (args: CommonParams & import("./widgets/menu.js").Params) => AgsMenu;
 export declare const MenuItem: (args: CommonParams & {
-    [key: string]: any;
+    [key: string]: import("./widgets/constructor.js").Command;
 }) => AgsMenuItem;
 export declare const Overlay: (args: never) => AgsOverlay;
 export declare const ProgressBar: (args: never) => AgsProgressBar;

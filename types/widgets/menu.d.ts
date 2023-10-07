@@ -17,6 +17,6 @@ export declare class AgsMenuItem extends Gtk.MenuItem {
     onSelect: Command;
     onDeselect: Command;
     constructor({ onActivate, onSelect, onDeselect, ...rest }: {
-        [key: string]: any;
+        [key: string]: Command;
     });
 }

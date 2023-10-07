@@ -22,7 +22,7 @@ export default class AgsLabel extends Gtk.Label {
         }, this);
     }
 
-    constructor(params: object | string) {
+    constructor(params: Params | string) {
         super(typeof params === 'string' ? { label: params } : params);
     }
 
