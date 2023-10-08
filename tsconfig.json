@@ -16,6 +16,9 @@
     },
     "include": [
         "types/gtk-types/*.ts",
-        "src/**/*",
+        "src/**/*"
+    ],
+    "exclude": [
+        "types/gtk-types/dom.d.ts"
     ]
 }

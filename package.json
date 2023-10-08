@@ -10,6 +10,7 @@
     "license": "GPL",
     "devDependencies": {
         "@ts-for-gir/cli": "^3.2.2",
+        "@types/node": "^20.8.3",
         "@typescript-eslint/eslint-plugin": "^5.33.0",
         "@typescript-eslint/parser": "^5.33.0",
         "dts-buddy": "^0.2.5",

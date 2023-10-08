@@ -1,5 +1,5 @@
-import { readdir, writeFile, mkdir } from 'fs/promises';
-import { dirname, basename, join } from 'path';
+import { readdir, writeFile, lstat, readFile } from 'fs/promises';
+import { join } from 'path';
 import { exec as _exec } from 'child_process';
 import { promisify } from 'util';
 import { ModuleLoader, GenerationHandler } from "@ts-for-gir/cli"
@@ -10,8 +10,7 @@ const exec = promisify(_exec);
 
 const libraries = [
     "Gtk-3.0",
-    "Gdk-3.0",
-    "Cairo-1.0",
+    "Gdk-3.0", "Cairo-1.0",
     "GnomeBluetooth-3.0",
     "DbusmenuGtk3-0.4",
     "GObject-2.0",
@@ -86,13 +85,64 @@ await gtkTypeGen.start(girModules, girModulesGrouped);
 
 // generate types for ags
 
-const { stdout, stderr } = await exec('npx tsc --emitDeclarationOnly --declarationDir types');
+const { stdout, stderr } = await exec('npx tsc --emitDeclarationOnly --declarationDir types --skipLibCheck --noEmit false');
 
 if (stderr) {
     console.error(stderr);
 }
 
 console.log(stdout);
+
+// transform the files to add the correct imports
+
+/** finds the relative path of the gtk-types directory. Takes in the current dir as an input (may be the file itself) */
+const findGtkTypesPath = async (currentDir: string, outputDir: string = ""): Promise<string> => {
+	// make sure we aren't a file
+	if (await lstat(currentDir).then(stat => stat.isFile())) {
+		return await findGtkTypesPath(join(currentDir, '..'), outputDir);
+	}
+
+	// check if there is a gtk-types directory
+	if (await lstat(join(currentDir, 'gtk-types')).then(stat => stat.isDirectory()).catch(() => false)) {
+		if (outputDir === "") {
+			return "./gtk-types";
+		}
+		return join(outputDir, 'gtk-types');
+	}
+
+	// otherwise, recurse
+	return await findGtkTypesPath(join(currentDir, '..'), join(outputDir, '..'));
+}
+
+const bundleFileImports = async (currentDir: string) => {
+	const pathToGtkTypes = await findGtkTypesPath(currentDir);
+	return libraries.map(lib => `import "${pathToGtkTypes}/${lib.toLowerCase()}-ambient";`).join('\n')
+}
+
+async function recursivelyUpdateDtsFiles(dir: string) {
+	const dirFiles = await readdir(dir);
+	for (const fileWithoutDir of dirFiles) {
+		const file = join(dir, fileWithoutDir);
+
+		if (file === "types/gtk-types") {
+			continue;
+		}
+
+		if (file === "ags.d.ts") {
+			continue;
+		}
+
+		if (await lstat(file).then(stat => stat.isDirectory())) {
+			await recursivelyUpdateDtsFiles(file);
+		} else if (file.endsWith('.d.ts')) {
+			const fileContent = await readFile(file, 'utf-8');
+			const newFileContent = `${await bundleFileImports(file)}\n${fileContent}`;
+			await writeFile(file, newFileContent);
+		}
+	}
+}
+
+await recursivelyUpdateDtsFiles('./types');
 
 /**
  * Creates a path that dts-buddy can type
@@ -114,7 +164,6 @@ const files = [
     'widget',
 ];
 
-
 const removeFileExtension = (file: string) => file.replace(/\.[^/.]+$/, '');
 const services =
 	(await readdir('./src/service'))
@@ -125,25 +174,15 @@ const modules: string[] = [...services, ...files];
 
 const entries = modules.map(service => ({
     filePath: filePath(service).replace('.ts', ''),
-    servicePath: service,
     importPath: importPath(service),
-    fileName: basename(service).replace('.ts', ''),
-    // convert file path to camel case
-    moduleName: service.split('/').map((part, i) => i === 0 ? part : part[0].toUpperCase() + part.slice(1)).join(''),
 }));
 
-let bundleFileImports = libraries.map(lib => `/// <reference path="./gtk-types/${lib.toLowerCase()}-ambient.d.ts">`).join('\n')
-let bundleFileDeclarations = "";
 
-for (let i = 0; i < entries.length; i++) {
-    const entry = entries[i];
-
-    bundleFileDeclarations += `
+let bundleFileDeclarations = entries.map(entry => `
 declare module '${entry.importPath}' {
     const exports: typeof import('${entry.filePath.replace("/src", "")}')
     export = exports
 }
-    `
-}
+`).join('\n');
 
-await writeFile('./types/ags.d.ts', `${bundleFileImports}\n${bundleFileDeclarations}`);
+await writeFile('./types/ags.d.ts', `${await bundleFileImports('./types')}\n${bundleFileDeclarations}`);

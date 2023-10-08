@@ -1,3 +1,11 @@
+import "../gtk-types/gtk-3.0-ambient";
+import "../gtk-types/gdk-3.0-ambient";
+import "../gtk-types/cairo-1.0-ambient";
+import "../gtk-types/gnomebluetooth-3.0-ambient";
+import "../gtk-types/dbusmenugtk3-0.4-ambient";
+import "../gtk-types/gobject-2.0-ambient";
+import "../gtk-types/nm-1.0-ambient";
+import "../gtk-types/gvc-1.0-ambient";
 import NM from 'gi://NM';
 import Service from './service.js';
 declare class Wifi extends Service {
@@ -20,17 +28,17 @@ declare class Wifi extends Service {
     get enabled(): boolean;
     set enabled(v: boolean);
     get strength(): number;
-    get internet(): "disconnected" | "connecting" | "connected";
+    get internet(): "connecting" | "connected" | "disconnected";
     get ssid(): string | null;
-    get state(): "disconnected" | "prepare" | "config" | "failed" | "unmanaged" | "unavailable" | "need_auth" | "ip_config" | "ip_check" | "secondaries" | "activated" | "deactivating" | "unknown";
+    get state(): "failed" | "disconnected" | "unmanaged" | "unavailable" | "prepare" | "config" | "need_auth" | "ip_config" | "ip_check" | "secondaries" | "activated" | "deactivating" | "unknown";
     get icon_name(): string;
 }
 declare class Wired extends Service {
     private _device;
     constructor(device: InstanceType<typeof NM.DeviceEthernet>);
     get speed(): number;
-    get internet(): "disconnected" | "connecting" | "connected";
-    get state(): "disconnected" | "prepare" | "config" | "failed" | "unmanaged" | "unavailable" | "need_auth" | "ip_config" | "ip_check" | "secondaries" | "activated" | "deactivating" | "unknown";
+    get internet(): "connecting" | "connected" | "disconnected";
+    get state(): "failed" | "disconnected" | "unmanaged" | "unavailable" | "prepare" | "config" | "need_auth" | "ip_config" | "ip_check" | "secondaries" | "activated" | "deactivating" | "unknown";
     get icon_name(): "network-wired-acquiring-symbolic" | "network-wired-symbolic" | "network-wired-no-route-symbolic" | "network-wired-disconnected-symbolic";
 }
 declare class NetworkService extends Service {
