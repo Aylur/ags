@@ -108,7 +108,7 @@ export const Notification = n => Widget.EventBox({
             }),
             Widget.Box({
                 className: 'actions',
-                children: n.actions.map(({ id, label }) => Button({
+                children: n.actions.map(({ id, label }) => Widget.Button({
                     className: 'action-button',
                     onClicked: () => n.invoke(id),
                     hexpand: true,
