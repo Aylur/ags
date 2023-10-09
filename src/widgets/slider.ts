@@ -21,6 +21,9 @@ export default class AgsSlider extends Gtk.Scale {
                 'dragging': Service.pspec('dragging', 'boolean', 'r'),
                 'vertical': Service.pspec('vertical', 'boolean', 'rw'),
                 'value': Service.pspec('value', 'double', 'rw'),
+                'min': Service.pspec('min', 'double', 'rw'),
+                'max': Service.pspec('max', 'double', 'rw'),
+                'step': Service.pspec('step', 'double', 'rw'),
             },
         }, this);
     }
