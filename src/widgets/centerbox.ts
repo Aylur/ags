@@ -32,9 +32,6 @@ export default class AgsCenterBox extends AgsBox {
         newChildren.filter(ch => !newChildren?.includes(ch))
             .forEach(ch => ch.destroy());
 
-        if (!children)
-            return;
-
         if (children[0])
             this.start_widget = children[0];
 

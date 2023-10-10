@@ -26,7 +26,7 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
     // @ts-expect-error
     get hscroll() { return this._hscroll; }
     set hscroll(hscroll: string) {
-        if (!hscroll)
+        if (!hscroll || this.hscroll === hscroll)
             return;
 
         if (!policy.includes(hscroll)) {
@@ -43,7 +43,7 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
     // @ts-expect-error
     get vscroll() { return this._vscroll; }
     set vscroll(vscroll: string) {
-        if (!vscroll)
+        if (!vscroll || this.vscroll === vscroll)
             return;
 
         if (!policy.includes(vscroll)) {

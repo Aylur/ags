@@ -45,7 +45,7 @@ export default class AgsLabel extends Gtk.Label {
 
     get truncate() { return truncates[this.ellipsize]; }
     set truncate(truncate: string) {
-        if (!truncate)
+        if (this.truncate === truncate)
             return;
 
         if (!truncate.includes(truncate)) {
@@ -59,7 +59,7 @@ export default class AgsLabel extends Gtk.Label {
 
     get justification() { return justifications[this.justify]; }
     set justification(justify: string) {
-        if (!justify)
+        if (this.justification === justify)
             return;
 
         if (!justifications.includes(justify)) {

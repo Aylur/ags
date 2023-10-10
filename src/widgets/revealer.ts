@@ -20,7 +20,7 @@ export default class AgsRevealer extends Gtk.Revealer {
 
     get transition() { return transitions[this.transition_type]; }
     set transition(transition: string) {
-        if (!transition)
+        if (!transition || this.transition === transition)
             return;
 
         if (!transitions.includes(transition)) {

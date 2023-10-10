@@ -20,6 +20,9 @@ export default class AgsOverlay extends Gtk.Overlay {
     }
 
     set pass_through(passthrough: boolean) {
+        if (this.pass_through === passthrough)
+            return;
+
         this.get_children().forEach(ch =>
             this.set_overlay_pass_through(ch, passthrough));
 

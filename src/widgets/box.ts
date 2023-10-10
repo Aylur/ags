@@ -42,7 +42,10 @@ export default class AgsBox extends Gtk.Box {
     }
 
     get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
-    set vertical(vertical) {
+    set vertical(vertical: boolean) {
+        if (this.vertical === vertical)
+            return;
+
         this.orientation = vertical
             ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
 
