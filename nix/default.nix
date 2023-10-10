@@ -18,6 +18,7 @@
 , glib-networking
 , networkmanager
 , libdbusmenu-gtk3
+, libsoup_3
 , gvfs
 }:
 
@@ -78,6 +79,7 @@ stdenv.mkDerivation {
     glib-networking
     networkmanager
     libdbusmenu-gtk3
+    libsoup_3
     gvfs
   ];
 
