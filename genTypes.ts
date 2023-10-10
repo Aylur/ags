@@ -187,4 +187,4 @@ declare module '${entry.importPath}' {
 }
 `).join('\n');
 
-await writeFile('./types/ags.d.ts', `${await bundleFileImports('./types')}\n${bundleFileDeclarations}`);
+await writeFile('./types/ags.d.ts', bundleFileDeclarations);
