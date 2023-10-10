@@ -92,6 +92,10 @@ export default class AgsSlider extends Gtk.Scale {
 
     get step() { return this.adjustment.step_increment; }
     set step(step: number) {
+        if (this.step === step)
+            return;
+
+        this.adjustment.stepIncrement = step;
         this.notify('step');
     }
 
