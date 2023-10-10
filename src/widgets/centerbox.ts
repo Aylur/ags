@@ -32,14 +32,14 @@ export default class AgsCenterBox extends AgsBox {
         newChildren.filter(ch => !newChildren?.includes(ch))
             .forEach(ch => ch.destroy());
 
-        if (children[0])
-            this.start_widget = children[0];
+        if (newChildren[0])
+            this.start_widget = newChildren[0];
 
-        if (children[1])
-            this.center_widget = children[1];
+        if (newChildren[1])
+            this.center_widget = newChildren[1];
 
-        if (children[2])
-            this.end_widget = children[2];
+        if (newChildren[2])
+            this.end_widget = newChildren[2];
     }
 
     // @ts-expect-error

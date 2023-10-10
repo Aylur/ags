@@ -21,7 +21,7 @@ export default class AgsCircularProgress extends Gtk.Bin {
     get rounded(): boolean;
     set rounded(r: boolean);
     get inverted(): boolean;
-    set inverted(c: boolean);
+    set inverted(inverted: boolean);
     get start_at(): number;
     set start_at(value: number);
     get value(): number;

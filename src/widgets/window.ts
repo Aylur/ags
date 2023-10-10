@@ -68,10 +68,13 @@ export default class AgsWindow extends Gtk.Window {
     _monitor: InstanceType<typeof Gdk.Monitor> | null = null;
     get monitor() { return this._monitor; }
     set monitor(monitor: number | null | InstanceType<typeof Gdk.Monitor>) {
-        if (monitor < 0 || this.monitor === monitor)
+	if(!monitor) return
+
+        if ((typeof monitor === 'number' && monitor < 0) || this.monitor === monitor)
             return;
 
-        const m = Gdk.Display.get_default()?.get_monitor(monitor);
+        const m = typeof monitor === 'number' ? Gdk.Display.get_default()?.get_monitor(monitor) : monitor;
+
         if (m) {
             LayerShell.set_monitor(this, m);
             // @ts-expect-error
@@ -96,7 +99,7 @@ export default class AgsWindow extends Gtk.Window {
     }
 
     get layer() { return layers[LayerShell.get_layer(this)]; }
-    set layer(layer: string) {
+    set layer(layer: typeof layers[number]) {
         if (this.layer === layer)
             return;
 
@@ -110,7 +113,7 @@ export default class AgsWindow extends Gtk.Window {
     }
 
     get anchor() { return anchors.filter((_, i) => LayerShell.get_anchor(this, i)); }
-    set anchor(anchor: string[]) {
+    set anchor(anchor: typeof anchors[number][]) {
         if (this.anchor.length === anchor.length &&
             this.anchor.every(a => anchor.includes(a)))
             return;
