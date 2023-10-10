@@ -72,7 +72,8 @@ export function bulkConnect(
     service: GObject.Object,
     list: [
         event: string,
-        callback: (...args: unknown[]) => void
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        callback: (...args: any[]) => void
     ][],
 ) {
     const ids = [];
