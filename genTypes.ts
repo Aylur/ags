@@ -10,11 +10,13 @@ const exec = promisify(_exec);
 
 const libraries = [
     "Gtk-3.0",
-    "Gdk-3.0", "Cairo-1.0",
+    "Gdk-3.0", 
+    "Cairo-1.0",
     "GnomeBluetooth-3.0",
     "DbusmenuGtk3-0.4",
     "GObject-2.0",
     "NM-1.0",
+    "Soup-3.0",
     "gvc-1.0"
 ]
 

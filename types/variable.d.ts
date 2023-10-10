@@ -5,6 +5,7 @@ import "./gtk-types/gnomebluetooth-3.0-ambient";
 import "./gtk-types/dbusmenugtk3-0.4-ambient";
 import "./gtk-types/gobject-2.0-ambient";
 import "./gtk-types/nm-1.0-ambient";
+import "./gtk-types/soup-3.0-ambient";
 import "./gtk-types/gvc-1.0-ambient";
 import GObject from 'gi://GObject';
 type Poll = [number, string[] | string | (() => unknown), (out: string) => string];

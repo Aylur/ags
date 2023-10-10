@@ -28,6 +28,7 @@
         gnome.gnome-bluetooth.dev
         libdbusmenu-gtk3
         networkmanager.dev
+	libsoup_3.dev
       ];
 
       packages = with pkgs.${system}; [

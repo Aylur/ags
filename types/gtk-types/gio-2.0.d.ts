@@ -30468,7 +30468,7 @@ interface InputStream {
  * streaming APIs.
  * 
  * All of these functions have async variants too.
- * @interface 
+ * @class 
  */
 class InputStream extends GObject.Object {
 
