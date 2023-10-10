@@ -1,7 +1,4 @@
 declare function print(...args: any[]): void;
-declare function log(obj: object, others?: object[]): void;
-declare function log(msg: string, subsitutions?: any[]): void;
-declare function logError(err: Error, msg?: string): void;
 
 declare const pkg: {
     version: string;
@@ -17,6 +14,8 @@ declare const imports: {
 declare module console {
     export function error(obj: object, others?: object[]): void;
     export function error(msg: string, subsitutions?: any[]): void;
+    export function log(obj: object, others?: object[]): void;
+    export function log(msg: string, subsitutions?: any[]): void;
 }
 
 declare interface String {

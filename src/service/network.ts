@@ -238,7 +238,7 @@ class NetworkService extends Service {
                 this._clientReady();
             }
             catch (e) {
-                logError(e as Error);
+                console.error(e as Error);
             }
         });
     }

@@ -112,7 +112,7 @@ class ApplicationsService extends Service {
 
         ensureDirectory(APPS_CACHE_DIR);
         const json = JSON.stringify(this._frequents, null, 2);
-        writeFile(json, CACHE_FILE).catch(logError);
+        writeFile(json, CACHE_FILE).catch(console.error);
         this.notify('frequents');
         this.emit('changed');
     }

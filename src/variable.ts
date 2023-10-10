@@ -50,16 +50,16 @@ class AgsVariable extends GObject.Object {
 
     startPoll() {
         if (!this._poll)
-            return console.error(`${this} has no poll defined`);
+            return console.error(Error(`${this} has no poll defined`));
 
         if (this._interval)
-            return console.error(`${this} is already polling`);
+            return console.error(Error(`${this} is already polling`));
 
         const [time, cmd, transform = out => out] = this._poll;
         if (Array.isArray(cmd) || typeof cmd === 'string') {
             this._interval = interval(time, () => execAsync(cmd)
                 .then(out => this.setValue(transform(out)))
-                .catch(logError));
+                .catch(console.error));
         }
         if (typeof cmd === 'function')
             this._interval = interval(time, () => this.setValue(cmd()));
@@ -70,16 +70,16 @@ class AgsVariable extends GObject.Object {
             GLib.source_remove(this._interval);
             this._interval = 0;
         } else {
-            console.error(`${this} has no poll running`);
+            console.error(Error(`${this} has no poll running`));
         }
     }
 
     startListen() {
         if (!this._listen)
-            return console.error(`${this} has no listen defined`);
+            return console.error(Error(`${this} has no listen defined`));
 
         if (this._subprocess)
-            return console.error(`${this} is already listening`);
+            return console.error(Error(`${this} is already listening`));
 
         let cmd: string | string[];
         const transform = typeof this._listen[1] === 'function'
@@ -99,7 +99,7 @@ class AgsVariable extends GObject.Object {
             cmd = this._listen[0];
 
         else
-            return console.error(`${this._listen} is not a valid type for Variable.listen`);
+            return console.error(Error(`${this._listen} is not a valid type for Variable.listen`));
 
         this._subprocess = subprocess(cmd, out => this.setValue(transform(out)));
     }
@@ -109,7 +109,7 @@ class AgsVariable extends GObject.Object {
             this._subprocess.force_exit();
             this._subprocess = null;
         } else {
-            console.error(`${this} has no listen running`);
+            console.error(Error(`${this} has no listen running`));
         }
     }
 

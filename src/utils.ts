@@ -4,7 +4,6 @@ import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import { Command } from './widgets/constructor.js';
 
-
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name.split('.').pop()}`;
 
@@ -63,7 +62,7 @@ export function loadInterfaceXML(iface: string) {
         const [, bytes] = f.load_contents(null);
         return new TextDecoder().decode(bytes);
     } catch (e) {
-        logError(e as Error);
+        console.error(e as Error);
         return null;
     }
 }
@@ -73,8 +72,7 @@ export function bulkConnect(
     service: GObject.Object,
     list: [
         event: string,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        callback: (...args: any[]) => void
+        callback: (...args: unknown[]) => void
     ][],
 ) {
     const ids = [];
@@ -212,7 +210,7 @@ export function exec(cmd: string) {
 export function subprocess(
     cmd: string | string[],
     callback: (out: string) => void,
-    onError = logError,
+    onError = console.error,
     bind?: Gtk.Widget,
 ) {
     try {

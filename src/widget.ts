@@ -40,7 +40,7 @@ export const Scrollable = (args: object) => constructor(AgsScrollable, args);
 export const Slider = (args: object) => constructor(AgsSlider, args);
 export const Stack = (args: object) => constructor(AgsStack, args);
 
-// so it is still in global scope through ags.Widget
+// so they are still accessible when importing only Widget
 Widget.Widget = Widget;
 Widget.Box = Box;
 Widget.Button = Button;
