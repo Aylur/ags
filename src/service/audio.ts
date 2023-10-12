@@ -120,7 +120,7 @@ class Audio extends Service {
         this._streams = new Map();
         this._streamBindings = new Map();
 
-        bulkConnect((this._control as unknown) as GObject.Object, [
+        bulkConnect(this._control as unknown as GObject.Object, [
             ['default-sink-changed', (_c, id: number) => this._defaultChanged(id, 'speaker')],
             ['default-source-changed', (_c, id: number) => this._defaultChanged(id, 'microphone')],
             ['stream-added', this._streamAdded.bind(this)],

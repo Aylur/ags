@@ -20,8 +20,13 @@ export default class AgsOverlay extends Gtk.Overlay {
     }
 
     set pass_through(passthrough: boolean) {
+        if (this.pass_through === passthrough)
+            return;
+
         this.get_children().forEach(ch =>
             this.set_overlay_pass_through(ch, passthrough));
+
+        this.notify('pass-through');
     }
 
     get overlays() {
@@ -42,5 +47,7 @@ export default class AgsOverlay extends Gtk.Overlay {
         // reset passthrough
         this.get_children().forEach(ch =>
             this.set_overlay_pass_through(ch, this.pass_through));
+
+        this.notify('overlays');
     }
 }

@@ -39,7 +39,7 @@ export class AgsMenu extends Gtk.Menu {
     }
 
     get children() { return this.get_children(); }
-    set children(children: Gtk.Widget[] | null) {
+    set children(children: Gtk.Widget[]) {
         this.get_children().forEach(ch => ch.destroy());
 
         if (!children)
@@ -67,8 +67,7 @@ export class AgsMenuItem extends Gtk.MenuItem {
         onSelect = '',
         onDeselect = '',
         ...rest
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    }: { [key: string]: any }) {
+    }: { [key: string]: Command }) {
         super(rest);
 
         this.onActivate = onActivate;

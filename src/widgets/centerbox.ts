@@ -26,14 +26,11 @@ export default class AgsCenterBox extends AgsBox {
         }, this);
     }
 
-    set children(children: Gtk.Widget[] | null) {
+    set children(children: Gtk.Widget[]) {
         const newChildren = children || [];
 
         newChildren.filter(ch => !newChildren?.includes(ch))
             .forEach(ch => ch.destroy());
-
-        if (!children)
-            return;
 
         if (children[0])
             this.start_widget = children[0];
@@ -58,6 +55,7 @@ export default class AgsCenterBox extends AgsBox {
             return;
 
         this.pack_start(child, true, true, 0);
+        this.notify('start-widget');
         this.show_all();
     }
 
@@ -74,6 +72,7 @@ export default class AgsCenterBox extends AgsBox {
             return;
 
         this.pack_end(child, true, true, 0);
+        this.notify('end-widget');
         this.show_all();
     }
 
@@ -86,5 +85,6 @@ export default class AgsCenterBox extends AgsBox {
         }
 
         this.set_center_widget(child);
+        this.notify('center-widget');
     }
 }

@@ -204,8 +204,9 @@ class MprisPlayer extends Service {
                     source.copy_finish(result);
                     this.changed('cover-path');
                 }
-                catch (e) {
-                    logError(e as Error, `failed to cache ${this._coverPath}`);
+                catch (err) {
+                    console.error(`failed to cache ${this._coverPath}`);
+                    console.error(err as Error);
                 }
             },
         );
@@ -245,12 +246,12 @@ class MprisPlayer extends Service {
         this.emit('position', time);
     }
 
-    playPause() { this._playerProxy.PlayPauseAsync().catch(logError); }
-    play() { this._playerProxy.PlayAsync().catch(logError); }
-    stop() { this._playerProxy.StopAsync().catch(logError); }
+    playPause() { this._playerProxy.PlayPauseAsync().catch(console.error); }
+    play() { this._playerProxy.PlayAsync().catch(console.error); }
+    stop() { this._playerProxy.StopAsync().catch(console.error); }
 
-    next() { this._playerProxy.NextAsync().catch(logError); }
-    previous() { this._playerProxy.PreviousAsync().catch(logError); }
+    next() { this._playerProxy.NextAsync().catch(console.error); }
+    previous() { this._playerProxy.PreviousAsync().catch(console.error); }
 
     shuffle() { this._playerProxy.Shuffle = !this._playerProxy.Shuffle; }
     loop() {

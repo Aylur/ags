@@ -25,7 +25,16 @@ class Application extends Service {
     _frequency: number;
 
     get app() { return this._app; }
+
     get frequency() { return this._frequency; }
+    set frequency(value) {
+        if (value < 0)
+            value = 0;
+
+        this._frequency = value;
+        this.emit('launched');
+    }
+
     get name() { return this._app.get_name(); }
     get desktop() { return this._app.get_id(); }
     get description() { return this._app.get_description(); }
@@ -112,7 +121,7 @@ class Applications extends Service {
 
         ensureDirectory(APPS_CACHE_DIR);
         const json = JSON.stringify(this._frequents, null, 2);
-        writeFile(json, CACHE_FILE).catch(logError);
+        writeFile(json, CACHE_FILE).catch(console.error);
         this.notify('frequents');
         this.emit('changed');
     }

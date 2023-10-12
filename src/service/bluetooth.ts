@@ -172,7 +172,7 @@ class Bluetooth extends Service {
                     callback(s);
                     this.changed('connected-devices');
                 } catch (error) {
-                    logError(error as Error);
+                    console.error(error as Error);
                     callback(false);
                 }
             },
