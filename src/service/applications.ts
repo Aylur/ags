@@ -25,7 +25,16 @@ class Application extends Service {
     _frequency: number;
 
     get app() { return this._app; }
+
     get frequency() { return this._frequency; }
+    set frequency(value) {
+        if (value < 0)
+            value = 0;
+
+        this._frequency = value;
+        this.emit('launched');
+    }
+
     get name() { return this._app.get_name(); }
     get desktop() { return this._app.get_id(); }
     get description() { return this._app.get_description(); }
