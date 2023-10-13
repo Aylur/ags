@@ -354,7 +354,7 @@ class NotificationsService extends Service {
     private _cache() {
         ensureDirectory(NOTIFICATIONS_CACHE_PATH);
         const arr = Array.from(this._notifications.values()).map(n => n.toJson());
-        writeFile(JSON.stringify(arr, null, 2), CACHE_FILE).catch(console.error);
+        writeFile(JSON.stringify(arr, null, 2), CACHE_FILE).catch(err => console.error(err));
     }
 }
 

@@ -59,7 +59,7 @@ class AgsVariable extends GObject.Object {
         if (Array.isArray(cmd) || typeof cmd === 'string') {
             this._interval = interval(time, () => execAsync(cmd)
                 .then(out => this.setValue(transform(out)))
-                .catch(console.error));
+                .catch(err => console.error(err)));
         }
         if (typeof cmd === 'function')
             this._interval = interval(time, () => this.setValue(cmd()));

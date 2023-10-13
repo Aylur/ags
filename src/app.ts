@@ -253,7 +253,7 @@ export default class App extends Gtk.Application {
                 }
                 else { print(`${out}`); }
             })
-            .catch(console.error);
+            .catch(err => console.error(err));
     }
 
     ToggleWindow(name: string) {
