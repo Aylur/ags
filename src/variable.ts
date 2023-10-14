@@ -4,15 +4,15 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import { execAsync, interval, subprocess } from './utils.js';
 
-type Poll = [number, string[] | string | (() => unknown), (out: string) => string];
-type Listen = [string[] | string, (out: string) => string] | string[] | string;
+type Poll<T> = [number, string[] | string | (() => T), (out: string) => T];
+type Listen<T> = [string[] | string, (out: string) => T] | string[] | string;
 
-interface Options {
-    poll?: Poll
-    listen?: Listen
+interface Options<T> {
+    poll?: Poll<T>
+    listen?: Listen<T>
 }
 
-class AgsVariable extends GObject.Object {
+class AgsVariable<T> extends GObject.Object {
     static {
         GObject.registerClass({
             GTypeName: 'AgsVariable',
@@ -26,14 +26,18 @@ class AgsVariable extends GObject.Object {
         }, this);
     }
 
-    private _value: any;
-    private _poll?: Poll;
-    private _listen?: Listen;
+    private _value: T;
+    private _poll?: Poll<T>;
+    private _listen?: Listen<T>;
     private _interval?: number;
     private _subprocess?: InstanceType<typeof Gio.Subprocess> | null;
 
-    constructor(value: any, { poll, listen }: Options = {}) {
+    constructor(value: T, { poll, listen }: Options<T> = {}) {
         super();
+
+        // tell typescript that we have assigned it in the constructor
+        this._value = value;
+
         this.value = value;
 
         if (poll) {
@@ -133,7 +137,7 @@ class AgsVariable extends GObject.Object {
     }
 
     get value() { return this._value; }
-    set value(value: any) { this.setValue(value); }
+    set value(value: T) { this.setValue(value); }
 }
 
-export default (value: any, options: Options) => new AgsVariable(value, options);
+export default <T>(value: T, options: Options<T>) => new AgsVariable(value, options);

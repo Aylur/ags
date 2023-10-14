@@ -9,7 +9,6 @@ import Service from '../service.js';
 import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
 import Widget, { WidgetParams } from '../widget.js';
-import type { CommonParams } from 'src/widgets/constructor.js';
 
 const StatusNotifierWatcherIFace = loadInterfaceXML('org.kde.StatusNotifierWatcher')!;
 const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem')!;

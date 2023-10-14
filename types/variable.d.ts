@@ -8,19 +8,19 @@ import "./gtk-types/nm-1.0-ambient";
 import "./gtk-types/soup-3.0-ambient";
 import "./gtk-types/gvc-1.0-ambient";
 import GObject from 'gi://GObject';
-type Poll = [number, string[] | string | (() => unknown), (out: string) => string];
-type Listen = [string[] | string, (out: string) => string] | string[] | string;
-interface Options {
-    poll?: Poll;
-    listen?: Listen;
+type Poll<T> = [number, string[] | string | (() => T), (out: string) => T];
+type Listen<T> = [string[] | string, (out: string) => T] | string[] | string;
+interface Options<T> {
+    poll?: Poll<T>;
+    listen?: Listen<T>;
 }
-declare class AgsVariable extends GObject.Object {
+declare class AgsVariable<T> extends GObject.Object {
     private _value;
     private _poll?;
     private _listen?;
     private _interval?;
     private _subprocess?;
-    constructor(value: any, { poll, listen }?: Options);
+    constructor(value: T, { poll, listen }?: Options<T>);
     startPoll(): void;
     stopPoll(): void;
     startListen(): void;
@@ -28,10 +28,10 @@ declare class AgsVariable extends GObject.Object {
     get isListening(): boolean;
     get isPolling(): boolean;
     dispose(): void;
-    getValue(): any;
+    getValue(): T;
     setValue(value: any): void;
-    get value(): any;
-    set value(value: any);
+    get value(): T;
+    set value(value: T);
 }
-declare const _default: (value: any, options: Options) => AgsVariable;
+declare const _default: <T>(value: T, options: Options<T>) => AgsVariable<T>;
 export default _default;
