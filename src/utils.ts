@@ -88,10 +88,12 @@ export function bulkDisconnect(service: InstanceType<typeof GObject.Object>, ids
         service.disconnect(id);
 }
 
-export function connect(
+export function connect<
+    Widget extends InstanceType<typeof Gtk.Widget>,
+>(
     service: InstanceType<typeof GObject.Object>,
-    widget: InstanceType<typeof Gtk.Widget>,
-    callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: unknown[]) => void,
+    widget: Widget,
+    callback: (widget: Widget, ...args: unknown[]) => void,
     event = 'changed',
 ) {
     const bind = service.connect(

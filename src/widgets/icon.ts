@@ -4,7 +4,7 @@ import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import Gdk from 'gi://Gdk?version=3.0';
 import type Cario from 'gi://cairo';
-import Service from '../service/service.js';
+import Service from '../service.js';
 
 export default class AgsIcon extends Gtk.Image {
     static {

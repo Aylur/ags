@@ -4,52 +4,47 @@ import { connect, interval } from '../utils.js';
 
 export type Command = string | ((...args: unknown[]) => boolean);
 
-type ConnectWidget = (
-    widget: InstanceType<typeof Gtk.Widget>,
-    callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: unknown[]) => void,
-    event?: string
-) => void
-
-export interface Connectable extends InstanceType<typeof GObject.Object> {
-    instance: { connectWidget: ConnectWidget }
-    connectWidget: ConnectWidget
-}
-
-export interface CommonParams {
+export interface CommonParams<T extends InstanceType<typeof Gtk.Widget>> {
     className?: string
     style?: string
     css?: string
     halign?: 'start' | 'center' | 'end' | 'fill'
     valign?: 'start' | 'center' | 'end' | 'fill'
     connections?: (
-        [string, (...args: unknown[]) => unknown] |
-        [number, (...args: unknown[]) => unknown] |
-        [Connectable, (...args: unknown[]) => unknown, string]
+        [string, (widget: T) => unknown] |
+        [number, (widget: T) => unknown] |
+        [InstanceType<typeof GObject.Object> & { connectWidget: unknown }, (widget: T, ...args: unknown[]) => unknown, string]
     )[]
     properties?: [prop: string, value: unknown][]
     binds?: [
         prop: string,
-        obj: Connectable,
+        obj: InstanceType<typeof GObject.Object> & { connectWidget: unknown },
         objProp?: string,
         transform?: (value: unknown) => unknown][],
-    setup?: (widget: InstanceType<typeof Gtk.Widget>) => void
+    setup?: (widget: T) => void
 }
 
-function separateCommon<T extends CommonParams>({
+function separateCommon<
+Output extends InstanceType<typeof Gtk.Widget>,
+T extends CommonParams<Output>
+>({
     className, style, css, halign, valign, connections, properties, binds, setup,
     ...rest
-}: T) {
+}: T): [
+    CommonParams<Output>,
+    Omit<T, keyof CommonParams<Output>>
+] {
     return [
         { className, style, css, halign, valign, connections, properties, binds, setup },
         rest,
     ];
 }
 
-function parseCommon(widget: InstanceType<typeof Gtk.Widget>, {
+function parseCommon<T extends InstanceType<typeof Gtk.Widget>>(widget: T, {
     className, style, css,
     halign, valign,
     connections = [], properties, binds, setup,
-}: CommonParams) {
+}: CommonParams<T>) {
     if (className !== undefined)
         // @ts-expect-error
         widget.className = className;
@@ -120,9 +115,6 @@ function parseCommon(widget: InstanceType<typeof Gtk.Widget>, {
             else if (typeof s === 'number')
                 interval(s, () => callback(widget), widget);
 
-            else if (typeof s?.instance?.connectWidget === 'function')
-                s.instance.connectWidget(widget, callback, event);
-
             else if (typeof s?.connectWidget === 'function')
                 s.connectWidget(widget, callback, event);
 
@@ -140,8 +132,8 @@ function parseCommon(widget: InstanceType<typeof Gtk.Widget>, {
 
 export function constructor<
     Output extends InstanceType<typeof Gtk.Widget>,
-    Params extends CommonParams & ConstructorParameters<Class>[0],
-    Class extends new (arg: Omit<Params, keyof CommonParams>) => Output | any,
+    Params extends CommonParams<Output> | ConstructorParameters<Class>[0],
+    Class extends new (arg: Omit<Params, keyof CommonParams<Output>>) => InstanceType<Class> & Output,
 >(
     ctor: Class,
     params: Params,
@@ -150,10 +142,10 @@ export function constructor<
         return new ctor(params);
     }
 
-    const [common, rest] = separateCommon(params);
+    const [common, rest] = separateCommon<Output, Params>(params);
 
-    // @ts-expect-error it works. Don't ask
     const widget = new ctor(rest);
     parseCommon(widget, common);
+
     return widget;
 }

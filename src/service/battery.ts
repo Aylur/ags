@@ -1,5 +1,5 @@
 import Gio from 'gi://Gio';
-import Service from './service.js';
+import Service from '../service.js';
 import { timeout } from '../utils.js';
 import { loadInterfaceXML } from '../utils.js';
 import { type BatteryProxy } from '../dbus/types.js';
@@ -15,7 +15,7 @@ const DeviceState = {
     FULLY_CHARGED: 4,
 };
 
-class BatteryService extends Service {
+class Battery extends Service {
     static {
         Service.register(this, {
             'closed': [],
@@ -106,33 +106,4 @@ class BatteryService extends Service {
     }
 }
 
-export default class Battery {
-    static _instance: BatteryService;
-
-    static get instance() {
-        Service.ensureInstance(Battery, BatteryService);
-        return Battery._instance;
-    }
-
-    static get available() { return Battery.instance.available; }
-    static get percent() { return Battery.instance.percent; }
-    static get charging() { return Battery.instance.charging; }
-    static get charged() { return Battery.instance.charged; }
-    static get energy() { return Battery.instance.energy; }
-
-    static get iconName() { return Battery.instance.icon_name; }
-    static get icon_name() { return Battery.instance.icon_name; }
-    static get ['icon-name']() { return Battery.instance.icon_name; }
-
-    static get timeRemaining() { return Battery.instance.time_remaining; }
-    static get time_remaining() { return Battery.instance.time_remaining; }
-    static get ['time-remaining']() { return Battery.instance.time_remaining; }
-
-    static get energyFull() { return Battery.instance.energy_full; }
-    static get energy_full() { return Battery.instance.energy_full; }
-    static get ['energy-full']() { return Battery.instance.energy_full; }
-
-    static get energyRate() { return Battery.instance.energy_rate; }
-    static get energy_rate() { return Battery.instance.energy_rate; }
-    static get ['energy-rate']() { return Battery.instance.energy_rate; }
-}
+export default new Battery();

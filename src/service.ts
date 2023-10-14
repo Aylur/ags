@@ -1,37 +1,113 @@
-// @ts-nocheck
-import Service from './service/service.js';
-import Applications from './service/applications.js';
-import Audio from './service/audio.js';
-import Battery from './service/battery.js';
-import Bluetooth from './service/bluetooth.js';
-import Hyprland from './service/hyprland.js';
-import Mpris from './service/mpris.js';
-import Network from './service/network.js';
-import Notifications from './service/notifications.js';
-import SystemTray from './service/systemtray.js';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk?version=3.0';
+import type GObjectTypes from 'types/gtk-types/gobject-2.0';
+import { connect } from './utils.js';
 
-export {
-    Applications,
-    Audio,
-    Battery,
-    Bluetooth,
-    Hyprland,
-    Mpris,
-    Network,
-    Notifications,
-    SystemTray,
-    Service,
-};
+type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'double' | 'boolean' | 'gobject';
+type PspecFlag = 'rw' | 'r' | 'w';
 
-Service.Applications = Applications;
-Service.Audio = Audio;
-Service.Battery = Battery;
-Service.Bluetooth = Bluetooth;
-Service.Hyprland = Hyprland;
-Service.Mpris = Mpris;
-Service.Network = Network;
-Service.Notifications = Notifications;
-Service.Service = Service;
-Service.SystemTray = SystemTray;
+export default class Service extends GObject.Object {
+    static {
+        GObject.registerClass({
+            GTypeName: 'AgsService',
+            Signals: { 'changed': {} },
+        }, this);
+    }
 
-export default Service;
+    static pspec(name: string, type: PspecType = 'jsobject', handle: PspecFlag = 'r') {
+        const flags = (() => {
+            switch (handle) {
+                case 'w': return GObject.ParamFlags.WRITABLE;
+                case 'r': return GObject.ParamFlags.READABLE;
+                case 'rw':
+                default: return GObject.ParamFlags.READWRITE;
+            }
+        })();
+
+        switch (type) {
+            case 'string': return GObject.ParamSpec.string(
+                name, name, name, flags, '');
+
+            case 'int': return GObject.ParamSpec.int64(
+                name, name, name, flags,
+                Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, 0);
+
+            case 'float': return GObject.ParamSpec.float(
+                name, name, name, flags,
+                -1, 1, 0);
+
+            case 'double': return GObject.ParamSpec.double(
+                name, name, name, flags,
+                Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, 0);
+
+            case 'boolean': return GObject.ParamSpec.boolean(
+                name, name, name, flags, false);
+
+            case 'gobject': return GObject.ParamSpec.object(
+                // @ts-expect-error
+                name, name, name, flags, GObject.Object);
+
+            default: return GObject.ParamSpec.jsobject(
+                // @ts-expect-error
+                name, name, name, flags, null);
+        }
+    }
+
+    static register(
+        service: new (...args: any[]) => unknown,
+        signals?: { [signal: string]: string[] },
+        properties?: { [prop: string]: [type?: PspecType, handle?: PspecFlag] },
+    ) {
+        const Signals: {
+            [signal: string]: { param_types: GObjectTypes.GType<unknown>[] }
+        } = {};
+
+        const Properties: {
+            [prop: string]: GObjectTypes.ParamSpec,
+        } = {};
+
+        if (signals) {
+            Object.keys(signals).forEach(signal => Signals[signal] = {
+                param_types: signals[signal].map(t =>
+                    // @ts-expect-error
+                    GObject[`TYPE_${t.toUpperCase()}`]),
+            });
+        }
+
+        if (properties) {
+            Object.keys(properties).forEach(prop =>
+                Properties[prop] = Service.pspec(prop, ...properties[prop]),
+            );
+        }
+
+        GObject.registerClass({ Signals, Properties }, service);
+    }
+
+    connectWidget(
+        widget: InstanceType<typeof Gtk.Widget>,
+        callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: unknown[]) => void,
+        event = 'changed',
+    ) {
+        connect(this, widget, callback, event);
+    }
+
+    updateProperty(prop: string, value: unknown) {
+        // @ts-expect-error
+        if (this[`_${prop}`] === value)
+            return;
+
+        const privateProp = prop
+            .split('-')
+            .map((w, i) => i > 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w)
+            .join('');
+
+        // @ts-expect-error
+        this[`_${privateProp}`] = value;
+        this.notify(prop);
+    }
+
+    changed(property: string) {
+        this.notify(property);
+        this.emit('changed');
+    }
+}

@@ -1,5 +1,5 @@
 import Gio from 'gi://Gio';
-import Service from './service.js';
+import Service from '../service.js';
 import { CACHE_DIR, ensureDirectory, readFile, writeFile } from '../utils.js';
 
 const APPS_CACHE_DIR = `${CACHE_DIR}/apps`;
@@ -7,9 +7,7 @@ const CACHE_FILE = APPS_CACHE_DIR + '/apps_frequency.json';
 
 class Application extends Service {
     static {
-        Service.register(this, {
-            'launched': [],
-        }, {
+        Service.register(this, {}, {
             'app': ['jsobject'],
             'frequency': ['int'],
             'name': ['string'],
@@ -28,11 +26,8 @@ class Application extends Service {
 
     get frequency() { return this._frequency; }
     set frequency(value) {
-        if (value < 0)
-            value = 0;
-
         this._frequency = value;
-        this.emit('launched');
+        this.changed('frequency');
     }
 
     get name() { return this._app.get_name(); }
@@ -42,10 +37,10 @@ class Application extends Service {
     get executable() { return this._app.get_executable(); }
     get icon_name() { return this._app.get_string('Icon'); }
 
-    constructor(app: InstanceType<typeof Gio.DesktopAppInfo>, frequency: number) {
+    constructor(app: InstanceType<typeof Gio.DesktopAppInfo>, frequency?: number) {
         super();
         this._app = app;
-        this._frequency = frequency;
+        this._frequency = frequency || 0;
     }
 
     private _match(prop: string | null, search: string) {
@@ -71,13 +66,12 @@ class Application extends Service {
     }
 
     launch() {
-        this._frequency++;
         this.app.launch([], null);
-        this.emit('launched');
+        this.frequency++;
     }
 }
 
-class ApplicationsService extends Service {
+class Applications extends Service {
     static {
         Service.register(this, {}, {
             'list': ['jsobject'],
@@ -122,8 +116,7 @@ class ApplicationsService extends Service {
         ensureDirectory(APPS_CACHE_DIR);
         const json = JSON.stringify(this._frequents, null, 2);
         writeFile(json, CACHE_FILE).catch(err => console.error(err));
-        this.notify('frequents');
-        this.emit('changed');
+        this.changed('frequents');
     }
 
     private _sync() {
@@ -131,26 +124,14 @@ class ApplicationsService extends Service {
             .filter(app => app.should_show())
             .map(app => Gio.DesktopAppInfo.new(app.get_id() || ''))
             .filter(app => app)
-            .map(app => new Application(app, this.frequents[app.get_id() || ''] || 0));
+            .map(app => new Application(app, this.frequents[app.get_id() || '']));
 
-        this._list.forEach(app => app.connect('launched', () => {
+        this._list.forEach(app => app.connect('notify::frequency', () => {
             this._launched(app.desktop);
         }));
 
-        this.notify('list');
-        this.emit('changed');
+        this.changed('list');
     }
 }
 
-export default class Applications {
-    static _instance: ApplicationsService;
-
-    static get instance() {
-        Service.ensureInstance(Applications, ApplicationsService);
-        return Applications._instance;
-    }
-
-    static query(term: string) { return Applications.instance.query(term); }
-    static get list() { return Applications.instance.list; }
-    static get frequents() { return Applications.instance.frequents; }
-}
+export default new Applications();

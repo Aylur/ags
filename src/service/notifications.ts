@@ -1,7 +1,7 @@
 import Gio from 'gi://Gio';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import GLib from 'gi://GLib';
-import Service from './service.js';
+import Service from '../service.js';
 import App from '../app.js';
 import {
     CACHE_DIR, ensureDirectory,
@@ -190,7 +190,7 @@ class Notification extends Service {
     }
 }
 
-class NotificationsService extends Service {
+class Notifications extends Service {
     static {
         Service.register(this, {
             'dismissed': ['int'],
@@ -366,42 +366,5 @@ class NotificationsService extends Service {
     }
 }
 
-const depracate = (method: string) => console.error(
-    `Notifications.${method} is DEPRECATED` +
-    `use the ${method} method on the notification object instead`,
-);
 
-export default class Notifications {
-    static _instance: NotificationsService;
-
-    static get instance() {
-        Service.ensureInstance(Notifications, NotificationsService);
-        return Notifications._instance;
-    }
-
-    static invoke(id: number, actionId: string) {
-        depracate('invoke');
-        Notifications.instance.InvokeAction(id, actionId);
-    }
-
-    static dismiss(id: number) {
-        depracate('dismiss');
-        Notifications.instance.DismissNotification(id);
-    }
-
-    static close(id: number) {
-        depracate('close');
-        Notifications.instance.CloseNotification(id);
-    }
-
-    static clear() { Notifications.instance.clear(); }
-
-    static getPopup(id: number) { return Notifications.instance.getPopup(id); }
-    static getNotification(id: number) { return Notifications.instance.getNotification(id); }
-
-    static get popups() { return Notifications.instance.popups; }
-    static get notifications() { return Notifications.instance.notifications; }
-
-    static get dnd() { return Notifications.instance.dnd; }
-    static set dnd(value: boolean) { Notifications.instance.dnd = value; }
-}
+export default new Notifications();

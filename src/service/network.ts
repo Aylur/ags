@@ -1,6 +1,6 @@
 import NM from 'gi://NM';
 import GObject from 'gi://GObject';
-import Service from './service.js';
+import Service from '../service.js';
 import { bulkConnect } from '../utils.js';
 
 const _INTERNET = (device: InstanceType<typeof NM.Device>) => {
@@ -206,14 +206,14 @@ class Wired extends Service {
         if (this.internet === 'connected')
             return 'network-wired-symbolic';
 
-        if (Network.connectivity !== 'full')
+        if (networkService.connectivity !== 'full')
             return 'network-wired-no-route-symbolic';
 
         return 'network-wired-disconnected-symbolic';
     }
 }
 
-class NetworkService extends Service {
+class Network extends Service {
     static {
         Service.register(this, {}, {
             'wifi': ['jsobject'],
@@ -287,17 +287,5 @@ class NetworkService extends Service {
     }
 }
 
-export default class Network {
-    static _instance: NetworkService;
-
-    static get instance() {
-        Service.ensureInstance(Network, NetworkService);
-        return Network._instance;
-    }
-
-    static toggleWifi() { Network.instance.toggleWifi(); }
-    static get connectivity() { return Network.instance.connectivity; }
-    static get primary() { return Network.instance.primary; }
-    static get wifi() { return Network.instance.wifi; }
-    static get wired() { return Network.instance.wired; }
-}
+const networkService = new Network();
+export default networkService;

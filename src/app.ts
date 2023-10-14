@@ -18,7 +18,7 @@ interface Config {
     maxStreamVolume: number
 }
 
-export default class App extends Gtk.Application {
+class App extends Gtk.Application {
     static {
         GObject.registerClass({
             Signals: {
@@ -31,41 +31,35 @@ export default class App extends Gtk.Application {
     }
 
     private _dbus!: InstanceType<typeof Gio.DBusExportedObject>;
-    private _windows: Map<string, InstanceType<typeof Gtk.Window>>;
     private _closeDelay!: { [key: string]: number };
     private _cssProviders: InstanceType<typeof Gtk.CssProvider>[] = [];
-    private _busName: string;
-    private _objectPath: string;
+    private _objectPath!: string;
 
-    static configPath: string;
-    static configDir: string;
-    static config: Config;
-    static instance: App;
+    private _windows: Map<string, InstanceType<typeof Gtk.Window>> = new Map();
+    private _configPath!: string;
+    private _configDir!: string;
+    private _config!: Config;
 
-    static removeWindow(w: InstanceType<typeof Gtk.Window> | string) { App.instance.removeWindow(w); }
-    static addWindow(w: InstanceType<typeof Gtk.Window>) { App.instance.addWindow(w); }
-    static get windows() { return App.instance._windows; }
-    static getWindow(name: string) { return App.instance.getWindow(name); }
-    static closeWindow(name: string) { App.instance.closeWindow(name); }
-    static openWindow(name: string) { App.instance.openWindow(name); }
-    static toggleWindow(name: string) { App.instance.toggleWindow(name); }
-    static quit() { App.instance.quit(); }
+    get windows() { return this._windows; }
+    get configPath() { return this._configPath; }
+    get configDir() { return this._configDir; }
+    get config() { return this._config; }
 
-    static resetCss() {
+    resetCss() {
         const screen = Gdk.Screen.get_default();
         if (!screen) {
             console.error("couldn't get screen");
             return;
         }
 
-        App.instance._cssProviders.forEach(provider => {
+        this._cssProviders.forEach(provider => {
             Gtk.StyleContext.remove_provider_for_screen(screen, provider);
         });
 
-        App.instance._cssProviders = [];
+        this._cssProviders = [];
     }
 
-    static applyCss(path: string) {
+    applyCss(path: string) {
         const screen = Gdk.Screen.get_default();
         if (!screen) {
             console.error("couldn't get screen");
@@ -81,30 +75,21 @@ export default class App extends Gtk.Application {
             Gtk.STYLE_PROVIDER_PRIORITY_USER,
         );
 
-        App.instance._cssProviders.push(cssProvider);
+        this._cssProviders.push(cssProvider);
     }
 
-    constructor(bus: string, path: string, configPath: string) {
-        super({
-            application_id: bus,
-            flags: Gio.ApplicationFlags.DEFAULT_FLAGS,
-        });
-
-        this._busName = bus;
+    setup(bus: string, path: string, configPath: string) {
+        this.application_id = bus;
+        this.flags = Gio.ApplicationFlags.DEFAULT_FLAGS;
         this._objectPath = path;
-        this._windows = new Map();
 
-        const dir = configPath.split('/');
-        dir.pop();
-        App.configDir = dir.join('/');
-        App.configPath = configPath;
-        App.instance = this;
+        this._configDir = configPath.split('/').slice(0, -1).join('/');
+        this._configPath = configPath;
     }
 
     connectWidget(
         widget: InstanceType<typeof Gtk.Widget>,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: any[]) => void,
+        callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: unknown[]) => void,
         event = 'window-toggled',
     ) {
         connect(this, widget, callback, event);
@@ -185,13 +170,13 @@ export default class App extends Gtk.Application {
 
     private async _load() {
         try {
-            const mod = await import(`file://${App.configPath}`);
+            const mod = await import(`file://${this._configPath}`);
             const config = mod.default as Config;
             config.closeWindowDelay ||= {};
             config.notificationPopupTimeout ||= 3000;
             config.maxStreamVolume ||= 1.5;
             config.cacheNotificationActions ||= false;
-            App.config = config;
+            this._config = config;
 
             if (!config) {
                 console.error('Missing default export');
@@ -202,7 +187,7 @@ export default class App extends Gtk.Application {
             this._closeDelay = config.closeWindowDelay;
 
             if (config.style)
-                App.applyCss(config.style);
+                this.applyCss(config.style);
 
             if (config.windows && !Array.isArray(config.windows)) {
                 console.error('windows attribute has to be an array, ' +
@@ -222,11 +207,11 @@ export default class App extends Gtk.Application {
     private _register() {
         Gio.bus_own_name(
             Gio.BusType.SESSION,
-            this._busName,
+            this.application_id,
             Gio.BusNameOwnerFlags.NONE,
             (connection: InstanceType<typeof Gio.DBusConnection>) => {
                 this._dbus = Gio.DBusExportedObject
-                    .wrapJSObject(AgsIFace(this._busName) as string, this);
+                    .wrapJSObject(AgsIFace(this.application_id!) as string, this);
 
                 this._dbus.export(connection, this._objectPath);
             },
@@ -265,3 +250,5 @@ export default class App extends Gtk.Application {
 
     Quit() { this.quit(); }
 }
+
+export default new App();

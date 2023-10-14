@@ -18,22 +18,28 @@ import AgsCircularProgress from './widgets/circularprogress.js';
 import { constructor, CommonParams } from './widgets/constructor.js';
 import type Gtk from 'types/gtk-types/gtk-3.0.js';
 
-export interface WidgetParams<T extends Gtk.Widget> extends CommonParams {
-  type: new(arg: Omit<WidgetParams<T>, keyof CommonParams | "type">) => T;
+export interface WidgetParams<T extends Gtk.Widget> extends CommonParams<T> {
+    type: new(arg: Omit<WidgetParams<T>, keyof CommonParams<T> | "type">) => T;
 }
 
-export default function Widget<
+export function Widget<
     Output extends InstanceType<typeof Gtk.Widget>,
-    Params extends WidgetParams<Output>,
-    Class extends new(arg: Omit<Params, keyof WidgetParams<Output>>) => Output,
+    Params extends CommonParams<Output> | ConstructorParameters<Class>[0],
+    Class extends new (arg: Omit<Params, keyof CommonParams<Output>>) => InstanceType<Class> & Output,
 >({type, ...params}: { type: Class } & Params): InstanceType<Class> {
-    return constructor(type, params);
+    return constructor<
+        Output,
+        Params,
+        Class
+    >(type, params as unknown as Params);
 }
+
+export default Widget;
 
 const createConstructor = <
     Output extends InstanceType<typeof Gtk.Widget>,
-    Params extends CommonParams & ConstructorParameters<Class>[0],
-    Class extends new(arg: Omit<Params, keyof CommonParams>) => Output,
+    Params extends CommonParams<Output> | ConstructorParameters<Class>[0],
+    Class extends new (arg: Omit<Params, keyof CommonParams<Output>>) => InstanceType<Class> & Output,
 >(widget: Class) => (args: Params) => constructor(widget, args)
 
 

@@ -1,6 +1,6 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service/service.js';
+import Service from '../service.js';
 
 // type from gi-types is wrong
 interface Context {

@@ -4,7 +4,7 @@ import { runCmd } from '../utils.js';
 import type Gdk from 'gi://Gdk?version=3.0';
 
 import { Command } from './constructor.js';
-import Service from '../service/service.js';
+import Service from '../service.js';
 
 export interface Params {
     onChange?: Command
