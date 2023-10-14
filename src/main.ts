@@ -1,11 +1,8 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import * as Utils from './utils.js';
-import App from './app.js';
+import app from './app.js';
 import client from './client.js';
-import Service from './service.js';
-import Variable from './variable.js';
-import Widget from './widget.js';
 
 const BIN_NAME = pkg.name.split('.').pop() as string;
 const APP_BUS = (name: string) => `${pkg.name}.${name}`;
@@ -25,15 +22,7 @@ OPTIONS:
     -t, --toggle-window     Show or hide a window
     -r, --run-js            Evaluate given string as a function and execute it
     -p, --run-promise       Evaluate and execute function as Promise
-    --clear-cache           Remove ${Utils.CACHE_DIR}
-
-EXAMPLES
-    ags --config $HOME/.config/ags/main.js --bus-name second-instance
-    ags --run-js "ags.Service.Mpris.getPlayer()?.name"
-    ags --run-promise "ags.Utils.timeout(1000, () => {
-        resolve('a second later');
-    })"
-    ags --toggle-window window-name`;
+    --clear-cache           Remove ${Utils.CACHE_DIR}`;
 
 function isRunning(dbusName: string) {
     return Gio.DBus.session.call_sync(
@@ -126,15 +115,6 @@ export function main(args: string[]) {
         }
     }
 
-    // @ts-expect-error
-    globalThis.ags = {
-        App,
-        Utils,
-        Widget,
-        Service,
-        Variable,
-    };
-
     const bus = APP_BUS(flags.busName);
     const path = APP_PATH(flags.busName);
 
@@ -142,7 +122,7 @@ export function main(args: string[]) {
         if (flags.quit)
             return;
 
-        const app = new App(bus, path, flags.config);
+        app.setup(bus, path, flags.config);
         app.connect('config-parsed', () => {
             if (flags.toggleWindow)
                 app.ToggleWindow(flags.toggleWindow);

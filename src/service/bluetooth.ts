@@ -1,4 +1,4 @@
-import Service from './service.js';
+import Service from '../service.js';
 import Gio from 'gi://Gio';
 import { bulkConnect, bulkDisconnect } from '../utils.js';
 
@@ -78,7 +78,7 @@ class BluetoothDevice extends Service {
 
     setConnection(connect: boolean) {
         this._connecting = true;
-        Bluetooth.instance.connectDevice(this, connect, () => {
+        bluetoothService.connectDevice(this, connect, () => {
             this._connecting = false;
             this.changed('connecting');
         });
@@ -86,7 +86,7 @@ class BluetoothDevice extends Service {
     }
 }
 
-class BluetoothService extends Service {
+class Bluetooth extends Service {
     static {
         Service.register(this, {}, {
             'devices': ['jsobject'],
@@ -197,21 +197,5 @@ class BluetoothService extends Service {
     }
 }
 
-export default class Bluetooth {
-    static _instance: BluetoothService;
-
-    static get instance() {
-        Service.ensureInstance(Bluetooth, BluetoothService);
-        return Bluetooth._instance;
-    }
-
-    static getDevice(address: string) { return Bluetooth.instance.getDevice(address); }
-
-    static get enabled() { return Bluetooth.instance.enabled; }
-    static set enabled(enable: boolean) { Bluetooth.instance.enabled = enable; }
-    static get state() { return Bluetooth.instance.state; }
-    static get devices() { return Bluetooth.instance.devices; }
-    static get connectedDevices() { return Bluetooth.instance.connected_devices; }
-    static get connected_devices() { return Bluetooth.instance.connected_devices; }
-    static get ['connected-devices']() { return Bluetooth.instance.connected_devices; }
-}
+const bluetoothService = new Bluetooth();
+export default bluetoothService;

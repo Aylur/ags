@@ -1,5 +1,5 @@
 import Gio from 'gi://Gio';
-import Service from './service.js';
+import Service from '../service.js';
 import { CACHE_DIR, ensureDirectory, readFile, writeFile } from '../utils.js';
 
 const APPS_CACHE_DIR = `${CACHE_DIR}/apps`;
@@ -71,7 +71,7 @@ class Application extends Service {
     }
 }
 
-class ApplicationsService extends Service {
+class Applications extends Service {
     static {
         Service.register(this, {}, {
             'list': ['jsobject'],
@@ -134,15 +134,4 @@ class ApplicationsService extends Service {
     }
 }
 
-export default class Applications {
-    static _instance: ApplicationsService;
-
-    static get instance() {
-        Service.ensureInstance(Applications, ApplicationsService);
-        return Applications._instance;
-    }
-
-    static query(term: string) { return Applications.instance.query(term); }
-    static get list() { return Applications.instance.list; }
-    static get frequents() { return Applications.instance.frequents; }
-}
+export default new Applications();

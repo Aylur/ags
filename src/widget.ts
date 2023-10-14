@@ -17,7 +17,8 @@ import AgsWindow from './widgets/window.js';
 import AgsCircularProgress from './widgets/circularprogress.js';
 import { constructor, type ctor } from './widgets/constructor.js';
 
-export default function Widget({ type, ...params }: { type: ctor }) {
+export default Widget;
+export function Widget({ type, ...params }: { type: ctor }) {
     return constructor(type, params);
 }
 

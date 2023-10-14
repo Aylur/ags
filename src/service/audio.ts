@@ -1,4 +1,4 @@
-import Service from './service.js';
+import Service from '../service.js';
 import GObject from 'gi://GObject';
 import Gvc from 'gi://Gvc';
 import App from '../app.js';
@@ -64,7 +64,7 @@ class Stream extends Service {
     }
 
     get volume() {
-        const max = Audio.instance.control.get_vol_max_norm();
+        const max = audioService.control.get_vol_max_norm();
         return this._stream.volume / max;
     }
 
@@ -75,7 +75,7 @@ class Stream extends Service {
         if (value < 0)
             value = 0;
 
-        const max = Audio.instance.control.get_vol_max_norm();
+        const max = audioService.control.get_vol_max_norm();
         this._stream.set_volume(value * max);
         this._stream.push_volume();
     }
@@ -86,7 +86,7 @@ class Stream extends Service {
     }
 }
 
-class AudioService extends Service {
+class Audio extends Service {
     static {
         Service.register(this, {
             'speaker-changed': [],
@@ -222,23 +222,5 @@ class AudioService extends Service {
     }
 }
 
-export default class Audio {
-    static _instance: AudioService;
-
-    static get instance() {
-        Service.ensureInstance(Audio, AudioService);
-        return Audio._instance;
-    }
-
-    static getStream(id: number) { return Audio.instance.getStream(id); }
-
-    static get microphones() { return Audio.instance.microphones; }
-    static get speakers() { return Audio.instance.speakers; }
-    static get apps() { return Audio.instance.apps; }
-
-    static get microphone() { return Audio.instance.microphone; }
-    static set microphone(stream: Stream) { Audio.instance.microphone = stream; }
-
-    static get speaker() { return Audio.instance.speaker; }
-    static set speaker(stream: Stream) { Audio.instance.speaker = stream; }
-}
+const audioService = new Audio();
+export default audioService;
