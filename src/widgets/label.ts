@@ -37,7 +37,7 @@ export default class AgsLabel extends Gtk.Label {
                 //     label = GLib.markup_escape_text(label, -1)!;
                 // else
 
-                logError(e as Error);
+                console.error(e as Error);
             }
         }
         super.label = label;

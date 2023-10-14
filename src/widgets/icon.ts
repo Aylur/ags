@@ -77,7 +77,7 @@ export default class AgsIcon extends Gtk.Image {
             }
         }
         else {
-            logError(new Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));
+            console.error(Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));
         }
     }
 

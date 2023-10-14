@@ -30,4 +30,4 @@ export declare function lookUpIcon(name?: string, size?: number): import("../typ
 export declare function ensureDirectory(path?: string): void;
 export declare function execAsync(cmd: string | string[]): Promise<string>;
 export declare function exec(cmd: string): string;
-export declare function subprocess(cmd: string | string[], callback: (out: string) => void, onError?: typeof logError, bind?: InstanceType<typeof Gtk.Widget>): import("../types/gtk-types/gio-2.0.js").Gio.Subprocess | null;
+export declare function subprocess(cmd: string | string[], callback: (out: string) => void, onError?: (message?: any, ...optionalParams: any[]) => void, bind?: InstanceType<typeof Gtk.Widget>): import("../types/gtk-types/gio-2.0.js").Gio.Subprocess | null;

@@ -97,7 +97,7 @@ function parseCommon(widget: InstanceType<typeof Gtk.Widget>, {
     if (binds) {
         binds.forEach(([prop, obj, objProp = 'value', transform = out => out]) => {
             if (!prop || !obj) {
-                logError(new Error('missing arguments to binds'));
+                console.error(Error('missing arguments to binds'));
                 return;
             }
 
@@ -110,7 +110,7 @@ function parseCommon(widget: InstanceType<typeof Gtk.Widget>, {
     if (connections) {
         connections.forEach(([s, callback, event]) => {
             if (!s || !callback) {
-                logError(new Error('missing arguments to connections'));
+                console.error(Error('missing arguments to connections'));
                 return;
             }
 
@@ -130,7 +130,7 @@ function parseCommon(widget: InstanceType<typeof Gtk.Widget>, {
                 connect(s, widget, callback, event);
 
             else
-                logError(new Error(`${s} is not connectable`));
+                console.error(Error(`${s} is not connectable`));
         });
     }
 

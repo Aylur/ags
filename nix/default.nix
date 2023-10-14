@@ -1,28 +1,26 @@
-{ lib
-, stdenv
-, buildNpmPackage
-, fetchFromGitLab
-, nodePackages
-, meson
-, pkg-config
-, ninja
-, gobject-introspection
-, gtk3
-, libpulseaudio
-, gjs
-, python3
-, wrapGAppsHook
-, upower
-, gnome
-, gtk-layer-shell
-, glib-networking
-, networkmanager
-, libdbusmenu-gtk3
-, libsoup_3
-, gvfs
-}:
-
-let
+{
+  lib,
+  stdenv,
+  buildNpmPackage,
+  fetchFromGitLab,
+  nodePackages,
+  meson,
+  pkg-config,
+  ninja,
+  gobject-introspection,
+  gtk3,
+  libpulseaudio,
+  gjs,
+  python3,
+  wrapGAppsHook,
+  upower,
+  gnome,
+  gtk-layer-shell,
+  glib-networking,
+  networkmanager,
+  libdbusmenu-gtk3,
+  libsoup_3,
+}: let
   gvc-src = fetchFromGitLab {
     domain = "gitlab.gnome.org";
     owner = "GNOME";
@@ -31,62 +29,62 @@ let
     sha256 = "sha256-FosJwgTCp6/EI6WVbJhPisokRBA6oT0eo7d+Ya7fFX8=";
   };
 in
-stdenv.mkDerivation {
-  pname = "ags";
-  version = "1.3.0";
+  stdenv.mkDerivation {
+    pname = "ags";
+    version = "1.3.0";
 
-  src = buildNpmPackage {
-    name = "ags";
-    src = ../.;
+    src = buildNpmPackage {
+      name = "ags";
+      src = ../.;
 
-    dontBuild = true;
+      dontBuild = true;
 
-    npmDepsHash = "sha256-F77uJwK9VshEkEzevGzE5smU63KbplLnoxQwoc5jAiw=";
+      npmDepsHash = "sha256-F77uJwK9VshEkEzevGzE5smU63KbplLnoxQwoc5jAiw=";
 
-    installPhase = ''
-      mkdir $out
-      cp -r * $out
+      installPhase = ''
+        mkdir $out
+        cp -r * $out
+      '';
+    };
+
+    prePatch = ''
+      mkdir -p ./subprojects/gvc
+      cp -r ${gvc-src}/* ./subprojects/gvc
     '';
-  };
 
-  prePatch = ''
-    mkdir -p ./subprojects/gvc
-    cp -r ${gvc-src}/* ./subprojects/gvc
-  '';
+    postPatch = ''
+      chmod +x meson_post_install.py
+      patchShebangs meson_post_install.py
+    '';
 
-  postPatch = ''
-    chmod +x meson_post_install.py
-    patchShebangs meson_post_install.py
-  '';
+    nativeBuildInputs = [
+      pkg-config
+      meson
+      ninja
+      nodePackages.typescript
+      python3
+      wrapGAppsHook
+      gobject-introspection
+    ];
 
-  nativeBuildInputs = [
-    pkg-config
-    meson
-    ninja
-    nodePackages.typescript
-    python3
-    wrapGAppsHook
-    gobject-introspection
-  ];
+    buildInputs = [
+      gjs
+      gtk3
+      libpulseaudio
+      upower
+      gnome.gnome-bluetooth
+      gtk-layer-shell
+      glib-networking
+      networkmanager
+      libdbusmenu-gtk3
+      libsoup_3
+      gnome.gvfs
+    ];
 
-  buildInputs = [
-    gjs
-    gtk3
-    libpulseaudio
-    upower
-    gnome.gnome-bluetooth
-    gtk-layer-shell
-    glib-networking
-    networkmanager
-    libdbusmenu-gtk3
-    libsoup_3
-    gvfs
-  ];
-
-  meta = with lib; {
-    description = "A customizable and extensible shell";
-    homepage = "https://github.com/Aylur/ags";
-    platforms = [ "x86_64-linux" "aarch64-linux" ];
-    license = licenses.gpl3;
-  };
-}
+    meta = with lib; {
+      description = "A customizable and extensible shell";
+      homepage = "https://github.com/Aylur/ags";
+      platforms = ["x86_64-linux" "aarch64-linux"];
+      license = licenses.gpl3;
+    };
+  }

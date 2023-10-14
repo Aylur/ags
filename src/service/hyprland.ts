@@ -177,7 +177,7 @@ class HyprlandService extends Service {
             });
             this.notify('monitors');
         } catch (error) {
-            logError(error as Error);
+            console.error(error as Error);
         }
     }
 
@@ -191,7 +191,7 @@ class HyprlandService extends Service {
             });
             this.notify('workspaces');
         } catch (error) {
-            logError(error as Error);
+            console.error(error as Error);
         }
     }
 
@@ -205,7 +205,7 @@ class HyprlandService extends Service {
             });
             this.notify('clients');
         } catch (error) {
-            logError(error as Error);
+            console.error(error as Error);
         }
     }
 
@@ -301,7 +301,7 @@ class HyprlandService extends Service {
                     break;
             }
         } catch (error) {
-            logError(error as Error);
+            console.error(error as Error);
         }
 
         this.emit('changed');

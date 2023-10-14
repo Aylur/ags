@@ -146,7 +146,7 @@ export default class App extends Gtk.Application {
     getWindow(name: string) {
         const w = this._windows.get(name);
         if (!w)
-            console.error(`There is no window named ${name}`);
+            console.error(Error(`There is no window named ${name}`));
 
         return w;
     }
@@ -156,7 +156,7 @@ export default class App extends Gtk.Application {
 
         const win = this._windows.get(name);
         if (!win) {
-            console.error('There is no window named ' + name);
+            console.error(Error('There is no window named ' + name));
             return;
         }
 
@@ -166,8 +166,8 @@ export default class App extends Gtk.Application {
 
     addWindow(w: InstanceType<typeof Gtk.Window>) {
         if (!(w instanceof Gtk.Window)) {
-            console.error(`${w} is not an instanceof Gtk.Window, ` +
-                ` but it is of type ${typeof w}`);
+            console.error(Error(`${w} is not an instanceof Gtk.Window, ` +
+                ` but it is of type ${typeof w}`));
             return;
         }
 
@@ -175,7 +175,7 @@ export default class App extends Gtk.Application {
             () => this.emit('window-toggled', w.name, w.visible));
 
         if (this._windows.has(w.name!)) {
-            console.error('There is already a window named' + w.name);
+            console.error(Error('There is already a window named' + w.name));
             this.quit();
             return;
         }
@@ -215,7 +215,7 @@ export default class App extends Gtk.Application {
 
             this.emit('config-parsed');
         } catch (err) {
-            logError(err as Error);
+            console.error(err as Error);
         }
     }
 
@@ -253,7 +253,7 @@ export default class App extends Gtk.Application {
                 }
                 else { print(`${out}`); }
             })
-            .catch(logError);
+            .catch(err => console.error(err));
     }
 
     ToggleWindow(name: string) {

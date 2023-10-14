@@ -14,6 +14,7 @@ declare class Application extends Service {
     _frequency: number;
     get app(): import("../../types/gtk-types/gio-2.0.js").Gio.DesktopAppInfo;
     get frequency(): number;
+    set frequency(value: number);
     get name(): string | null;
     get desktop(): string | null;
     get description(): string | null;
