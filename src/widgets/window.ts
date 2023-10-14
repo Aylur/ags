@@ -1,7 +1,7 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service from '../service/service.js';
+import Service from '../service.js';
 import App from '../app.js';
 
 const { GtkLayerShell: LayerShell } = imports.gi;
