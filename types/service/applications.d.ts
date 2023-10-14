@@ -8,7 +8,7 @@ import "../gtk-types/nm-1.0-ambient";
 import "../gtk-types/soup-3.0-ambient";
 import "../gtk-types/gvc-1.0-ambient";
 import Gio from 'gi://Gio';
-import Service from './service.js';
+import Service from '../service.js';
 declare class Application extends Service {
     _app: InstanceType<typeof Gio.DesktopAppInfo>;
     _frequency: number;
@@ -21,13 +21,13 @@ declare class Application extends Service {
     get wm_class(): string | null;
     get executable(): string;
     get icon_name(): string | null;
-    constructor(app: InstanceType<typeof Gio.DesktopAppInfo>, frequency: number);
+    constructor(app: InstanceType<typeof Gio.DesktopAppInfo>, frequency?: number);
     private _match;
     getKey(key: string): string | null;
     match(term: string): boolean;
     launch(): void;
 }
-declare class ApplicationsService extends Service {
+declare class Applications extends Service {
     private _list;
     private _frequents;
     query(term: string): Application[];
@@ -39,13 +39,5 @@ declare class ApplicationsService extends Service {
     private _launched;
     private _sync;
 }
-export default class Applications {
-    static _instance: ApplicationsService;
-    static get instance(): ApplicationsService;
-    static query(term: string): Application[];
-    static get list(): Application[];
-    static get frequents(): {
-        [app: string]: number;
-    };
-}
-export {};
+declare const _default: Applications;
+export default _default;

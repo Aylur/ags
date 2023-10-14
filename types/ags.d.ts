@@ -47,12 +47,6 @@ declare module 'resource:///com/github/Aylur/ags/service/notifications.js' {
 }
 
 
-declare module 'resource:///com/github/Aylur/ags/service/service.js' {
-    const exports: typeof import('./service/service')
-    export = exports
-}
-
-
 declare module 'resource:///com/github/Aylur/ags/service/systemtray.js' {
     const exports: typeof import('./service/systemtray')
     export = exports

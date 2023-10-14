@@ -18,29 +18,23 @@ interface Config {
     };
     maxStreamVolume: number;
 }
-export default class App extends Gtk.Application {
+declare class App extends Gtk.Application {
     private _dbus;
-    private _windows;
     private _closeDelay;
     private _cssProviders;
-    private _busName;
     private _objectPath;
-    static configPath: string;
-    static configDir: string;
-    static config: Config;
-    static instance: App;
-    static removeWindow(w: InstanceType<typeof Gtk.Window> | string): void;
-    static addWindow(w: InstanceType<typeof Gtk.Window>): void;
-    static get windows(): Map<string, import("../types/gtk-types/gtk-3.0.js").Gtk.Window>;
-    static getWindow(name: string): import("../types/gtk-types/gtk-3.0.js").Gtk.Window | undefined;
-    static closeWindow(name: string): void;
-    static openWindow(name: string): void;
-    static toggleWindow(name: string): void;
-    static quit(): void;
-    static resetCss(): void;
-    static applyCss(path: string): void;
-    constructor(bus: string, path: string, configPath: string);
-    connectWidget(widget: InstanceType<typeof Gtk.Widget>, callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: any[]) => void, event?: string): void;
+    private _windows;
+    private _configPath;
+    private _configDir;
+    private _config;
+    get windows(): Map<string, import("../types/gtk-types/gtk-3.0.js").Gtk.Window>;
+    get configPath(): string;
+    get configDir(): string;
+    get config(): Config;
+    resetCss(): void;
+    applyCss(path: string): void;
+    setup(bus: string, path: string, configPath: string): void;
+    connectWidget(widget: InstanceType<typeof Gtk.Widget>, callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: unknown[]) => void, event?: string): void;
     vfunc_activate(): void;
     toggleWindow(name: string): string | undefined;
     openWindow(name: string): void;
@@ -56,4 +50,5 @@ export default class App extends Gtk.Application {
     Inspector(): void;
     Quit(): void;
 }
-export {};
+declare const _default: App;
+export default _default;

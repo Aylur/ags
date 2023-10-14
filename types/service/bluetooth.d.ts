@@ -7,7 +7,7 @@ import "../gtk-types/gobject-2.0-ambient";
 import "../gtk-types/nm-1.0-ambient";
 import "../gtk-types/soup-3.0-ambient";
 import "../gtk-types/gvc-1.0-ambient";
-import Service from './service.js';
+import Service from '../service.js';
 declare const GnomeBluetooth: typeof import("../../types/gtk-types/gnomebluetooth-3.0.js").GnomeBluetooth;
 declare class BluetoothDevice extends Service {
     private _device;
@@ -29,7 +29,7 @@ declare class BluetoothDevice extends Service {
     get connecting(): boolean;
     setConnection(connect: boolean): void;
 }
-declare class BluetoothService extends Service {
+declare class Bluetooth extends Service {
     private _client;
     private _devices;
     constructor();
@@ -45,16 +45,5 @@ declare class BluetoothService extends Service {
     get devices(): BluetoothDevice[];
     get connected_devices(): BluetoothDevice[];
 }
-export default class Bluetooth {
-    static _instance: BluetoothService;
-    static get instance(): BluetoothService;
-    static getDevice(address: string): BluetoothDevice | undefined;
-    static get enabled(): boolean;
-    static set enabled(enable: boolean);
-    static get state(): string;
-    static get devices(): BluetoothDevice[];
-    static get connectedDevices(): BluetoothDevice[];
-    static get connected_devices(): BluetoothDevice[];
-    static get ['connected-devices'](): BluetoothDevice[];
-}
-export {};
+declare const bluetoothService: Bluetooth;
+export default bluetoothService;

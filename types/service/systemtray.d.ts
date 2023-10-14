@@ -10,7 +10,7 @@ import "../gtk-types/gvc-1.0-ambient";
 import Gio from 'gi://Gio';
 import Gdk from 'gi://Gdk?version=3.0';
 import DbusmenuGtk3 from 'gi://DbusmenuGtk3';
-import Service from './service.js';
+import Service from '../service.js';
 export declare class TrayItem extends Service {
     private _proxy;
     private _busName;
@@ -34,7 +34,7 @@ export declare class TrayItem extends Service {
     private _refreshAllProperties;
     private _getPixbuf;
 }
-declare class SystemTrayService extends Service {
+declare class SystemTray extends Service {
     private _dbus;
     private _items;
     get IsStatusNotifierHostRegistered(): boolean;
@@ -46,10 +46,5 @@ declare class SystemTrayService extends Service {
     private _register;
     RegisterStatusNotifierItemAsync(serviceName: string[], invocation: InstanceType<typeof Gio.DBusMethodInvocation>): void;
 }
-export default class SystemTray {
-    static _instance: SystemTrayService;
-    static get instance(): SystemTrayService;
-    static get items(): TrayItem[];
-    static getItem(name: string): TrayItem | undefined;
-}
-export {};
+declare const _default: SystemTray;
+export default _default;

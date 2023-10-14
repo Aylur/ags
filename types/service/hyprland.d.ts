@@ -7,7 +7,7 @@ import "../gtk-types/gobject-2.0-ambient";
 import "../gtk-types/nm-1.0-ambient";
 import "../gtk-types/soup-3.0-ambient";
 import "../gtk-types/gvc-1.0-ambient";
-import Service from './service.js';
+import Service from '../service.js';
 declare class Active extends Service {
     updateProperty(prop: string, value: unknown): void;
 }
@@ -34,7 +34,7 @@ declare class Actives extends Service {
     get monitor(): string;
     get workspace(): ActiveWorkspace;
 }
-declare class HyprlandService extends Service {
+declare class Hyprland extends Service {
     private _active;
     private _monitors;
     private _workspaces;
@@ -54,16 +54,5 @@ declare class HyprlandService extends Service {
     private _syncClients;
     private _onEvent;
 }
-export default class Hyprland {
-    static _instance: HyprlandService;
-    static get instance(): HyprlandService;
-    static getMonitor(id: number): object | undefined;
-    static getWorkspace(id: number): object | undefined;
-    static getClient(address: string): object | undefined;
-    static get monitors(): object[];
-    static get workspaces(): object[];
-    static get clients(): object[];
-    static get active(): Actives;
-    static HyprctlGet(cmd: string): unknown | object;
-}
-export {};
+declare const _default: Hyprland;
+export default _default;

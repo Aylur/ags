@@ -7,7 +7,7 @@ import "../gtk-types/gobject-2.0-ambient";
 import "../gtk-types/nm-1.0-ambient";
 import "../gtk-types/soup-3.0-ambient";
 import "../gtk-types/gvc-1.0-ambient";
-import Service from './service.js';
+import Service from '../service.js';
 type PlaybackStatus = 'Playing' | 'Paused' | 'Stopped';
 type LoopStatus = 'None' | 'Track' | 'Playlist';
 declare class MprisPlayer extends Service {
@@ -64,7 +64,7 @@ declare class MprisPlayer extends Service {
     shuffle(): void;
     loop(): void;
 }
-declare class MprisService extends Service {
+declare class Mpris extends Service {
     private _players;
     private _proxy;
     get players(): MprisPlayer[];
@@ -74,10 +74,5 @@ declare class MprisService extends Service {
     private _onNameOwnerChanged;
     getPlayer(name?: string): MprisPlayer | null;
 }
-export default class Mpris {
-    static _instance: MprisService;
-    static get instance(): MprisService;
-    static getPlayer(name: string): MprisPlayer | null;
-    static get players(): MprisPlayer[];
-}
-export {};
+declare const _default: Mpris;
+export default _default;

@@ -119,7 +119,7 @@ export class TrayItem extends Service {
     private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
         if (proxy.Menu) {
             const menu = Widget<
-                InstanceType<typeof Gtk.Widget>,
+                DbusmenuGtk3Types.Menu,
                 // quick hack around the weirdness of direct types
                 WidgetParams<InstanceType<typeof Gtk.Widget>> & DbusmenuGtk3Types.Menu.ConstructorProperties,
                 typeof DbusmenuGtk3.Menu

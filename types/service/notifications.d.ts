@@ -8,7 +8,7 @@ import "../gtk-types/nm-1.0-ambient";
 import "../gtk-types/soup-3.0-ambient";
 import "../gtk-types/gvc-1.0-ambient";
 import GLib from 'gi://GLib';
-import Service from './service.js';
+import Service from '../service.js';
 interface Action {
     id: string;
     label: string;
@@ -73,7 +73,7 @@ declare class Notification extends Service {
     private _appIconIsFile;
     private _parseImageData;
 }
-declare class NotificationsService extends Service {
+declare class Notifications extends Service {
     private _dbus;
     private _notifications;
     private _dnd;
@@ -101,18 +101,5 @@ declare class NotificationsService extends Service {
     private _readFromFile;
     private _cache;
 }
-export default class Notifications {
-    static _instance: NotificationsService;
-    static get instance(): NotificationsService;
-    static invoke(id: number, actionId: string): void;
-    static dismiss(id: number): void;
-    static close(id: number): void;
-    static clear(): void;
-    static getPopup(id: number): Notification | null;
-    static getNotification(id: number): Notification | undefined;
-    static get popups(): Notification[];
-    static get notifications(): Notification[];
-    static get dnd(): boolean;
-    static set dnd(value: boolean);
-}
-export {};
+declare const _default: Notifications;
+export default _default;

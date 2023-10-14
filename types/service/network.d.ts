@@ -8,7 +8,7 @@ import "../gtk-types/nm-1.0-ambient";
 import "../gtk-types/soup-3.0-ambient";
 import "../gtk-types/gvc-1.0-ambient";
 import NM from 'gi://NM';
-import Service from './service.js';
+import Service from '../service.js';
 declare class Wifi extends Service {
     private _client;
     private _device;
@@ -42,7 +42,7 @@ declare class Wired extends Service {
     get state(): "failed" | "disconnected" | "unmanaged" | "unavailable" | "prepare" | "config" | "need_auth" | "ip_config" | "ip_check" | "secondaries" | "activated" | "deactivating" | "unknown";
     get icon_name(): "network-wired-acquiring-symbolic" | "network-wired-symbolic" | "network-wired-no-route-symbolic" | "network-wired-disconnected-symbolic";
 }
-declare class NetworkService extends Service {
+declare class Network extends Service {
     private _client;
     wifi: Wifi;
     wired: Wired;
@@ -54,13 +54,5 @@ declare class NetworkService extends Service {
     private _clientReady;
     private _sync;
 }
-export default class Network {
-    static _instance: NetworkService;
-    static get instance(): NetworkService;
-    static toggleWifi(): void;
-    static get connectivity(): string;
-    static get primary(): string | undefined;
-    static get wifi(): Wifi;
-    static get wired(): Wired;
-}
-export {};
+declare const networkService: Network;
+export default networkService;

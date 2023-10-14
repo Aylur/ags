@@ -10,14 +10,7 @@ import "../gtk-types/gvc-1.0-ambient";
 import Gtk from 'gi://Gtk?version=3.0';
 import GObject from 'gi://GObject';
 export type Command = string | ((...args: unknown[]) => boolean);
-type ConnectWidget = (widget: InstanceType<typeof Gtk.Widget>, callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: unknown[]) => void, event?: string) => void;
-export interface Connectable extends InstanceType<typeof GObject.Object> {
-    instance: {
-        connectWidget: ConnectWidget;
-    };
-    connectWidget: ConnectWidget;
-}
-export interface CommonParams {
+export interface CommonParams<T extends InstanceType<typeof Gtk.Widget>> {
     className?: string;
     style?: string;
     css?: string;
@@ -25,23 +18,26 @@ export interface CommonParams {
     valign?: 'start' | 'center' | 'end' | 'fill';
     connections?: ([
         string,
-        (...args: unknown[]) => unknown
+        (widget: T) => unknown
     ] | [
         number,
-        (...args: unknown[]) => unknown
+        (widget: T) => unknown
     ] | [
-        Connectable,
-        (...args: unknown[]) => unknown,
+        InstanceType<typeof GObject.Object> & {
+            connectWidget: unknown;
+        },
+        (widget: T, ...args: unknown[]) => unknown,
         string
     ])[];
     properties?: [prop: string, value: unknown][];
     binds?: [
         prop: string,
-        obj: Connectable,
+        obj: InstanceType<typeof GObject.Object> & {
+            connectWidget: unknown;
+        },
         objProp?: string,
         transform?: (value: unknown) => unknown
     ][];
-    setup?: (widget: InstanceType<typeof Gtk.Widget>) => void;
+    setup?: (widget: T) => void;
 }
-export declare function constructor<Output extends InstanceType<typeof Gtk.Widget>, Params extends CommonParams & ConstructorParameters<Class>[0], Class extends new (arg: Omit<Params, keyof CommonParams>) => Output | any>(ctor: Class, params: Params): InstanceType<Class>;
-export {};
+export declare function constructor<Output extends InstanceType<typeof Gtk.Widget>, Params extends CommonParams<Output> | ConstructorParameters<Class>[0], Class extends new (arg: Omit<Params, keyof CommonParams<Output>>) => InstanceType<Class> & Output>(ctor: Class, params: Params): InstanceType<Class>;

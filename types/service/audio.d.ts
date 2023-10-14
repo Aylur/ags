@@ -7,7 +7,7 @@ import "../gtk-types/gobject-2.0-ambient";
 import "../gtk-types/nm-1.0-ambient";
 import "../gtk-types/soup-3.0-ambient";
 import "../gtk-types/gvc-1.0-ambient";
-import Service from './service.js';
+import Service from '../service.js';
 import Gvc from 'gi://Gvc';
 declare class Stream extends Service {
     private _stream;
@@ -26,7 +26,7 @@ declare class Stream extends Service {
     set volume(value: number);
     close(): void;
 }
-declare class AudioService extends Service {
+declare class Audio extends Service {
     private _control;
     private _streams;
     private _streamBindings;
@@ -49,16 +49,5 @@ declare class AudioService extends Service {
     private _streamRemoved;
     private _getStreams;
 }
-export default class Audio {
-    static _instance: AudioService;
-    static get instance(): AudioService;
-    static getStream(id: number): Stream | undefined;
-    static get microphones(): Stream[];
-    static get speakers(): Stream[];
-    static get apps(): Stream[];
-    static get microphone(): Stream;
-    static set microphone(stream: Stream);
-    static get speaker(): Stream;
-    static set speaker(stream: Stream);
-}
-export {};
+declare const audioService: Audio;
+export default audioService;
