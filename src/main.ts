@@ -77,7 +77,7 @@ export function main(args: string[]) {
 
             case 'clear-cache':
             case '--clear-cache':
-                Utils.execAsync(`rm -r ${Utils.CACHE_DIR}`);
+                Gio.File.new_for_path(Utils.CACHE_DIR).trash(null);
                 break;
 
             case '-b':
