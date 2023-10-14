@@ -15,11 +15,21 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: 'recursive'
-      - name: Create tar file
+      - name: Create ags tar file
         run: |
             cd ..
             tar -czf "ags-${{ github.ref_name }}.tar.gz" "ags"
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: latest
+      - name: npm install
+        run: npm install
+      - name: create node tar file
+        run: tar -czf "node_modules-${{ github.ref_name }}.tar.gz" "node_modules"
       - name: Upload assets
         uses: softprops/action-gh-release@v1
         with:
-          files: ../ags-${{ github.ref_name }}.tar.gz
+          files: |
+            ../ags-${{ github.ref_name }}.tar.gz
+            node_modules-${{ github.ref_name }}.tar.gz
