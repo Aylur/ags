@@ -16,9 +16,9 @@ import { AgsMenu, AgsMenuItem } from './widgets/menu.js';
 import AgsWindow from './widgets/window.js';
 import AgsCircularProgress from './widgets/circularprogress.js';
 import { constructor, CommonParams } from './widgets/constructor.js';
-import type Gtk from 'types/gtk-types/gtk-3.0.js';
+import type Gtk from 'gi://Gtk';
 
-export interface WidgetParams<T extends Gtk.Widget> extends CommonParams<T> {
+export interface WidgetParams<T extends InstanceType<typeof Gtk.Widget>> extends CommonParams<T> {
     type: new(arg: Omit<WidgetParams<T>, keyof CommonParams<T> | "type">) => T;
 }
 

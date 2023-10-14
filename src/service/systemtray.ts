@@ -4,7 +4,7 @@ import Gdk from 'gi://Gdk?version=3.0';
 import Gtk from 'gi://Gtk?version=3.0';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import DbusmenuGtk3 from 'gi://DbusmenuGtk3';
-import type DbusmenuGtk3Types from 'types/gtk-types/dbusmenugtk3-0.4.js';
+import type DbusmenuGtk3Types from '../../types/gtk-types/dbusmenugtk3-0.4.js';
 import Service from '../service.js';
 import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';

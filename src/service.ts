@@ -1,6 +1,6 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import type GObjectTypes from 'types/gtk-types/gobject-2.0';
+import type GObjectTypes from '../types/gtk-types/gobject-2.0';
 import { connect } from './utils.js';
 
 type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'double' | 'boolean' | 'gobject';

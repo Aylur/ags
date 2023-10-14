@@ -9,7 +9,7 @@ import "./gtk-types/soup-3.0-ambient";
 import "./gtk-types/gvc-1.0-ambient";
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import type GObjectTypes from 'types/gtk-types/gobject-2.0';
+import type GObjectTypes from '../types/gtk-types/gobject-2.0';
 type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'double' | 'boolean' | 'gobject';
 type PspecFlag = 'rw' | 'r' | 'w';
 export default class Service extends GObject.Object {
