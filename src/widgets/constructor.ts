@@ -4,17 +4,6 @@ import { connect, interval } from '../utils.js';
 
 export type Command = string | ((...args: unknown[]) => boolean);
 
-type ConnectWidget = (
-    widget: Gtk.Widget,
-    callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
-    event?: string
-) => void
-
-interface Connectable extends GObject.Object {
-    instance: { connectWidget: ConnectWidget }
-    connectWidget: ConnectWidget
-}
-
 interface CommonParams {
     className?: string
     style?: string
@@ -24,12 +13,12 @@ interface CommonParams {
     connections?: (
         [string, (...args: unknown[]) => unknown] |
         [number, (...args: unknown[]) => unknown] |
-        [Connectable, (...args: unknown[]) => unknown, string]
+        [GObject.Object, (...args: unknown[]) => unknown, string]
     )[]
     properties?: [prop: string, value: unknown][]
     binds?: [
         prop: string,
-        obj: Connectable,
+        obj: GObject.Object,
         objProp?: string,
         transform?: (value: unknown) => unknown][],
     setup?: (widget: Gtk.Widget) => void
@@ -120,14 +109,11 @@ function parseCommon(widget: Gtk.Widget, {
             else if (typeof s === 'number')
                 interval(s, () => callback(widget), widget);
 
-            else if (typeof s?.connectWidget === 'function')
-                s.connectWidget(widget, callback, event);
-
-            else if (typeof s?.connect === 'function')
+            else if (s instanceof GObject.Object)
                 connect(s, widget, callback, event);
 
             else
-                console.error(Error(`${s} is not connectable`));
+                console.error(Error(`${s} is not a GObject nor a string nor a number`));
         });
     }
 

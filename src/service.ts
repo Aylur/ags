@@ -1,6 +1,4 @@
 import GObject from 'gi://GObject';
-import Gtk from 'gi://Gtk?version=3.0';
-import { connect } from './utils.js';
 import { type Ctor } from 'gi-types/gobject2.js';
 
 type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'double' | 'boolean' | 'gobject';
@@ -82,12 +80,8 @@ export default class Service extends GObject.Object {
         GObject.registerClass({ Signals, Properties }, service);
     }
 
-    connectWidget(
-        widget: Gtk.Widget,
-        callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
-        event = 'changed',
-    ) {
-        connect(this, widget, callback, event);
+    connect(signal = 'changed', callback: (_: this, ...args: any[]) => void): number {
+        return super.connect(signal, callback);
     }
 
     updateProperty(prop: string, value: unknown) {

@@ -12,7 +12,7 @@ interface Options {
     listen?: Listen
 }
 
-class AgsVariable extends GObject.Object {
+export class Variable extends GObject.Object {
     static {
         GObject.registerClass({
             GTypeName: 'AgsVariable',
@@ -46,6 +46,10 @@ class AgsVariable extends GObject.Object {
             this._listen = listen;
             this.startListen();
         }
+    }
+
+    connect(signal = 'notify::value', callback: (_: this, ...args: any[]) => void): number {
+        return super.connect(signal, callback);
     }
 
     startPoll() {
@@ -137,4 +141,4 @@ class AgsVariable extends GObject.Object {
     set value(value: any) { this.setValue(value); }
 }
 
-export default (value: any, options: Options) => new AgsVariable(value, options);
+export default (value: any, options: Options) => new Variable(value, options);

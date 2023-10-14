@@ -3,7 +3,7 @@ import Gdk from 'gi://Gdk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import { timeout, connect } from './utils.js';
+import { timeout } from './utils.js';
 import { loadInterfaceXML } from './utils.js';
 
 const AgsIFace = (bus: string) =>
@@ -18,7 +18,7 @@ interface Config {
     maxStreamVolume: number
 }
 
-class App extends Gtk.Application {
+export class App extends Gtk.Application {
     static {
         GObject.registerClass({
             Signals: {
@@ -87,18 +87,14 @@ class App extends Gtk.Application {
         this._configPath = configPath;
     }
 
-    connectWidget(
-        widget: Gtk.Widget,
-        callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
-        event = 'window-toggled',
-    ) {
-        connect(this, widget, callback, event);
-    }
-
     vfunc_activate() {
         this.hold();
         this._register();
         this._load();
+    }
+
+    connect(signal = 'window-toggled', callback: (_: this, ...args: any[]) => void): number {
+        return super.connect(signal, callback);
     }
 
     toggleWindow(name: string) {
