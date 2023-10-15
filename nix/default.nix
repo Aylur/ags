@@ -29,13 +29,6 @@ let
     rev = "8e7a5a4c3e51007ce6579292642517e3d3eb9c50";
     sha256 = "sha256-FosJwgTCp6/EI6WVbJhPisokRBA6oT0eo7d+Ya7fFX8=";
   };
-  gi-types-src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    owner = "BrainBlasted";
-    repo = "gi-typescript-definitions";
-    rev = "eb2a87a25c5e2fb580b605fbec0bd312fe34c492";
-    sha256 = "sha256-MNLrlKeWZI9EDO/8/gaXpAlrWv9B49jSu4keWDh3q9g=";
-  };
 in
 stdenv.mkDerivation {
   pname = "ags";
@@ -57,9 +50,7 @@ stdenv.mkDerivation {
 
   prePatch = ''
     mkdir -p ./subprojects/gvc
-    mkdir -p ./gi-types
     cp -r ${gvc-src}/* ./subprojects/gvc
-    cp -r ${gi-types-src}/* ./gi-types
   '';
 
   postPatch = ''

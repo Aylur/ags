@@ -30,7 +30,6 @@ function isRunning(dbusName: string) {
         '/org/freedesktop/DBus',
         'org.freedesktop.DBus',
         'NameHasOwner',
-        // @ts-expect-error
         GLib.Variant.new_tuple([new GLib.Variant('s', dbusName)]),
         new GLib.VariantType('(b)'),
         Gio.DBusCallFlags.NONE,

@@ -180,8 +180,8 @@ export default class AgsWindow extends Gtk.Window {
         if (popup) {
             this.connect('key-press-event', (_, event) => {
                 if (event.get_keyval()[1] === Gdk.KEY_Escape) {
-                    App.getWindow(this.name)
-                        ? App.closeWindow(this.name)
+                    App.getWindow(this.name!)
+                        ? App.closeWindow(this.name!)
                         : this.hide();
                 }
             });

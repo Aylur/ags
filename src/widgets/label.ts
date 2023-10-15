@@ -22,15 +22,15 @@ export default class AgsLabel extends Gtk.Label {
         super(typeof params === 'string' ? { label: params } : params);
     }
 
-    get label() { return super.label; }
+    get label() { return super.label || ''; }
     set label(label: string) {
-        if (this.useMarkup) {
+        if (this.use_markup) {
             try {
-                // @ts-expect-error
                 Pango.parse_markup(label, label.length, '0');
             } catch (e) {
+                // @ts-expect-error
                 if (e instanceof GLib.MarkupError)
-                    label = GLib.markup_escape_text(label, -1);
+                    label = GLib.markup_escape_text(label, -1) || '';
                 else
                     console.error(e as Error);
             }

@@ -195,8 +195,8 @@ export function execAsync(cmd: string | string[]): Promise<string> {
 
                 const [, stdout, stderr] = proc.communicate_utf8_finish(res);
                 proc.get_successful()
-                    ? resolve(stdout.trim())
-                    : reject(stderr.trim());
+                    ? resolve(stdout!.trim())
+                    : reject(stderr!.trim());
             } catch (e) {
                 reject(e);
             }

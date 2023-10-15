@@ -1,33 +1,23 @@
 {
     "compilerOptions": {
-        "target": "es2022",
-        "module": "ES2020",
-        "lib": [
-            "ES2017"
-        ],
+        "target": "ES2022",
+        "module": "ES2022",
+        "lib": ["ES2017"],
         "allowJs": true,
         "checkJs": false,
         "outDir": "_build/tsc-out",
         "strict": true,
         "moduleResolution": "node",
         "baseUrl": ".",
-        "paths": {
-            "*": [
-                "*",
-                "types/*",
-                "gi-types/*"
-            ]
-        },
         "typeRoots": [
-            "gi-types"
+            "./node_modules/@girs"
         ],
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true
     },
     "include": [
-        "gi-types/gi.d.ts",
+        "@girs",
         "types/*",
-        "src/*",
-        "src/*/*"
+        "src"
     ]
 }

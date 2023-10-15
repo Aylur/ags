@@ -1,7 +1,7 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import Gdk from 'gi://Gdk?version=3.0';
 import { runCmd } from '../utils.js';
-import { EventButton, EventScroll, EventKey } from 'gi-types/gdk3';
 import { Command } from './constructor.js';
 import Service from '../service.js';
 
@@ -43,7 +43,7 @@ export default class AgsSlider extends Gtk.Scale {
             adjustment: new Gtk.Adjustment({
                 lower: min,
                 upper: max,
-                stepIncrement: step,
+                step_increment: step,
             }),
         });
 
@@ -55,7 +55,7 @@ export default class AgsSlider extends Gtk.Scale {
 
             typeof this.onChange === 'function'
                 ? this.onChange(this, event, value)
-                : runCmd((onChange as string).replace(/\{\}/g, value));
+                : runCmd((onChange as string).replace(/\{\}/g, `${value}`));
         });
 
         if (value)
@@ -89,12 +89,12 @@ export default class AgsSlider extends Gtk.Scale {
         this.notify('max');
     }
 
-    get step() { return this.adjustment.stepIncrement; }
+    get step() { return this.adjustment.step_increment; }
     set step(step: number) {
         if (this.step === step)
             return;
 
-        this.adjustment.stepIncrement = step;
+        this.adjustment.step_increment = step;
         this.notify('step');
     }
 
@@ -120,27 +120,27 @@ export default class AgsSlider extends Gtk.Scale {
         this.notify('vertical');
     }
 
-    vfunc_button_release_event(event: EventButton): boolean {
+    vfunc_button_release_event(event: Gdk.EventButton): boolean {
         this.dragging = false;
         return super.vfunc_button_release_event(event);
     }
 
-    vfunc_button_press_event(event: EventButton): boolean {
+    vfunc_button_press_event(event: Gdk.EventButton): boolean {
         this.dragging = true;
         return super.vfunc_button_press_event(event);
     }
 
-    vfunc_key_press_event(event: EventKey): boolean {
+    vfunc_key_press_event(event: Gdk.EventKey): boolean {
         this.dragging = true;
         return super.vfunc_key_press_event(event);
     }
 
-    vfunc_key_release_event(event: EventKey): boolean {
+    vfunc_key_release_event(event: Gdk.EventKey): boolean {
         this.dragging = false;
         return super.vfunc_key_release_event(event);
     }
 
-    vfunc_scroll_event(event: EventScroll): boolean {
+    vfunc_scroll_event(event: Gdk.EventScroll): boolean {
         this.dragging = true;
         event.delta_y > 0
             ? this.adjustment.value -= this.step

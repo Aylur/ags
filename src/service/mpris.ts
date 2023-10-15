@@ -6,12 +6,12 @@ import { CACHE_DIR } from '../utils.js';
 import { loadInterfaceXML } from '../utils.js';
 import { DBusProxy, PlayerProxy, MprisProxy } from '../dbus/types.js';
 
-const DBusIFace = loadInterfaceXML('org.freedesktop.DBus');
-const PlayerIFace = loadInterfaceXML('org.mpris.MediaPlayer2.Player');
-const MprisIFace = loadInterfaceXML('org.mpris.MediaPlayer2');
-const DBusProxy = Gio.DBusProxy.makeProxyWrapper(DBusIFace) as DBusProxy;
-const PlayerProxy = Gio.DBusProxy.makeProxyWrapper(PlayerIFace) as PlayerProxy;
-const MprisProxy = Gio.DBusProxy.makeProxyWrapper(MprisIFace) as MprisProxy;
+const DBusIFace = loadInterfaceXML('org.freedesktop.DBus')!;
+const PlayerIFace = loadInterfaceXML('org.mpris.MediaPlayer2.Player')!;
+const MprisIFace = loadInterfaceXML('org.mpris.MediaPlayer2')!;
+const DBusProxy = Gio.DBusProxy.makeProxyWrapper(DBusIFace) as unknown as DBusProxy;
+const PlayerProxy = Gio.DBusProxy.makeProxyWrapper(PlayerIFace) as unknown as PlayerProxy;
+const MprisProxy = Gio.DBusProxy.makeProxyWrapper(MprisIFace) as unknown as MprisProxy;
 
 const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
 
@@ -144,7 +144,7 @@ class MprisPlayer extends Service {
     private _updateState() {
         const metadata = {} as MprisMetadata;
         for (const prop in this._playerProxy.Metadata)
-            metadata[prop] = this._playerProxy.Metadata[prop].deep_unpack();
+            metadata[prop] = this._playerProxy.Metadata[prop].deepUnpack();
 
         let trackArtists = metadata['xesam:artist'];
         if (!Array.isArray(trackArtists) ||
@@ -199,7 +199,7 @@ class MprisPlayer extends Service {
             Gio.FileCopyFlags.OVERWRITE,
             GLib.PRIORITY_DEFAULT,
             // @ts-expect-error
-            null, null, (source, result) => {
+            null, null, (source: Gio.File, result: Gio.AsyncResult) => {
                 try {
                     source.copy_finish(result);
                     this.changed('cover-path');
@@ -335,7 +335,7 @@ class Mpris extends Service {
     }
 
     private _onNameOwnerChanged(
-        _proxy: string,
+        _proxy: Gio.DBusProxy,
         _sender: string,
         [name, oldOwner, newOwner]: string[],
     ) {

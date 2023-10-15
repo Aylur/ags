@@ -4,9 +4,8 @@ import { timeout } from '../utils.js';
 import { loadInterfaceXML } from '../utils.js';
 import { type BatteryProxy } from '../dbus/types.js';
 
-const BatteryIFace = loadInterfaceXML('org.freedesktop.UPower.Device');
-const PowerManagerProxy =
-    Gio.DBusProxy.makeProxyWrapper(BatteryIFace) as BatteryProxy;
+const BatteryIFace = loadInterfaceXML('org.freedesktop.UPower.Device')!;
+const PowerManagerProxy = Gio.DBusProxy.makeProxyWrapper(BatteryIFace) as unknown as BatteryProxy;
 
 const DeviceState = {
     CHARGING: 1,

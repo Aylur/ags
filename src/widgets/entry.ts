@@ -24,13 +24,13 @@ export default class AgsEntry extends Gtk.Entry {
         this.connect('activate', () => {
             typeof this.onAccept === 'function'
                 ? this.onAccept(this)
-                : runCmd(this.onAccept.replace(/\{\}/g, this.text));
+                : runCmd(this.onAccept.replace(/\{\}/g, this.text || ''));
         });
 
         this.connect('notify::text', ({ text }, event) => {
             typeof this.onChange === 'function'
                 ? this.onChange(this, event)
-                : runCmd(this.onChange.replace(/\{\}/g, text));
+                : runCmd(this.onChange.replace(/\{\}/g, text || ''));
         });
     }
 }

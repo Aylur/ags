@@ -1,7 +1,3 @@
-[submodule "gi-types"]
-	path = gi-types
-	url = https://gitlab.gnome.org/BrainBlasted/gi-typescript-definitions
-	branch = nightly
 [submodule "subprojects/gvc"]
 	path = subprojects/gvc
 	url = https://gitlab.gnome.org/GNOME/libgnome-volume-control

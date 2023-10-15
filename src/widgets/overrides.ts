@@ -44,7 +44,7 @@ function setCss(widget: Gtk.Widget, css: string) {
 
     const provider = new Gtk.CssProvider();
     widgetProviders.set(widget, provider);
-    provider.load_from_data(css);
+    provider.load_from_data(new TextEncoder().encode(css));
     widget.get_style_context()
         .add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 }

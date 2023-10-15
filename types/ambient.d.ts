@@ -39,18 +39,3 @@ declare class TextEncoder {
     constructor();
     encode(input?: string): Uint8Array;
 }
-
-declare module 'gi://Gvc' {
-    import Gvc10 from '@girs/gvc-1.0';
-    export default Gvc10;
-}
-
-declare module 'gi://NM' {
-    import NM10 from '@girs/nm-1.0';
-    export default NM10;
-}
-
-declare module 'gi://DbusmenuGtk3' {
-    import Dbusmenu from '@girs/dbusmenugtk3-0.4';
-    export default Dbusmenu;
-}

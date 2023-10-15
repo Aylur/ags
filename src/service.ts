@@ -1,5 +1,4 @@
 import GObject from 'gi://GObject';
-import { type Ctor } from 'gi-types/gobject2.js';
 
 type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'double' | 'boolean' | 'gobject';
 type PspecFlag = 'rw' | 'r' | 'w';
@@ -42,16 +41,15 @@ export default class Service extends GObject.Object {
                 name, name, name, flags, false);
 
             case 'gobject': return GObject.ParamSpec.object(
-                name, name, name, flags, GObject.Object);
+                name, name, name, flags, GObject.Object.$gtype);
 
-            // @ts-expect-error
             default: return GObject.ParamSpec.jsobject(
-                name, name, name, flags, null);
+                name, name, name, flags);
         }
     }
 
     static register(
-        service: Ctor,
+        service: new (...args: any[]) => GObject.Object,
         signals?: { [signal: string]: string[] },
         properties?: { [prop: string]: [type?: PspecType, handle?: PspecFlag] },
     ) {
@@ -80,6 +78,7 @@ export default class Service extends GObject.Object {
         GObject.registerClass({ Signals, Properties }, service);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     connect(signal = 'changed', callback: (_: this, ...args: any[]) => void): number {
         return super.connect(signal, callback);
     }
