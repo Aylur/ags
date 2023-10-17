@@ -16,6 +16,7 @@ class Stream extends Service {
         Service.register(this, {
             'closed': [],
         }, {
+            'application-id': ['string'],
             'description': ['string'],
             'is-muted': ['boolean'],
             'volume': ['float', 'rw'],
@@ -34,6 +35,7 @@ class Stream extends Service {
 
         this._stream = stream;
         this._ids = [
+            'application-id',
             'description',
             'is-muted',
             'volume',
@@ -45,6 +47,7 @@ class Stream extends Service {
         }));
     }
 
+    get application_id() { return this._stream.application_id; }
     get stream() { return this._stream; }
     get description() { return this._stream.description; }
     get icon_name() { return this._stream.icon_name; }
@@ -94,9 +97,10 @@ class Audio extends Service {
             'stream-added': ['int'],
             'stream-removed': ['int'],
         }, {
-            'apps': ['jsobject', 'rw'],
-            'speakers': ['jsobject', 'rw'],
-            'microphones': ['jsobject', 'rw'],
+            'apps': ['jsobject'],
+            'recorders': ['jsobject'],
+            'speakers': ['jsobject'],
+            'microphones': ['jsobject'],
             'speaker': ['jsobject', 'rw'],
             'microphone': ['jsobject', 'rw'],
         });
@@ -145,6 +149,7 @@ class Audio extends Service {
     get microphones() { return this._getStreams(Gvc.MixerSource); }
     get speakers() { return this._getStreams(Gvc.MixerSink); }
     get apps() { return this._getStreams(Gvc.MixerSinkInput); }
+    get recorders() { return this._getStreams(Gvc.MixerSourceOutput); }
 
     getStream(id: number) {
         return this._streams.get(id);
@@ -175,15 +180,7 @@ class Audio extends Service {
         this._streams.set(id, stream);
         this._streamBindings.set(id, binding);
 
-        if (gvcstream instanceof Gvc.MixerSource)
-            this.notify('microphones');
-
-        if (gvcstream instanceof Gvc.MixerSink)
-            this.notify('speakers');
-
-        if (gvcstream instanceof Gvc.MixerSinkInput)
-            this.notify('apps');
-
+        this._notifyStreams(stream);
         this.emit('stream-added', id);
         this.emit('changed');
     }
@@ -200,15 +197,7 @@ class Audio extends Service {
         this._streamBindings.delete(id);
         this.emit('stream-removed', id);
 
-        if (stream.stream instanceof Gvc.MixerSource)
-            this.notify('microphones');
-
-        if (stream.stream instanceof Gvc.MixerSink)
-            this.notify('speakers');
-
-        if (stream.stream instanceof Gvc.MixerSinkInput)
-            this.notify('apps');
-
+        this._notifyStreams(stream);
         this.emit('changed');
     }
 
@@ -219,6 +208,20 @@ class Audio extends Service {
                 list.push(stream);
         }
         return list;
+    }
+
+    private _notifyStreams(stream: Stream) {
+        if (stream.stream instanceof Gvc.MixerSource)
+            this.notify('microphones');
+
+        if (stream.stream instanceof Gvc.MixerSink)
+            this.notify('speakers');
+
+        if (stream.stream instanceof Gvc.MixerSinkInput)
+            this.notify('apps');
+
+        if (stream.stream instanceof Gvc.MixerSourceOutput)
+            this.notify('recorders');
     }
 }
 
