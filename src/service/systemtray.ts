@@ -14,7 +14,10 @@ const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem')!;
 const StatusNotifierItemProxy =
     Gio.DBusProxy.makeProxyWrapper(StatusNotifierItemIFace) as unknown as StatusNotifierItemProxy;
 
-const DbusMenu = mkCtor < DbusmenuGtk3.Menu.ConstructorProperties > (DbusmenuGtk3.Menu, 'DbusMenu');
+const DbusMenu = mkCtor<
+    typeof DbusmenuGtk3.Menu,
+    DbusmenuGtk3.Menu.ConstructorProperties
+>(DbusmenuGtk3.Menu, 'DbusMenu');
 
 export class TrayItem extends Service {
     static {
@@ -122,7 +125,7 @@ export class TrayItem extends Service {
                 dbus_name: proxy.g_name_owner,
                 dbus_object: proxy.Menu,
             });
-            this.menu = menu as unknown as DbusmenuGtk3.Menu;
+            this.menu = (menu as unknown) as DbusmenuGtk3.Menu;
         }
 
         if (this._proxy.IconThemePath) {
@@ -169,7 +172,7 @@ export class TrayItem extends Service {
                 const variant = proxy?.call_finish(result) as GLib.Variant;
                 if (!variant)
                     return;
-                const [properties] = variant.deepUnpack < Record < string, GLib.Variant> [] > ();
+                const [properties] = variant.deepUnpack < Record < string, GLib.Variant> [] >();
                 Object.entries(properties).map(([propertyName, value]) => {
                     this._proxy.set_cached_property(propertyName, value);
                 });

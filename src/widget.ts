@@ -16,41 +16,43 @@ import AgsEntry, { type EntryProps } from './widgets/entry.js';
 import { AgsMenu, AgsMenuItem, type MenuProps, type MenuItemProps } from './widgets/menu.js';
 import AgsWindow, { type WindowProps } from './widgets/window.js';
 import AgsCircularProgress, { type CircularProgressProps } from './widgets/circularprogress.js';
+import Gtk from 'gi://Gtk?version=3.0';
 
-export function mkCtor<Props>(w: new (...args: Props[]) => any, name?: string) {
-    const Ctor = AgsWidget(w, name);
-    return (props: Props & BaseProps<Props>) => new Ctor(props);
+export function mkCtor<W extends typeof Gtk.Widget, Props>(w: W, name?: string) {
+    const Ctor = AgsWidget<W, Props>(w, name);
+    return (props: Props & BaseProps<typeof w>) => new Ctor(props);
 }
 
-export const Box = mkCtor<BoxProps>(AgsBox, 'AgsBox');
-export const Button = mkCtor<ButtonProps>(AgsButton, 'AgsButton');
-export const CenterBox = mkCtor<CenterBoxProps>(AgsCenterBox, 'AgsCenterBox');
-export const CircularProgress = mkCtor<CircularProgressProps>(AgsCircularProgress, 'AgsCircularProgress');
-export const Entry = mkCtor<EntryProps>(AgsEntry, 'AgsEntry');
-export const EventBox = mkCtor<EventBoxProps>(AgsEventBox, 'AgsEventBox');
-export const Icon = mkCtor<IconProps>(AgsIcon, 'AgsIcon');
-export const Label = mkCtor<LabelProps>(AgsLabel, 'AgsLabel');
-export const Menu = mkCtor<MenuProps>(AgsMenu, 'AgsMenu');
-export const MenuItem = mkCtor<MenuItemProps>(AgsMenuItem, 'AgsMenuItem');
-export const Overlay = mkCtor<OverlayProps>(AgsOverlay, 'AgsOverlay');
-export const ProgressBar = mkCtor<ProgressBarProps>(AgsProgressBar, 'AgsProgressBar');
-export const Revealer = mkCtor<RevealerProps>(AgsRevealer, 'AgsRevealer');
-export const Scrollable = mkCtor<ScrollableProps>(AgsScrollable, 'AgsScrollable');
-export const Slider = mkCtor<SliderProps>(AgsSlider, 'AgsSlider');
-export const Stack = mkCtor<StackProps>(AgsStack, 'AgsStack');
-export const Window = mkCtor<WindowProps>(AgsWindow, 'AgsWindow');
+// @ts-ignore
+export const Window = mkCtor<typeof AgsWindow, WindowProps>(AgsWindow, 'AgsWindow');
+export const Box = mkCtor<typeof AgsBox, BoxProps>(AgsBox, 'AgsBox');
+export const Button = mkCtor<typeof AgsButton, ButtonProps>(AgsButton, 'AgsButton');
+export const CenterBox = mkCtor<typeof AgsCenterBox, CenterBoxProps>(AgsCenterBox, 'AgsCenterBox');
+export const CircularProgress = mkCtor<typeof AgsCircularProgress, CircularProgressProps>(AgsCircularProgress, 'AgsCircularProgress');
+export const Entry = mkCtor<typeof AgsEntry, EntryProps>(AgsEntry, 'AgsEntry');
+export const EventBox = mkCtor<typeof AgsEventBox, EventBoxProps>(AgsEventBox, 'AgsEventBox');
+export const Icon = mkCtor<typeof AgsIcon, IconProps>(AgsIcon, 'AgsIcon');
+export const Label = mkCtor<typeof AgsLabel, LabelProps>(AgsLabel, 'AgsLabel');
+export const Menu = mkCtor<typeof AgsMenu, MenuProps>(AgsMenu, 'AgsMenu');
+export const MenuItem = mkCtor<typeof AgsMenuItem, MenuItemProps>(AgsMenuItem, 'AgsMenuItem');
+export const Overlay = mkCtor<typeof AgsOverlay, OverlayProps>(AgsOverlay, 'AgsOverlay');
+export const ProgressBar = mkCtor<typeof AgsProgressBar, ProgressBarProps>(AgsProgressBar, 'AgsProgressBar');
+export const Revealer = mkCtor<typeof AgsRevealer, RevealerProps>(AgsRevealer, 'AgsRevealer');
+export const Scrollable = mkCtor<typeof AgsScrollable, ScrollableProps>(AgsScrollable, 'AgsScrollable');
+export const Slider = mkCtor<typeof AgsSlider, SliderProps>(AgsSlider, 'AgsSlider');
+export const Stack = mkCtor<typeof AgsStack, StackProps>(AgsStack, 'AgsStack');
 
 const ctors = new Map();
 
 // TODO: figure out how to type this
 export function Widget<Props>({ type, ...props }: {
-    type: new (props: Props) => any,
+    type: any
 }) {
     let Ctor;
     if (ctors.has(type)) {
         Ctor = ctors.get(type);
     } else {
-        Ctor = mkCtor<Props>(type);
+        Ctor = mkCtor<typeof type, Props>(type);
         ctors.set(type, Ctor);
     }
 

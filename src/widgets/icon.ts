@@ -6,10 +6,12 @@ import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 import cairo from '@girs/cairo-1.0';
 
-export interface IconProps extends Gtk.Image.ConstructorProperties {
+interface Props extends Gtk.Image.ConstructorProperties {
     icon?: string | GdkPixbuf.Pixbuf
     size?: number
 }
+
+export type IconProps = Props | string | GdkPixbuf.Pixbuf | undefined
 
 export default class AgsIcon extends Gtk.Image {
     static {

@@ -7,10 +7,12 @@ import Service from '../service.js';
 const justifications = ['left', 'center', 'right', 'fill'];
 const truncates = ['none', 'start', 'middle', 'end'];
 
-export interface LabelProps extends Gtk.Label.ConstructorProperties {
+interface Props extends Gtk.Label.ConstructorProperties {
     justification?: string
     truncate?: string
 }
+
+export type LabelProps = Props | string | undefined
 
 export default class AgsLabel extends Gtk.Label {
     static {
@@ -22,7 +24,7 @@ export default class AgsLabel extends Gtk.Label {
         }, this);
     }
 
-    constructor(params: LabelProps | string) {
+    constructor(params: LabelProps) {
         super(typeof params === 'string' ? { label: params } : params);
     }
 
