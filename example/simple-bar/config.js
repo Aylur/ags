@@ -17,12 +17,14 @@ const Workspaces = () => Widget.Box({
     className: 'workspaces',
     connections: [[Hyprland.active.workspace, self => {
         // generate an array [1..10] then make buttons from the index
-        const arr = Array.from({ length: 10 }, (_, i) => i + 1);
-        self.children = arr.map(i => Widget.Button({
-            onClicked: () => execAsync(`hyprctl dispatch workspace ${i}`),
-            child: Widget.Label(`${i}`),
-            className: Hyprland.active.workspace.id == i ? 'focused' : '',
+        const workspaces = JSON.parse(exec('hyprctl workspaces -j'));
+
+        self.children = workspaces.map((wp) => Widget.Button({
+            child: Widget.Label(`${wp.name}`),
+            className: Hyprland.active.workspace.id == wp.id ? 'focused' : '',
+            onClicked: () => execAsync(`hyprctl dispatch workspace ${wp.id}`),
         }));
+        
     }]],
 });
 
