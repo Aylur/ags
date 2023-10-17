@@ -7,10 +7,14 @@ import Service from '../service.js';
 const justifications = ['left', 'center', 'right', 'fill'];
 const truncates = ['none', 'start', 'middle', 'end'];
 
+export interface LabelProps extends Gtk.Label.ConstructorProperties {
+    justification?: string
+    truncate?: string
+}
+
 export default class AgsLabel extends Gtk.Label {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsLabel',
             Properties: {
                 'justification': Service.pspec('justification', 'string', 'rw'),
                 'truncate': Service.pspec('truncate', 'string', 'rw'),
@@ -18,7 +22,7 @@ export default class AgsLabel extends Gtk.Label {
         }, this);
     }
 
-    constructor(params: object | string) {
+    constructor(params: LabelProps | string) {
         super(typeof params === 'string' ? { label: params } : params);
     }
 

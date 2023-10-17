@@ -2,24 +2,30 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import AgsBox from './box.js';
 
+export interface CenterBoxProps extends Gtk.Box.ConstructorProperties {
+    children?: Gtk.Widget[]
+    start_widget?: Gtk.Widget
+    center_widget?: Gtk.Widget
+    end_widget?: Gtk.Widget
+}
+
 export default class AgsCenterBox extends AgsBox {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsCenterBox',
             Properties: {
                 'start-widget': GObject.ParamSpec.object(
                     'start-widget', 'Start Widget', 'Start Widget',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                    GObject.ParamFlags.READWRITE,
                     Gtk.Widget.$gtype,
                 ),
                 'center-widget': GObject.ParamSpec.object(
                     'center-widget', 'Center Widget', 'Center Widget',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                    GObject.ParamFlags.READWRITE,
                     Gtk.Widget.$gtype,
                 ),
                 'end-widget': GObject.ParamSpec.object(
                     'end-widget', 'End Widget', 'End Widget',
-                    GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
+                    GObject.ParamFlags.READWRITE,
                     Gtk.Widget.$gtype,
                 ),
             },

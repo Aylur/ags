@@ -2,10 +2,14 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Service from '../service.js';
 
+export interface OverlayProps extends Gtk.Overlay.ConstructorProperties {
+    pass_through?: boolean
+    overlays?: Gtk.Widget[]
+}
+
 export default class AgsOverlay extends Gtk.Overlay {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsOverlay',
             Properties: {
                 'pass-through': Service.pspec('pass-through', 'boolean', 'rw'),
                 'overlays': Service.pspec('overlays', 'jsobject', 'rw'),

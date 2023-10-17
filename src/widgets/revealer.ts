@@ -8,10 +8,16 @@ const transitions = [
     'slide_up', 'slide_down',
 ];
 
+export interface RevealerProps extends Gtk.Revealer.ConstructorProperties {
+    transitions?:
+        'none' | 'crossfade' |
+        'slide_right' | 'slide_left' |
+        'slide_up' | 'slide_down'
+}
+
 export default class AgsRevealer extends Gtk.Revealer {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsRevealer',
             Properties: {
                 'transition': Service.pspec('transition', 'string', 'rw'),
             },

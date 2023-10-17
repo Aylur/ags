@@ -13,10 +13,17 @@ interface Context {
     $dispose: () => void
 }
 
+export interface CircularProgressProps extends Gtk.Bin {
+    rounded?: boolean
+    value?: number
+    inverted?: boolean
+    start_at?: number
+}
+
 export default class AgsCircularProgress extends Gtk.Bin {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsCircularProgress',
+            CssName: 'circular-progress',
             Properties: {
                 'start-at': Service.pspec('start-at', 'float', 'rw'),
                 'inverted': Service.pspec('inverted', 'boolean', 'rw'),

@@ -8,12 +8,14 @@ const { GtkLayerShell: LayerShell } = imports.gi;
 
 const layers = ['background', 'bottom', 'top', 'overlay'];
 const anchors = ['left', 'right', 'top', 'bottom'];
+type Layer = 'background' | 'bottom' | 'top' | 'overlay';
+type Anchor = 'left' | 'right' | 'top' | 'bottom';
 
-interface Params {
-    anchor?: string[]
+export interface WindowProps extends Omit<Gtk.Window.ConstructorProperties, 'margin'> {
+    anchor?: Anchor[]
     exclusive?: boolean
     focusable?: boolean
-    layer?: string
+    layer?: Layer
     margin?: number[]
     monitor?: number
     popup?: boolean
@@ -23,7 +25,6 @@ interface Params {
 export default class AgsWindow extends Gtk.Window {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsWindow',
             Properties: {
                 'anchor': Service.pspec('anchor', 'jsobject', 'rw'),
                 'exclusive': Service.pspec('exclusive', 'boolean', 'rw'),
@@ -48,7 +49,7 @@ export default class AgsWindow extends Gtk.Window {
         popup = false,
         visible = true,
         ...params
-    }: Params = {}) {
+    }: WindowProps = {}) {
         super(params);
         LayerShell.init_for_window(this);
         LayerShell.set_namespace(this, this.name);
@@ -94,8 +95,8 @@ export default class AgsWindow extends Gtk.Window {
         this.notify('exclusive');
     }
 
-    get layer() { return layers[LayerShell.get_layer(this)]; }
-    set layer(layer: string) {
+    get layer() { return layers[LayerShell.get_layer(this)] as Layer; }
+    set layer(layer: Layer) {
         if (this.layer === layer)
             return;
 
@@ -108,8 +109,8 @@ export default class AgsWindow extends Gtk.Window {
         this.notify('layer');
     }
 
-    get anchor() { return anchors.filter((_, i) => LayerShell.get_anchor(this, i)); }
-    set anchor(anchor: string[]) {
+    get anchor() { return anchors.filter((_, i) => LayerShell.get_anchor(this, i)) as Anchor[]; }
+    set anchor(anchor: Anchor[]) {
         if (this.anchor.length === anchor.length &&
             this.anchor.every(a => anchor.includes(a)))
             return;

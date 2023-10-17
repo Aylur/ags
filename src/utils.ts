@@ -2,10 +2,10 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import { Command } from './widgets/constructor.js';
 import Service from './service.js';
 import { App } from './app.js';
 import { Variable } from './variable.js';
+import { type Command } from './widgets/widget.js';
 
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name.split('.').pop()}`;

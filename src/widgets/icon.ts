@@ -6,10 +6,14 @@ import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 import cairo from '@girs/cairo-1.0';
 
+export interface IconProps extends Gtk.Image.ConstructorProperties {
+    icon?: string | GdkPixbuf.Pixbuf
+    size?: number
+}
+
 export default class AgsIcon extends Gtk.Image {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsIcon',
             Properties: {
                 'icon': Service.pspec('icon', 'jsobject', 'rw'),
                 'size': Service.pspec('size', 'double', 'rw'),
@@ -17,7 +21,7 @@ export default class AgsIcon extends Gtk.Image {
         }, this);
     }
 
-    constructor(params: object | string | GdkPixbuf.Pixbuf) {
+    constructor(params: IconProps | string | GdkPixbuf.Pixbuf) {
         const {
             icon = '',
             size = 0,

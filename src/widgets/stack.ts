@@ -11,10 +11,21 @@ const transitions = [
     'over_up_down', 'over_down_up', 'over_left_right', 'over_right_left',
 ];
 
+export interface StackProps extends Gtk.Stack.ConstructorProperties {
+    shown?: string
+    items?: [string, Gtk.Widget][]
+    transition?:
+        'none' | 'crossfade' |
+        'slide_right' | 'slide_left' | 'slide_up' | 'slide_down' |
+        'slide_left_right' | 'slide_up_down' |
+        'over_up' | 'over_down' | 'over_left' | 'over_right' |
+        'under_up' | 'under_down' | 'under_left' | 'under_right' |
+        'over_up_down' | 'over_down_up' | 'over_left_right' | 'over_right_left'
+}
+
 export default class AgsStack extends Gtk.Stack {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsStack',
             Properties: {
                 'transition': Service.pspec('transition', 'string', 'rw'),
                 'shown': Service.pspec('shown', 'string', 'rw'),

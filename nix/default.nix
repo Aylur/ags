@@ -40,7 +40,7 @@ stdenv.mkDerivation {
 
     dontBuild = true;
 
-    npmDepsHash = "sha256-3xZX0Nr0sfS7jlB2rHUqc0tUDjmkoLg6VfKYyuvbWeA=";
+    npmDepsHash = "sha256-+Hg4wEnJrMcs0m0hosDF8+UbhKNGSIcl5NcvAsM6U2Q=";
 
     installPhase = ''
       mkdir $out

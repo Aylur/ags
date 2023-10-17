@@ -2,12 +2,24 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import { runCmd } from '../utils.js';
-import { Command } from './constructor.js';
+import { type Command } from './widget.js';
+
+export interface ButtonProps extends Gtk.Button.ConstructorProperties {
+    onClicked?: Command
+    onPrimaryClick?: Command
+    onSecondaryClick?: Command
+    onMiddleClick?: Command
+    onPrimaryClickRelease?: Command
+    onSecondaryClickRelease?: Command
+    onMiddleClickRelease?: Command
+    onHover?: Command
+    onHoverLost?: Command
+    onScrollUp?: Command
+    onScrollDown?: Command
+}
 
 export default class AgsButton extends Gtk.Button {
-    static {
-        GObject.registerClass({ GTypeName: 'AgsButton' }, this);
-    }
+    static { GObject.registerClass(this); }
 
     onClicked: Command;
     onPrimaryClick: Command;
@@ -34,7 +46,7 @@ export default class AgsButton extends Gtk.Button {
         onScrollUp = '',
         onScrollDown = '',
         ...rest
-    } = {}) {
+    }: ButtonProps = {}) {
         super(rest);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);

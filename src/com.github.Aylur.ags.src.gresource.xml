@@ -9,8 +9,7 @@
     <file>variable.js</file>
     <file>widget.js</file>
 
-    <file>widgets/constructor.js</file>
-    <file>widgets/overrides.js</file>
+    <file>widgets/widget.js</file>
     <file>widgets/box.js</file>
     <file>widgets/button.js</file>
     <file>widgets/centerbox.js</file>

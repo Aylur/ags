@@ -19,9 +19,9 @@ interface Action {
 }
 
 interface Hints {
-    'image-data'?: InstanceType<typeof GLib.Variant>
-    'desktop-entry'?: InstanceType<typeof GLib.Variant>
-    'urgency'?: InstanceType<typeof GLib.Variant>
+    'image-data'?: GLib.Variant
+    'desktop-entry'?: GLib.Variant
+    'urgency'?: GLib.Variant
 }
 
 interface NotifcationJson {
@@ -175,7 +175,7 @@ class Notification extends Service {
         ensureDirectory(NOTIFICATIONS_CACHE_PATH);
         const fileName = NOTIFICATIONS_CACHE_PATH + `/${this._id}`;
         const [w, h, rs, alpha, bps, _, data] = imageData // iiibiiay
-            .recursiveUnpack<[number, number, number, boolean, number, number, GLib.Bytes]>();
+            .recursiveUnpack < [number, number, number, boolean, number, number, GLib.Bytes] >();
 
         const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
             data, GdkPixbuf.Colorspace.RGB, alpha, bps, w, h, rs);
