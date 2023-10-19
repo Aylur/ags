@@ -88,6 +88,7 @@ class Hyprland extends Service {
             'client-removed': ['string'],
             'workspace-added': ['string'],
             'workspace-removed': ['string'],
+            'fullscreen': ['boolean'],
         }, {
             'active': ['jsobject'],
             'monitors': ['jsobject'],
@@ -255,6 +256,10 @@ class Hyprland extends Service {
                 case 'moveworkspace':
                     await this._syncWorkspaces();
                     await this._syncMonitors();
+                    break;
+
+                case 'fullscreen':
+                    this.emit('fullscreen', argv[0] === '1' ? true : false);
                     break;
 
                 case 'activewindow':
