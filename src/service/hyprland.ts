@@ -260,6 +260,7 @@ class Hyprland extends Service {
 
                 case 'fullscreen':
                     await this._syncClients();
+                    await this._syncWorkspaces();
                     this.emit('fullscreen', argv[0] === '1');
                     break;
 
