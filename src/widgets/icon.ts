@@ -23,7 +23,7 @@ export default class AgsIcon extends Gtk.Image {
         }, this);
     }
 
-    constructor(params: IconProps | string | GdkPixbuf.Pixbuf) {
+    constructor(params: IconProps | string | GdkPixbuf.Pixbuf = {}) {
         const {
             icon = '',
             size = 0,

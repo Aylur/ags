@@ -24,7 +24,7 @@ export default class AgsLabel extends Gtk.Label {
         }, this);
     }
 
-    constructor(params: LabelProps) {
+    constructor(params: LabelProps = {}) {
         super(typeof params === 'string' ? { label: params } : params);
     }
 

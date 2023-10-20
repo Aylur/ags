@@ -45,7 +45,7 @@ export default function <T extends typeof Gtk.Widget, Props>(W: T, GTypeName?: s
             }, this);
         }
 
-        constructor(params: BaseProps<T> & Props | any) {
+        constructor(params: BaseProps<T> & Props | any = {}) {
             const {
                 connections = [],
                 properties = [],
