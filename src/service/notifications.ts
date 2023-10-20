@@ -117,7 +117,7 @@ class Notification extends Service {
         this._summary = summary;
         this._body = body;
         this._time = GLib.DateTime.new_now_local().to_unix();
-        this._image = this._parseImageData(hints['image-data']) || this._appIconIsFile();
+        this._image = this._appIconIsFile() ? appIcon : this._parseImageData(hints['image-data']);
         this._popup = popup;
     }
 
@@ -165,7 +165,8 @@ class Notification extends Service {
     }
 
     private _appIconIsFile() {
-        return GLib.file_test(this._appIcon, GLib.FileTest.EXISTS) ? this._appIcon : null;
+        return GLib.file_test(this._appIcon, GLib.FileTest.EXISTS) ||
+            GLib.file_test(this._appIcon.replace(/^(file\:\/\/)/, ''), GLib.FileTest.EXISTS);
     }
 
     private _parseImageData(imageData?: InstanceType<typeof GLib.Variant>) {
@@ -175,7 +176,7 @@ class Notification extends Service {
         ensureDirectory(NOTIFICATIONS_CACHE_PATH);
         const fileName = NOTIFICATIONS_CACHE_PATH + `/${this._id}`;
         const [w, h, rs, alpha, bps, _, data] = imageData // iiibiiay
-            .recursiveUnpack < [number, number, number, boolean, number, number, GLib.Bytes] >();
+            .recursiveUnpack<[number, number, number, boolean, number, number, GLib.Bytes]>();
 
         const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
             data, GdkPixbuf.Colorspace.RGB, alpha, bps, w, h, rs);
