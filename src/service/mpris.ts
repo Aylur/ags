@@ -160,9 +160,7 @@ class MprisPlayer extends Service {
             trackCoverUrl = '';
 
         let length = metadata['mpris:length'];
-        length = typeof length !== 'number'
-            ? -1
-            : Number.parseInt(`${length}`.substring(0, 3));
+        length = typeof length === 'number' ? length / 1_000_000 : -1;
 
         this.updateProperty('shuffle-status', this._playerProxy.Shuffle);
         this.updateProperty('loop-status', this._playerProxy.LoopStatus);
