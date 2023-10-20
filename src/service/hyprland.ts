@@ -259,7 +259,8 @@ class Hyprland extends Service {
                     break;
 
                 case 'fullscreen':
-                    this.emit('fullscreen', argv[0] === '1' ? true : false);
+                    await this._syncClients();
+                    this.emit('fullscreen', argv[0] === '1');
                     break;
 
                 case 'activewindow':
