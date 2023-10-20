@@ -3,8 +3,15 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import { execAsync, interval, subprocess } from './utils.js';
 
-type Poll<T> = [number, string[] | string | (() => T), (out: string) => T];
-type Listen<T> = [string[] | string, (out: string) => T] | string[] | string;
+type Listen<T> =
+    [string[] | string, (out: string) => T] |
+    [string[] | string] |
+    string[] |
+    string;
+
+type Poll<T> =
+    [number, string[] | string | (() => T)] |
+    [number, string[] | string | (() => T), (out: string) => T];
 
 interface Options<T> {
     poll?: Poll<T>
