@@ -3,15 +3,15 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import { execAsync, interval, subprocess } from './utils.js';
 
-type Poll = [number, string[] | string | (() => unknown), (out: string) => string];
-type Listen = [string[] | string, (out: string) => string] | string[] | string;
+type Poll<T> = [number, string[] | string | (() => T), (out: string) => T];
+type Listen<T> = [string[] | string, (out: string) => T] | string[] | string;
 
-interface Options {
-    poll?: Poll
-    listen?: Listen
+interface Options<T> {
+    poll?: Poll<T>
+    listen?: Listen<T>
 }
 
-export class Variable extends GObject.Object {
+export class Variable<T> extends GObject.Object {
     static {
         GObject.registerClass({
             GTypeName: 'AgsVariable',
@@ -25,13 +25,13 @@ export class Variable extends GObject.Object {
         }, this);
     }
 
-    private _value: unknown;
-    private _poll?: Poll;
-    private _listen?: Listen;
+    private _value!: T;
+    private _poll?: Poll<T>;
+    private _listen?: Listen<T>;
     private _interval?: number;
     private _subprocess?: Gio.Subprocess | null;
 
-    constructor(value: unknown, { poll, listen }: Options = {}) {
+    constructor(value: T, { poll, listen }: Options<T> = {}) {
         super();
         this.value = value;
 
@@ -46,8 +46,7 @@ export class Variable extends GObject.Object {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    connect(signal = 'notify::value', callback: (_: this, ...args: any[]) => void): number {
+    connect(signal = 'notify::value', callback: GObject.Object.NotifySignalCallback) {
         return super.connect(signal, callback);
     }
 
@@ -58,7 +57,7 @@ export class Variable extends GObject.Object {
         if (this._interval)
             return console.error(Error(`${this} is already polling`));
 
-        const [time, cmd, transform = out => out] = this._poll;
+        const [time, cmd, transform = out => out as T] = this._poll;
         if (Array.isArray(cmd) || typeof cmd === 'string') {
             this._interval = interval(time, () => execAsync(cmd)
                 .then(out => this.setValue(transform(out)))
@@ -87,7 +86,7 @@ export class Variable extends GObject.Object {
         let cmd: string | string[];
         const transform = typeof this._listen[1] === 'function'
             ? this._listen[1]
-            : (out: string) => out;
+            : (out: string) => out as T;
 
         // listen: string
         if (typeof this._listen === 'string')
@@ -130,14 +129,14 @@ export class Variable extends GObject.Object {
     }
 
     getValue() { return this._value; }
-    setValue(value: unknown) {
+    setValue(value: T) {
         this._value = value;
         this.notify('value');
         this.emit('changed');
     }
 
     get value() { return this._value; }
-    set value(value: unknown) { this.setValue(value); }
+    set value(value: T) { this.setValue(value); }
 }
 
-export default (value: unknown, options: Options) => new Variable(value, options);
+export default <T>(value: T, options?: Options<T>) => new Variable(value, options);
