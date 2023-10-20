@@ -232,15 +232,14 @@ class Network extends Service {
 
     constructor() {
         super();
-        NM.Client.new_async(null, (_s, result) => {
-            try {
-                this._client = NM.Client.new_finish(result);
-                this._clientReady();
-            }
-            catch (e) {
-                console.error(e as Error);
-            }
-        });
+        try {
+            this._client = new NM.Client;
+            this._client.init(null);
+            this._clientReady();
+        }
+        catch (e) {
+            console.error(e as Error);
+        }
     }
 
     toggleWifi() {
