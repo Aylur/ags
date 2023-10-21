@@ -161,9 +161,7 @@ class MprisPlayer extends Service {
             trackCoverUrl = '';
 
         let length = metadata['mpris:length'];
-        length = typeof length !== 'number'
-            ? -1
-            : Number.parseInt(`${length}`.substring(0, 3));
+        length = typeof length === 'number' ? length / 1_000_000 : -1;
 
         this.updateProperty('shuffle-status', this._playerProxy.Shuffle);
         this.updateProperty('loop-status', this._playerProxy.LoopStatus);
@@ -200,7 +198,7 @@ class MprisPlayer extends Service {
             Gio.FileCopyFlags.OVERWRITE,
             GLib.PRIORITY_DEFAULT,
             // @ts-expect-error
-            null, null, (source, result) => {
+            null, null, (source: Gio.File, result: Gio.AsyncResult) => {
                 try {
                     source.copy_finish(result);
                     this.changed('cover-path');

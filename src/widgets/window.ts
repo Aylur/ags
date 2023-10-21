@@ -1,5 +1,6 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import type GtkTypes from "../../types/gtk-types/gtk-3.0"
 import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 import App from '../app.js';
@@ -9,8 +10,7 @@ const { GtkLayerShell: LayerShell } = imports.gi;
 
 const layers = ['background', 'bottom', 'top', 'overlay'] as const;
 const anchors = ['left', 'right', 'top', 'bottom'] as const;
-
-interface Params {
+export interface WindowProps extends Omit<GtkTypes.Window.ConstructorProperties, 'margin'> {
     anchor?: typeof anchors[number][]
     exclusive?: boolean
     focusable?: boolean
@@ -24,7 +24,6 @@ interface Params {
 export default class AgsWindow extends Gtk.Window {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsWindow',
             Properties: {
                 'anchor': Service.pspec('anchor', 'jsobject', 'rw'),
                 'exclusive': Service.pspec('exclusive', 'boolean', 'rw'),
@@ -49,7 +48,7 @@ export default class AgsWindow extends Gtk.Window {
         popup = false,
         visible = true,
         ...params
-    }: Params = {}) {
+    }: WindowProps = {}) {
         super(params);
         LayerShell.init_for_window(this);
         LayerShell.set_namespace(this, this.name);
@@ -99,7 +98,7 @@ export default class AgsWindow extends Gtk.Window {
     }
 
     get layer() { return layers[LayerShell.get_layer(this)]; }
-    set layer(layer: typeof layers[number]) {
+    set layer(layer) {
         if (this.layer === layer)
             return;
 

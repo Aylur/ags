@@ -1,20 +1,23 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import GLib from 'gi://GLib';
+import type GtkTypes from "../../types/gtk-types/gtk-3.0"
 import Pango from 'gi://Pango';
 import Service from '../service.js';
 
 const justifications = ['left', 'center', 'right', 'fill'];
 const truncates = ['none', 'start', 'middle', 'end'];
 
-export interface Params {
-    label?: string
-    [key: string]: unknown
+interface Props extends GtkTypes.Label.ConstructorProperties {
+    justification?: string
+    truncate?: string
 }
+
+export type LabelProps = Props | string | undefined
 
 export default class AgsLabel extends Gtk.Label {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsLabel',
             Properties: {
                 'justification': Service.pspec('justification', 'string', 'rw'),
                 'truncate': Service.pspec('truncate', 'string', 'rw'),
@@ -22,22 +25,21 @@ export default class AgsLabel extends Gtk.Label {
         }, this);
     }
 
-    constructor(params: Params | string) {
+    constructor(params: LabelProps = {}) {
         super(typeof params === 'string' ? { label: params } : params);
     }
 
-    get label() { return super.label!; }
+    get label() { return super.label || ''; }
     set label(label: string) {
         if (this.use_markup) {
             try {
                 Pango.parse_markup(label, label.length, '0');
             } catch (e) {
-                // FIXME: GLib.MarkupError is an enum, not a class/interface
-                // if (e instanceof GLib.MarkupError)
-                //     label = GLib.markup_escape_text(label, -1)!;
-                // else
-
-                console.error(e as Error);
+                // @ts-expect-error
+                if (e instanceof GLib.MarkupError)
+                    label = GLib.markup_escape_text(label, -1) || '';
+                else
+                    console.error(e as Error);
             }
         }
         super.label = label;

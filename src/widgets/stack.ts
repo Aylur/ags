@@ -1,5 +1,6 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import type GtkTypes from "../../types/gtk-types/gtk-3.0"
 import Service from '../service.js';
 
 const transitions = [
@@ -11,10 +12,21 @@ const transitions = [
     'over_up_down', 'over_down_up', 'over_left_right', 'over_right_left',
 ];
 
+export interface StackProps extends GtkTypes.Stack.ConstructorProperties {
+    shown?: string
+    items?: [string, GtkTypes.Widget][]
+    transition?:
+        'none' | 'crossfade' |
+        'slide_right' | 'slide_left' | 'slide_up' | 'slide_down' |
+        'slide_left_right' | 'slide_up_down' |
+        'over_up' | 'over_down' | 'over_left' | 'over_right' |
+        'under_up' | 'under_down' | 'under_left' | 'under_right' |
+        'over_up_down' | 'over_down_up' | 'over_left_right' | 'over_right_left'
+}
+
 export default class AgsStack extends Gtk.Stack {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsStack',
             Properties: {
                 'transition': Service.pspec('transition', 'string', 'rw'),
                 'shown': Service.pspec('shown', 'string', 'rw'),
@@ -74,8 +86,8 @@ export default class AgsStack extends Gtk.Stack {
         this.notify('transition');
     }
 
-    get shown() { return this.visible_child_name!; }
-    set shown(name: string) {
+    get shown() { return this.visible_child_name; }
+    set shown(name: string | null) {
         if (!this.get_child_by_name(name)) {
             this.visible = false;
             return;

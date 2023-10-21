@@ -8,11 +8,14 @@ import "../gtk-types/nm-1.0-ambient";
 import "../gtk-types/soup-3.0-ambient";
 import "../gtk-types/gvc-1.0-ambient";
 import Gtk from 'gi://Gtk?version=3.0';
-import { Command } from './constructor.js';
+import GtkTypes from "../../types/gtk-types/gtk-3.0";
+import { type Command } from './widget.js';
+export interface EntryProps extends GtkTypes.Entry.ConstructorProperties {
+    onAccept?: Command;
+    onChange?: Command;
+}
 export default class AgsEntry extends Gtk.Entry {
     onAccept: Command;
     onChange: Command;
-    constructor({ onAccept, onChange, ...rest }: {
-        [key: string]: Command;
-    });
+    constructor({ onAccept, onChange, ...rest }?: EntryProps);
 }

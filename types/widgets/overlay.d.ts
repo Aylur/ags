@@ -8,6 +8,11 @@ import "../gtk-types/nm-1.0-ambient";
 import "../gtk-types/soup-3.0-ambient";
 import "../gtk-types/gvc-1.0-ambient";
 import Gtk from 'gi://Gtk?version=3.0';
+import type GtkTypes from "../../types/gtk-types/gtk-3.0";
+export interface OverlayProps extends GtkTypes.Overlay.ConstructorProperties {
+    pass_through?: boolean;
+    overlays?: GtkTypes.Widget[];
+}
 export default class AgsOverlay extends Gtk.Overlay {
     get pass_through(): boolean;
     set pass_through(passthrough: boolean);

@@ -1,13 +1,25 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import GtkTypes from "../../types/gtk-types/gtk-3.0"
 import Gdk from 'gi://Gdk?version=3.0';
 import { runCmd } from '../utils.js';
-import { Command } from './constructor.js';
+import { type Command } from './widget.js';
+
+export interface EventBoxProps extends GtkTypes.EventBox.ConstructorProperties {
+    onPrimaryClick?: Command
+    onSecondaryClick?: Command
+    onMiddleClick?: Command
+    onPrimaryClickRelease?: Command
+    onSecondaryClickRelease?: Command
+    onMiddleClickRelease?: Command
+    onHover?: Command
+    onHoverLost?: Command
+    onScrollUp?: Command
+    onScrollDown?: Command
+}
 
 export default class AgsEventBox extends Gtk.EventBox {
-    static {
-        GObject.registerClass({ GTypeName: 'AgsEventBox' }, this);
-    }
+    static { GObject.registerClass(this); }
 
     onPrimaryClick: Command;
     onSecondaryClick: Command;
@@ -32,7 +44,7 @@ export default class AgsEventBox extends Gtk.EventBox {
         onScrollUp = '',
         onScrollDown = '',
         ...params
-    } = {}) {
+    }: EventBoxProps = {}) {
         super(params);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);

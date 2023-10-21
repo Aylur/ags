@@ -1,12 +1,11 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import type GtkTypes from "../../types/gtk-types/gtk-3.0"
+import Gdk from 'gi://Gdk?version=3.0';
 import { runCmd } from '../utils.js';
-import type Gdk from 'gi://Gdk?version=3.0';
-
-import { Command } from './constructor.js';
+import { type Command } from './widget.js';
 import Service from '../service.js';
-
-export interface Params {
+export interface SliderProps extends GtkTypes.Scale.ConstructorProperties {
     onChange?: Command
     value?: number
     min?: number
@@ -17,7 +16,6 @@ export interface Params {
 export default class AgsSlider extends Gtk.Scale {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsSlider',
             Properties: {
                 'dragging': Service.pspec('dragging', 'boolean', 'r'),
                 'vertical': Service.pspec('vertical', 'boolean', 'rw'),
@@ -38,7 +36,7 @@ export default class AgsSlider extends Gtk.Scale {
         max = 1,
         step = 0.01,
         ...rest
-    }: Params = {}) {
+    }: SliderProps = {}) {
         super({
             ...rest,
             adjustment: new Gtk.Adjustment({

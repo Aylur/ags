@@ -1,18 +1,17 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import GtkTypes from "../../types/gtk-types/gtk-3.0"
 import { runCmd } from '../utils.js';
-import { Command } from './constructor.js';
+import { type Command } from './widget.js';
 
-export interface Params {
-    children?: InstanceType<typeof Gtk.Widget>[]
+export interface MenuProps extends GtkTypes.Menu.ConstructorProperties {
+    children?: GtkTypes.Widget[]
     onPopup?: Command
     onMoveScroll?: Command
 }
 
 export class AgsMenu extends Gtk.Menu {
-    static {
-        GObject.registerClass({ GTypeName: 'AgsMenu' }, this);
-    }
+    static { GObject.registerClass(this); }
 
     onPopup: Command;
     onMoveScroll: Command;
@@ -22,7 +21,7 @@ export class AgsMenu extends Gtk.Menu {
         onPopup = '',
         onMoveScroll = '',
         ...rest
-    }: Params = {}) {
+    }: MenuProps = {}) {
         super(rest);
 
         if (children)
@@ -53,10 +52,14 @@ export class AgsMenu extends Gtk.Menu {
     }
 }
 
+export interface MenuItemProps extends GtkTypes.Menu.ConstructorProperties {
+    onActivate?: Command
+    onSelect?: Command
+    onDeselect?: Command
+}
+
 export class AgsMenuItem extends Gtk.MenuItem {
-    static {
-        GObject.registerClass({ GTypeName: 'AgsMenuItem' }, this);
-    }
+    static { GObject.registerClass(this); }
 
     onActivate: Command;
     onSelect: Command;
@@ -67,7 +70,7 @@ export class AgsMenuItem extends Gtk.MenuItem {
         onSelect = '',
         onDeselect = '',
         ...rest
-    }: { [key: string]: Command }) {
+    }: MenuItemProps = {}) {
         super(rest);
 
         this.onActivate = onActivate;

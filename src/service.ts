@@ -44,8 +44,7 @@ export default class Service extends GObject.Object {
                 name, name, name, flags, false);
 
             case 'gobject': return GObject.ParamSpec.object(
-                // @ts-expect-error
-                name, name, name, flags, GObject.Object);
+                name, name, name, flags, GObject.Object.$gtype);
 
             default: return GObject.ParamSpec.jsobject(
                 // @ts-expect-error
@@ -83,6 +82,7 @@ export default class Service extends GObject.Object {
         GObject.registerClass({ Signals, Properties }, service);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     connect(signal = 'changed', callback: (_: this, ...args: any[]) => void): number {
         return super.connect(signal, callback);
     }

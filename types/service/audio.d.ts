@@ -14,6 +14,7 @@ declare class Stream extends Service {
     private _ids;
     private _oldVolume;
     constructor(stream: InstanceType<typeof Gvc.MixerStream>);
+    get application_id(): string | null;
     get stream(): import("../../types/gtk-types/gvc-1.0.js").Gvc.MixerStream;
     get description(): string | null;
     get icon_name(): string | null;
@@ -43,11 +44,13 @@ declare class Audio extends Service {
     get microphones(): Stream[];
     get speakers(): Stream[];
     get apps(): Stream[];
+    get recorders(): Stream[];
     getStream(id: number): Stream | undefined;
     private _defaultChanged;
     private _streamAdded;
     private _streamRemoved;
     private _getStreams;
+    private _notifyStreams;
 }
 declare const audioService: Audio;
 export default audioService;

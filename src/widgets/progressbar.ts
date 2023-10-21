@@ -1,11 +1,16 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import type GtkTypes from "../../types/gtk-types/gtk-3.0"
 import Service from '../service.js';
+
+export interface ProgressBarProps extends GtkTypes.ProgressBar.ConstructorProperties {
+    vertical?: boolean
+    value?: number
+}
 
 export default class AgsProgressBar extends Gtk.ProgressBar {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsProgressBar',
             Properties: {
                 'vertical': Service.pspec('vertical', 'boolean', 'rw'),
                 'value': Service.pspec('value', 'float', 'rw'),

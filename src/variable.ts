@@ -1,11 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import GObject from 'gi://GObject';
+import type GObjectTypes from '../types/gtk-types/gobject-2.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import { execAsync, interval, subprocess } from './utils.js';
 
-type Poll<T> = [number, string[] | string | (() => T), (out: string) => T];
-type Listen<T> = [string[] | string, (out: string) => T] | string[] | string;
+type Listen<T> =
+    [string[] | string, (out: string) => T] |
+    [string[] | string] |
+    string[] |
+    string;
+
+type Poll<T> =
+    [number, string[] | string | (() => T)] |
+    [number, string[] | string | (() => T), (out: string) => T];
 
 interface Options<T> {
     poll?: Poll<T>
@@ -26,7 +33,7 @@ export class Variable<T> extends GObject.Object {
         }, this);
     }
 
-    private _value: T;
+    private _value!: T;
     private _poll?: Poll<T>;
     private _listen?: Listen<T>;
     private _interval?: number;
@@ -51,7 +58,7 @@ export class Variable<T> extends GObject.Object {
         }
     }
 
-    connect(signal = 'notify::value', callback: (_: this, ...args: any[]) => void): number {
+    connect(signal = 'notify::value', callback: GObjectTypes.Object.NotifySignalCallback) {
         return super.connect(signal, callback);
     }
 
@@ -62,7 +69,7 @@ export class Variable<T> extends GObject.Object {
         if (this._interval)
             return console.error(Error(`${this} is already polling`));
 
-        const [time, cmd, transform = out => out] = this._poll;
+        const [time, cmd, transform = out => out as T] = this._poll;
         if (Array.isArray(cmd) || typeof cmd === 'string') {
             this._interval = interval(time, () => execAsync(cmd)
                 .then(out => this.setValue(transform(out)))
@@ -91,7 +98,7 @@ export class Variable<T> extends GObject.Object {
         let cmd: string | string[];
         const transform = typeof this._listen[1] === 'function'
             ? this._listen[1]
-            : (out: string) => out;
+            : (out: string) => out as T;
 
         // listen: string
         if (typeof this._listen === 'string')
@@ -134,7 +141,7 @@ export class Variable<T> extends GObject.Object {
     }
 
     getValue() { return this._value; }
-    setValue(value: any) {
+    setValue(value: T) {
         this._value = value;
         this.notify('value');
         this.emit('changed');
@@ -144,4 +151,4 @@ export class Variable<T> extends GObject.Object {
     set value(value: T) { this.setValue(value); }
 }
 
-export default <T>(value: T, options: Options<T>) => new Variable(value, options);
+export default <T>(value: T, options?: Options<T>) => new Variable(value, options);

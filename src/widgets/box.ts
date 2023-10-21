@@ -1,11 +1,16 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import GtkTypes from "../../types/gtk-types/gtk-3.0.d"
 import Service from '../service.js';
+
+export interface BoxProps extends GtkTypes.Box.ConstructorProperties {
+    children?: GtkTypes.Widget[]
+    vertical?: boolean
+}
 
 export default class AgsBox extends Gtk.Box {
     static {
         GObject.registerClass({
-            GTypeName: 'AgsBox',
             Properties: {
                 'vertical': Service.pspec('vertical', 'boolean', 'rw'),
                 'children': Service.pspec('children', 'jsobject', 'rw'),
@@ -13,7 +18,7 @@ export default class AgsBox extends Gtk.Box {
         }, this);
     }
 
-    constructor({ children, ...rest }: { children?: InstanceType<typeof Gtk.Widget>[] | null }) {
+    constructor({ children, ...rest }: BoxProps = {}) {
         super(rest);
 
         if (children)

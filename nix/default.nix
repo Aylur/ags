@@ -39,7 +39,7 @@ in
 
       dontBuild = true;
 
-      npmDepsHash = "sha256-F77uJwK9VshEkEzevGzE5smU63KbplLnoxQwoc5jAiw=";
+      npmDepsHash = "sha256-6E3Xx0JL4tISiMnTO80zzzRBA3fBm2B8euSmcyofXXE=";
 
       installPhase = ''
         mkdir $out

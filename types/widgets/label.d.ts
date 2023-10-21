@@ -8,12 +8,14 @@ import "../gtk-types/nm-1.0-ambient";
 import "../gtk-types/soup-3.0-ambient";
 import "../gtk-types/gvc-1.0-ambient";
 import Gtk from 'gi://Gtk?version=3.0';
-export interface Params {
-    label?: string;
-    [key: string]: unknown;
+import type GtkTypes from "../../types/gtk-types/gtk-3.0";
+interface Props extends GtkTypes.Label.ConstructorProperties {
+    justification?: string;
+    truncate?: string;
 }
+export type LabelProps = Props | string | undefined;
 export default class AgsLabel extends Gtk.Label {
-    constructor(params: Params | string);
+    constructor(params?: LabelProps);
     get label(): string;
     set label(label: string);
     get truncate(): string;
@@ -21,3 +23,4 @@ export default class AgsLabel extends Gtk.Label {
     get justification(): string;
     set justification(justify: string);
 }
+export {};

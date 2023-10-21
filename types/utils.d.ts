@@ -10,7 +10,7 @@ import "./gtk-types/gvc-1.0-ambient";
 import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
-import { Command } from './widgets/constructor.js';
+import { type Command } from './widgets/widget.js';
 export declare const USER: string;
 export declare const CACHE_DIR: string;
 export declare function readFile(path: string): string;

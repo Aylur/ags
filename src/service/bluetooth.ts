@@ -132,7 +132,7 @@ class Bluetooth extends Service {
     }
 
     // @ts-expect-error
-    private _deviceAdded(_c: unknown, device: GnomeBluetooth.Device) {
+    private _deviceAdded(_, device: GnomeBluetooth.Device) {
         if (this._devices.has(device.address))
             return;
 
@@ -143,7 +143,7 @@ class Bluetooth extends Service {
     }
 
     // @ts-expect-error
-    private _deviceRemoved(_c: unknown, device: GnomeBluetooth.Device) {
+    private _deviceRemoved(_, device: GnomeBluetooth.Device) {
         if (!this._devices.has(device.address))
             return;
 

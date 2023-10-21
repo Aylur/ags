@@ -17,6 +17,12 @@ interface Context {
     fill: () => void;
     $dispose: () => void;
 }
+export interface CircularProgressProps extends InstanceType<typeof Gtk.Bin> {
+    rounded?: boolean;
+    value?: number;
+    inverted?: boolean;
+    start_at?: number;
+}
 export default class AgsCircularProgress extends Gtk.Bin {
     get rounded(): boolean;
     set rounded(r: boolean);

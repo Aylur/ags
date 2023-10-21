@@ -93,6 +93,7 @@ export class App extends Gtk.Application {
         this._load();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     connect(signal = 'window-toggled', callback: (_: this, ...args: any[]) => void): number {
         return super.connect(signal, callback);
     }
@@ -133,7 +134,7 @@ export class App extends Gtk.Application {
     }
 
     removeWindow(w: InstanceType<typeof Gtk.Window> | string) {
-        const name = typeof w === 'string' ? w : w.name!;
+        const name = typeof w === 'string' ? w : w.name || 'gtk-layer-shell';
 
         const win = this._windows.get(name);
         if (!win) {
@@ -147,10 +148,12 @@ export class App extends Gtk.Application {
 
     addWindow(w: InstanceType<typeof Gtk.Window>) {
         if (!(w instanceof Gtk.Window)) {
-            console.error(Error(`${w} is not an instanceof Gtk.Window, ` +
+            return console.error(Error(`${w} is not an instanceof Gtk.Window, ` +
                 ` but it is of type ${typeof w}`));
-            return;
         }
+
+        if (!w.name)
+            return console.error(Error(`${w} has no name`));
 
         w.connect('notify::visible',
             () => this.emit('window-toggled', w.name, w.visible));

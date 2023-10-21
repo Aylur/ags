@@ -8,12 +8,19 @@ import type DbusmenuGtk3Types from '../../types/gtk-types/dbusmenugtk3-0.4.js';
 import Service from '../service.js';
 import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
-import Widget, { WidgetParams } from '../widget.js';
+import { createConstructor } from '../widget.js';
+import { BaseProps } from '../widgets/widget.js';
 
 const StatusNotifierWatcherIFace = loadInterfaceXML('org.kde.StatusNotifierWatcher')!;
 const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem')!;
 const StatusNotifierItemProxy =
     Gio.DBusProxy.makeProxyWrapper(StatusNotifierItemIFace) as unknown as StatusNotifierItemProxy;
+
+const DbusMenu = createConstructor<
+    InstanceType<typeof DbusmenuGtk3.Menu>,
+    DbusmenuGtk3Types.Menu.ConstructorProperties & BaseProps<InstanceType<typeof DbusmenuGtk3.Menu>>,
+    typeof DbusmenuGtk3.Menu
+>(DbusmenuGtk3.Menu);
 
 export class TrayItem extends Service {
     static {
@@ -117,13 +124,7 @@ export class TrayItem extends Service {
 
     private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
         if (proxy.Menu) {
-            const menu = Widget<
-                DbusmenuGtk3Types.Menu,
-                // quick hack around the weirdness of direct types
-                WidgetParams<InstanceType<typeof Gtk.Widget>> & DbusmenuGtk3Types.Menu.ConstructorProperties,
-                typeof DbusmenuGtk3.Menu
-            >({
-                type: DbusmenuGtk3.Menu,
+            const menu = DbusMenu({
                 dbus_name: proxy.g_name_owner,
                 dbus_object: proxy.Menu,
             });
@@ -167,14 +168,14 @@ export class TrayItem extends Service {
             'org.freedesktop.DBus.Properties',
             'GetAll',
             new GLib.Variant('(s)', [this._proxy.g_interface_name]),
-            GLib.VariantType.new('(a{sv})'),
+            new GLib.VariantType('(a{sv})'),
             Gio.DBusCallFlags.NONE, -1,
             null,
             (proxy, result) => {
-                const variant = proxy?.call_finish(result);
+                const variant = proxy?.call_finish(result) as InstanceType<typeof GLib.Variant>;
                 if (!variant)
                     return;
-                const [properties] = variant.deepUnpack<Record<string, InstanceType<typeof GLib.Variant>>[]>();
+                const [properties] = variant.deepUnpack<Record<string, InstanceType<typeof GLib.Variant>>[] >();
                 Object.entries(properties).map(([propertyName, value]) => {
                     this._proxy.set_cached_property(propertyName, value);
                 });

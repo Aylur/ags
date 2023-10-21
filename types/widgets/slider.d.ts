@@ -8,9 +8,10 @@ import "../gtk-types/nm-1.0-ambient";
 import "../gtk-types/soup-3.0-ambient";
 import "../gtk-types/gvc-1.0-ambient";
 import Gtk from 'gi://Gtk?version=3.0';
-import type Gdk from 'gi://Gdk?version=3.0';
-import { Command } from './constructor.js';
-export interface Params {
+import type GtkTypes from "../../types/gtk-types/gtk-3.0";
+import Gdk from 'gi://Gdk?version=3.0';
+import { type Command } from './widget.js';
+export interface SliderProps extends GtkTypes.Scale.ConstructorProperties {
     onChange?: Command;
     value?: number;
     min?: number;
@@ -19,7 +20,7 @@ export interface Params {
 }
 export default class AgsSlider extends Gtk.Scale {
     onChange: Command;
-    constructor({ onChange, value, min, max, step, ...rest }?: Params);
+    constructor({ onChange, value, min, max, step, ...rest }?: SliderProps);
     get value(): number;
     set value(value: number);
     get min(): number;

@@ -8,8 +8,21 @@ import "./gtk-types/nm-1.0-ambient";
 import "./gtk-types/soup-3.0-ambient";
 import "./gtk-types/gvc-1.0-ambient";
 import GObject from 'gi://GObject';
-type Poll<T> = [number, string[] | string | (() => T), (out: string) => T];
-type Listen<T> = [string[] | string, (out: string) => T] | string[] | string;
+import type GObjectTypes from '../types/gtk-types/gobject-2.0';
+type Listen<T> = [
+    string[] | string,
+    (out: string) => T
+] | [
+    string[] | string
+] | string[] | string;
+type Poll<T> = [
+    number,
+    string[] | string | (() => T)
+] | [
+    number,
+    string[] | string | (() => T),
+    (out: string) => T
+];
 interface Options<T> {
     poll?: Poll<T>;
     listen?: Listen<T>;
@@ -21,7 +34,7 @@ export declare class Variable<T> extends GObject.Object {
     private _interval?;
     private _subprocess?;
     constructor(value: T, { poll, listen }?: Options<T>);
-    connect(signal: string | undefined, callback: (_: this, ...args: any[]) => void): number;
+    connect(signal: string | undefined, callback: GObjectTypes.Object.NotifySignalCallback): number;
     startPoll(): void;
     stopPoll(): void;
     startListen(): void;
@@ -30,9 +43,9 @@ export declare class Variable<T> extends GObject.Object {
     get isPolling(): boolean;
     dispose(): void;
     getValue(): T;
-    setValue(value: any): void;
+    setValue(value: T): void;
     get value(): T;
     set value(value: T);
 }
-declare const _default: <T>(value: T, options: Options<T>) => Variable<T>;
+declare const _default: <T>(value: T, options?: Options<T> | undefined) => Variable<T>;
 export default _default;
