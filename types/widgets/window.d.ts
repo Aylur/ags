@@ -12,11 +12,14 @@ import type GtkTypes from "../../types/gtk-types/gtk-3.0";
 import Gdk from 'gi://Gdk?version=3.0';
 declare const layers: readonly ["background", "bottom", "top", "overlay"];
 declare const anchors: readonly ["left", "right", "top", "bottom"];
+type Layer = typeof layers[number];
+type Anchor = typeof anchors[number];
 export interface WindowProps extends Omit<GtkTypes.Window.ConstructorProperties, 'margin'> {
-    anchor?: typeof anchors[number][];
+    name?: string;
+    anchor?: Anchor[];
     exclusive?: boolean;
     focusable?: boolean;
-    layer?: typeof layers[number];
+    layer?: Layer;
     margin?: number[];
     monitor?: number;
     popup?: boolean;
@@ -31,8 +34,8 @@ export default class AgsWindow extends Gtk.Window {
     set exclusive(exclusive: boolean);
     get layer(): "background" | "bottom" | "top" | "overlay";
     set layer(layer: "background" | "bottom" | "top" | "overlay");
-    get anchor(): typeof anchors[number][];
-    set anchor(anchor: typeof anchors[number][]);
+    get anchor(): Anchor[];
+    set anchor(anchor: Anchor[]);
     get margin(): number[];
     set margin(margin: number[]);
     get popup(): boolean;

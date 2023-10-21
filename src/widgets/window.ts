@@ -10,11 +10,16 @@ const { GtkLayerShell: LayerShell } = imports.gi;
 
 const layers = ['background', 'bottom', 'top', 'overlay'] as const;
 const anchors = ['left', 'right', 'top', 'bottom'] as const;
+
+type Layer = typeof layers[number];
+type Anchor = typeof anchors[number];
+
 export interface WindowProps extends Omit<GtkTypes.Window.ConstructorProperties, 'margin'> {
-    anchor?: typeof anchors[number][]
+    name?: string
+    anchor?: Anchor[]
     exclusive?: boolean
     focusable?: boolean
-    layer?: typeof layers[number]
+    layer?: Layer
     margin?: number[]
     monitor?: number
     popup?: boolean
@@ -112,7 +117,7 @@ export default class AgsWindow extends Gtk.Window {
     }
 
     get anchor() { return anchors.filter((_, i) => LayerShell.get_anchor(this, i)); }
-    set anchor(anchor: typeof anchors[number][]) {
+    set anchor(anchor: Anchor[]) {
         if (this.anchor.length === anchor.length &&
             this.anchor.every(a => anchor.includes(a)))
             return;

@@ -3,8 +3,8 @@ import Gtk from 'gi://Gtk?version=3.0';
 import type GtkTypes from "../../types/gtk-types/gtk-3.0"
 import Service from '../service.js';
 
-type Policy = 'automatic' | 'always' | 'never' | 'external';
-const policy = ['automatic', 'always', 'never', 'external'];
+const policy = ['automatic', 'always', 'never', 'external'] as const;
+type Policy = typeof policy[number];
 
 export interface ScrollableProps extends GtkTypes.ScrolledWindow.ConstructorProperties {
     hscroll?: Policy,
