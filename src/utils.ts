@@ -95,24 +95,24 @@ export function connect<
     Widget extends InstanceType<typeof Gtk.Widget>,
 >(
     obj: InstanceType<typeof GObject.Object>,
-    widget: Widget,
+    _widget: Widget,
     callback: (widget: Widget, ...args: unknown[]) => void,
     event?: string,
 ) {
     if (!(obj instanceof Service || obj instanceof App || obj instanceof Variable) && !event)
         return console.error(new Error('missing signal for connection'));
 
-
     const bind = obj.connect(event as string,
         (_s, ...args: unknown[]) => callback(widget, ...args));
 
+    const widget = Object.assign(_widget, { _destroyed: false });
+
     widget.connect('destroy', () => {
-        // @ts-expect-error
         widget._destroyed = true;
         obj.disconnect(bind);
     });
+
     GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-        // @ts-expect-error
         if (!widget._destroyed)
             callback(widget);
 

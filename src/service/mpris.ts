@@ -198,7 +198,7 @@ class MprisPlayer extends Service {
             Gio.FileCopyFlags.OVERWRITE,
             GLib.PRIORITY_DEFAULT,
             // @ts-expect-error
-            null, null, (source: Gio.File, result: Gio.AsyncResult) => {
+            null, null, (source: InstanceType<typeof Gio.File>, result: InstanceType<typeof Gio.AsyncResult>) => {
                 try {
                     source.copy_finish(result);
                     this.changed('cover-path');

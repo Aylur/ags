@@ -6,6 +6,15 @@ import Service from '../service.js';
 const policy = ['automatic', 'always', 'never', 'external'] as const;
 type Policy = typeof policy[number];
 
+function policyToEnum(policy: Policy) {
+    switch (policy) {
+        case 'automatic': return Gtk.PolicyType.AUTOMATIC;
+        case 'always': return Gtk.PolicyType.ALWAYS;
+        case 'never': return Gtk.PolicyType.NEVER;
+        case 'external': return Gtk.PolicyType.EXTERNAL;
+    }
+}
+
 export interface ScrollableProps extends GtkTypes.ScrolledWindow.ConstructorProperties {
     hscroll?: Policy,
     vscroll?: Policy,
@@ -29,7 +38,7 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
         });
     }
 
-    // @ts-expect-error
+    // @ts-expect-error custom overrides
     get hscroll() { return this._hscroll as Policy; }
     set hscroll(hscroll: Policy) {
         if (!hscroll || this.hscroll === hscroll)
@@ -40,13 +49,13 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
             return;
         }
 
-        // @ts-expect-error
+        // @ts-expect-error custom overrides
         this._hscroll = hscroll;
         this.notify('hscroll');
         this.policy();
     }
 
-    // @ts-expect-error
+    // @ts-expect-error custom overrides
     get vscroll() { return this._vscroll as Policy; }
     set vscroll(vscroll: Policy) {
         if (!vscroll || this.vscroll === vscroll)
@@ -57,18 +66,18 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
             return;
         }
 
-        // @ts-expect-error
+        // @ts-expect-error custom overrides
         this._vscroll = vscroll;
         this.notify('vscroll');
         this.policy();
     }
 
     policy() {
-        const hscroll = policy.findIndex(p => p === this.hscroll);
-        const vscroll = policy.findIndex(p => p === this.vscroll);
+        const hscroll = policyToEnum(this.hscroll);
+        const vscroll = policyToEnum(this.vscroll);
         this.set_policy(
-            hscroll === -1 ? Gtk.PolicyType.AUTOMATIC : hscroll,
-            vscroll === -1 ? Gtk.PolicyType.AUTOMATIC : hscroll,
+            hscroll,
+            vscroll,
         );
     }
 }

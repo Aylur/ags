@@ -94,8 +94,7 @@ class Bluetooth extends Service {
         });
     }
 
-    // @ts-expect-error
-    private _client: GnomeBluetooth.Client;
+    private _client: InstanceType<typeof GnomeBluetooth.Client>;
     private _devices: Map<string, BluetoothDevice>;
 
     constructor() {
@@ -122,33 +121,37 @@ class Bluetooth extends Service {
         const deviceStore = this._client.get_devices();
 
         for (let i = 0; i < deviceStore.get_n_items(); ++i) {
-            const device = deviceStore.get_item(i);
+            const device = deviceStore.get_item(i) as unknown as InstanceType<typeof GnomeBluetooth.Device> | null
 
-            if (device.paired || device.trusted)
+            if (device?.paired || device?.trusted)
                 devices.push(device);
         }
 
         return devices;
     }
 
-    // @ts-expect-error
-    private _deviceAdded(_, device: GnomeBluetooth.Device) {
-        if (this._devices.has(device.address))
+    private _deviceAdded(_: unknown, device: InstanceType<typeof GnomeBluetooth.Device>) {
+        const address = device.address;
+
+        if (!address) return;
+        if (this._devices.has(address))
             return;
 
         const d = new BluetoothDevice(device);
         d.connect('changed', () => this.emit('changed'));
-        this._devices.set(device.address, d);
+        this._devices.set(address, d);
         this.changed('devices');
     }
 
-    // @ts-expect-error
-    private _deviceRemoved(_, device: GnomeBluetooth.Device) {
-        if (!this._devices.has(device.address))
+    private _deviceRemoved(_: unknown, device: InstanceType<typeof GnomeBluetooth.Device>) {
+        const address = device.address;
+        if (!address) return;
+
+        if (!this._devices.has(address))
             return;
 
-        this._devices.get(device.address)?.close();
-        this._devices.delete(device.address);
+        this._devices.get(address)?.close();
+        this._devices.delete(address);
         this.notify('devices');
         this.notify('connected-devices');
         this.emit('changed');
@@ -163,8 +166,7 @@ class Bluetooth extends Service {
             device.device.get_object_path(),
             connect,
             null,
-            // @ts-expect-error
-            (client: GnomeBluetooth.Client, res: Gio.AsyncResult) => {
+            (client: InstanceType<typeof GnomeBluetooth.Client>, res: InstanceType<typeof Gio.AsyncResult>) => {
                 try {
                     const s = client.connect_service_finish(res);
                     callback(s);

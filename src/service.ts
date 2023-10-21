@@ -1,7 +1,5 @@
 import GObject from 'gi://GObject';
-import Gtk from 'gi://Gtk?version=3.0';
 import type GObjectTypes from '../types/gtk-types/gobject-2.0';
-import { connect } from './utils.js';
 
 type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'double' | 'boolean' | 'gobject';
 type PspecFlag = 'rw' | 'r' | 'w';
@@ -46,9 +44,7 @@ export default class Service extends GObject.Object {
             case 'gobject': return GObject.ParamSpec.object(
                 name, name, name, flags, GObject.Object.$gtype);
 
-            default: return GObject.ParamSpec.jsobject(
-                // @ts-expect-error
-                name, name, name, flags, null);
+            default: return GObject.ParamSpec.jsobject(name, name, name, flags);
         }
     }
 
