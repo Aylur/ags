@@ -22,7 +22,7 @@ export declare function bulkConnect(service: InstanceType<typeof GObject.Object>
     callback: (...args: any[]) => void
 ][]): number[];
 export declare function bulkDisconnect(service: InstanceType<typeof GObject.Object>, ids: number[]): void;
-export declare function connect<Widget extends InstanceType<typeof Gtk.Widget>>(service: InstanceType<typeof GObject.Object>, widget: Widget, callback: (widget: Widget, ...args: unknown[]) => void, event?: string): void;
+export declare function connect<Widget extends InstanceType<typeof Gtk.Widget>>(obj: InstanceType<typeof GObject.Object>, widget: Widget, callback: (widget: Widget, ...args: unknown[]) => void, event?: string): void;
 export declare function interval(interval: number, callback: () => void, bind?: InstanceType<typeof Gtk.Widget>): number;
 export declare function timeout(ms: number, callback: () => void): number;
 export declare function runCmd(cmd: Command, ...args: unknown[]): boolean;

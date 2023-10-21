@@ -1,3 +1,6 @@
+// typedefs
+/// <reference path="../../types/ags.d.ts" />
+
 import { Notification } from './notification.js';
 import Notifications from 'resource:///com/github/Aylur/ags/service/notifications.js';
 import Gtk from 'gi://Gtk';

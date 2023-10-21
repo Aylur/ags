@@ -3,6 +3,9 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import { Command } from './widgets/constructor.js';
+import Service from './service.js';
+import { App } from './app.js';
+import { Variable } from './variable.js';
 
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name?.split('.').pop()}`;
@@ -91,18 +94,22 @@ export function bulkDisconnect(service: InstanceType<typeof GObject.Object>, ids
 export function connect<
     Widget extends InstanceType<typeof Gtk.Widget>,
 >(
-    service: InstanceType<typeof GObject.Object>,
+    obj: InstanceType<typeof GObject.Object>,
     widget: Widget,
     callback: (widget: Widget, ...args: unknown[]) => void,
-    event = 'changed',
+    event?: string,
 ) {
-    const bind = service.connect(
-        event, (_s, ...args: unknown[]) => callback(widget, ...args));
+    if (!(obj instanceof Service || obj instanceof App || obj instanceof Variable) && !event)
+        return console.error(new Error('missing signal for connection'));
+
+
+    const bind = obj.connect(event as string,
+        (_s, ...args: unknown[]) => callback(widget, ...args));
 
     widget.connect('destroy', () => {
         // @ts-expect-error
         widget._destroyed = true;
-        service.disconnect(bind);
+        obj.disconnect(bind);
     });
     GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
         // @ts-expect-error

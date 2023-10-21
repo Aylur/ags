@@ -1,3 +1,6 @@
+// typedefs
+/// <reference path="../../types/ags.d.ts" />
+
 // importing 
 import Hyprland from 'resource:///com/github/Aylur/ags/service/hyprland.js';
 import Notifications from 'resource:///com/github/Aylur/ags/service/notifications.js';

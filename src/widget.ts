@@ -22,7 +22,7 @@ export interface WidgetParams<T extends InstanceType<typeof Gtk.Widget>> extends
     type: new(arg: Omit<WidgetParams<T>, keyof CommonParams<T> | "type">) => T;
 }
 
-export function Widget<
+function _Widget<
     Output extends InstanceType<typeof Gtk.Widget>,
     Params extends CommonParams<Output> | ConstructorParameters<Class>[0],
     Class extends new (arg: Omit<Params, keyof CommonParams<Output>>) => InstanceType<Class> & Output,
@@ -33,8 +33,6 @@ export function Widget<
         Class
     >(type, params as unknown as Params);
 }
-
-export default Widget;
 
 const createConstructor = <
     Output extends InstanceType<typeof Gtk.Widget>,
@@ -62,3 +60,25 @@ export const Revealer = createConstructor(AgsRevealer);
 export const Scrollable = createConstructor(AgsScrollable);
 export const Slider = createConstructor(AgsSlider);
 export const Stack = createConstructor(AgsStack);
+
+export const Widget = Object.assign(_Widget, {
+    Window,
+    Box,
+    Button,
+    CenterBox,
+    CircularProgress,
+    Entry,
+    EventBox,
+    Icon,
+    Label,
+    Menu,
+    MenuItem,
+    Overlay,
+    ProgressBar,
+    Revealer,
+    Scrollable,
+    Slider,
+    Stack,
+});
+
+export default Widget;

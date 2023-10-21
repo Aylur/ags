@@ -14,13 +14,14 @@ interface Options<T> {
     poll?: Poll<T>;
     listen?: Listen<T>;
 }
-declare class AgsVariable<T> extends GObject.Object {
+export declare class Variable<T> extends GObject.Object {
     private _value;
     private _poll?;
     private _listen?;
     private _interval?;
     private _subprocess?;
     constructor(value: T, { poll, listen }?: Options<T>);
+    connect(signal: string | undefined, callback: (_: this, ...args: any[]) => void): number;
     startPoll(): void;
     stopPoll(): void;
     startListen(): void;
@@ -33,5 +34,5 @@ declare class AgsVariable<T> extends GObject.Object {
     get value(): T;
     set value(value: T);
 }
-declare const _default: <T>(value: T, options: Options<T>) => AgsVariable<T>;
+declare const _default: <T>(value: T, options: Options<T>) => Variable<T>;
 export default _default;

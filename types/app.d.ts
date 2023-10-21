@@ -18,7 +18,7 @@ interface Config {
     };
     maxStreamVolume: number;
 }
-declare class App extends Gtk.Application {
+export declare class App extends Gtk.Application {
     private _dbus;
     private _closeDelay;
     private _cssProviders;
@@ -34,8 +34,8 @@ declare class App extends Gtk.Application {
     resetCss(): void;
     applyCss(path: string): void;
     setup(bus: string, path: string, configPath: string): void;
-    connectWidget(widget: InstanceType<typeof Gtk.Widget>, callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: unknown[]) => void, event?: string): void;
     vfunc_activate(): void;
+    connect(signal: string | undefined, callback: (_: this, ...args: any[]) => void): number;
     toggleWindow(name: string): string | undefined;
     openWindow(name: string): void;
     closeWindow(name: string): void;

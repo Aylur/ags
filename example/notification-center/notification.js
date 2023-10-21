@@ -1,3 +1,6 @@
+// typedefs
+/// <reference path="../../types/ags.d.ts" />
+
 import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import { lookUpIcon, timeout } from 'resource:///com/github/Aylur/ags/utils.js';
 

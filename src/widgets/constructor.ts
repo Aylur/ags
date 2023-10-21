@@ -13,12 +13,12 @@ export interface CommonParams<T extends InstanceType<typeof Gtk.Widget>> {
     connections?: (
         [string, (widget: T) => unknown] |
         [number, (widget: T) => unknown] |
-        [InstanceType<typeof GObject.Object> & { connectWidget: unknown }, (widget: T, ...args: unknown[]) => unknown, string]
+        [InstanceType<typeof GObject.Object>, (widget: T, ...args: unknown[]) => unknown, string]
     )[]
     properties?: [prop: string, value: unknown][]
     binds?: [
         prop: string,
-        obj: InstanceType<typeof GObject.Object> & { connectWidget: unknown },
+        obj: InstanceType<typeof GObject.Object>,
         objProp?: string,
         transform?: (value: unknown) => unknown][],
     setup?: (widget: T) => void
@@ -115,14 +115,11 @@ function parseCommon<T extends InstanceType<typeof Gtk.Widget>>(widget: T, {
             else if (typeof s === 'number')
                 interval(s, () => callback(widget), widget);
 
-            else if (typeof s?.connectWidget === 'function')
-                s.connectWidget(widget, callback, event);
-
-            else if (typeof s?.connect === 'function')
+            else if (s instanceof GObject.Object)
                 connect(s, widget, callback, event);
 
             else
-                console.error(Error(`${s} is not connectable`));
+                console.error(Error(`${s} is not a GObject nor a string nor a number`));
         });
     }
 

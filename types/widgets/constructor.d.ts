@@ -23,18 +23,14 @@ export interface CommonParams<T extends InstanceType<typeof Gtk.Widget>> {
         number,
         (widget: T) => unknown
     ] | [
-        InstanceType<typeof GObject.Object> & {
-            connectWidget: unknown;
-        },
+        InstanceType<typeof GObject.Object>,
         (widget: T, ...args: unknown[]) => unknown,
         string
     ])[];
     properties?: [prop: string, value: unknown][];
     binds?: [
         prop: string,
-        obj: InstanceType<typeof GObject.Object> & {
-            connectWidget: unknown;
-        },
+        obj: InstanceType<typeof GObject.Object>,
         objProp?: string,
         transform?: (value: unknown) => unknown
     ][];

@@ -83,12 +83,8 @@ export default class Service extends GObject.Object {
         GObject.registerClass({ Signals, Properties }, service);
     }
 
-    connectWidget(
-        widget: InstanceType<typeof Gtk.Widget>,
-        callback: (widget: InstanceType<typeof Gtk.Widget>, ...args: unknown[]) => void,
-        event = 'changed',
-    ) {
-        connect(this, widget, callback, event);
+    connect(signal = 'changed', callback: (_: this, ...args: any[]) => void): number {
+        return super.connect(signal, callback);
     }
 
     updateProperty(prop: string, value: unknown) {

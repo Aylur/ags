@@ -1,3 +1,6 @@
+// typedefs
+/// <reference path="../../types/ags.d.ts" />
+
 import {
     NotificationList, DNDSwitch, ClearButton, PopupList,
 } from './widgets.js';
