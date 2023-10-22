@@ -178,9 +178,9 @@ class MprisPlayer extends Service {
     }
 
     private _cacheCoverArt() {
-        this._coverPath = MEDIA_CACHE_PATH + '/' +
+        this.updateProperty('cover-path', MEDIA_CACHE_PATH + '/' +
             `${this._trackArtists.join(', ')}-${this._trackTitle}`
-                .replace(/[\,\*\?\"\<\>\|\#\:\?\/\'\(\)]/g, '');
+                .replace(/[\,\*\?\"\<\>\|\#\:\?\/\'\(\)]/g, ''));
 
         if (this._coverPath.length > 255)
             this._coverPath = this._coverPath.substring(0, 255);
