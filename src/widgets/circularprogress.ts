@@ -26,15 +26,15 @@ export default class AgsCircularProgress extends Gtk.Bin {
             CssName: 'circular-progress',
             Properties: {
                 'start-at': Service.pspec('start-at', 'float', 'rw'),
+                'value': Service.pspec('value', 'float', 'rw'),
                 'inverted': Service.pspec('inverted', 'boolean', 'rw'),
                 'rounded': Service.pspec('rounded', 'boolean', 'rw'),
-                'value': Service.pspec('value', 'float', 'rw'),
             },
         }, this);
     }
 
     // @ts-expect-error
-    get rounded() { return this._rounded; }
+    get rounded() { return this._rounded || false; }
     set rounded(r: boolean) {
         if (this.rounded === r)
             return;
@@ -46,7 +46,7 @@ export default class AgsCircularProgress extends Gtk.Bin {
     }
 
     // @ts-expect-error
-    get inverted() { return this._inverted; }
+    get inverted() { return this._inverted || false; }
     set inverted(inverted: boolean) {
         if (this.inverted === inverted)
             return;
@@ -58,7 +58,7 @@ export default class AgsCircularProgress extends Gtk.Bin {
     }
 
     // @ts-expect-error
-    get start_at() { return this._startAt; }
+    get start_at() { return this._startAt || 0; }
     set start_at(value: number) {
         if (this.start_at === value)
             return;
@@ -76,7 +76,7 @@ export default class AgsCircularProgress extends Gtk.Bin {
     }
 
     // @ts-expect-error
-    get value() { return this._value; }
+    get value() { return this._value || 0; }
     set value(value: number) {
         if (this.value === value)
             return;
@@ -141,7 +141,7 @@ export default class AgsCircularProgress extends Gtk.Bin {
 
         // Draw progress
         cr.setSourceRGBA(fg.red, fg.green, fg.blue, fg.alpha);
-        cr.arc(center.x, center.y, radius, this.inverted ? from : to, this.inverted ? to : from);
+        cr.arc(center.x, center.y, radius, this.inverted ? to : from, this.inverted ? from : to);
         cr.setLineWidth(fgStroke);
         cr.stroke();
 
