@@ -67,7 +67,17 @@ export class App extends Gtk.Application {
         }
 
         const cssProvider = new Gtk.CssProvider();
-        cssProvider.load_from_path(path);
+        cssProvider.connect('parsing-error', (_, section, err) => {
+            const file = section.get_file().get_path();
+            const location = section.get_start_line();
+            console.error(`CSS ERROR: ${err.message} at line ${location} in ${file}`);
+        });
+
+        try {
+            cssProvider.load_from_path(path);
+        } catch (_) {
+            // log on parsing-error
+        }
 
         Gtk.StyleContext.add_provider_for_screen(
             screen,
