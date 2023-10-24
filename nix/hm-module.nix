@@ -44,7 +44,7 @@ in {
 
   config = lib.mkIf cfg.enable {
     xdg.configFile."ags".source = cfg.configDir;
-    home.packages = lib.optional (cfg.package != null) (cfg.package.overrie {
+    home.packages = lib.optional (cfg.package != null) (cfg.package.override {
       extraPackages = cfg.extraPackages;
     });
   };
