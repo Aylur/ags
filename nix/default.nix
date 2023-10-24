@@ -19,6 +19,7 @@
 , networkmanager
 , libdbusmenu-gtk3
 , gvfs
+, extraPackages ? []
 }:
 
 let
@@ -79,12 +80,13 @@ stdenv.mkDerivation {
     networkmanager
     libdbusmenu-gtk3
     gvfs
-  ];
+  ] ++ extraPackages;
 
   meta = with lib; {
     description = "A customizable and extensible shell";
     homepage = "https://github.com/Aylur/ags";
     platforms = [ "x86_64-linux" "aarch64-linux" ];
     license = licenses.gpl3;
+    meta.maintainers = [lib.maintainers.Aylur];
   };
 }
