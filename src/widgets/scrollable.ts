@@ -67,7 +67,7 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
         const vscroll = policy.findIndex(p => p === this.vscroll);
         this.set_policy(
             hscroll === -1 ? Gtk.PolicyType.AUTOMATIC : hscroll,
-            vscroll === -1 ? Gtk.PolicyType.AUTOMATIC : hscroll,
+            vscroll === -1 ? Gtk.PolicyType.AUTOMATIC : vscroll,
         );
     }
 }
