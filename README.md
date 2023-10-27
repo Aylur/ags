@@ -5,7 +5,7 @@ GJS is a JavaScript runtime built on Firefox's SpiderMonkey JavaScript engine an
 
 It was heavily inspired by [EWW](https://github.com/elkowar/eww).
 
-Currently only Wayland is supported, but there are plans for X11.
+Currently only Wayland is supported, but it also works on X11, [see #19](https://github.com/Aylur/ags/issues/19).
 
 ## Get started
 
