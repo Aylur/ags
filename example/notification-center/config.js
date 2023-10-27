@@ -17,7 +17,7 @@ const Header = () => Widget.Box({
 
 const NotificationCenter = () => Widget.Window({
     name: 'notification-center',
-    anchor: 'right top bottom',
+    anchor: ['right', 'top', 'bottom'],
     popup: true,
     focusable: true,
     child: Widget.Box({
@@ -40,7 +40,7 @@ const NotificationCenter = () => Widget.Window({
 
 const NotificationsPopupWindow = () => Widget.Window({
     name: 'popup-window',
-    anchor: 'top',
+    anchor: ['top'],
     child: PopupList(),
 });
 

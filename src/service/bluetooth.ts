@@ -140,6 +140,7 @@ class Bluetooth extends Service {
 
         const d = new BluetoothDevice(device);
         d.connect('changed', () => this.emit('changed'));
+        d.connect('notify::connected', () => this.notify('connected-devices'));
         this._devices.set(device.address, d);
         this.changed('devices');
     }

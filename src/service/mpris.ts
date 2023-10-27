@@ -178,12 +178,8 @@ class MprisPlayer extends Service {
     }
 
     private _cacheCoverArt() {
-        this._coverPath = MEDIA_CACHE_PATH + '/' +
-            `${this._trackArtists.join(', ')}-${this._trackTitle}`
-                .replace(/[\,\*\?\"\<\>\|\#\:\?\/\'\(\)]/g, '');
-
-        if (this._coverPath.length > 255)
-            this._coverPath = this._coverPath.substring(0, 255);
+        this.updateProperty('cover-path', MEDIA_CACHE_PATH + '/' +
+            GLib.compute_checksum_for_string(GLib.ChecksumType.SHA1, this.track_cover_url, -1));
 
         if (this._trackCoverUrl === '' || this._coverPath === '')
             return;

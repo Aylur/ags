@@ -277,8 +277,8 @@ class Hyprland extends Service {
                     this._active.client.updateProperty('class', '');
                     this._active.client.updateProperty('title', '');
                     this._active.client.updateProperty('address', '');
-                    await this._syncClients();
                     await this._syncWorkspaces();
+                    this._clients.delete('0x' + argv[0]);
                     this.emit('client-removed', '0x' + argv[0]);
                     break;
 
