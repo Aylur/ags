@@ -7,17 +7,12 @@ import DbusmenuGtk3 from 'gi://DbusmenuGtk3';
 import Service from '../service.js';
 import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
-import { mkCtor } from '../widget.js';
+import Widget from '../widget.js';
 
 const StatusNotifierWatcherIFace = loadInterfaceXML('org.kde.StatusNotifierWatcher')!;
 const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem')!;
 const StatusNotifierItemProxy =
     Gio.DBusProxy.makeProxyWrapper(StatusNotifierItemIFace) as unknown as StatusNotifierItemProxy;
-
-const DbusMenu = mkCtor<
-    typeof DbusmenuGtk3.Menu,
-    DbusmenuGtk3.Menu.ConstructorProperties
->(DbusmenuGtk3.Menu, 'DbusMenu');
 
 export class TrayItem extends Service {
     static {
@@ -121,7 +116,8 @@ export class TrayItem extends Service {
 
     private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
         if (proxy.Menu) {
-            const menu = DbusMenu({
+            const menu = Widget({
+                type: DbusmenuGtk3.Menu,
                 dbus_name: proxy.g_name_owner,
                 dbus_object: proxy.Menu,
             });
@@ -172,7 +168,7 @@ export class TrayItem extends Service {
                 const variant = proxy?.call_finish(result) as GLib.Variant;
                 if (!variant)
                     return;
-                const [properties] = variant.deepUnpack < Record < string, GLib.Variant> [] >();
+                const [properties] = variant.deepUnpack<Record<string, GLib.Variant>[]>();
                 Object.entries(properties).map(([propertyName, value]) => {
                     this._proxy.set_cached_property(propertyName, value);
                 });

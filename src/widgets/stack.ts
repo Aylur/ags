@@ -9,18 +9,14 @@ const transitions = [
     'over_up', 'over_down', 'over_left', 'over_right',
     'under_up', 'under_down', 'under_left', 'under_right',
     'over_up_down', 'over_down_up', 'over_left_right', 'over_right_left',
-];
+] as const;
+
+type Transition = typeof transitions[number]
 
 export interface StackProps extends Gtk.Stack.ConstructorProperties {
     shown?: string
     items?: [string, Gtk.Widget][]
-    transition?:
-        'none' | 'crossfade' |
-        'slide_right' | 'slide_left' | 'slide_up' | 'slide_down' |
-        'slide_left_right' | 'slide_up_down' |
-        'over_up' | 'over_down' | 'over_left' | 'over_right' |
-        'under_up' | 'under_down' | 'under_left' | 'under_right' |
-        'over_up_down' | 'over_down_up' | 'over_left_right' | 'over_right_left'
+    transition?: Transition
 }
 
 export default class AgsStack extends Gtk.Stack {
@@ -72,7 +68,7 @@ export default class AgsStack extends Gtk.Stack {
     }
 
     get transition() { return transitions[this.transition_type]; }
-    set transition(transition: string) {
+    set transition(transition: Transition) {
         if (this.transition === transition)
             return;
 

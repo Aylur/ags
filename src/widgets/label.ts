@@ -4,12 +4,15 @@ import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
 import Service from '../service.js';
 
-const justifications = ['left', 'center', 'right', 'fill'];
-const truncates = ['none', 'start', 'middle', 'end'];
+const justifications = ['left', 'center', 'right', 'fill'] as const;
+const truncates = ['none', 'start', 'middle', 'end'] as const;
+
+type Justification = typeof justifications[number];
+type Truncate = typeof truncates[number];
 
 interface Props extends Gtk.Label.ConstructorProperties {
-    justification?: string
-    truncate?: string
+    justification?: Justification
+    truncate?: Truncate
 }
 
 export type LabelProps = Props | string | undefined
@@ -45,7 +48,7 @@ export default class AgsLabel extends Gtk.Label {
     }
 
     get truncate() { return truncates[this.ellipsize]; }
-    set truncate(truncate: string) {
+    set truncate(truncate: Truncate) {
         if (this.truncate === truncate)
             return;
 
@@ -59,7 +62,7 @@ export default class AgsLabel extends Gtk.Label {
     }
 
     get justification() { return justifications[this.justify]; }
-    set justification(justify: string) {
+    set justification(justify: Justification) {
         if (this.justification === justify)
             return;
 

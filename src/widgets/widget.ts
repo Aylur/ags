@@ -6,16 +6,16 @@ import { interval, connect } from '../utils.js';
 // TODO: remove this type and make them only functions
 export type Command = string | ((...args: unknown[]) => boolean);
 
-const aligns = ['fill', 'start', 'end', 'center', 'baseline'];
-const widgetProviders: Map<unknown, Gtk.CssProvider> = new Map();
+const aligns = ['fill', 'start', 'end', 'center', 'baseline'] as const;
+type Align = typeof aligns[number];
 
 export interface BaseProps<Self> {
     className?: string
     classNames?: string[]
     style?: string
     css?: string
-    halign?: 'fill' | 'start' | 'end' | 'center' | 'baseline'
-    valign?: 'fill' | 'start' | 'end' | 'center' | 'baseline'
+    halign?: Align
+    valign?: Align
     connections?: (
         [string, (self: Self, ...args: unknown[]) => unknown] |
         [number, (self: Self, ...args: unknown[]) => unknown] |
@@ -31,12 +31,12 @@ export interface BaseProps<Self> {
     setup?: (self: Self) => void
 }
 
-export default function <T extends typeof Gtk.Widget, Props>(W: T, GTypeName?: string) {
+export default function <T extends typeof Gtk.Widget>(Widget: T) {
     // @ts-expect-error mixin constructor
-    return class AgsWidget extends W {
+    class AgsWidget extends Widget {
         static {
             GObject.registerClass({
-                GTypeName: GTypeName || `${W.name}`,
+                GTypeName: Widget.name,
                 Properties: {
                     'class-name': Service.pspec('class-name', 'string', 'rw'),
                     'class-names': Service.pspec('class-names', 'jsobject', 'rw'),
@@ -45,7 +45,7 @@ export default function <T extends typeof Gtk.Widget, Props>(W: T, GTypeName?: s
             }, this);
         }
 
-        constructor(params: BaseProps<T> & Props | any = {}) {
+        constructor(params: BaseProps<InstanceType<AgsWidget & T>> & ConstructorParameters<T>[0]) {
             const {
                 connections = [],
                 properties = [],
@@ -55,12 +55,14 @@ export default function <T extends typeof Gtk.Widget, Props>(W: T, GTypeName?: s
                 valign,
                 setup,
                 ...rest
-            } = params as BaseProps<T> & Props;
-            super(typeof params === 'object' ? rest : params);
+            } = params;
+            super(typeof params === 'string' ? params : rest as Gtk.Widget.ConstructorProperties);
 
             this.style = style!;
             this.halign = halign!;
             this.valign = valign!;
+
+            const widget = this as InstanceType<AgsWidget & T>;
 
             properties.forEach(([key, value]) => {
                 (this as unknown as { [key: string]: unknown })[`_${key}`] = value;
@@ -87,30 +89,31 @@ export default function <T extends typeof Gtk.Widget, Props>(W: T, GTypeName?: s
                     this.connect(s, callback);
 
                 else if (typeof s === 'number')
-                    interval(s, () => callback(this as any), this as unknown as Gtk.Widget);
+                    interval(s, () => callback(widget), widget);
 
                 else if (s instanceof GObject.Object)
-                    connect(s, this as unknown as Gtk.Widget, callback as any, event);
+                    connect(s, widget, callback as (w: Gtk.Widget) => void, event);
 
                 else
                     console.error(Error(`${s} is not a GObject nor a string nor a number`));
             });
 
             if (typeof setup === 'function')
-                setup(this as any);
+                setup(widget);
         }
 
         toggleClassName(className: string, condition = true) {
+            const c = this.get_style_context();
             condition
-                ? this.get_style_context().add_class(className)
-                : this.get_style_context().remove_class(className);
+                ? c.add_class(className)
+                : c.remove_class(className);
         }
 
         // @ts-expect-error prop override
         get halign() { return aligns[super.halign]; }
 
         // @ts-expect-error prop override
-        set halign(align: string) {
+        set halign(align: Align) {
             if (!align)
                 return;
 
@@ -126,7 +129,7 @@ export default function <T extends typeof Gtk.Widget, Props>(W: T, GTypeName?: s
         get valign() { return aligns[super.valign]; }
 
         // @ts-expect-error prop override
-        set valign(align: string) {
+        set valign(align: Align) {
             if (!align)
                 return;
 
@@ -167,16 +170,15 @@ export default function <T extends typeof Gtk.Widget, Props>(W: T, GTypeName?: s
             this.notify('class-names');
         }
 
+        private _cssProvider: Gtk.CssProvider;
         setCss(css: string) {
-            const previous = widgetProviders.get(this);
-            if (previous)
-                this.get_style_context().remove_provider(previous);
+            if (this._cssProvider)
+                this.get_style_context().remove_provider(this._cssProvider);
 
-            const provider = new Gtk.CssProvider();
-            widgetProviders.set(this, provider);
-            provider.load_from_data(new TextEncoder().encode(css));
+            this._cssProvider = new Gtk.CssProvider();
+            this._cssProvider.load_from_data(new TextEncoder().encode(css));
             this.get_style_context()
-                .add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+                .add_provider(this._cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 
             this.notify('css');
         }
@@ -234,5 +236,13 @@ export default function <T extends typeof Gtk.Widget, Props>(W: T, GTypeName?: s
         get parent(): Gtk.Container | null {
             return this.get_parent() as Gtk.Container || null;
         }
+    }
+
+    return (params:
+        BaseProps<InstanceType<AgsWidget & T>> &
+        ConstructorParameters<T>[0] |
+        string,
+    ) => {
+        return new AgsWidget(params) as InstanceType<AgsWidget & T>;
     };
 }

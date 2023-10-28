@@ -100,19 +100,19 @@ export function connect(
     if (!(obj instanceof Service || obj instanceof App || obj instanceof Variable) && !event)
         return console.error(new Error('missing signal for connection'));
 
-
     const bind = obj.connect(event as string,
         (_s, ...args: unknown[]) => callback(widget, ...args));
 
-    widget.connect('destroy', () => {
-        // @ts-expect-error
-        widget._destroyed = true;
+    const w = Object.assign(widget, { _destroyed: false });
+
+    w.connect('destroy', () => {
+        w._destroyed = true;
         obj.disconnect(bind);
     });
+
     GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-        // @ts-expect-error
-        if (!widget._destroyed)
-            callback(widget);
+        if (!w._destroyed)
+            callback(w);
 
         return GLib.SOURCE_REMOVE;
     });
@@ -205,8 +205,7 @@ export function execAsync(cmd: string | string[]): Promise<string> {
 }
 
 export function exec(cmd: string) {
-    const [success, out, err] =
-        GLib.spawn_command_line_sync(cmd);
+    const [success, out, err] = GLib.spawn_command_line_sync(cmd);
 
     const decoder = new TextDecoder();
     if (!success)

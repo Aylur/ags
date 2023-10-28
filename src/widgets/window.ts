@@ -6,10 +6,10 @@ import App from '../app.js';
 
 const { GtkLayerShell: LayerShell } = imports.gi;
 
-const layers = ['background', 'bottom', 'top', 'overlay'];
-const anchors = ['left', 'right', 'top', 'bottom'];
-type Layer = 'background' | 'bottom' | 'top' | 'overlay';
-type Anchor = 'left' | 'right' | 'top' | 'bottom';
+const layers = ['background', 'bottom', 'top', 'overlay'] as const;
+const anchors = ['left', 'right', 'top', 'bottom'] as const;
+type Layer = typeof layers[number]
+type Anchor = typeof anchors[number]
 
 export interface WindowProps extends Omit<Gtk.Window.ConstructorProperties, 'margin'> {
     anchor?: Anchor[]

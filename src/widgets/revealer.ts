@@ -6,13 +6,12 @@ const transitions = [
     'none', 'crossfade',
     'slide_right', 'slide_left',
     'slide_up', 'slide_down',
-];
+] as const;
+
+type Transition = typeof transitions[number];
 
 export interface RevealerProps extends Gtk.Revealer.ConstructorProperties {
-    transitions?:
-        'none' | 'crossfade' |
-        'slide_right' | 'slide_left' |
-        'slide_up' | 'slide_down'
+    transitions?: Transition
 }
 
 export default class AgsRevealer extends Gtk.Revealer {
@@ -25,7 +24,7 @@ export default class AgsRevealer extends Gtk.Revealer {
     }
 
     get transition() { return transitions[this.transition_type]; }
-    set transition(transition: string) {
+    set transition(transition: Transition) {
         if (!transition || this.transition === transition)
             return;
 
