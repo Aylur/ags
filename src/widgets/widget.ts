@@ -102,13 +102,6 @@ export default function <T extends typeof Gtk.Widget>(Widget: T) {
                 setup(widget);
         }
 
-        toggleClassName(className: string, condition = true) {
-            const c = this.get_style_context();
-            condition
-                ? c.add_class(className)
-                : c.remove_class(className);
-        }
-
         // @ts-expect-error prop override
         get halign() { return aligns[super.halign]; }
 
@@ -141,36 +134,34 @@ export default function <T extends typeof Gtk.Widget>(Widget: T) {
             super.valign = aligns.findIndex(a => a === align);
         }
 
-        get class_name() {
-            // @ts-expect-error
-            return this._className || '';
-        }
+        toggleClassName(className: string, condition = true) {
+            const c = this.get_style_context();
+            condition
+                ? c.add_class(className)
+                : c.remove_class(className);
 
-        set class_name(names: string) {
-            // @ts-expect-error
-            this._className = names;
-            this.class_names = names.split(/\s+/);
+            this.notify('class-names');
             this.notify('class-name');
         }
 
+        get class_name() {
+            return this.class_names.join(' ');
+        }
+
+        set class_name(names: string) {
+            this.class_names = names.split(/\s+/);
+        }
+
         get class_names() {
-            // @ts-expect-error
-            return this._classNames || [];
+            return this.get_style_context().list_classes() || [];
         }
 
         set class_names(names: string[]) {
             this.class_names.forEach((cn: string) => this.toggleClassName(cn, false));
-
-            // @ts-expect-error
-            this._classNames = names.map(cn => {
-                this.toggleClassName(cn);
-                return cn;
-            });
-
-            this.notify('class-names');
+            names.forEach(cn => this.toggleClassName(cn));
         }
 
-        private _cssProvider: Gtk.CssProvider;
+        private _cssProvider!: Gtk.CssProvider;
         setCss(css: string) {
             if (this._cssProvider)
                 this.get_style_context().remove_provider(this._cssProvider);
