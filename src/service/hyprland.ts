@@ -290,7 +290,7 @@ class Hyprland extends Service {
                     this.emit('keyboard-layout', `${argv[0]}`, `${argv[1]}`);
                     break;
 
-                case 'changefloating': {
+                case 'changefloatingmode': {
                     const client = this._clients.get('0x' + argv[0]);
                     if (client)
                         // @ts-expect-error
