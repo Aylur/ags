@@ -1,16 +1,21 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
 import { type Command } from './widget.js';
 
-export interface MenuProps extends Gtk.Menu.ConstructorProperties {
+export interface MenuProps extends BaseProps<AgsMenu>, Gtk.Menu.ConstructorProperties {
     children?: Gtk.Widget[]
     onPopup?: Command
     onMoveScroll?: Command
 }
 
-export class AgsMenu extends Gtk.Menu {
-    static { GObject.registerClass(this); }
+export class AgsMenu extends AgsWidget(Gtk.Menu) {
+    static {
+        GObject.registerClass({
+            GTypeName: 'AgsMenu',
+        }, this);
+    }
 
     onPopup: Command;
     onMoveScroll: Command;
@@ -51,14 +56,18 @@ export class AgsMenu extends Gtk.Menu {
     }
 }
 
-export interface MenuItemProps extends Gtk.Menu.ConstructorProperties {
+export interface MenuItemProps extends BaseProps<AgsMenuItem>, Gtk.Menu.ConstructorProperties {
     onActivate?: Command
     onSelect?: Command
     onDeselect?: Command
 }
 
 export class AgsMenuItem extends Gtk.MenuItem {
-    static { GObject.registerClass(this); }
+    static {
+        GObject.registerClass({
+            GTypeName: 'AgsMenuItem',
+        }, this);
+    }
 
     onActivate: Command;
     onSelect: Command;

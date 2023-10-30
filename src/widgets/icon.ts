@@ -1,3 +1,4 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
@@ -6,16 +7,17 @@ import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 import cairo from '@girs/cairo-1.0';
 
-interface Props extends Gtk.Image.ConstructorProperties {
+interface Props extends BaseProps<AgsIcon>, Gtk.Image.ConstructorProperties {
     icon?: string | GdkPixbuf.Pixbuf
     size?: number
 }
 
 export type IconProps = Props | string | GdkPixbuf.Pixbuf | undefined
 
-export default class AgsIcon extends Gtk.Image {
+export default class AgsIcon extends AgsWidget(Gtk.Image) {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsIcon',
             Properties: {
                 'icon': Service.pspec('icon', 'jsobject', 'rw'),
                 'size': Service.pspec('size', 'double', 'rw'),

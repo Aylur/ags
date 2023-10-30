@@ -1,3 +1,4 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Service from '../service.js';
@@ -5,14 +6,16 @@ import Service from '../service.js';
 const policy = ['automatic', 'always', 'never', 'external'] as const;
 type Policy = typeof policy[number]
 
-export interface ScrollableProps extends Gtk.ScrolledWindow.ConstructorProperties {
+export interface ScrollableProps extends
+    BaseProps<AgsScrollable>, Gtk.ScrolledWindow.ConstructorProperties {
     hscroll?: Policy,
     vscroll?: Policy,
 }
 
-export default class AgsScrollable extends Gtk.ScrolledWindow {
+export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsScrollable',
             Properties: {
                 'hscroll': Service.pspec('hscroll', 'string', 'rw'),
                 'vscroll': Service.pspec('vscroll', 'string', 'rw'),
@@ -42,7 +45,7 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
         // @ts-expect-error
         this._hscroll = hscroll;
         this.notify('hscroll');
-        this.policy();
+        this._policy();
     }
 
     // @ts-expect-error
@@ -59,10 +62,10 @@ export default class AgsScrollable extends Gtk.ScrolledWindow {
         // @ts-expect-error
         this._vscroll = vscroll;
         this.notify('vscroll');
-        this.policy();
+        this._policy();
     }
 
-    policy() {
+    private _policy() {
         const hscroll = policy.findIndex(p => p === this.hscroll);
         const vscroll = policy.findIndex(p => p === this.vscroll);
         this.set_policy(

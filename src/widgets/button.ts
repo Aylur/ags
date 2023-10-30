@@ -1,10 +1,11 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import { runCmd } from '../utils.js';
 import { type Command } from './widget.js';
 
-export interface ButtonProps extends Gtk.Button.ConstructorProperties {
+export interface ButtonProps extends BaseProps<AgsButton>, Gtk.Button.ConstructorProperties {
     onClicked?: Command
     onPrimaryClick?: Command
     onSecondaryClick?: Command
@@ -18,8 +19,12 @@ export interface ButtonProps extends Gtk.Button.ConstructorProperties {
     onScrollDown?: Command
 }
 
-export default class AgsButton extends Gtk.Button {
-    static { GObject.registerClass(this); }
+export default class AgsButton extends AgsWidget(Gtk.Button) {
+    static {
+        GObject.registerClass({
+            GTypeName: 'AgsButton',
+        }, this);
+    }
 
     onClicked: Command;
     onPrimaryClick: Command;
@@ -101,7 +106,7 @@ export default class AgsButton extends Gtk.Button {
                 return runCmd(this.onMiddleClickRelease, this, event);
         });
 
-        this.connect('scroll-event', (box, event) => {
+        this.connect('scroll-event', (box, event: Gdk.Event) => {
             if (event.get_scroll_deltas()[2] < 0)
                 return runCmd(this.onScrollUp, box, event);
             else if (event.get_scroll_deltas()[2] > 0)

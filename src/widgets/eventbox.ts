@@ -1,10 +1,11 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import { runCmd } from '../utils.js';
 import { type Command } from './widget.js';
 
-export interface EventBoxProps extends Gtk.EventBox.ConstructorProperties {
+export interface EventBoxProps extends BaseProps<AgsEventBox>, Gtk.EventBox.ConstructorProperties {
     onPrimaryClick?: Command
     onSecondaryClick?: Command
     onMiddleClick?: Command
@@ -17,8 +18,12 @@ export interface EventBoxProps extends Gtk.EventBox.ConstructorProperties {
     onScrollDown?: Command
 }
 
-export default class AgsEventBox extends Gtk.EventBox {
-    static { GObject.registerClass(this); }
+export default class AgsEventBox extends AgsWidget(Gtk.EventBox) {
+    static {
+        GObject.registerClass({
+            GTypeName: 'AgsEventBox',
+        }, this);
+    }
 
     onPrimaryClick: Command;
     onSecondaryClick: Command;
@@ -69,7 +74,7 @@ export default class AgsEventBox extends Gtk.EventBox {
             return runCmd(this.onHoverLost, box, event);
         });
 
-        this.connect('button-press-event', (box, event) => {
+        this.connect('button-press-event', (box, event: Gdk.Event) => {
             box.set_state_flags(Gtk.StateFlags.ACTIVE, false);
             if (event.get_button()[1] === Gdk.BUTTON_PRIMARY)
                 return runCmd(this.onPrimaryClick, box, event);
@@ -81,7 +86,7 @@ export default class AgsEventBox extends Gtk.EventBox {
                 return runCmd(this.onMiddleClick, box, event);
         });
 
-        this.connect('button-release-event', (box, event) => {
+        this.connect('button-release-event', (box, event: Gdk.Event) => {
             box.unset_state_flags(Gtk.StateFlags.ACTIVE);
             if (event.get_button()[1] === Gdk.BUTTON_PRIMARY)
                 return runCmd(this.onPrimaryClickRelease, box, event);
@@ -93,7 +98,7 @@ export default class AgsEventBox extends Gtk.EventBox {
                 return runCmd(this.onMiddleClickRelease, box, event);
         });
 
-        this.connect('scroll-event', (box, event) => {
+        this.connect('scroll-event', (box, event: Gdk.Event) => {
             if (event.get_scroll_deltas()[2] < 0)
                 return runCmd(this.onScrollUp, box, event);
             else if (event.get_scroll_deltas()[2] > 0)

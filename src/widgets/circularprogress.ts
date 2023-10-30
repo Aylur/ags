@@ -1,8 +1,8 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Service from '../service.js';
 
-// type from gi-types is wrong
 interface Context {
     setSourceRGBA: (r: number, g: number, b: number, a: number) => void
     arc: (x: number, y: number, r: number, a1: number, a2: number) => void
@@ -13,16 +13,18 @@ interface Context {
     $dispose: () => void
 }
 
-export interface CircularProgressProps extends Gtk.Bin {
+export interface CircularProgressProps extends
+    BaseProps<AgsCircularProgress>, Gtk.Bin.ConstructorProperties {
     rounded?: boolean
     value?: number
     inverted?: boolean
     start_at?: number
 }
 
-export default class AgsCircularProgress extends Gtk.Bin {
+export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsCircularProgress',
             CssName: 'circular-progress',
             Properties: {
                 'start-at': Service.pspec('start-at', 'float', 'rw'),
@@ -31,6 +33,11 @@ export default class AgsCircularProgress extends Gtk.Bin {
                 'rounded': Service.pspec('rounded', 'boolean', 'rw'),
             },
         }, this);
+    }
+
+    // its here for typescript to infer the type
+    constructor(props: CircularProgressProps) {
+        super(props);
     }
 
     // @ts-expect-error

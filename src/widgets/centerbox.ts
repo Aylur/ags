@@ -1,9 +1,8 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import AgsBox from './box.js';
+import AgsBox, { type BoxProps } from './box.js';
 
-export interface CenterBoxProps extends Gtk.Box.ConstructorProperties {
-    children?: Gtk.Widget[]
+export interface CenterBoxProps extends BoxProps<AgsCenterBox> {
     start_widget?: Gtk.Widget
     center_widget?: Gtk.Widget
     end_widget?: Gtk.Widget
@@ -12,6 +11,7 @@ export interface CenterBoxProps extends Gtk.Box.ConstructorProperties {
 export default class AgsCenterBox extends AgsBox {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsCenterBox',
             Properties: {
                 'start-widget': GObject.ParamSpec.object(
                     'start-widget', 'Start Widget', 'Start Widget',

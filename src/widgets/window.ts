@@ -1,3 +1,4 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
@@ -11,26 +12,27 @@ const anchors = ['left', 'right', 'top', 'bottom'] as const;
 type Layer = typeof layers[number]
 type Anchor = typeof anchors[number]
 
-export interface WindowProps extends Omit<Gtk.Window.ConstructorProperties, 'margin'> {
+export interface WindowProps extends BaseProps<AgsWindow>, Gtk.Window.ConstructorProperties {
     anchor?: Anchor[]
     exclusive?: boolean
     focusable?: boolean
     layer?: Layer
-    margin?: number[]
+    margins?: number[]
     monitor?: number
     popup?: boolean
     visible?: boolean
 }
 
-export default class AgsWindow extends Gtk.Window {
+export default class AgsWindow extends AgsWidget(Gtk.Window) {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsWindow',
             Properties: {
                 'anchor': Service.pspec('anchor', 'jsobject', 'rw'),
                 'exclusive': Service.pspec('exclusive', 'boolean', 'rw'),
                 'focusable': Service.pspec('focusable', 'boolean', 'rw'),
                 'layer': Service.pspec('layer', 'string', 'rw'),
-                'margin': Service.pspec('margin', 'jsobject', 'rw'),
+                'margins': Service.pspec('margins', 'jsobject', 'rw'),
                 'monitor': Service.pspec('monitor', 'int', 'rw'),
                 'popup': Service.pspec('popup', 'boolean', 'rw'),
             },
@@ -44,7 +46,7 @@ export default class AgsWindow extends Gtk.Window {
         exclusive = false,
         focusable = false,
         layer = 'top',
-        margin = [],
+        margins = [],
         monitor = -1,
         popup = false,
         visible = true,
@@ -58,7 +60,7 @@ export default class AgsWindow extends Gtk.Window {
         this.exclusive = exclusive;
         this.focusable = focusable;
         this.layer = layer;
-        this.margin = margin;
+        this.margins = margins;
         this.monitor = monitor;
         this.show_all();
         this.popup = popup;
@@ -130,15 +132,13 @@ export default class AgsWindow extends Gtk.Window {
         this.notify('anchor');
     }
 
-    // @ts-expect-error
-    get margin() {
+    get margins() {
         return ['TOP', 'RIGHT', 'BOTTOM', 'LEFT'].map(edge =>
             LayerShell.get_margin(this, LayerShell.Edge[edge]),
         );
     }
 
-    // @ts-expect-error
-    set margin(margin: number[]) {
+    set margins(margin: number[]) {
         let margins: [side: string, index: number][] = [];
         switch (margin.length) {
             case 1:
@@ -162,7 +162,7 @@ export default class AgsWindow extends Gtk.Window {
                 LayerShell.Edge[side], (margin as number[])[i]),
         );
 
-        this.notify('margin');
+        this.notify('margins');
     }
 
     // @ts-expect-error
@@ -179,7 +179,7 @@ export default class AgsWindow extends Gtk.Window {
             this.disconnect(this._popup);
 
         if (popup) {
-            this.connect('key-press-event', (_, event) => {
+            this.connect('key-press-event', (_, event: Gdk.Event) => {
                 if (event.get_keyval()[1] === Gdk.KEY_Escape) {
                     App.getWindow(this.name!)
                         ? App.closeWindow(this.name!)

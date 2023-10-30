@@ -1,15 +1,17 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Service from '../service.js';
 
-export interface BoxProps extends Gtk.Box.ConstructorProperties {
+export interface BoxProps<T> extends BaseProps<T>, Gtk.Box.ConstructorProperties {
     children?: Gtk.Widget[]
     vertical?: boolean
 }
 
-export default class AgsBox extends Gtk.Box {
+export default class AgsBox extends AgsWidget(Gtk.Box) {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsBox',
             Properties: {
                 'vertical': Service.pspec('vertical', 'boolean', 'rw'),
                 'children': Service.pspec('children', 'jsobject', 'rw'),
@@ -17,7 +19,7 @@ export default class AgsBox extends Gtk.Box {
         }, this);
     }
 
-    constructor({ children, ...rest }: BoxProps = {}) {
+    constructor({ children, ...rest }: BoxProps<AgsBox> = {}) {
         super(rest);
 
         if (children)

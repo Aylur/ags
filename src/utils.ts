@@ -91,10 +91,10 @@ export function bulkDisconnect(service: GObject.Object, ids: number[]) {
         service.disconnect(id);
 }
 
-export function connect(
+export function connect<T extends Gtk.Widget>(
     obj: GObject.Object,
-    widget: Gtk.Widget,
-    callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
+    widget: T,
+    callback: (widget: T, ...args: unknown[]) => void,
     event?: string,
 ) {
     if (!(obj instanceof Service || obj instanceof App || obj instanceof Variable) && !event)

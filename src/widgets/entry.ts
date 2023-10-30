@@ -1,15 +1,20 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import { runCmd } from '../utils.js';
 import { type Command } from './widget.js';
 
-export interface EntryProps extends Gtk.Entry.ConstructorProperties {
+export interface EntryProps extends BaseProps<AgsEntry>, Gtk.Entry.ConstructorProperties {
     onAccept?: Command
     onChange?: Command
 }
 
-export default class AgsEntry extends Gtk.Entry {
-    static { GObject.registerClass(this); }
+export default class AgsEntry extends AgsWidget(Gtk.Entry) {
+    static {
+        GObject.registerClass({
+            GTypeName: 'AgsEntry',
+        }, this);
+    }
 
     onAccept: Command;
     onChange: Command;
