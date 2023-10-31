@@ -67,18 +67,15 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         this.visible = visible === true || visible === null && !popup;
     }
 
-    // @ts-expect-error
-    get monitor() { return this._monitor; }
+    get monitor(): Gdk.Monitor { return this._get('monitor'); }
     set monitor(monitor: number) {
-        if (monitor < 0 || this.monitor === monitor)
+        if (monitor < 0)
             return;
 
         const m = Gdk.Display.get_default()?.get_monitor(monitor);
         if (m) {
             LayerShell.set_monitor(this, m);
-            // @ts-expect-error
-            this._monitor = monitor;
-            this.notify('monitor');
+            this._set('monitor', monitor);
             return;
         }
 
@@ -165,30 +162,23 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         this.notify('margins');
     }
 
-    // @ts-expect-error
-    get popup() { return !!this._popup; }
-
-    // this will be removed in gtk4
+    get popup() { return !!this._get('popup'); }
     set popup(popup: boolean) {
         if (this.popup === popup)
             return;
 
-        // @ts-expect-error
-        if (this._popup)
-            // @ts-expect-error
-            this.disconnect(this._popup);
+        if (this.popup)
+            this.disconnect(this._get('popup'));
 
         if (popup) {
-            this.connect('key-press-event', (_, event: Gdk.Event) => {
+            this._set('popup', this.connect('key-press-event', (_, event: Gdk.Event) => {
                 if (event.get_keyval()[1] === Gdk.KEY_Escape) {
                     App.getWindow(this.name!)
                         ? App.closeWindow(this.name!)
                         : this.hide();
                 }
-            });
+            }));
         }
-
-        this.notify('popup');
     }
 
     get focusable() {

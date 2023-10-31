@@ -19,7 +19,6 @@ export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
         }, this);
     }
 
-    // its for ts
     constructor(props: OverlayProps) { super(props); }
 
     get pass_through() {

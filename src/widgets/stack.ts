@@ -37,16 +37,14 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
     add_named(child: Gtk.Widget, name: string): void {
         this.items.push([name, child]);
         super.add_named(child, name);
+        this.notify('items');
     }
 
     get items() {
-        // @ts-expect-error
-        if (!Array.isArray(this._items))
-            // @ts-expect-error
-            this._items = [];
+        if (!Array.isArray(this._get('items')))
+            this._set('items', []);
 
-        // @ts-expect-error
-        return this._items;
+        return this._get('items');
     }
 
     set items(items: [string, Gtk.Widget][]) {
@@ -61,13 +59,11 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
             .filter(([, ch]) => this.get_children().includes(ch))
             .forEach(([, ch]) => this.remove(ch));
 
-        // @ts-expect-error
-        this._items = [];
         items.forEach(([name, widget]) => {
-            widget && this.add_named(widget, name);
+            widget && super.add_named(widget, name);
         });
 
-        this.notify('items');
+        this._set('items', items);
         this.show_all();
     }
 

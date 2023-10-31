@@ -31,8 +31,7 @@ export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
         });
     }
 
-    // @ts-expect-error
-    get hscroll() { return this._hscroll as Policy; }
+    get hscroll() { return this._get('hscroll'); }
     set hscroll(hscroll: Policy) {
         if (!hscroll || this.hscroll === hscroll)
             return;
@@ -42,14 +41,11 @@ export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
             return;
         }
 
-        // @ts-expect-error
-        this._hscroll = hscroll;
-        this.notify('hscroll');
+        this._set('hscroll', hscroll);
         this._policy();
     }
 
-    // @ts-expect-error
-    get vscroll() { return this._vscroll as Policy; }
+    get vscroll() { return this._get('vscroll'); }
     set vscroll(vscroll: Policy) {
         if (!vscroll || this.vscroll === vscroll)
             return;
@@ -59,9 +55,7 @@ export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
             return;
         }
 
-        // @ts-expect-error
-        this._vscroll = vscroll;
-        this.notify('vscroll');
+        this._set('vscroll', vscroll);
         this._policy();
     }
 

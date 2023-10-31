@@ -1,44 +1,47 @@
 import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import { runCmd } from '../utils.js';
-import { type Command } from './widget.js';
+import Service from '../service.js';
 
 export interface MenuProps extends BaseProps<AgsMenu>, Gtk.Menu.ConstructorProperties {
     children?: Gtk.Widget[]
-    onPopup?: Command
-    onMoveScroll?: Command
+    on_popup?: (
+        self: AgsMenu,
+        flipped_rect: any | null,
+        final_rect: any | null,
+        flipped_x: boolean,
+        flipped_y: boolean,
+    ) => void
+    on_move_scroll?: (self: AgsMenu, scroll_type: Gtk.ScrollType) => void
 }
 
 export class AgsMenu extends AgsWidget(Gtk.Menu) {
     static {
         GObject.registerClass({
             GTypeName: 'AgsMenu',
+            Properties: {
+                'children': Service.pspec('children', 'jsobject', 'rw'),
+                'on-popup': Service.pspec('on-popup', 'jsobject', 'rw'),
+                'on-move-scroll': Service.pspec('on-move-scroll', 'jsobject', 'rw'),
+            },
         }, this);
     }
 
-    onPopup: Command;
-    onMoveScroll: Command;
+    constructor(props: MenuProps = {}) {
+        super(props);
 
-    constructor({
-        children,
-        onPopup = '',
-        onMoveScroll = '',
-        ...rest
-    }: MenuProps = {}) {
-        super(rest);
+        this.connect('popped-up', (_, ...args) => this.on_popup?.(this, ...args));
+        this.connect('move-scroll', (_, ...args) => this.on_move_scroll?.(this, ...args));
+    }
 
-        if (children)
-            this.children = children;
+    get on_popup() { return this._get('on-popup'); }
+    set on_popup(callback: MenuProps['on_popup']) {
+        this._set('on-popup', callback);
+    }
 
-        this.onPopup = onPopup;
-        this.onMoveScroll = onMoveScroll;
-
-        this.connect('popped-up', (...args) =>
-            runCmd(this.onPopup, ...args));
-
-        this.connect('move-scroll', (...args) =>
-            runCmd(this.onMoveScroll, ...args));
+    get on_move_scroll() { return this._get('on-move-scroll'); }
+    set on_move_scroll(callback: MenuProps['on_move_scroll']) {
+        this._set('on-move-scroll', callback);
     }
 
     get children() { return this.get_children(); }
@@ -56,37 +59,40 @@ export class AgsMenu extends AgsWidget(Gtk.Menu) {
     }
 }
 
+type EventHandler = (self: AgsMenuItem) => boolean | undefined;
 export interface MenuItemProps extends BaseProps<AgsMenuItem>, Gtk.Menu.ConstructorProperties {
-    onActivate?: Command
-    onSelect?: Command
-    onDeselect?: Command
+    on_activate?: EventHandler
+    on_select?: EventHandler
+    on_deselct?: EventHandler
 }
 
-export class AgsMenuItem extends Gtk.MenuItem {
+export class AgsMenuItem extends AgsWidget(Gtk.MenuItem) {
     static {
         GObject.registerClass({
             GTypeName: 'AgsMenuItem',
         }, this);
     }
 
-    onActivate: Command;
-    onSelect: Command;
-    onDeselect: Command;
+    constructor(props: MenuItemProps = {}) {
+        super(props);
 
-    constructor({
-        onActivate = '',
-        onSelect = '',
-        onDeselect = '',
-        ...rest
-    }: MenuItemProps = {}) {
-        super(rest);
+        this.connect('activate', () => this.on_activate?.(this));
+        this.connect('select', () => this.on_select?.(this));
+        this.connect('deselect', () => this.on_deselect?.(this));
+    }
 
-        this.onActivate = onActivate;
-        this.onSelect = onSelect;
-        this.onDeselect = onDeselect;
+    get on_activate() { return this._get('on-activate'); }
+    set on_activate(callback: MenuItemProps['on_activate']) {
+        this._set('on-activate', callback);
+    }
 
-        this.connect('activate', (...args) => runCmd(this.onActivate, ...args));
-        this.connect('select', (...args) => runCmd(this.onSelect, ...args));
-        this.connect('deselect', (...args) => runCmd(this.onDeselect, ...args));
+    get on_select() { return this._get('on-select'); }
+    set on_select(callback: EventHandler) {
+        this._set('on-select', callback);
+    }
+
+    get on_deselect() { return this._get('on-deselect'); }
+    set on_deselect(callback: EventHandler) {
+        this._set('on-deselect', callback);
     }
 }

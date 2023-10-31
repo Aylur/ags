@@ -19,12 +19,7 @@ export default class AgsBox extends AgsWidget(Gtk.Box) {
         }, this);
     }
 
-    constructor({ children, ...rest }: BoxProps<AgsBox> = {}) {
-        super(rest);
-
-        if (children)
-            this.children = children;
-    }
+    constructor(props: BoxProps<AgsBox> = {}) { super(props); }
 
     get children() { return this.get_children(); }
     set children(children: Gtk.Widget[]) {

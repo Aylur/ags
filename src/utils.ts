@@ -2,7 +2,6 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import { type Command } from './widgets/widget.js';
 
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name.split('.').pop()}`;
@@ -109,29 +108,6 @@ export function timeout(ms: number, callback: () => void) {
         callback();
         return GLib.SOURCE_REMOVE;
     });
-}
-
-export function runCmd(
-    cmd: Command,
-    ...args: unknown[]
-) {
-    if (typeof cmd !== 'string' && typeof cmd !== 'function') {
-        console.error('Command has to be string or function');
-        return false;
-    }
-
-    if (!cmd)
-        return false;
-
-    if (typeof cmd === 'string') {
-        GLib.spawn_command_line_async(cmd);
-        return true;
-    }
-
-    if (typeof cmd === 'function')
-        return cmd(...args);
-
-    return false;
 }
 
 export function lookUpIcon(name?: string, size = 16) {

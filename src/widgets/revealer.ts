@@ -25,7 +25,6 @@ export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
         }, this);
     }
 
-    // its here for ts
     constructor(props: RevealerProps) { super(props); }
 
     get transition() { return transitions[this.transition_type]; }
@@ -39,5 +38,6 @@ export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
         }
 
         this.transition_type = transitions.findIndex(t => t === transition);
+        this.notify('transition');
     }
 }

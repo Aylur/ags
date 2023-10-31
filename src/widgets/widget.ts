@@ -4,9 +4,6 @@ import GLib from 'gi://GLib?version=2.0';
 import Service from '../service.js';
 import { interval } from '../utils.js';
 
-// FIXME: remove this type and make them only functions
-export type Command = string | ((...args: unknown[]) => boolean | undefined);
-
 type KebabCase<S extends string> = S extends `${infer Prefix}_${infer Suffix}`
     ? `${Prefix}-${KebabCase<Suffix>}` : S;
 
@@ -67,6 +64,21 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         }
 
         private _destroyed = false;
+
+        // defining private fields for typescript causes
+        // gobject constructor field setters to be overridden
+        // so we use this _get and _set to avoid @ts-expect-error everywhere
+        protected _get<T>(field: string) {
+            return (this as unknown as { [key: string]: unknown })[`_${field}`] as T;
+        }
+
+        protected _set<T>(field: string, value: T) {
+            if (this._get(field) === value)
+                return;
+
+            (this as unknown as { [key: string]: T })[`_${field}`] = value;
+            this.notify(field);
+        }
 
         set connections(connections: Connection<AgsWidget>[]) {
             if (!connections)
@@ -143,17 +155,21 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
 
                 return GLib.SOURCE_REMOVE;
             });
+
+            return this;
         }
 
         bind<GObject extends GObject.Object>(
             prop: KebabCase<OnlyString<keyof typeof this>>,
             target: GObject,
             targetProp: OnlyString<keyof GObject>,
+            // FIXME: typeof target[targetProp]
             transform: (value: typeof target[typeof targetProp]) => unknown = out => out,
         ) {
             // @ts-expect-error readonly property
             const callback = () => this[prop] = transform(target[targetProp]);
             this.connectTo(target, callback, `notify::${targetProp}`);
+            return this;
         }
 
         get hpack() { return aligns[this.halign]; }
