@@ -32,7 +32,7 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
         }, this);
     }
 
-    constructor(props: StackProps) { super(props); }
+    constructor(props: StackProps = {}) { super(props); }
 
     add_named(child: Gtk.Widget, name: string): void {
         this.items.push([name, child]);

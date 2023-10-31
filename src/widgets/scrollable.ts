@@ -23,9 +23,9 @@ export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
         }, this);
     }
 
-    constructor(params: ScrollableProps = {}) {
+    constructor(props: ScrollableProps = {}) {
         super({
-            ...params,
+            ...props,
             hadjustment: new Gtk.Adjustment(),
             vadjustment: new Gtk.Adjustment(),
         });

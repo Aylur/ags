@@ -42,10 +42,9 @@ export default class AgsSlider extends AgsWidget(Gtk.Scale) {
                 lower: min,
                 upper: max,
                 step_increment: step,
+                value: value,
             }),
         });
-
-        this.value = value;
 
         this.adjustment.connect('notify::value', (_, event: Gdk.Event) => {
             if (!this.dragging)

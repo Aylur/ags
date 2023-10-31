@@ -63,16 +63,16 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             }, this);
         }
 
-        private _destroyed = false;
+        _destroyed = false;
 
         // defining private fields for typescript causes
         // gobject constructor field setters to be overridden
         // so we use this _get and _set to avoid @ts-expect-error everywhere
-        protected _get<T>(field: string) {
+        _get<T>(field: string) {
             return (this as unknown as { [key: string]: unknown })[`_${field}`] as T;
         }
 
-        protected _set<T>(field: string, value: T) {
+        _set<T>(field: string, value: T) {
             if (this._get(field) === value)
                 return;
 

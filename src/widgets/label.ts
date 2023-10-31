@@ -29,8 +29,8 @@ export default class AgsLabel extends AgsWidget(Gtk.Label) {
         }, this);
     }
 
-    constructor(params: LabelProps = {}) {
-        super(typeof params === 'string' ? { label: params } : params);
+    constructor(props: LabelProps = {}) {
+        super(typeof props === 'string' ? { label: props } : props);
     }
 
     get label() { return super.label || ''; }

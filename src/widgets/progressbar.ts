@@ -20,7 +20,7 @@ export default class AgsProgressBar extends AgsWidget(Gtk.ProgressBar) {
         }, this);
     }
 
-    constructor(props: ProgressBarProps) { super(props); }
+    constructor(props: ProgressBarProps = {}) { super(props); }
 
     get value() { return this.fraction; }
     set value(value: number) {

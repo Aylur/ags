@@ -32,6 +32,8 @@ export default class AgsCenterBox extends AgsBox {
         }, this);
     }
 
+    constructor(props: CenterBoxProps = {}) { super(props as BoxProps<AgsBox>); }
+
     set children(children: Gtk.Widget[]) {
         const newChildren = children || [];
 

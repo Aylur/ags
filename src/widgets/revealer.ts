@@ -25,7 +25,7 @@ export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
         }, this);
     }
 
-    constructor(props: RevealerProps) { super(props); }
+    constructor(props: RevealerProps = {}) { super(props); }
 
     get transition() { return transitions[this.transition_type]; }
     set transition(transition: Transition) {
