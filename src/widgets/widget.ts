@@ -1,20 +1,27 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import GLib from 'gi://GLib?version=2.0';
 import Service from '../service.js';
-import { interval, connect } from '../utils.js';
+import { interval } from '../utils.js';
 
 // FIXME: remove this type and make them only functions
 export type Command = string | ((...args: unknown[]) => boolean | undefined);
 
+type KebabCase<S extends string> = S extends `${infer Prefix}_${infer Suffix}`
+    ? `${Prefix}-${KebabCase<Suffix>}` : S;
+
+type OnlyString<S extends string | unknown> = S extends string ? S : never;
+
 const aligns = ['fill', 'start', 'end', 'center', 'baseline'] as const;
 type Align = typeof aligns[number];
+
+type Property = [prop: string, value: unknown];
 
 type Connection<Self> =
     [string, (self: Self, ...args: unknown[]) => unknown] |
     [number, (self: Self, ...args: unknown[]) => unknown] |
     [GObject.Object, (self: Self, ...args: unknown[]) => unknown, string];
 
-type Property = [prop: string, value: unknown];
 type Bind = [
     prop: string,
     obj: GObject.Object,
@@ -59,6 +66,8 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             }, this);
         }
 
+        private _destroyed = false;
+
         set connections(connections: Connection<AgsWidget>[]) {
             if (!connections)
                 return;
@@ -76,7 +85,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                     interval(s, () => callback(this), this);
 
                 else if (s instanceof GObject.Object)
-                    connect(s, this, callback, event);
+                    this.connectTo(s, callback, event);
 
                 else
                     console.error(Error(`${s} is not a GObject nor a string nor a number`));
@@ -88,14 +97,12 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 return;
 
             binds.forEach(([prop, obj, objProp = 'value', transform = out => out]) => {
-                if (!prop || !obj) {
-                    console.error(Error('missing arguments to binds'));
-                    return;
-                }
-
-                // @ts-expect-error
-                const callback = () => this[prop] = transform(obj[objProp]);
-                this.connections = [[obj, callback, `notify::${objProp}`]];
+                this.bind(
+                    prop as KebabCase<OnlyString<keyof this>>,
+                    obj,
+                    objProp as keyof typeof obj,
+                    transform,
+                );
             });
         }
 
@@ -113,6 +120,40 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 return;
 
             setup(this);
+        }
+
+        connectTo<GObject extends GObject.Object>(
+            o: GObject,
+            callback: (self: typeof this, ...args: unknown[]) => void,
+            event = 'changed',
+        ) {
+            if (!(o instanceof GObject.Object))
+                return console.error(new Error(`${o} is not a GObject`));
+
+            const id = o.connect(event, (_, ...args: unknown[]) => callback(this, ...args));
+
+            this.connect('destroy', () => {
+                this._destroyed = true;
+                o.disconnect(id);
+            });
+
+            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                if (!this._destroyed)
+                    callback(this);
+
+                return GLib.SOURCE_REMOVE;
+            });
+        }
+
+        bind<GObject extends GObject.Object>(
+            prop: KebabCase<OnlyString<keyof typeof this>>,
+            target: GObject,
+            targetProp: OnlyString<keyof GObject>,
+            transform: (value: typeof target[typeof targetProp]) => unknown = out => out,
+        ) {
+            // @ts-expect-error readonly property
+            const callback = () => this[prop] = transform(target[targetProp]);
+            this.connectTo(target, callback, `notify::${targetProp}`);
         }
 
         get hpack() { return aligns[this.halign]; }

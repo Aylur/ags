@@ -2,9 +2,6 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import Service from './service.js';
-import { App } from './app.js';
-import { Variable } from './variable.js';
 import { type Command } from './widgets/widget.js';
 
 export const USER = GLib.get_user_name();
@@ -89,33 +86,6 @@ export function bulkConnect(
 export function bulkDisconnect(service: GObject.Object, ids: number[]) {
     for (const id of ids)
         service.disconnect(id);
-}
-
-export function connect<T extends Gtk.Widget>(
-    obj: GObject.Object,
-    widget: T,
-    callback: (widget: T, ...args: unknown[]) => void,
-    event?: string,
-) {
-    if (!(obj instanceof Service || obj instanceof App || obj instanceof Variable) && !event)
-        return console.error(new Error('missing signal for connection'));
-
-    const bind = obj.connect(event as string,
-        (_s, ...args: unknown[]) => callback(widget, ...args));
-
-    const w = Object.assign(widget, { _destroyed: false });
-
-    w.connect('destroy', () => {
-        w._destroyed = true;
-        obj.disconnect(bind);
-    });
-
-    GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-        if (!w._destroyed)
-            callback(w);
-
-        return GLib.SOURCE_REMOVE;
-    });
 }
 
 export function interval(

@@ -82,7 +82,7 @@ export function subclass<T extends typeof Gtk.Widget, Props>(W: T) {
             super(props as Gtk.Widget.ConstructorProperties);
         }
     }
-    return (props: BaseProps<InstanceType<T> & Widget> & Props) => new Widget(props) as InstanceType<T> & Widget;
+    return (props?: BaseProps<InstanceType<T> & Widget> & Props) => new Widget(props) as InstanceType<T> & Widget;
 }
 
 export const Calendar = subclass<typeof Gtk.Calendar, Gtk.Calendar.ConstructorProperties>(Gtk.Calendar);
