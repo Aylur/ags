@@ -25,7 +25,8 @@ in {
     };
 
     configDir = mkOption {
-      type = types.path;
+      type = with types; nullOr path;
+      default = null;
       example = literalExpression "./ags-config";
       description = mkDoc ''
         The directory to symlink to {file}`$XDG_CONFIG_HOME/ags`.
@@ -42,10 +43,14 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    xdg.configFile."ags".source = cfg.configDir;
-    home.packages = lib.optional (cfg.package != null) (cfg.package.override {
-      extraPackages = cfg.extraPackages;
-    });
-  };
+  config = with lib; mkIf cfg.enable (mkMerge [
+    (mkIf (cfg.configDir != null) {
+      xdg.configFile."ags".source = cfg.configDir;
+    })
+    {
+      home.packages = lib.optional (cfg.package != null) (cfg.package.override {
+        extraPackages = cfg.extraPackages;
+      });
+    }
+  ]);
 }
