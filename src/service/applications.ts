@@ -34,7 +34,7 @@ class Application extends Service {
     get desktop() { return this._app.get_id(); }
     get description() { return this._app.get_description(); }
     get wm_class() { return this._app.get_startup_wm_class(); }
-    get executable() { return this._app.get_executable(); }
+    get executable() { return this._app.get_string('Exec') || this._app.get_executable(); }
     get icon_name() { return this._app.get_string('Icon'); }
 
     constructor(app: Gio.DesktopAppInfo, frequency?: number) {
