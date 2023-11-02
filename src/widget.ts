@@ -86,15 +86,21 @@ export function subclass<T extends typeof Gtk.Widget, Props>(W: T) {
 }
 
 export const Calendar = subclass<typeof Gtk.Calendar, Gtk.Calendar.ConstructorProperties>(Gtk.Calendar);
-export const Fixed = subclass<typeof Gtk.Fixed, Gtk.Fixed.ConstructorProperties>(Gtk.Fixed);
-export const MenuBar = subclass<typeof Gtk.MenuBar, Gtk.MenuBar.ConstructorProperties>(Gtk.MenuBar);
-export const Switch = subclass<typeof Gtk.Switch, Gtk.Switch.ConstructorProperties>(Gtk.Switch);
-export const ToggleButton = subclass<typeof Gtk.ToggleButton, Gtk.ToggleButton.ConstructorProperties>(Gtk.ToggleButton);
-
 Widget.Calendar = Calendar;
+
+export const Fixed = subclass<typeof Gtk.Fixed, Gtk.Fixed.ConstructorProperties>(Gtk.Fixed);
 Widget.Fixed = Fixed;
+
+export const MenuBar = subclass<typeof Gtk.MenuBar, Gtk.MenuBar.ConstructorProperties>(Gtk.MenuBar);
 Widget.MenuBar = MenuBar;
+
+export const Switch = subclass<typeof Gtk.Switch, Gtk.Switch.ConstructorProperties>(Gtk.Switch);
 Widget.Switch = Switch;
+
+export const ToggleButton = subclass<typeof Gtk.ToggleButton, Gtk.ToggleButton.ConstructorProperties>(Gtk.ToggleButton);
 Widget.ToggleButton = ToggleButton;
+
+export const Separator = subclass<typeof Gtk.Separator, Gtk.Separator.ConstructorProperties>(Gtk.Separator);
+Widget.Separator = Separator;
 
 export default Widget;
