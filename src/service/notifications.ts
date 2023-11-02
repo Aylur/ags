@@ -22,6 +22,7 @@ interface Hints {
     'image-data'?: GLib.Variant
     'desktop-entry'?: GLib.Variant
     'urgency'?: GLib.Variant
+    [hint: string]: GLib.Variant | undefined
 }
 
 interface NotifcationJson {
@@ -63,6 +64,7 @@ class Notification extends Service {
             'time': ['int'],
             'image': ['string'],
             'popup': ['boolean'],
+            'hints': ['jsobject'],
         });
     }
 
@@ -77,6 +79,7 @@ class Notification extends Service {
     _time: number;
     _image: string | null;
     _popup: boolean;
+    _hints: Hints;
 
     get id() { return this._id; }
     get app_name() { return this._appName; }
@@ -119,6 +122,7 @@ class Notification extends Service {
         this._time = GLib.DateTime.new_now_local().to_unix();
         this._image = this._appIconIsFile() ? appIcon : this._parseImageData(hints['image-data']);
         this._popup = popup;
+        this._hints = hints;
     }
 
     dismiss() {
