@@ -79,7 +79,7 @@ class Notification extends Service {
     _time: number;
     _image: string | null;
     _popup: boolean;
-    _hints: Hints;
+    _hints: Hints = {};
 
     get id() { return this._id; }
     get app_name() { return this._appName; }
