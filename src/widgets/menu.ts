@@ -60,7 +60,7 @@ export class AgsMenu extends AgsWidget(Gtk.Menu) {
 }
 
 type EventHandler = (self: AgsMenuItem) => boolean | unknown;
-export interface MenuItemProps extends BaseProps<AgsMenuItem>, Gtk.Menu.ConstructorProperties {
+export interface MenuItemProps extends BaseProps<AgsMenuItem>, Gtk.MenuItem.ConstructorProperties {
     on_activate?: EventHandler
     on_select?: EventHandler
     on_deselct?: EventHandler

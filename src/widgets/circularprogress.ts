@@ -37,7 +37,7 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
 
     constructor(props: CircularProgressProps = {}) { super(props); }
 
-    get rounded() { return this._get('ronded') || false; }
+    get rounded() { return this._get('rounded') || false; }
     set rounded(r: boolean) {
         if (this.rounded === r)
             return;
