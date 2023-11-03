@@ -21,7 +21,7 @@ export function readFileAsync(path: string): Promise<string> {
                 const [success, bytes] = file.load_contents_finish(res);
                 return success
                     ? resolve(new TextDecoder().decode(bytes))
-                    : reject(new Error(
+                    : reject(Error(
                         `reading file ${path} was unsuccessful`));
             } catch (error) {
                 reject(error);
@@ -189,7 +189,7 @@ export function subprocess(
 
         const pipe = proc.get_stdout_pipe();
         if (!pipe) {
-            onError(new Error(`subprocess ${cmd} stdout pipe is null`));
+            onError(Error(`subprocess ${cmd} stdout pipe is null`));
             return null;
         }
 

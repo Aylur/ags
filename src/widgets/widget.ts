@@ -3,6 +3,8 @@ import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib?version=2.0';
 import Service from '../service.js';
 import { interval } from '../utils.js';
+import { Variable } from '../variable.js';
+import { App } from '../app.js';
 
 type KebabCase<S extends string> = S extends `${infer Prefix}_${infer Suffix}`
     ? `${Prefix}-${KebabCase<Suffix>}` : S;
@@ -55,8 +57,8 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                     'hpack': Service.pspec('hpack', 'string', 'rw'),
                     'vpack': Service.pspec('vpack', 'string', 'rw'),
                     // order of these matter
-                    'setup': pspec('setup'),
                     'properties': pspec('properties'),
+                    'setup': pspec('setup'),
                     'connections': pspec('connections'),
                     'binds': pspec('binds'),
                 },
@@ -135,14 +137,22 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         }
 
         connectTo<GObject extends GObject.Object>(
-            o: GObject,
+            o: GObject | Service,
             callback: (self: typeof this, ...args: unknown[]) => void,
-            event = 'changed',
+            event?: string,
         ) {
-            if (!(o instanceof GObject.Object))
-                return console.error(new Error(`${o} is not a GObject`));
+            if (!(o instanceof GObject.Object)) {
+                console.error(Error(`${o} is not a GObject`));
+                return this;
+            }
 
-            const id = o.connect(event, (_, ...args: unknown[]) => callback(this, ...args));
+            if (!(o instanceof Service || o instanceof App || o instanceof Variable) && !event) {
+                console.error(Error('you are trying to connect to a regular GObject ' +
+                    'without specifying the signal'));
+                return this;
+            }
+
+            const id = o.connect(event!, (_, ...args: unknown[]) => callback(this, ...args));
 
             this.connect('destroy', () => {
                 this._destroyed = true;
@@ -178,7 +188,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 return;
 
             if (!aligns.includes(align)) {
-                console.error(new Error(`halign has to be on of ${aligns}`));
+                console.error(Error(`halign has to be on of ${aligns}`));
                 return;
             }
 
@@ -191,7 +201,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 return;
 
             if (!aligns.includes(align)) {
-                console.error(new Error(`valign has to be on of ${aligns}`));
+                console.error(Error(`valign has to be on of ${aligns}`));
                 return;
             }
 
@@ -267,7 +277,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 // @ts-expect-error
                 this.set_child(child);
             else
-                console.error(new Error(`can't set child on ${this}`));
+                console.error(Error(`can't set child on ${this}`));
         }
     };
 }

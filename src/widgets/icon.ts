@@ -22,6 +22,7 @@ export default class AgsIcon extends AgsWidget(Gtk.Image) {
                 'icon': Service.pspec('icon', 'jsobject', 'rw'),
                 'type': Service.pspec('type', 'string', 'r'),
                 'size': Service.pspec('size', 'double', 'rw'),
+                'previous-size': Service.pspec('previous-size', 'double', 'r'),
             },
         }, this);
     }
@@ -48,6 +49,9 @@ export default class AgsIcon extends AgsWidget(Gtk.Image) {
         if (typeof icon === 'string') {
             if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
                 this._set('type', 'file');
+                if (this.size === 0)
+                    return;
+
                 const pb = GdkPixbuf.Pixbuf.new_from_file_at_size(
                     icon,
                     this.size * this.scale_factor,
@@ -63,6 +67,9 @@ export default class AgsIcon extends AgsWidget(Gtk.Image) {
         }
         else if (icon instanceof GdkPixbuf.Pixbuf) {
             this._set('type', 'pixbuf');
+            if (this.size === 0)
+                return;
+
             const pb_scaled = icon.scale_simple(
                 this.size * this.scale_factor,
                 this.size * this.scale_factor,

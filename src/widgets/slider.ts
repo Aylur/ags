@@ -7,7 +7,7 @@ import Service from '../service.js';
 type EventHandler = (self: AgsSlider, event: Gdk.Event) => void | unknown;
 
 export interface SliderProps extends BaseProps<AgsSlider>, Gtk.Scale.ConstructorProperties {
-    onChange?: EventHandler,
+    on_change?: EventHandler,
     value?: number
     min?: number
     max?: number
@@ -25,6 +25,7 @@ export default class AgsSlider extends AgsWidget(Gtk.Scale) {
                 'min': Service.pspec('min', 'double', 'rw'),
                 'max': Service.pspec('max', 'double', 'rw'),
                 'step': Service.pspec('step', 'double', 'rw'),
+                'on-change': Service.pspec('on-change', 'jsobject', 'rw'),
             },
         }, this);
     }

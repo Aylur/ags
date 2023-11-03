@@ -48,8 +48,12 @@ export function Widget<
 >({ type, ...props }:
     { type: T } & Props,
 ) {
+    console.warn('Calling Widget({ type }) is deprecated. ' +
+        `Use Widget.subclass instead, or open up an issue/PR to include ${type.name} on Widget`);
+
     if (ctors.has(type))
-        return ctors.get(type)(props);
+        // @ts-expect-error
+        return new ctors.get(type)(props);
 
     const Ctor = AgsWidget(type);
     ctors.set(type, Ctor);
@@ -75,15 +79,16 @@ Widget.Slider = Slider;
 Widget.Stack = Stack;
 Widget.Window = Window;
 
-export function subclass<T extends typeof Gtk.Widget, Props>(W: T) {
+export function subclass<T extends typeof Gtk.Widget, Props>(W: T, GTypeName?: string) {
     class Widget extends AgsWidget(W, `Gtk${W.name}`) {
-        static { GObject.registerClass({ GTypeName: `Ags${W.name}` }, this); }
+        static { GObject.registerClass({ GTypeName: GTypeName || `Ags${W.name}` }, this); }
         constructor(props: BaseProps<InstanceType<T> & Widget> & Props) {
             super(props as Gtk.Widget.ConstructorProperties);
         }
     }
     return (props?: BaseProps<InstanceType<T> & Widget> & Props) => new Widget(props) as InstanceType<T> & Widget;
 }
+Widget.subclass = subclass;
 
 export const Calendar = subclass<typeof Gtk.Calendar, Gtk.Calendar.ConstructorProperties>(Gtk.Calendar);
 Widget.Calendar = Calendar;
@@ -102,5 +107,29 @@ Widget.ToggleButton = ToggleButton;
 
 export const Separator = subclass<typeof Gtk.Separator, Gtk.Separator.ConstructorProperties>(Gtk.Separator);
 Widget.Separator = Separator;
+
+export const LevelBar = subclass<typeof Gtk.LevelBar, Gtk.LevelBar.ConstructorProperties>(Gtk.LevelBar);
+Widget.LevelBar = LevelBar;
+
+export const DrawingArea = subclass<typeof Gtk.DrawingArea, Gtk.DrawingArea.ConstructorProperties>(Gtk.DrawingArea);
+Widget.DrawingArea = DrawingArea;
+
+export const FontButton = subclass<typeof Gtk.FontButton, Gtk.FontButton.ConstructorProperties>(Gtk.FontButton);
+Widget.FontButton = FontButton;
+
+export const ColorButton = subclass<typeof Gtk.ColorButton, Gtk.ColorButton.ConstructorProperties>(Gtk.ColorButton);
+Widget.ColorButton = ColorButton;
+
+export const FileChooserButton = subclass<typeof Gtk.FileChooserButton, Gtk.FileChooserButton.ConstructorProperties>(Gtk.FileChooserButton);
+Widget.FileChooserButton = FileChooserButton;
+
+export const SpinButton = subclass<typeof Gtk.SpinButton, Gtk.SpinButton.ConstructorProperties>(Gtk.SpinButton);
+Widget.SpinButton = SpinButton;
+
+export const Spinner = subclass<typeof Gtk.Spinner, Gtk.Spinner.ConstructorProperties>(Gtk.Spinner);
+Widget.Spinner = Spinner;
+
+export const FlowBox = subclass<typeof Gtk.FlowBox, Gtk.FlowBox.ConstructorProperties>(Gtk.FlowBox);
+Widget.FlowBox = FlowBox;
 
 export default Widget;

@@ -70,6 +70,11 @@ export class AgsMenuItem extends AgsWidget(Gtk.MenuItem) {
     static {
         GObject.registerClass({
             GTypeName: 'AgsMenuItem',
+            Properties: {
+                'on-activate': Service.pspec('on-activate', 'jsobject', 'rw'),
+                'on-select': Service.pspec('on-select', 'jsobject', 'rw'),
+                'on-deselect': Service.pspec('on-deselect', 'jsobject', 'rw'),
+            },
         }, this);
     }
 
