@@ -12,7 +12,7 @@ const transitions = [
 type Transition = typeof transitions[number];
 
 export interface RevealerProps extends BaseProps<AgsRevealer>, Gtk.Revealer.ConstructorProperties {
-    transitions?: Transition
+    transition?: Transition
 }
 
 export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {

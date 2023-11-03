@@ -4,7 +4,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 
-type EventHandler = (self: AgsEventBox, event: Gdk.Event) => boolean | undefined;
+type EventHandler = (self: AgsEventBox, event: Gdk.Event) => boolean | unknown;
 
 export interface EventBoxProps extends BaseProps<AgsEventBox>, Gtk.EventBox.ConstructorProperties {
     on_hover?: EventHandler

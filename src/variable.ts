@@ -4,14 +4,14 @@ import GLib from 'gi://GLib';
 import { execAsync, interval, subprocess } from './utils.js';
 
 type Listen<T> =
-    [string[] | string, (out: string) => T] |
-    [string[] | string] |
-    string[] |
-    string;
+    | [string[] | string, (out: string) => T]
+    | [string[] | string]
+    | string[]
+    | string;
 
 type Poll<T> =
-    [number, string[] | string | (() => T)] |
-    [number, string[] | string | (() => T), (out: string) => T];
+    | [number, string[] | string | (() => T)]
+    | [number, string[] | string | (() => T), (out: string) => T];
 
 interface Options<T> {
     poll?: Poll<T>

@@ -4,8 +4,8 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Service from '../service.js';
 
 export interface EntryProps extends BaseProps<AgsEntry>, Gtk.Entry.ConstructorProperties {
-    on_accept?: (self: AgsEntry) => void
-    on_change?: (self: AgsEntry) => void
+    on_accept?: (self: AgsEntry) => void | unknown
+    on_change?: (self: AgsEntry) => void | unknown
 }
 
 export default class AgsEntry extends AgsWidget(Gtk.Entry) {

@@ -4,7 +4,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 
-type EventHandler = (self: AgsButton, event: Gdk.Event) => boolean | undefined;
+type EventHandler = (self: AgsButton, event: Gdk.Event) => boolean | unknown;
 
 export interface ButtonProps extends BaseProps<AgsButton>, Gtk.Button.ConstructorProperties {
     on_clicked?: (self: AgsButton) => void

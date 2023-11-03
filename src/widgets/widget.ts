@@ -15,9 +15,9 @@ type Align = typeof aligns[number];
 type Property = [prop: string, value: unknown];
 
 type Connection<Self> =
-    [string, (self: Self, ...args: unknown[]) => unknown] |
-    [number, (self: Self, ...args: unknown[]) => unknown] |
-    [GObject.Object, (self: Self, ...args: unknown[]) => unknown, string];
+    | [GObject.Object, (self: Self, ...args: unknown[]) => unknown, string?]
+    | [string, (self: Self, ...args: unknown[]) => unknown]
+    | [number, (self: Self, ...args: unknown[]) => unknown];
 
 type Bind = [
     prop: string,
@@ -27,8 +27,8 @@ type Bind = [
 ];
 
 export interface BaseProps<Self> extends Gtk.Widget.ConstructorProperties {
-    className?: string
-    classNames?: string[]
+    class_name?: string
+    class_names?: string[]
     css?: string
     hpack?: Align
     vpack?: Align

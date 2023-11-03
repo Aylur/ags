@@ -11,8 +11,8 @@ export interface MenuProps extends BaseProps<AgsMenu>, Gtk.Menu.ConstructorPrope
         final_rect: any | null,
         flipped_x: boolean,
         flipped_y: boolean,
-    ) => void
-    on_move_scroll?: (self: AgsMenu, scroll_type: Gtk.ScrollType) => void
+    ) => void | unknown
+    on_move_scroll?: (self: AgsMenu, scroll_type: Gtk.ScrollType) => void | unknown
 }
 
 export class AgsMenu extends AgsWidget(Gtk.Menu) {
@@ -59,7 +59,7 @@ export class AgsMenu extends AgsWidget(Gtk.Menu) {
     }
 }
 
-type EventHandler = (self: AgsMenuItem) => boolean | undefined;
+type EventHandler = (self: AgsMenuItem) => boolean | unknown;
 export interface MenuItemProps extends BaseProps<AgsMenuItem>, Gtk.Menu.ConstructorProperties {
     on_activate?: EventHandler
     on_select?: EventHandler

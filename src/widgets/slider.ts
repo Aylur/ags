@@ -4,7 +4,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 
-type EventHandler = (self: AgsSlider, event: Gdk.Event) => void;
+type EventHandler = (self: AgsSlider, event: Gdk.Event) => void | unknown;
 
 export interface SliderProps extends BaseProps<AgsSlider>, Gtk.Scale.ConstructorProperties {
     onChange?: EventHandler,
