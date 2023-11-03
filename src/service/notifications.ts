@@ -92,6 +92,7 @@ class Notification extends Service {
     get time() { return this._time; }
     get image() { return this._image; }
     get popup() { return this._popup; }
+    get hints() { return this._hints; }
 
     constructor(
         appName: string,
