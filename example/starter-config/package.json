@@ -1,0 +1,21 @@
+{
+    "name": "ags-config",
+    "version": "1.0.0",
+    "description": "AGS starter configuration",
+    "main": "config.js",
+    "author": "Aylur",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Aylur/ags.git"
+    },
+    "devDependencies": {
+        "@girs/dbusmenugtk3-0.4": "^0.4.0-3.2.0",
+        "@girs/gobject-2.0": "^2.76.1-3.2.3",
+        "@girs/gtk-3.0": "^3.24.39-3.2.2",
+        "@girs/gvc-1.0": "^1.0.0-3.1.0",
+        "@girs/nm-1.0": "^1.43.1-3.1.0",
+        "@typescript-eslint/eslint-plugin": "^5.33.0",
+        "@typescript-eslint/parser": "^5.33.0",
+        "eslint": "^8.44.0"
+    }
+}
