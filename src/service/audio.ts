@@ -11,7 +11,7 @@ const _MIXER_CONTROL_STATE = {
     [Gvc.MixerControlState.FAILED]: 'failed',
 };
 
-class Stream extends Service {
+export class Stream extends Service {
     static {
         Service.register(this, {
             'closed': [],
@@ -67,7 +67,7 @@ class Stream extends Service {
     }
 
     get volume() {
-        const max = audioService.control.get_vol_max_norm();
+        const max = audio.control.get_vol_max_norm();
         return this._stream.volume / max;
     }
 
@@ -78,7 +78,7 @@ class Stream extends Service {
         if (value < 0)
             value = 0;
 
-        const max = audioService.control.get_vol_max_norm();
+        const max = audio.control.get_vol_max_norm();
         this._stream.set_volume(value * max);
         this._stream.push_volume();
     }
@@ -89,7 +89,7 @@ class Stream extends Service {
     }
 }
 
-class Audio extends Service {
+export class Audio extends Service {
     static {
         Service.register(this, {
             'speaker-changed': [],
@@ -225,5 +225,5 @@ class Audio extends Service {
     }
 }
 
-const audioService = new Audio();
-export default audioService;
+const audio = new Audio;
+export default audio;

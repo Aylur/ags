@@ -46,7 +46,7 @@ const _URGENCY = (urgency?: number) => {
     }
 };
 
-class Notification extends Service {
+export class Notification extends Service {
     static {
         Service.register(this, {
             'dismissed': [],
@@ -195,7 +195,7 @@ class Notification extends Service {
     }
 }
 
-class Notifications extends Service {
+export class Notifications extends Service {
     static {
         Service.register(this, {
             'dismissed': ['int'],
@@ -371,5 +371,5 @@ class Notifications extends Service {
     }
 }
 
-
-export default new Notifications();
+export const notifications = new Notifications;
+export default notifications;

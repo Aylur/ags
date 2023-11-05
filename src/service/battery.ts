@@ -12,7 +12,7 @@ const DeviceState = {
     FULLY_CHARGED: 4,
 };
 
-class Battery extends Service {
+export class Battery extends Service {
     static {
         Service.register(this, {
             'closed': [],
@@ -103,4 +103,5 @@ class Battery extends Service {
     }
 }
 
-export default new Battery();
+export const battery = new Battery;
+export default battery;

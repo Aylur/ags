@@ -209,7 +209,7 @@ export class TrayItem extends Service {
     }
 }
 
-class SystemTray extends Service {
+export class SystemTray extends Service {
     static {
         Service.register(this, {
             'added': ['string'],
@@ -290,5 +290,5 @@ class SystemTray extends Service {
     }
 }
 
-
-export default new SystemTray();
+export const systemTray = new SystemTray;
+export default systemTray;

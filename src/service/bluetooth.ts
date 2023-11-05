@@ -13,7 +13,7 @@ const _ADAPTER_STATE = {
     [GnomeBluetooth.AdapterState.OFF]: 'off',
 };
 
-class BluetoothDevice extends Service {
+export class BluetoothDevice extends Service {
     static {
         Service.register(this, {}, {
             'address': ['string'],
@@ -78,7 +78,7 @@ class BluetoothDevice extends Service {
 
     setConnection(connect: boolean) {
         this._connecting = true;
-        bluetoothService.connectDevice(this, connect, () => {
+        bluetooth.connectDevice(this, connect, () => {
             this._connecting = false;
             this.changed('connecting');
         });
@@ -86,7 +86,7 @@ class BluetoothDevice extends Service {
     }
 }
 
-class Bluetooth extends Service {
+export class Bluetooth extends Service {
     static {
         Service.register(this, {}, {
             'devices': ['jsobject'],
@@ -198,5 +198,5 @@ class Bluetooth extends Service {
     }
 }
 
-const bluetoothService = new Bluetooth();
-export default bluetoothService;
+export const bluetooth = new Bluetooth;
+export default bluetooth;

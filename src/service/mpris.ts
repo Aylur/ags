@@ -26,7 +26,7 @@ type MprisMetadata = {
     [key: string]: unknown
 }
 
-class MprisPlayer extends Service {
+export class MprisPlayer extends Service {
     static {
         Service.register(this, {
             'closed': [],
@@ -266,7 +266,7 @@ class MprisPlayer extends Service {
 }
 
 type Players = Map<string, MprisPlayer>;
-class Mpris extends Service {
+export class Mpris extends Service {
     static {
         Service.register(this, {
             'player-changed': ['string'],
@@ -349,4 +349,5 @@ class Mpris extends Service {
     }
 }
 
-export default new Mpris();
+export const mpris = new Mpris;
+export default mpris;
