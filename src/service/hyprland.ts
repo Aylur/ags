@@ -1,7 +1,6 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import Service from '../service.js';
-import { execAsync } from '../utils.js';
 
 const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
 
@@ -116,6 +115,8 @@ class Hyprland extends Service {
         if (!HIS)
             console.error('Hyprland is not running');
 
+        Gio._promisify(Gio.DataInputStream.prototype, 'read_upto_async');
+
         super();
         this._active = new Actives();
         this._monitors = new Map();
@@ -152,9 +153,26 @@ class Hyprland extends Service {
         });
     }
 
+    async sendMessage(cmd: string) {
+        const connection = new Gio.SocketClient()
+            .connect(new Gio.UnixSocketAddress({
+                path: `/tmp/hypr/${HIS}/.socket.sock`,
+            }), null);
+        connection.get_output_stream().write((new TextEncoder()).encode(cmd), null);
+        const inputStream = new Gio.DataInputStream({
+            close_base_stream: true,
+            base_stream: connection.get_input_stream(),
+        });
+        return inputStream.read_upto_async('\x04', -1, 0, null)
+            .then(result => {
+                const [response] = result as unknown as [string, number];
+                return response;
+            });
+    }
+
     private async _syncMonitors() {
         try {
-            const monitors = await execAsync('hyprctl -j monitors');
+            const monitors = await this.sendMessage('j/monitors');
             this._monitors = new Map();
             const json = JSON.parse(monitors) as {
                 id: number
@@ -181,7 +199,7 @@ class Hyprland extends Service {
 
     private async _syncWorkspaces() {
         try {
-            const workspaces = await execAsync('hyprctl -j workspaces');
+            const workspaces = await this.sendMessage('j/workspaces');
             this._workspaces = new Map();
             const json = JSON.parse(workspaces) as { id: number }[];
             json.forEach(ws => {
@@ -195,7 +213,7 @@ class Hyprland extends Service {
 
     private async _syncClients() {
         try {
-            const clients = await execAsync('hyprctl -j clients');
+            const clients = await this.sendMessage('j/clients');
             this._clients = new Map();
             const json = JSON.parse(clients) as { address: string }[];
             json.forEach(client => {
