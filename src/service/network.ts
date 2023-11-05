@@ -57,7 +57,7 @@ const DEVICE = (device: string) => {
     }
 };
 
-class Wifi extends Service {
+export class Wifi extends Service {
     static {
         Service.register(this, {}, {
             'enabled': ['boolean', 'rw'],
@@ -172,7 +172,7 @@ class Wifi extends Service {
     }
 }
 
-class Wired extends Service {
+export class Wired extends Service {
     static {
         Service.register(this, {}, {
             'speed': ['int'],
@@ -206,14 +206,14 @@ class Wired extends Service {
         if (this.internet === 'connected')
             return 'network-wired-symbolic';
 
-        if (networkService.connectivity !== 'full')
+        if (network.connectivity !== 'full')
             return 'network-wired-no-route-symbolic';
 
         return 'network-wired-disconnected-symbolic';
     }
 }
 
-class Network extends Service {
+export class Network extends Service {
     static {
         Service.register(this, {}, {
             'wifi': ['jsobject'],
@@ -286,5 +286,5 @@ class Network extends Service {
     }
 }
 
-const networkService = new Network();
-export default networkService;
+const network = new Network;
+export default network;

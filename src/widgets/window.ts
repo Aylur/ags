@@ -1,3 +1,4 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
@@ -11,26 +12,27 @@ const anchors = ['left', 'right', 'top', 'bottom'] as const;
 type Layer = typeof layers[number]
 type Anchor = typeof anchors[number]
 
-export interface WindowProps extends Omit<Gtk.Window.ConstructorProperties, 'margin'> {
+export interface WindowProps extends BaseProps<AgsWindow>, Gtk.Window.ConstructorProperties {
     anchor?: Anchor[]
     exclusive?: boolean
     focusable?: boolean
     layer?: Layer
-    margin?: number[]
+    margins?: number[]
     monitor?: number
     popup?: boolean
     visible?: boolean
 }
 
-export default class AgsWindow extends Gtk.Window {
+export default class AgsWindow extends AgsWidget(Gtk.Window) {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsWindow',
             Properties: {
                 'anchor': Service.pspec('anchor', 'jsobject', 'rw'),
                 'exclusive': Service.pspec('exclusive', 'boolean', 'rw'),
                 'focusable': Service.pspec('focusable', 'boolean', 'rw'),
                 'layer': Service.pspec('layer', 'string', 'rw'),
-                'margin': Service.pspec('margin', 'jsobject', 'rw'),
+                'margins': Service.pspec('margins', 'jsobject', 'rw'),
                 'monitor': Service.pspec('monitor', 'int', 'rw'),
                 'popup': Service.pspec('popup', 'boolean', 'rw'),
             },
@@ -44,7 +46,7 @@ export default class AgsWindow extends Gtk.Window {
         exclusive = false,
         focusable = false,
         layer = 'top',
-        margin = [],
+        margins = [],
         monitor = -1,
         popup = false,
         visible = true,
@@ -58,25 +60,22 @@ export default class AgsWindow extends Gtk.Window {
         this.exclusive = exclusive;
         this.focusable = focusable;
         this.layer = layer;
-        this.margin = margin;
+        this.margins = margins;
         this.monitor = monitor;
         this.show_all();
         this.popup = popup;
         this.visible = visible === true || visible === null && !popup;
     }
 
-    // @ts-expect-error
-    get monitor() { return this._monitor; }
+    get monitor(): Gdk.Monitor { return this._get('monitor'); }
     set monitor(monitor: number) {
-        if (monitor < 0 || this.monitor === monitor)
+        if (monitor < 0)
             return;
 
         const m = Gdk.Display.get_default()?.get_monitor(monitor);
         if (m) {
             LayerShell.set_monitor(this, m);
-            // @ts-expect-error
-            this._monitor = monitor;
-            this.notify('monitor');
+            this._set('monitor', monitor);
             return;
         }
 
@@ -130,15 +129,13 @@ export default class AgsWindow extends Gtk.Window {
         this.notify('anchor');
     }
 
-    // @ts-expect-error
-    get margin() {
+    get margins() {
         return ['TOP', 'RIGHT', 'BOTTOM', 'LEFT'].map(edge =>
             LayerShell.get_margin(this, LayerShell.Edge[edge]),
         );
     }
 
-    // @ts-expect-error
-    set margin(margin: number[]) {
+    set margins(margin: number[]) {
         let margins: [side: string, index: number][] = [];
         switch (margin.length) {
             case 1:
@@ -162,33 +159,26 @@ export default class AgsWindow extends Gtk.Window {
                 LayerShell.Edge[side], (margin as number[])[i]),
         );
 
-        this.notify('margin');
+        this.notify('margins');
     }
 
-    // @ts-expect-error
-    get popup() { return !!this._popup; }
-
-    // this will be removed in gtk4
+    get popup() { return !!this._get('popup'); }
     set popup(popup: boolean) {
         if (this.popup === popup)
             return;
 
-        // @ts-expect-error
-        if (this._popup)
-            // @ts-expect-error
-            this.disconnect(this._popup);
+        if (this.popup)
+            this.disconnect(this._get('popup'));
 
         if (popup) {
-            this.connect('key-press-event', (_, event) => {
+            this._set('popup', this.connect('key-press-event', (_, event: Gdk.Event) => {
                 if (event.get_keyval()[1] === Gdk.KEY_Escape) {
                     App.getWindow(this.name!)
                         ? App.closeWindow(this.name!)
                         : this.hide();
                 }
-            });
+            }));
         }
-
-        this.notify('popup');
     }
 
     get focusable() {

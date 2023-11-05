@@ -2,10 +2,6 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import Service from './service.js';
-import { App } from './app.js';
-import { Variable } from './variable.js';
-import { type Command } from './widgets/widget.js';
 
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name.split('.').pop()}`;
@@ -25,7 +21,7 @@ export function readFileAsync(path: string): Promise<string> {
                 const [success, bytes] = file.load_contents_finish(res);
                 return success
                     ? resolve(new TextDecoder().decode(bytes))
-                    : reject(new Error(
+                    : reject(Error(
                         `reading file ${path} was unsuccessful`));
             } catch (error) {
                 reject(error);
@@ -91,33 +87,6 @@ export function bulkDisconnect(service: GObject.Object, ids: number[]) {
         service.disconnect(id);
 }
 
-export function connect(
-    obj: GObject.Object,
-    widget: Gtk.Widget,
-    callback: (widget: Gtk.Widget, ...args: unknown[]) => void,
-    event?: string,
-) {
-    if (!(obj instanceof Service || obj instanceof App || obj instanceof Variable) && !event)
-        return console.error(new Error('missing signal for connection'));
-
-    const bind = obj.connect(event as string,
-        (_s, ...args: unknown[]) => callback(widget, ...args));
-
-    const w = Object.assign(widget, { _destroyed: false });
-
-    w.connect('destroy', () => {
-        w._destroyed = true;
-        obj.disconnect(bind);
-    });
-
-    GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-        if (!w._destroyed)
-            callback(w);
-
-        return GLib.SOURCE_REMOVE;
-    });
-}
-
 export function interval(
     interval: number,
     callback: () => void,
@@ -139,29 +108,6 @@ export function timeout(ms: number, callback: () => void) {
         callback();
         return GLib.SOURCE_REMOVE;
     });
-}
-
-export function runCmd(
-    cmd: Command,
-    ...args: unknown[]
-) {
-    if (typeof cmd !== 'string' && typeof cmd !== 'function') {
-        console.error('Command has to be string or function');
-        return false;
-    }
-
-    if (!cmd)
-        return false;
-
-    if (typeof cmd === 'string') {
-        GLib.spawn_command_line_async(cmd);
-        return true;
-    }
-
-    if (typeof cmd === 'function')
-        return cmd(...args);
-
-    return false;
 }
 
 export function lookUpIcon(name?: string, size = 16) {
@@ -243,7 +189,7 @@ export function subprocess(
 
         const pipe = proc.get_stdout_pipe();
         if (!pipe) {
-            onError(new Error(`subprocess ${cmd} stdout pipe is null`));
+            onError(Error(`subprocess ${cmd} stdout pipe is null`));
             return null;
         }
 

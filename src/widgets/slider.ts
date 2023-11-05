@@ -1,21 +1,23 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import { runCmd } from '../utils.js';
-import { type Command } from './widget.js';
 import Service from '../service.js';
 
-export interface SliderProps extends Gtk.Scale.ConstructorProperties {
-    onChange?: Command
+type EventHandler = (self: AgsSlider, event: Gdk.Event) => void | unknown;
+
+export interface SliderProps extends BaseProps<AgsSlider>, Gtk.Scale.ConstructorProperties {
+    on_change?: EventHandler,
     value?: number
     min?: number
     max?: number
     step?: number
 }
 
-export default class AgsSlider extends Gtk.Scale {
+export default class AgsSlider extends AgsWidget(Gtk.Scale) {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsSlider',
             Properties: {
                 'dragging': Service.pspec('dragging', 'boolean', 'r'),
                 'vertical': Service.pspec('vertical', 'boolean', 'rw'),
@@ -23,14 +25,12 @@ export default class AgsSlider extends Gtk.Scale {
                 'min': Service.pspec('min', 'double', 'rw'),
                 'max': Service.pspec('max', 'double', 'rw'),
                 'step': Service.pspec('step', 'double', 'rw'),
+                'on-change': Service.pspec('on-change', 'jsobject', 'rw'),
             },
         }, this);
     }
 
-    onChange: Command;
-
     constructor({
-        onChange = '',
         value = 0,
         min = 0,
         max = 1,
@@ -43,23 +43,20 @@ export default class AgsSlider extends Gtk.Scale {
                 lower: min,
                 upper: max,
                 step_increment: step,
+                value: value,
             }),
         });
 
-        this.onChange = onChange;
-
-        this.adjustment.connect('notify::value', ({ value }, event) => {
+        this.adjustment.connect('notify::value', (_, event: Gdk.Event) => {
             if (!this.dragging)
                 return;
 
-            typeof this.onChange === 'function'
-                ? this.onChange(this, event, value)
-                : runCmd((onChange as string).replace(/\{\}/g, `${value}`));
+            this.on_change?.(this, event);
         });
-
-        if (value)
-            this.value = value;
     }
+
+    get on_change() { return this._get('on-change'); }
+    set on_change(callback: EventHandler) { this._set('on-change', callback); }
 
     get value() { return this.adjustment.value; }
     set value(value: number) {
@@ -97,16 +94,8 @@ export default class AgsSlider extends Gtk.Scale {
         this.notify('step');
     }
 
-    // @ts-expect-error
-    get dragging() { return this._dragging; }
-    set dragging(dragging: boolean) {
-        if (this.dragging === dragging)
-            return;
-
-        // @ts-expect-error
-        this._dragging = dragging;
-        this.notify('dragging');
-    }
+    get dragging() { return this._get('dragging'); }
+    set dragging(dragging: boolean) { this._set('dragging', dragging); }
 
     get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
     set vertical(vertical) {

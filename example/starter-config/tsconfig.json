@@ -6,20 +6,15 @@
             "ES2022"
         ],
         "allowJs": true,
-        "checkJs": false,
-        "outDir": "_build/tsc-out",
+        "checkJs": true,
         "strict": true,
-        "moduleResolution": "node",
+        "noImplicitAny": false,
         "baseUrl": ".",
         "typeRoots": [
+            "./types/ags.d.ts",
             "./node_modules/@girs"
         ],
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true
-    },
-    "include": [
-        "@girs",
-        "types/*",
-        "src"
-    ]
+    }
 }

@@ -1,9 +1,8 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import AgsBox from './box.js';
+import AgsBox, { type BoxProps } from './box.js';
 
-export interface CenterBoxProps extends Gtk.Box.ConstructorProperties {
-    children?: Gtk.Widget[]
+export interface CenterBoxProps extends BoxProps<AgsCenterBox> {
     start_widget?: Gtk.Widget
     center_widget?: Gtk.Widget
     end_widget?: Gtk.Widget
@@ -12,6 +11,7 @@ export interface CenterBoxProps extends Gtk.Box.ConstructorProperties {
 export default class AgsCenterBox extends AgsBox {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsCenterBox',
             Properties: {
                 'start-widget': GObject.ParamSpec.object(
                     'start-widget', 'Start Widget', 'Start Widget',
@@ -32,6 +32,8 @@ export default class AgsCenterBox extends AgsBox {
         }, this);
     }
 
+    constructor(props: CenterBoxProps = {}) { super(props as BoxProps<AgsBox>); }
+
     set children(children: Gtk.Widget[]) {
         const newChildren = children || [];
 
@@ -48,37 +50,31 @@ export default class AgsCenterBox extends AgsBox {
             this.end_widget = children[2];
     }
 
-    // @ts-expect-error
-    get start_widget() { return this._startWidget || null; }
+    get start_widget() { return this._get('start-widget') || null; }
     set start_widget(child: Gtk.Widget | null) {
         if (this.start_widget)
             this.start_widget.destroy();
 
-        // @ts-expect-error
-        this._startWidget = child;
+        this._set('start-widget', child);
 
         if (!child)
             return;
 
         this.pack_start(child, true, true, 0);
-        this.notify('start-widget');
         this.show_all();
     }
 
-    // @ts-expect-error
-    get end_widget() { return this._endWidget || null; }
+    get end_widget() { return this._get('end-widget') || null; }
     set end_widget(child: Gtk.Widget | null) {
         if (this.end_widget)
             this.end_widget.destroy();
 
-        // @ts-expect-error
-        this._endWidget = child;
+        this._set('end-widget', child);
 
         if (!child)
             return;
 
         this.pack_end(child, true, true, 0);
-        this.notify('end-widget');
         this.show_all();
     }
 

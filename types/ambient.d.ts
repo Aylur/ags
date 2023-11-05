@@ -16,6 +16,8 @@ declare module console {
     export function error(msg: string, subsitutions?: any[]): void;
     export function log(obj: object, others?: object[]): void;
     export function log(msg: string, subsitutions?: any[]): void;
+    export function warn(obj: object, others?: object[]): void;
+    export function warn(msg: string, subsitutions?: any[]): void;
 }
 
 declare interface String {

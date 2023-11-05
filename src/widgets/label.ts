@@ -1,3 +1,4 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
@@ -10,16 +11,17 @@ const truncates = ['none', 'start', 'middle', 'end'] as const;
 type Justification = typeof justifications[number];
 type Truncate = typeof truncates[number];
 
-interface Props extends Gtk.Label.ConstructorProperties {
+interface Props extends BaseProps<AgsLabel>, Gtk.Label.ConstructorProperties {
     justification?: Justification
     truncate?: Truncate
 }
 
 export type LabelProps = Props | string | undefined
 
-export default class AgsLabel extends Gtk.Label {
+export default class AgsLabel extends AgsWidget(Gtk.Label) {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsLabel',
             Properties: {
                 'justification': Service.pspec('justification', 'string', 'rw'),
                 'truncate': Service.pspec('truncate', 'string', 'rw'),
@@ -27,8 +29,8 @@ export default class AgsLabel extends Gtk.Label {
         }, this);
     }
 
-    constructor(params: LabelProps = {}) {
-        super(typeof params === 'string' ? { label: params } : params);
+    constructor(props: LabelProps = {}) {
+        super(typeof props === 'string' ? { label: props } : props);
     }
 
     get label() { return super.label || ''; }

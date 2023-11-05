@@ -1,3 +1,4 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Service from '../service.js';
@@ -13,15 +14,16 @@ const transitions = [
 
 type Transition = typeof transitions[number]
 
-export interface StackProps extends Gtk.Stack.ConstructorProperties {
+export interface StackProps extends BaseProps<AgsStack>, Gtk.Stack.ConstructorProperties {
     shown?: string
     items?: [string, Gtk.Widget][]
     transition?: Transition
 }
 
-export default class AgsStack extends Gtk.Stack {
+export default class AgsStack extends AgsWidget(Gtk.Stack) {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsStack',
             Properties: {
                 'transition': Service.pspec('transition', 'string', 'rw'),
                 'shown': Service.pspec('shown', 'string', 'rw'),
@@ -30,19 +32,19 @@ export default class AgsStack extends Gtk.Stack {
         }, this);
     }
 
+    constructor(props: StackProps = {}) { super(props); }
+
     add_named(child: Gtk.Widget, name: string): void {
         this.items.push([name, child]);
         super.add_named(child, name);
+        this.notify('items');
     }
 
     get items() {
-        // @ts-expect-error
-        if (!Array.isArray(this._items))
-            // @ts-expect-error
-            this._items = [];
+        if (!Array.isArray(this._get('items')))
+            this._set('items', []);
 
-        // @ts-expect-error
-        return this._items;
+        return this._get('items');
     }
 
     set items(items: [string, Gtk.Widget][]) {
@@ -57,13 +59,11 @@ export default class AgsStack extends Gtk.Stack {
             .filter(([, ch]) => this.get_children().includes(ch))
             .forEach(([, ch]) => this.remove(ch));
 
-        // @ts-expect-error
-        this._items = [];
         items.forEach(([name, widget]) => {
-            widget && this.add_named(widget, name);
+            widget && super.add_named(widget, name);
         });
 
-        this.notify('items');
+        this._set('items', items);
         this.show_all();
     }
 
