@@ -71,14 +71,14 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         // gobject constructor field setters to be overridden
         // so we use this _get and _set to avoid @ts-expect-error everywhere
         _get<T>(field: string) {
-            return (this as unknown as { [key: string]: unknown })[`_${field}`] as T;
+            return (this as unknown as { [key: string]: unknown })[`__${field}`] as T;
         }
 
         _set<T>(field: string, value: T) {
             if (this._get(field) === value)
                 return;
 
-            (this as unknown as { [key: string]: T })[`_${field}`] = value;
+            (this as unknown as { [key: string]: T })[`__${field}`] = value;
             this.notify(field);
         }
 
