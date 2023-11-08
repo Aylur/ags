@@ -136,12 +136,12 @@ export class Audio extends Service {
 
     get control() { return this._control; }
 
-    get speaker() { return this._speaker; }
+    get speaker(): Stream | undefined { return this._speaker; }
     set speaker(stream: Stream) {
         this._control.set_default_sink(stream.stream);
     }
 
-    get microphone() { return this._microphone; }
+    get microphone(): Stream | undefined { return this._microphone; }
     set microphone(stream: Stream) {
         this._control.set_default_source(stream.stream);
     }
