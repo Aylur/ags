@@ -12,20 +12,20 @@ type KebabCase<S extends string> = S extends `${infer Prefix}_${infer Suffix}`
 type OnlyString<S extends string | unknown> = S extends string ? S : never;
 
 const aligns = ['fill', 'start', 'end', 'center', 'baseline'] as const;
-type Align = typeof aligns[number];
+export type Align = typeof aligns[number];
 
-type Property = [prop: string, value: unknown];
+export type Property = [prop: string, value: unknown];
 
-type Connection<Self> =
+export type Connection<Self> =
     | [GObject.Object, (self: Self, ...args: unknown[]) => unknown, string?]
     | [string, (self: Self, ...args: unknown[]) => unknown]
     | [number, (self: Self, ...args: unknown[]) => unknown];
 
-type Bind = [
+export type Bind = [
     prop: string,
     obj: GObject.Object,
     objProp?: string,
-    transform?: (value: unknown) => unknown,
+    transform?: (value: any) => any,
 ];
 
 export interface BaseProps<Self> extends Gtk.Widget.ConstructorProperties {
