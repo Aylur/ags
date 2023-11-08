@@ -76,6 +76,11 @@ for file in ./src/widgets/*.ts; do
 	resource "widgets/$(basename -s .ts $file)" >>$dts
 done
 
+gi "Gtk" "gtk-3.0" >>$dts
+gi "GObject" "gobject-2.0" >>$dts
+gi "Gio" "gio-2.0" >>$dts
+gi "GLib" "glib-2.0" >>$dts
+
 # remove tmp
 rm -rf /tmp/ags-config
 
