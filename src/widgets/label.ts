@@ -11,7 +11,7 @@ const truncates = ['none', 'start', 'middle', 'end'] as const;
 type Justification = typeof justifications[number];
 type Truncate = typeof truncates[number];
 
-interface Props extends BaseProps<AgsLabel>, Gtk.Label.ConstructorProperties {
+export interface Props extends BaseProps<AgsLabel>, Gtk.Label.ConstructorProperties {
     justification?: Justification
     truncate?: Truncate
 }
