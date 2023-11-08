@@ -7,7 +7,7 @@ import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 import cairo from '@girs/cairo-1.0';
 
-interface Props extends BaseProps<AgsIcon>, Gtk.Image.ConstructorProperties {
+export interface Props extends BaseProps<AgsIcon>, Gtk.Image.ConstructorProperties {
     icon?: string | GdkPixbuf.Pixbuf
     size?: number
 }
