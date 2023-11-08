@@ -19,10 +19,9 @@ export default class AgsIcon extends AgsWidget(Gtk.Image) {
         GObject.registerClass({
             GTypeName: 'AgsIcon',
             Properties: {
+                'size': Service.pspec('size', 'double', 'rw'),
                 'icon': Service.pspec('icon', 'jsobject', 'rw'),
                 'type': Service.pspec('type', 'string', 'r'),
-                'size': Service.pspec('size', 'double', 'rw'),
-                'previous-size': Service.pspec('previous-size', 'double', 'r'),
             },
         }, this);
     }
@@ -36,41 +35,55 @@ export default class AgsIcon extends AgsWidget(Gtk.Image) {
             ? props : icon;
     }
 
-    get size() { return this._get('size') || this._get('previous-size') || 0; }
-    set size(size: number) {
-        this._set('size', size);
-        this.queue_draw();
-    }
+    get size() { return this._get('size') || this._fontSize || 0; }
+    set size(size: number) { this._set('size', size); }
 
     get icon() { return this._get('icon'); }
     set icon(icon: string | GdkPixbuf.Pixbuf) {
         this._set('icon', icon);
 
         if (typeof icon === 'string') {
-            if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
+            if (GLib.file_test(icon, GLib.FileTest.EXISTS))
                 this._set('type', 'file');
-                if (this.size === 0)
-                    return;
-
-                const pb = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                    icon,
-                    this.size * this.scale_factor,
-                    this.size * this.scale_factor,
-                );
-                const cs = Gdk.cairo_surface_create_from_pixbuf(pb, 0, this.get_window());
-                this.set_from_surface(cs);
-            } else {
+            else
                 this._set('type', 'named');
-                this.icon_name = icon;
-                this.pixel_size = this.size;
-            }
         }
         else if (icon instanceof GdkPixbuf.Pixbuf) {
             this._set('type', 'pixbuf');
-            if (this.size === 0)
-                return;
+        }
+        else {
+            console.error(Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));
+        }
 
-            const pb_scaled = icon.scale_simple(
+        this._size();
+    }
+
+    private _previousSize = 0;
+    private _fontSize = 0;
+    private _size() {
+        if (this.size === 0)
+            return;
+
+        const type = this._get<'file' | 'named' | 'pixbuf'>('type');
+        this._previousSize = this.size;
+
+        if (type === 'file') {
+            const pb = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                this.icon as string,
+                this.size * this.scale_factor,
+                this.size * this.scale_factor,
+            );
+            const cs = Gdk.cairo_surface_create_from_pixbuf(pb, 0, this.get_window());
+            this.set_from_surface(cs);
+        }
+
+        else if (type === 'named') {
+            this.icon_name = this.icon as string;
+            this.pixel_size = this.size;
+        }
+
+        else if (type === 'pixbuf') {
+            const pb_scaled = (this.icon as GdkPixbuf.Pixbuf).scale_simple(
                 this.size * this.scale_factor,
                 this.size * this.scale_factor,
                 GdkPixbuf.InterpType.BILINEAR,
@@ -80,55 +93,14 @@ export default class AgsIcon extends AgsWidget(Gtk.Image) {
                 this.set_from_surface(cs);
             }
         }
-        else {
-            console.error(Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));
-        }
     }
 
     vfunc_draw(cr: cairo.Context): boolean {
-        if (this.size > 1)
-            return super.vfunc_draw(cr);
-
-        const size = this.get_style_context()
+        this._fontSize = this.get_style_context()
             .get_property('font-size', Gtk.StateFlags.NORMAL) as number;
 
-        if (size === this._get('previous-size'))
-            return super.vfunc_draw(cr);
-
-        this._set('previous-size', size);
-
-        switch (this._get('type')) {
-            case 'file': {
-                const pb = GdkPixbuf.Pixbuf.new_from_file_at_size(
-                    this._get<string>('icon'),
-                    size * this.scale_factor,
-                    size * this.scale_factor);
-
-                const cs = Gdk.cairo_surface_create_from_pixbuf(pb, 0, this.get_window());
-                this.set_from_surface(cs);
-                break;
-            }
-            case 'pixbuf': {
-                const pb_scaled = this._get<GdkPixbuf.Pixbuf>('icon').scale_simple(
-                    size * this.scale_factor,
-                    size * this.scale_factor,
-                    GdkPixbuf.InterpType.BILINEAR,
-                );
-                if (pb_scaled) {
-                    const cs = Gdk.cairo_surface_create_from_pixbuf(
-                        pb_scaled, 0, this.get_window(),
-                    );
-                    this.set_from_surface(cs);
-                }
-                break;
-            }
-            case 'named':
-                this.set_pixel_size(size);
-                break;
-
-            default:
-                break;
-        }
+        if (this._previousSize !== this.size)
+            this._size();
 
         return super.vfunc_draw(cr);
     }
