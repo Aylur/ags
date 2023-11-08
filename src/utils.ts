@@ -7,9 +7,14 @@ export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name.split('.').pop()}`;
 
 export function readFile(path: string) {
-    const f = Gio.File.new_for_path(path);
-    const [, bytes] = f.load_contents(null);
-    return new TextDecoder().decode(bytes);
+    try {
+        const f = Gio.File.new_for_path(path);
+        const [, bytes] = f.load_contents(null);
+        return new TextDecoder().decode(bytes);
+    } catch (_) {
+        // no file
+        return '';
+    }
 }
 
 export function readFileAsync(path: string): Promise<string> {
