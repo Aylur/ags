@@ -276,6 +276,12 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             if (typeof this.set_child === 'function')
                 // @ts-expect-error
                 this.set_child(child);
+
+            // @ts-expect-error
+            else if (typeof this.add === 'function')
+                // @ts-expect-error
+                this.add(child);
+
             else
                 console.error(Error(`can't set child on ${this}`));
         }
