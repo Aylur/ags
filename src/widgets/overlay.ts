@@ -23,6 +23,7 @@ export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
 
     get pass_through() {
         return this.get_children()
+            .filter(ch => ch !== this.child)
             .map(ch => this.get_overlay_pass_through(ch))
             .every(p => p === true);
     }
