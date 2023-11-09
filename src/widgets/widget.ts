@@ -272,6 +272,9 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         }
 
         set child(child: Gtk.Widget) {
+            if (this.child !== child && this.child)
+                this.child.destroy();
+
             // @ts-expect-error
             if (typeof this.set_child === 'function')
                 // @ts-expect-error
