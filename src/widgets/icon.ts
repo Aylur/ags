@@ -6,6 +6,7 @@ import GdkPixbuf from 'gi://GdkPixbuf';
 import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 import cairo from '@girs/cairo-1.0';
+import { lookUpIcon } from '../utils.js';
 
 export interface Props extends BaseProps<AgsIcon>, Gtk.Image.ConstructorProperties {
     icon?: string | GdkPixbuf.Pixbuf
@@ -41,12 +42,19 @@ export default class AgsIcon extends AgsWidget(Gtk.Image) {
     get icon() { return this._get('icon'); }
     set icon(icon: string | GdkPixbuf.Pixbuf) {
         this._set('icon', icon);
+        this._set('type', 'named');
 
         if (typeof icon === 'string') {
-            if (GLib.file_test(icon, GLib.FileTest.EXISTS))
-                this._set('type', 'file');
-            else
+            if (lookUpIcon(icon)) {
                 this._set('type', 'named');
+            }
+            else if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
+                this._set('type', 'file');
+            }
+            else if (icon !== '') {
+                console.error(Error(`can't assign "${icon}" as icon, ` +
+                    'it is not a file nor a named icon'));
+            }
         }
         else if (icon instanceof GdkPixbuf.Pixbuf) {
             this._set('type', 'pixbuf');
