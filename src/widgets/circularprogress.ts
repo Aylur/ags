@@ -1,8 +1,8 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Service from '../service.js';
 
-// type from gi-types is wrong
 interface Context {
     setSourceRGBA: (r: number, g: number, b: number, a: number) => void
     arc: (x: number, y: number, r: number, a1: number, a2: number) => void
@@ -13,16 +13,18 @@ interface Context {
     $dispose: () => void
 }
 
-export interface CircularProgressProps extends Gtk.Bin {
+export interface CircularProgressProps extends
+    BaseProps<AgsCircularProgress>, Gtk.Bin.ConstructorProperties {
     rounded?: boolean
     value?: number
     inverted?: boolean
     start_at?: number
 }
 
-export default class AgsCircularProgress extends Gtk.Bin {
+export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
     static {
         GObject.registerClass({
+            GTypeName: 'AgsCircularProgress',
             CssName: 'circular-progress',
             Properties: {
                 'start-at': Service.pspec('start-at', 'float', 'rw'),
@@ -33,32 +35,27 @@ export default class AgsCircularProgress extends Gtk.Bin {
         }, this);
     }
 
-    // @ts-expect-error
-    get rounded() { return this._rounded || false; }
+    constructor(props: CircularProgressProps = {}) { super(props); }
+
+    get rounded() { return this._get('rounded') || false; }
     set rounded(r: boolean) {
         if (this.rounded === r)
             return;
 
-        // @ts-expect-error
-        this._rounded = r;
-        this.notify('rounded');
+        this._set('rounded', r);
         this.queue_draw();
     }
 
-    // @ts-expect-error
-    get inverted() { return this._inverted || false; }
+    get inverted() { return this._get('inverted') || false; }
     set inverted(inverted: boolean) {
         if (this.inverted === inverted)
             return;
 
-        // @ts-expect-error
-        this._inverted = inverted;
-        this.notify('inverted');
+        this._set('inverted', inverted);
         this.queue_draw();
     }
 
-    // @ts-expect-error
-    get start_at() { return this._startAt || 0; }
+    get start_at() { return this._get('start-at') || 0; }
     set start_at(value: number) {
         if (this.start_at === value)
             return;
@@ -69,14 +66,11 @@ export default class AgsCircularProgress extends Gtk.Bin {
         if (value < 0)
             value = 0;
 
-        // @ts-expect-error
-        this._startAt = value;
-        this.notify('start-at');
+        this._set('start-at', value);
         this.queue_draw();
     }
 
-    // @ts-expect-error
-    get value() { return this._value || 0; }
+    get value() { return this._get('value') || 0; }
     set value(value: number) {
         if (this.value === value)
             return;
@@ -88,9 +82,7 @@ export default class AgsCircularProgress extends Gtk.Bin {
             value = 0;
 
 
-        // @ts-expect-error
-        this._value = value;
-        this.notify('value');
+        this._set('value', value);
         this.queue_draw();
     }
 

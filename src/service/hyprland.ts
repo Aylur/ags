@@ -4,14 +4,14 @@ import Service from '../service.js';
 
 const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
 
-class Active extends Service {
+export class Active extends Service {
     updateProperty(prop: string, value: unknown): void {
         super.updateProperty(prop, value);
         this.emit('changed');
     }
 }
 
-class ActiveClient extends Active {
+export class ActiveClient extends Active {
     static {
         Service.register(this, {}, {
             'address': ['string'],
@@ -29,7 +29,7 @@ class ActiveClient extends Active {
     get class() { return this._class; }
 }
 
-class ActiveWorkspace extends Active {
+export class ActiveWorkspace extends Active {
     static {
         Service.register(this, {}, {
             'id': ['int'],
@@ -44,7 +44,7 @@ class ActiveWorkspace extends Active {
     get name() { return this._name; }
 }
 
-class Actives extends Service {
+export class Actives extends Service {
     static {
         Service.register(this, {}, {
             'client': ['jsobject'],
@@ -75,7 +75,7 @@ class Actives extends Service {
     get workspace() { return this._workspace; }
 }
 
-class Hyprland extends Service {
+export class Hyprland extends Service {
     static {
         Service.register(this, {
             'urgent-window': ['string'],
@@ -330,4 +330,5 @@ class Hyprland extends Service {
     }
 }
 
-export default new Hyprland();
+export const hyprland = new Hyprland;
+export default hyprland;

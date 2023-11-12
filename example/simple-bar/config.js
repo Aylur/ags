@@ -84,7 +84,7 @@ const Media = () => Widget.Button({
 
 const Volume = () => Widget.Box({
     className: 'volume',
-    style: 'min-width: 180px',
+    css: 'min-width: 180px',
     children: [
         Widget.Stack({
             items: [
@@ -130,7 +130,7 @@ const BatteryLabel = () => Widget.Box({
             }]],
         }),
         Widget.ProgressBar({
-            valign: 'center',
+            vpack: 'center',
             connections: [[Battery, self => {
                 if (Battery.percent < 0)
                     return;
@@ -168,7 +168,7 @@ const Center = () => Widget.Box({
 });
 
 const Right = () => Widget.Box({
-    halign: 'end',
+    hpack: 'end',
     children: [
         Volume(),
         BatteryLabel(),

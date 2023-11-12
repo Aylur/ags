@@ -5,7 +5,7 @@ import { CACHE_DIR, ensureDirectory, readFile, writeFile } from '../utils.js';
 const APPS_CACHE_DIR = `${CACHE_DIR}/apps`;
 const CACHE_FILE = APPS_CACHE_DIR + '/apps_frequency.json';
 
-class Application extends Service {
+export class Application extends Service {
     static {
         Service.register(this, {}, {
             'app': ['jsobject'],
@@ -71,7 +71,7 @@ class Application extends Service {
     }
 }
 
-class Applications extends Service {
+export class Applications extends Service {
     static {
         Service.register(this, {}, {
             'list': ['jsobject'],
@@ -134,4 +134,5 @@ class Applications extends Service {
     }
 }
 
-export default new Applications();
+export const applications = new Applications;
+export default applications;

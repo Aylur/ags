@@ -7,12 +7,17 @@ import DbusmenuGtk3 from 'gi://DbusmenuGtk3';
 import Service from '../service.js';
 import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
-import Widget from '../widget.js';
+import { subclass } from '../widget.js';
 
 const StatusNotifierWatcherIFace = loadInterfaceXML('org.kde.StatusNotifierWatcher')!;
 const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem')!;
 const StatusNotifierItemProxy =
     Gio.DBusProxy.makeProxyWrapper(StatusNotifierItemIFace) as unknown as StatusNotifierItemProxy;
+
+const DbusmenuGtk3Menu = subclass<
+    typeof DbusmenuGtk3.Menu,
+    DbusmenuGtk3.Menu.ConstructorProperties
+>(DbusmenuGtk3.Menu);
 
 export class TrayItem extends Service {
     static {
@@ -116,8 +121,7 @@ export class TrayItem extends Service {
 
     private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
         if (proxy.Menu) {
-            const menu = Widget({
-                type: DbusmenuGtk3.Menu,
+            const menu = DbusmenuGtk3Menu({
                 dbus_name: proxy.g_name_owner,
                 dbus_object: proxy.Menu,
             });
@@ -205,7 +209,7 @@ export class TrayItem extends Service {
     }
 }
 
-class SystemTray extends Service {
+export class SystemTray extends Service {
     static {
         Service.register(this, {
             'added': ['string'],
@@ -286,5 +290,5 @@ class SystemTray extends Service {
     }
 }
 
-
-export default new SystemTray();
+export const systemTray = new SystemTray;
+export default systemTray;

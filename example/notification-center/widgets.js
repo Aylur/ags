@@ -19,7 +19,7 @@ const Placeholder = () => Widget.Box({
     className: 'placeholder',
     vertical: true,
     vexpand: true,
-    valign: 'center',
+    vpack: 'center',
     children: [
         Widget.Icon('notifications-disabled-symbolic'),
         Widget.Label('Your inbox is empty'),
@@ -62,7 +62,7 @@ export const ClearButton = () => Widget.Button({
 
 export const DNDSwitch = () => Widget({
     type: Gtk.Switch,
-    valign: 'center',
+    vpack: 'center',
     connections: [['notify::active', ({ active }) => {
         Notifications.dnd = active;
     }]],
@@ -70,7 +70,7 @@ export const DNDSwitch = () => Widget({
 
 export const PopupList = () => Widget.Box({
     className: 'list',
-    style: 'padding: 1px;', // so it shows up
+    css: 'min-width: 1px;', // so it shows up
     vertical: true,
     binds: [['children', Notifications, 'popups',
         popups => popups.map(Notification)]],

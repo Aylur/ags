@@ -4,10 +4,10 @@ import { lookUpIcon, timeout } from 'resource:///com/github/Aylur/ags/utils.js';
 const NotificationIcon = ({ appEntry, appIcon, image }) => {
     if (image) {
         return Widget.Box({
-            valign: 'start',
+            vpack: 'start',
             hexpand: false,
             className: 'icon img',
-            style: `
+            css: `
                 background-image: url("${image}");
                 background-size: contain;
                 background-repeat: no-repeat;
@@ -26,17 +26,17 @@ const NotificationIcon = ({ appEntry, appIcon, image }) => {
         icon = appEntry;
 
     return Widget.Box({
-        valign: 'start',
+        vpack: 'start',
         hexpand: false,
         className: 'icon',
-        style: `
+        css: `
             min-width: 78px;
             min-height: 78px;
         `,
         children: [Widget.Icon({
             icon, size: 58,
-            halign: 'center', hexpand: true,
-            valign: 'center', vexpand: true,
+            hpack: 'center', hexpand: true,
+            vpack: 'center', vexpand: true,
         })],
     });
 };
@@ -87,7 +87,7 @@ export const Notification = n => Widget.EventBox({
                                     }),
                                     Widget.Button({
                                         className: 'close-button',
-                                        valign: 'start',
+                                        vpack: 'start',
                                         child: Widget.Icon('window-close-symbolic'),
                                         onClicked: n.close.bind(n),
                                     }),

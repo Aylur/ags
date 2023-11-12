@@ -1,35 +1,38 @@
+import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import { runCmd } from '../utils.js';
-import { type Command } from './widget.js';
+import Service from '../service.js';
 
-export interface EntryProps extends Gtk.Entry.ConstructorProperties {
-    onAccept?: Command
-    onChange?: Command
+export interface EntryProps extends BaseProps<AgsEntry>, Gtk.Entry.ConstructorProperties {
+    on_accept?: (self: AgsEntry) => void | unknown
+    on_change?: (self: AgsEntry) => void | unknown
 }
 
-export default class AgsEntry extends Gtk.Entry {
-    static { GObject.registerClass(this); }
+export default class AgsEntry extends AgsWidget(Gtk.Entry) {
+    static {
+        GObject.registerClass({
+            GTypeName: 'AgsEntry',
+            Properties: {
+                'on-accept': Service.pspec('on-accept', 'jsobject', 'rw'),
+                'on-change': Service.pspec('on-change', 'jsobject', 'rw'),
+            },
+        }, this);
+    }
 
-    onAccept: Command;
-    onChange: Command;
+    constructor(props: EntryProps = {}) {
+        super(props);
 
-    constructor({ onAccept = '', onChange = '', ...rest }: EntryProps = {}) {
-        super(rest);
+        this.connect('activate', () => this.on_accept?.(this));
+        this.connect('notify::text', () => this.on_change?.(this));
+    }
 
-        this.onAccept = onAccept;
-        this.onChange = onChange;
+    get on_accept() { return this._get('on-accept'); }
+    set on_accept(callback: EntryProps['on_accept']) {
+        this._set('on-accept', callback);
+    }
 
-        this.connect('activate', () => {
-            typeof this.onAccept === 'function'
-                ? this.onAccept(this)
-                : runCmd(this.onAccept.replace(/\{\}/g, this.text || ''));
-        });
-
-        this.connect('notify::text', ({ text }, event) => {
-            typeof this.onChange === 'function'
-                ? this.onChange(this, event)
-                : runCmd(this.onChange.replace(/\{\}/g, text || ''));
-        });
+    get on_change() { return this._get('on-change'); }
+    set on_change(callback: EntryProps['on_change']) {
+        this._set('on-change', callback);
     }
 }
