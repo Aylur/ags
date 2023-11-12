@@ -1,9 +1,12 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import Service from '../service.js';
-import { execAsync } from '../utils.js';
 
+Gio._promisify(Gio.DataInputStream.prototype, 'read_upto_async');
 const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
+
+const socket = (path: string) => new Gio.SocketClient()
+    .connect(new Gio.UnixSocketAddress({ path }), null);
 
 export class Active extends Service {
     updateProperty(prop: string, value: unknown): void {
@@ -102,6 +105,7 @@ export class Hyprland extends Service {
     private _workspaces: Map<number, object>;
     private _clients: Map<string, object>;
     private _decoder = new TextDecoder();
+    private _encoder = new TextEncoder();
 
     get active() { return this._active; }
     get monitors() { return Array.from(this._monitors.values()); }
@@ -127,10 +131,7 @@ export class Hyprland extends Service {
 
         this._watchSocket(new Gio.DataInputStream({
             close_base_stream: true,
-            base_stream: new Gio.SocketClient()
-                .connect(new Gio.UnixSocketAddress({
-                    path: `/tmp/hypr/${HIS}/.socket2.sock`,
-                }), null)
+            base_stream: socket(`/tmp/hypr/${HIS}/.socket2.sock`)
                 .get_input_stream(),
         }));
 
@@ -152,9 +153,28 @@ export class Hyprland extends Service {
         });
     }
 
+    async sendMessage(cmd: string) {
+        const connection = socket(`/tmp/hypr/${HIS}/.socket.sock`);
+
+        connection
+            .get_output_stream()
+            .write(this._encoder.encode(cmd), null);
+
+        const inputStream = new Gio.DataInputStream({
+            close_base_stream: true,
+            base_stream: connection.get_input_stream(),
+        });
+
+        return inputStream.read_upto_async('\x04', -1, 0, null)
+            .then(result => {
+                const [response] = result as unknown as [string, number];
+                return response;
+            });
+    }
+
     private async _syncMonitors() {
         try {
-            const monitors = await execAsync('hyprctl -j monitors');
+            const monitors = await this.sendMessage('j/monitors');
             this._monitors = new Map();
             const json = JSON.parse(monitors) as {
                 id: number
@@ -181,7 +201,7 @@ export class Hyprland extends Service {
 
     private async _syncWorkspaces() {
         try {
-            const workspaces = await execAsync('hyprctl -j workspaces');
+            const workspaces = await this.sendMessage('j/workspaces');
             this._workspaces = new Map();
             const json = JSON.parse(workspaces) as { id: number }[];
             json.forEach(ws => {
@@ -195,7 +215,7 @@ export class Hyprland extends Service {
 
     private async _syncClients() {
         try {
-            const clients = await execAsync('hyprctl -j clients');
+            const clients = await this.sendMessage('j/clients');
             this._clients = new Map();
             const json = JSON.parse(clients) as { address: string }[];
             json.forEach(client => {
