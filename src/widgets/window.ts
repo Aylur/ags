@@ -68,11 +68,13 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
     }
 
     get monitor(): Gdk.Monitor { return this._get('monitor'); }
-    set monitor(monitor: number) {
-        if (monitor < 0)
+    set monitor(monitor: number | Gdk.Monitor) {
+        if (typeof monitor === "number" && monitor < 0)
             return;
 
-        const m = Gdk.Display.get_default()?.get_monitor(monitor);
+        const m = monitor instanceof Gdk.Monitor
+            ? LayerShell.set_monitor(this, monitor)
+            : Gdk.Display.get_default()?.get_monitor(monitor);
         if (m) {
             LayerShell.set_monitor(this, m);
             this._set('monitor', monitor);
