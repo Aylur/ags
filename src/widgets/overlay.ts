@@ -21,20 +21,18 @@ export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
 
     constructor(props: OverlayProps = {}) { super(props); }
 
-    get pass_through() {
-        return this.get_children()
-            .filter(ch => ch !== this.child)
-            .map(ch => this.get_overlay_pass_through(ch))
-            .every(p => p === true);
+    private _updatePassThrough() {
+        this.get_children().forEach(ch =>
+            this.set_overlay_pass_through(ch, this._get('pass-through')));
     }
 
+    get pass_through() { return this._get('pass-through'); }
     set pass_through(passthrough: boolean) {
         if (this.pass_through === passthrough)
             return;
 
-        this.get_children().forEach(ch =>
-            this.set_overlay_pass_through(ch, passthrough));
-
+        this._set('pass-through', passthrough);
+        this._updatePassThrough();
         this.notify('pass-through');
     }
 
@@ -52,11 +50,7 @@ export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
             .forEach(ch => this.remove(ch));
 
         overlays.forEach(ch => this.add_overlay(ch));
-
-        // reset passthrough
-        this.get_children().forEach(ch =>
-            this.set_overlay_pass_through(ch, this.pass_through));
-
+        this._updatePassThrough();
         this.notify('overlays');
     }
 }

@@ -8,3 +8,7 @@
 ## Breaking Changes
 
 - feat: Window.exclusivity
+
+## Fixes
+
+- overlay pass-through #168
