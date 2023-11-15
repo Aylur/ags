@@ -13,6 +13,7 @@ interface Config {
     windows?: Gtk.Window[]
     style?: string
     notificationPopupTimeout: number
+    notificationForceTimeout: boolean
     cacheNotificationActions: boolean
     closeWindowDelay: { [key: string]: number }
     maxStreamVolume: number
@@ -183,6 +184,7 @@ export class App extends Gtk.Application {
             const config = mod.default as Config;
             config.closeWindowDelay ||= {};
             config.notificationPopupTimeout ||= 3000;
+            config.notificationForceTimeout ||= false;
             config.maxStreamVolume ||= 1.5;
             config.cacheNotificationActions ||= false;
             this._config = config;
