@@ -88,7 +88,10 @@ export class BluetoothDevice extends Service {
 
 export class Bluetooth extends Service {
     static {
-        Service.register(this, {}, {
+        Service.register(this, {
+            'device-added': ['string'],
+            'device-removed': ['string'],
+        }, {
             'devices': ['jsobject'],
             'connected-devices': ['jsobject'],
             'enabled': ['boolean', 'rw'],
@@ -143,6 +146,7 @@ export class Bluetooth extends Service {
         d.connect('notify::connected', () => this.notify('connected-devices'));
         this._devices.set(device.address, d);
         this.changed('devices');
+        this.emit('device-added', device.address);
     }
 
     // @ts-expect-error
@@ -155,6 +159,7 @@ export class Bluetooth extends Service {
         this.notify('devices');
         this.notify('connected-devices');
         this.emit('changed');
+        this.emit('device-removed', device.address);
     }
 
     connectDevice(
@@ -171,9 +176,12 @@ export class Bluetooth extends Service {
                 try {
                     const s = client.connect_service_finish(res);
                     callback(s);
+
                     this.changed('connected-devices');
                 } catch (error) {
-                    console.error(error as Error);
+                    if (error instanceof Error)
+                        console.error(error.message);
+
                     callback(false);
                 }
             },
