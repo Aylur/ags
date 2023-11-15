@@ -1,6 +1,7 @@
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib?version=2.0';
+import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 import { interval } from '../utils.js';
 import { Variable } from '../variable.js';
@@ -12,6 +13,42 @@ type KebabCase<S extends string> = S extends `${infer Prefix}_${infer Suffix}`
 type OnlyString<S extends string | unknown> = S extends string ? S : never;
 
 const aligns = ['fill', 'start', 'end', 'center', 'baseline'] as const;
+export type Cursor =
+    | 'default'
+    | 'help'
+    | 'pointer'
+    | 'context-menu'
+    | 'progress'
+    | 'wait'
+    | 'cell'
+    | 'crosshair'
+    | 'text'
+    | 'vertical-text'
+    | 'alias'
+    | 'copy'
+    | 'no-drop'
+    | 'move'
+    | 'not-allowed'
+    | 'grab'
+    | 'grabbing'
+    | 'all-scroll'
+    | 'col-resize'
+    | 'row-resize'
+    | 'n-resize'
+    | 'e-resize'
+    | 's-resize'
+    | 'w-resize'
+    | 'ne-resize'
+    | 'nw-resize'
+    | 'sw-resize'
+    | 'se-resize'
+    | 'ew-resize'
+    | 'ns-resize'
+    | 'nesw-resize'
+    | 'nwse-resize'
+    | 'zoom-in'
+    | 'zoom-out'
+
 export type Align = typeof aligns[number];
 
 export type Property = [prop: string, value: unknown];
@@ -56,6 +93,8 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                     'css': Service.pspec('css', 'string', 'rw'),
                     'hpack': Service.pspec('hpack', 'string', 'rw'),
                     'vpack': Service.pspec('vpack', 'string', 'rw'),
+                    'cursor': Service.pspec('cursor', 'string', 'rw'),
+
                     // order of these matter
                     'properties': pspec('properties'),
                     'setup': pspec('setup'),
@@ -63,6 +102,33 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                     'binds': pspec('binds'),
                 },
             }, this);
+        }
+
+        _init(config?: Gtk.Widget.ConstructorProperties): void {
+            super._init(config);
+
+            this.connect('destroy', () => {
+                this._destroyed = true;
+            });
+
+            this.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK);
+            this.add_events(Gdk.EventMask.LEAVE_NOTIFY_MASK);
+
+            const display = Gdk.Display.get_default();
+
+            this.connect('enter-notify-event', () => {
+                if (display) {
+                    const cursor = Gdk.Cursor.new_from_name(display, this.cursor);
+                    this.get_window()?.set_cursor(cursor);
+                }
+            });
+
+            this.connect('leave-notify-event', () => {
+                if (display) {
+                    const cursor = Gdk.Cursor.new_from_name(display, 'default');
+                    this.get_window()?.set_cursor(cursor);
+                }
+            });
         }
 
         _destroyed = false;
@@ -288,5 +354,8 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             else
                 console.error(Error(`can't set child on ${this}`));
         }
+
+        set cursor(cursor: Cursor) { this._set('cursor', cursor); }
+        get cursor() { return this._get('cursor') || 'default'; }
     };
 }
