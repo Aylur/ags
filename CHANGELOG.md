@@ -4,6 +4,7 @@
 
 - add: notificationForceTimeout option
 - add: bluetooth device-added, device-removed signal
+- add: cursor property
 
 ## Breaking Changes
 
