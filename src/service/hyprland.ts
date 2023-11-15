@@ -195,7 +195,8 @@ export class Hyprland extends Service {
             });
             this.notify('monitors');
         } catch (error) {
-            console.error(error as Error);
+            if (error instanceof Error)
+                console.error(error.message);
         }
     }
 
@@ -209,7 +210,8 @@ export class Hyprland extends Service {
             });
             this.notify('workspaces');
         } catch (error) {
-            console.error(error as Error);
+            if (error instanceof Error)
+                console.error(error.message);
         }
     }
 
@@ -223,7 +225,8 @@ export class Hyprland extends Service {
             });
             this.notify('clients');
         } catch (error) {
-            console.error(error as Error);
+            if (error instanceof Error)
+                console.error(error.message);
         }
     }
 
@@ -325,7 +328,8 @@ export class Hyprland extends Service {
                     break;
             }
         } catch (error) {
-            console.error(error as Error);
+            if (error instanceof Error)
+                console.error(error.message);
         }
 
         this.emit('changed');
