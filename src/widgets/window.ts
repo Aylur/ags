@@ -9,18 +9,22 @@ const { GtkLayerShell: LayerShell } = imports.gi;
 
 const layers = ['background', 'bottom', 'top', 'overlay'] as const;
 const anchors = ['left', 'right', 'top', 'bottom'] as const;
-type Layer = typeof layers[number]
-type Anchor = typeof anchors[number]
+type Layer = typeof layers[number];
+type Anchor = typeof anchors[number];
+type Exclusivity = 'normal' | 'ignore' | 'exclusive';
 
 export interface WindowProps extends BaseProps<AgsWindow>, Gtk.Window.ConstructorProperties {
     anchor?: Anchor[]
-    exclusive?: boolean
+    exclusivity?: Exclusivity
     focusable?: boolean
     layer?: Layer
     margins?: number[]
     monitor?: number
     popup?: boolean
     visible?: boolean
+
+    // FIXME: deprecated
+    exclusive?: boolean
 }
 
 export default class AgsWindow extends AgsWidget(Gtk.Window) {
@@ -30,6 +34,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
             Properties: {
                 'anchor': Service.pspec('anchor', 'jsobject', 'rw'),
                 'exclusive': Service.pspec('exclusive', 'boolean', 'rw'),
+                'exclusivity': Service.pspec('exclusivity', 'string', 'rw'),
                 'focusable': Service.pspec('focusable', 'boolean', 'rw'),
                 'layer': Service.pspec('layer', 'string', 'rw'),
                 'margins': Service.pspec('margins', 'jsobject', 'rw'),
@@ -43,7 +48,8 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
     // so we can't rely on gobject constructor
     constructor({
         anchor = [],
-        exclusive = false,
+        exclusive,
+        exclusivity = 'normal',
         focusable = false,
         layer = 'top',
         margins = [],
@@ -57,6 +63,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         LayerShell.set_namespace(this, this.name);
 
         this.anchor = anchor;
+        this.exclusivity = exclusivity;
         this.exclusive = exclusive;
         this.focusable = focusable;
         this.layer = layer;
@@ -82,8 +89,13 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         console.error(`Could not find monitor with id: ${monitor}`);
     }
 
+    // FIXME: deprecated
     get exclusive() { return LayerShell.auto_exclusive_zone_is_enabled(this); }
-    set exclusive(exclusive: boolean) {
+    set exclusive(exclusive: boolean | undefined) {
+        if (exclusive === undefined)
+            return;
+
+        console.error('Window.exclusive is DEPRECATED, use Window.exclusivity');
         if (this.exclusive === exclusive)
             return;
 
@@ -92,6 +104,41 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
             : LayerShell.set_exclusive_zone(this, 0);
 
         this.notify('exclusive');
+    }
+
+    get exclusivity(): Exclusivity {
+        if (LayerShell.auto_exclusive_zone_is_enabled(this))
+            return 'exclusive';
+
+        if (LayerShell.get_exclusive_zone(this) === -1)
+            return 'ignore';
+
+        return 'normal';
+    }
+
+    set exclusivity(exclusivity: Exclusivity) {
+        if (this.exclusivity === exclusivity)
+            return;
+
+        switch (exclusivity) {
+            case 'normal':
+                LayerShell.set_exclusive_zone(this, 0);
+                break;
+
+            case 'ignore':
+                LayerShell.set_exclusive_zone(this, -1);
+                break;
+
+            case 'exclusive':
+                LayerShell.auto_exclusive_zone_enable(this);
+                break;
+
+            default:
+                console.error(Error('wrong valur for exclusive'));
+                break;
+        }
+
+        this.notify('exclusivity');
     }
 
     get layer() { return layers[LayerShell.get_layer(this)] as Layer; }
