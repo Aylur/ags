@@ -108,10 +108,6 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         _init(config?: Gtk.Widget.ConstructorProperties): void {
             super._init(config);
 
-            this.connect('destroy', () => {
-                this._destroyed = true;
-            });
-
             this.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK);
             this.add_events(Gdk.EventMask.LEAVE_NOTIFY_MASK);
 
