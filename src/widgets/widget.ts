@@ -71,6 +71,7 @@ export interface BaseProps<Self> extends Gtk.Widget.ConstructorProperties {
     css?: string
     hpack?: Align
     vpack?: Align
+    cursor?: Cursor
     connections?: Connection<Self>[]
     properties?: Property[]
     binds?: Bind[],
@@ -114,23 +115,18 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             this.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK);
             this.add_events(Gdk.EventMask.LEAVE_NOTIFY_MASK);
 
-            const display = Gdk.Display.get_default();
-
             this.connect('enter-notify-event', () => {
-                if (display) {
-                    const cursor = Gdk.Cursor.new_from_name(display, this.cursor);
-                    this.get_window()?.set_cursor(cursor);
-                }
+                this.hovered = true;
+                this._updateCursor();
             });
 
             this.connect('leave-notify-event', () => {
-                if (display) {
-                    const cursor = Gdk.Cursor.new_from_name(display, 'default');
-                    this.get_window()?.set_cursor(cursor);
-                }
+                this.hovered = false;
+                this._updateCursor();
             });
         }
 
+        hovered = false;
         _destroyed = false;
 
         // defining private fields for typescript causes
@@ -355,7 +351,26 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 console.error(Error(`can't set child on ${this}`));
         }
 
-        set cursor(cursor: Cursor) { this._set('cursor', cursor); }
-        get cursor() { return this._get('cursor') || 'default'; }
+        private _updateCursor() {
+            if (!this.cursor)
+                return;
+
+            const display = Gdk.Display.get_default();
+
+            if (this.hovered && display) {
+                const cursor = Gdk.Cursor.new_from_name(display, this.cursor);
+                this.get_window()?.set_cursor(cursor);
+            }
+            else if (display) {
+                const cursor = Gdk.Cursor.new_from_name(display, 'default');
+                this.get_window()?.set_cursor(cursor);
+            }
+        }
+
+        get cursor() { return this._get('cursor'); }
+        set cursor(cursor: Cursor) {
+            this._set('cursor', cursor);
+            this._updateCursor();
+        }
     };
 }
