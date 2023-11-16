@@ -10,6 +10,9 @@
         "typescript": "^5.1.0"
     },
     "devDependencies": {
+        "@girs/edataserver-1.2": "^1.2.0-3.2.4",
+        "@girs/icalglib-3.0": "^3.0.0-3.2.4",
+        "@girs/ecal-2.0": "^2.0.0-3.2.4",
         "@girs/dbusmenugtk3-0.4": "^0.4.0-3.2.0",
         "@girs/gtk-3.0": "^3.24.39-3.2.2",
         "@girs/gvc-1.0": "^1.0.0-3.1.0",

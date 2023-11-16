@@ -132,4 +132,6 @@ Widget.Spinner = Spinner;
 export const FlowBox = subclass<typeof Gtk.FlowBox, Gtk.FlowBox.ConstructorProperties>(Gtk.FlowBox);
 Widget.FlowBox = FlowBox;
 
+export const CheckButton = subclass<typeof Gtk.CheckButton, Gtk.CheckButton.ConstructorProperties>(Gtk.CheckButton);
+Widget.CheckButton = CheckButton;
 export default Widget;
