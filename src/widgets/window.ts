@@ -214,17 +214,28 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         if (this.popup === popup)
             return;
 
-        if (this.popup)
-            this.disconnect(this._get('popup'));
+        if (this.popup) {
+            const [esc, click] = this._get<[number, number]>('popup');
+            this.disconnect(esc);
+            this.disconnect(click);
+        }
 
         if (popup) {
-            this._set('popup', this.connect('key-press-event', (_, event: Gdk.Event) => {
+            const esc = this.connect('key-press-event', (_, event: Gdk.Event) => {
                 if (event.get_keyval()[1] === Gdk.KEY_Escape) {
                     App.getWindow(this.name!)
                         ? App.closeWindow(this.name!)
                         : this.hide();
                 }
-            }));
+            });
+
+            const click = this.connect('button-release-event', () => {
+                const [x, y] = this.get_pointer();
+                if (x === 0 && y === 0)
+                    App.closeWindow(this.name!);
+            });
+
+            this._set('popup', [esc, click]);
         }
     }
 
