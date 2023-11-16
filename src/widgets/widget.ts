@@ -71,6 +71,7 @@ export interface BaseProps<Self> extends Gtk.Widget.ConstructorProperties {
     css?: string
     hpack?: Align
     vpack?: Align
+	cursor?: Cursor,
     connections?: Connection<Self>[]
     properties?: Property[]
     binds?: Bind[],

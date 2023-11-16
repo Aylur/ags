@@ -60,6 +60,9 @@ export default class AgsButton extends AgsWidget(Gtk.Button) {
 
     constructor(props: ButtonProps = {}) {
         super(props);
+
+        this.cursor = this.cursor !== 'default' ? this.cursor : 'pointer';
+
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
 
