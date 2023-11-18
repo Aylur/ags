@@ -134,7 +134,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
                 break;
 
             default:
-                console.error(Error('wrong valur for exclusive'));
+                console.error(Error('wrong value for exclusivity'));
                 break;
         }
 
