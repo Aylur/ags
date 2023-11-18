@@ -347,7 +347,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 console.error(Error(`can't set child on ${this}`));
         }
 
-        private _updateCursor() {
+        _updateCursor() {
             if (!this.cursor)
                 return;
 
