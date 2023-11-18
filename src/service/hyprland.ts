@@ -303,6 +303,7 @@ export class Hyprland extends Service {
                     await this._syncWorkspaces();
                     this._clients.delete('0x' + argv[0]);
                     this.emit('client-removed', '0x' + argv[0]);
+                    this.notify('clients');
                     break;
 
                 case 'urgent':
