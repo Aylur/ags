@@ -176,6 +176,14 @@ export class TrayItem extends Service {
                 Object.entries(properties).map(([propertyName, value]) => {
                     this._proxy.set_cached_property(propertyName, value);
                 });
+
+                if (this._proxy.IconThemePath) {
+                    if (!this._iconTheme)
+                        this._iconTheme = Gtk.IconTheme.new();
+
+                    this._iconTheme.set_search_path([this._proxy.IconThemePath]);
+                }
+
                 this._notify();
             },
         );
