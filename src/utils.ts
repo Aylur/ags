@@ -168,7 +168,7 @@ export function exec(cmd: string) {
 export function subprocess(
     cmd: string | string[],
     callback: (out: string) => void,
-    onError = console.error,
+    onError = logError,
     bind?: Gtk.Widget,
 ) {
     try {
