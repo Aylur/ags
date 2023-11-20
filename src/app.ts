@@ -2,7 +2,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
+import Service from './service.js';
 import { timeout } from './utils.js';
 import { loadInterfaceXML } from './utils.js';
 
@@ -17,18 +17,16 @@ interface Config {
     cacheNotificationActions: boolean
     closeWindowDelay: { [key: string]: number }
     maxStreamVolume: number
+    onWindowToggled?: (windowName: string, visible: boolean) => void,
+    onConfigParsed?: () => void,
 }
 
 export class App extends Gtk.Application {
     static {
-        GObject.registerClass({
-            Signals: {
-                'window-toggled': {
-                    param_types: [GObject.TYPE_STRING, GObject.TYPE_BOOLEAN],
-                },
-                'config-parsed': {},
-            },
-        }, this);
+        Service.register(this, {
+            'window-toggled': ['string', 'boolean'],
+            'config-parsed': [],
+        });
     }
 
     private _dbus!: Gio.DBusExportedObject;
@@ -207,7 +205,11 @@ export class App extends Gtk.Application {
                 return;
             }
 
+            if (typeof config.onWindowToggled === 'function')
+                this.connect('window-toggled', (_, n, v) => config.onWindowToggled!(n, v));
+
             config.windows?.forEach(this.addWindow.bind(this));
+            config.onConfigParsed?.();
 
             this.emit('config-parsed');
         } catch (err) {
