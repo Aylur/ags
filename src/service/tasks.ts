@@ -91,53 +91,91 @@ class Task extends Service {
         );
     }
 
-    private _task;
+    private _source;
     private _client;
     private _parentTask?: string;
     private _subTasks = new Set<string>();
 
-    constructor(task: ECal.Component, client: ECal.Client) {
+    constructor(source: ECal.Component, client: ECal.Client) {
         super();
 
-        this._task = task;
+        this._source = source;
         this._client = client;
     }
 
-    get uid() {
-        return this._task.get_uid();
+    get uid() { return this._source.get_uid(); }
+    get summary() { return this._source.get_summary()?.get_value()  || '';}
+    set summary(summary: string) {this._source.set_summary(new ECal.ComponentText(summary, null));}
+    get location() { return this._source.get_location() || '';}
+    set location(location: string) { this._source.set_location(location);}
+    get priority() {return this._source.get_priority();}
+    set priority(priority) {this._source.set_priority(priority);}
+    get percent_complete() {return this._source.get_percent_complete();}
+    set percent_complete(percent) {this._source.set_percent_complete(percent);}
+    get dtstart() {
+        const dtstart = this._source.get_dtstart();
+        if (!dtstart)
+            return undefined;
+        return new Date(dtstart.get_value().as_timet() * 1000);
     }
 
-    get summary() {
-        return this._task.get_summary()?.get_value();
+    set dtstart(dtstart :Date | undefined) {
+        if (!dtstart) {
+            this._source.set_dtstart(null);
+        }
+        else {
+            const icaltime = ICalGLib.Time.new_from_timet_with_zone(dtstart.getTime()/1000, 0, null);
+            const ecaldate = new ECal.ComponentDateTime(icaltime, null);
+            this._source.set_dtstart(ecaldate);
+        }
     }
 
-    get subTasks() {
-        return this._subTasks;
+    get due() {
+        const due = this._source.get_due();
+        if (!due)
+            return undefined;
+        return new Date(due.get_value().as_timet() * 1000);
     }
 
-    get parentTask() {
-        return this._parentTask;
+    set due(due :Date | undefined) {
+        if (!due) {
+            this._source.set_due(null);
+        }
+        else {
+            const icaltime = ICalGLib.Time.new_from_timet_with_zone(due.getTime()/1000, 0, null);
+            const ecaldate = new ECal.ComponentDateTime(icaltime, null);
+            this._source.set_due(ecaldate);
+        }
     }
 
-    set parentTask(parentTask) {
-        this._parentTask = parentTask;
+    get description() {
+        //Tasks can have at most one description, so just get [0]
+        const descriptions = this._source.get_descriptions();
+        if (!descriptions)
+            return '';
+        return descriptions[0]?.get_value() || ''; }
+
+    set description(desc: string) {
+        this._source.set_descriptions([new ECal.ComponentText(desc, null)]);
     }
 
-    get completed() {
-        return this._task.get_status() === ICalGLib.PropertyStatus.COMPLETED;
+    get source() {return this._source;}
+    set source(source) {
+        //maybe detect what has changed and emit notify signals?
+        this._source = source;
+        this.emit('changed');
     }
 
-    set completed(completed) {
-        if (completed === this.completed)
-            return;
-        const status = completed
-            ? ICalGLib.PropertyStatus.COMPLETED
-            : ICalGLib.PropertyStatus.NONE;
-        this._task.set_status(status);
-        _modifyObjects(
+    get subTasks() { return this._subTasks;}
+    get parentTask() { return this._parentTask;}
+    set parentTask(parentTask) { this._parentTask = parentTask; }
+    get status() {return this._source.get_status();}
+    set status(status) {this._source.set_status(status);}
+    async save() {
+        return _modifyObjects(
             this._client,
             // @ts-ignore
-            [this._task.get_icalcomponent()],
+            [this._source.get_icalcomponent()],
             ECal.ObjModType.THIS,
             ECal.OperationFlags.NONE,
         );
@@ -148,7 +186,11 @@ class TaskList extends Service {
     static {
         Service.register(
             this,
-            {},
+            {
+                'task-added': ['string'],
+                'task-removed': ['string'],
+                'task-changed': ['string'],
+            },
             {
                 'tasks': ['jsobject', 'r'],
             },
@@ -191,19 +233,18 @@ class TaskList extends Service {
         const [_, view] = await _getView(this._client, '#t');
         this._clientView = view;
         view.connect('objects-added', (client: ECal.ClientView, icals: ICalGLib.Component[]) =>
-            this._TasksAdded(client, icals).catch(logError));
+            this._TasksAdded(client, icals));
         view.connect('objects-removed', this._TasksRemoved.bind(this));
         view.connect('objects-modified', this._TasksModified.bind(this));
 
         view.start();
     }
 
-    async _TasksAdded(unused_view: ECal.ClientView, unused_icals: ICalGLib.Component[]) {
-        //@ts-ignore
-        const [_, tasks] =
-            await _getObjectListAsComps(this._client, '#t') as [boolean, ECal.Component[]];
-        tasks.forEach(t => {
-            this._tasks.set(t.get_uid(), new Task(t, this._client));
+    _TasksAdded(unused_view: ECal.ClientView, icals: ICalGLib.Component[]) {
+        icals.forEach(ical => {
+            const task = new Task(ECal.Component.new_from_icalcomponent(ical), this._client);
+            this._tasks.set(task.uid, task);
+            this.emit('task-added', task.uid);
         });
         this._setupHierarchy();
         this.notify('tasks');
@@ -213,18 +254,18 @@ class TaskList extends Service {
     _TasksRemoved(view: ECal.ClientView, uids: ECal.ComponentId[]) {
         uids.forEach(uid => {
             this._tasks.delete(uid.get_uid());
+            this.emit('task-removed', uid.get_uid());
         });
         this._setupHierarchy();
         this.notify('tasks');
         this.emit('changed');
     }
 
-    async _TasksModified(unused_view: ECal.ClientView, unused_icals: ICalGLib.Component[]) {
-        //@ts-ignore
-        const [_, tasks] =
-            await _getObjectListAsComps(this._client, '#t') as [boolean, ECal.Component[]];
-        tasks.forEach(t => {
-            this._tasks.set(t.get_uid(), new Task(t, this._client));
+    _TasksModified(unused_view: ECal.ClientView, icals: ICalGLib.Component[]) {
+        icals.forEach(ical => {
+            const ecal = ECal.Component.new_from_icalcomponent(ical);
+            this._tasks.get(ecal.get_uid()).source = ecal;
+            this.emit('task-changed', ecal.get_uid());
         });
         this._setupHierarchy();
         this.notify('tasks');
@@ -237,7 +278,7 @@ class TaskList extends Service {
             task._subTasks.clear();
         });
         this._tasks.forEach(task => {
-            const related = task._task
+            const related = task.source
                 .get_icalcomponent()
                 ?.get_first_property(ICalGLib.PropertyKind.RELATEDTO_PROPERTY);
             if (!related)
@@ -274,7 +315,6 @@ class TaskService extends Service {
 
     async _initTaskLists() {
         this._sourceRegistry = await _getSourceRegistry() as EDataServer.SourceRegistry;
-        // @ts-ignore
         this._sourceRegistry.connect(
             'source-added',
             (self, source) => {
@@ -282,7 +322,6 @@ class TaskService extends Service {
                     this._TaskListAdded(self, source);
             },
         );
-        // @ts-ignore
         this._sourceRegistry.connect(
             'source-removed',
             (self, source) => {
@@ -290,7 +329,6 @@ class TaskService extends Service {
                     this._TaskListRemoved(self, source);
             },
         );
-        // @ts-ignore
         this._sourceRegistry.connect(
             'source-changed',
             (self, source) => {
@@ -298,7 +336,6 @@ class TaskService extends Service {
                     this._TaskListChanged(self, source);
             },
         );
-        // @ts-ignore
         const sources = this._sourceRegistry.list_sources(
             EDataServer.SOURCE_EXTENSION_TASK_LIST,
         );
