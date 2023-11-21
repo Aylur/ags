@@ -22,7 +22,7 @@ async function _modifyObjects(
     return new Promise((resolve, reject) => {
         client.modify_objects(icalcomps, mod, flags, null, (client, res) => {
             try {
-                resolve(client.modify_object_finish(res));
+                resolve(client.modify_objects_finish(res));
             } catch (e) {
                 reject(e);
             }
@@ -30,11 +30,31 @@ async function _modifyObjects(
     });
 }
 
-async function _getObjectListAsComps(client: ECal.Client, sexp: string) {
+async function _removeObject(
+    client: ECal.Client,
+    uid: string,
+    rid: string | null,
+    mod: ECal.ObjModType,
+    flags: ECal.OperationFlags) {
     return new Promise((resolve, reject) => {
-        client.get_object_list_as_comps(sexp, null, (client, res) => {
+        client.remove_object(uid, rid, mod, flags, null, (client, res) => {
             try {
-                resolve(client.get_object_list_as_comps_finish(res));
+                resolve(client.remove_object_finish(res));
+            } catch (e) {
+                reject(e);
+            }
+        });
+    });
+}
+
+async function _createObject(
+    client: ECal.Client,
+    icalcomp: ICalGLib.Component,
+    flags: ECal.OperationFlags) {
+    return new Promise((resolve, reject) => {
+        client.create_object(icalcomp, flags, null, (client, res) => {
+            try {
+                resolve(client.create_object_finish(res));
             } catch (e) {
                 reject(e);
             }
@@ -116,7 +136,8 @@ class Task extends Service {
         const dtstart = this._source.get_dtstart();
         if (!dtstart)
             return undefined;
-        return new Date(dtstart.get_value().as_timet() * 1000);
+        return new Date(
+            dtstart.get_value().as_timet_with_zone(ECal.util_get_system_timezone()) * 1000);
     }
 
     set dtstart(dtstart :Date | undefined) {
@@ -124,7 +145,9 @@ class Task extends Service {
             this._source.set_dtstart(null);
         }
         else {
-            const icaltime = ICalGLib.Time.new_from_timet_with_zone(dtstart.getTime()/1000, 0, null);
+            const icaltime = ICalGLib.Time.new_from_timet_with_zone(
+                dtstart.getTime()/1000, 0, ECal.util_get_system_timezone());
+            icaltime.set_timezone(ECal.util_get_system_timezone());
             const ecaldate = new ECal.ComponentDateTime(icaltime, null);
             this._source.set_dtstart(ecaldate);
         }
@@ -134,7 +157,7 @@ class Task extends Service {
         const due = this._source.get_due();
         if (!due)
             return undefined;
-        return new Date(due.get_value().as_timet() * 1000);
+        return new Date(due.get_value().as_timet_with_zone(ECal.util_get_system_timezone()) * 1000);
     }
 
     set due(due :Date | undefined) {
@@ -142,7 +165,9 @@ class Task extends Service {
             this._source.set_due(null);
         }
         else {
-            const icaltime = ICalGLib.Time.new_from_timet_with_zone(due.getTime()/1000, 0, null);
+            const icaltime = ICalGLib.Time.new_from_timet_with_zone(
+                due.getTime()/1000, 0, ECal.util_get_system_timezone());
+            icaltime.set_timezone(ECal.util_get_system_timezone());
             const ecaldate = new ECal.ComponentDateTime(icaltime, null);
             this._source.set_due(ecaldate);
         }
@@ -176,7 +201,7 @@ class Task extends Service {
             this._client,
             // @ts-ignore
             [this._source.get_icalcomponent()],
-            ECal.ObjModType.THIS,
+            ECal.ObjModType.ALL,
             ECal.OperationFlags.NONE,
         );
     }
@@ -224,6 +249,41 @@ class TaskList extends Service {
 
     get uid() {
         return this._source.uid;
+    }
+
+    deleteTask(uid: string) {
+        return _removeObject(
+            this._client, uid, null, ECal.ObjModType.ALL, ECal.OperationFlags.NONE);
+    }
+
+    //@ts-ignore
+    createTask({ summary, description, location, due, dtstart, priority, parentTask }) {
+        //there is most likely a better way, but I'm currently too stupid to see it.
+        const icalcomp = ICalGLib.Component.new_vtodo();
+        const timezone = ECal.util_get_system_timezone() || ICalGLib.Timezone.get_utc_timezone();
+        if (summary)
+            icalcomp.add_property(ICalGLib.Property.new_summary(summary));
+        if (description)
+            icalcomp.add_property(ICalGLib.Property.new_description(description));
+        if (location)
+            icalcomp.add_property(ICalGLib.Property.new_location(location));
+        if (priority)
+            icalcomp.add_property(ICalGLib.Property.new_priority(priority));
+        if (due) {
+            const due_time = ICalGLib.Time.new_from_timet_with_zone(
+                due.getTime() / 1000, 0, timezone);
+            due_time.set_timezone(timezone);
+            icalcomp.add_property(ICalGLib.Property.new_due(due_time));
+        }
+        if (dtstart) {
+            const dtstart_time = ICalGLib.Time.new_from_timet_with_zone(
+                dtstart.getTime() / 1000, 0, timezone);
+            dtstart_time.set_timezone(timezone);
+            icalcomp.add_property(ICalGLib.Property.new_dtstart(dtstart_time));
+        }
+        if (parentTask)
+            icalcomp.add_property(ICalGLib.Property.new_relatedto(parentTask));
+        return _createObject(this._client, icalcomp, ECal.OperationFlags.NONE);
     }
 
     async _initTaskList() {
