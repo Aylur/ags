@@ -7,7 +7,7 @@ import Service from '../service.js';
 type EventHandler = (self: AgsSlider, event: Gdk.Event) => void | unknown;
 const positions = ['left', 'right', 'top', 'bottom'] as const;
 type Position = typeof positions[number];
-type Mark = [number, string, Position];
+type Mark = [number, string?, Position?];
 export interface SliderProps extends BaseProps<AgsSlider>, Gtk.Scale.ConstructorProperties {
     on_change?: EventHandler,
     value?: number
@@ -109,7 +109,6 @@ export default class AgsSlider extends AgsWidget(Gtk.Scale) {
                 positionType = positions.findIndex(p => p === mark[2]);
             this.add_mark(mark[0], positionType, mark[1] || '');
         });
-
         this.notify('marks');
     }
 
