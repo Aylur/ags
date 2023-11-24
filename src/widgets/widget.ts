@@ -236,6 +236,11 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         ) {
             // @ts-expect-error readonly property
             const callback = () => this[prop] = transform(target[targetProp]);
+
+            const regex = /^[a-z-]*$/;
+            if (!regex.test(targetProp))
+                return console.warn(Error(`target prop ${targetProp} is not in kebab-case`));
+
             this.connectTo(target, callback, `notify::${targetProp}`);
             return this;
         }
