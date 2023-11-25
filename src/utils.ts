@@ -2,6 +2,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
+import Soup from 'gi://Soup?version=3.0';
 
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name.split('.').pop()}`;
@@ -249,4 +250,67 @@ export function subprocess(
         onError(e as Error);
         return null;
     }
+}
+
+export type GetFetchOptions = {
+    method: 'GET';
+    headers?: Record<string, string>;
+};
+
+export type PostFetchOptions = {
+    method: 'POST';
+    headers?: Record<string, string>;
+    data: object;
+};
+
+export type FetchOptions = GetFetchOptions | PostFetchOptions;
+
+export async function fetch(url: string, options?: FetchOptions): Promise<string> {
+    const session = new Soup.Session();
+
+    const effectiveOptions: FetchOptions = {
+        method: 'GET',
+        ...options,
+    };
+
+    const message = new Soup.Message({
+        method: effectiveOptions.method,
+        uri: GLib.Uri.parse(url, GLib.UriFlags.NONE),
+    });
+
+    const headers = message.get_request_headers();
+    if (effectiveOptions.headers) {
+        for (const [header, value] of Object.entries(effectiveOptions.headers))
+            headers.append(header, value);
+    }
+
+    if (effectiveOptions.method == 'POST') {
+        const optionsStringified = JSON.stringify(effectiveOptions.data);
+        message.set_request_body_from_bytes(null, new GLib.Bytes(new TextEncoder()
+            .encode(optionsStringified)));
+    }
+
+    const getErrorMessage = (error: unknown): string => {
+        if (error instanceof Error)
+            return error.message;
+        return 'Error unknown';
+    };
+
+    return new Promise((res, rej)  => {
+        session.send_and_read_async(message, GLib.PRIORITY_DEFAULT, null, (session, result) => {
+            if (message.get_status() !== Soup.Status.OK) {
+                rej(new Error(
+                    `Error: Fetching URL: '${message
+                        .get_uri().to_string()}' failed with Status Code ${message.status_code}`));
+                return;
+            }
+            try {
+                const asByteArr = session.send_and_read_finish(result).toArray();
+                const responseData = new TextDecoder('utf-8').decode(asByteArr);
+                res(responseData);
+            } catch (error) {
+                rej(new Error(`Error processing response data: ${getErrorMessage(error)}`));
+            }
+        });
+    });
 }
