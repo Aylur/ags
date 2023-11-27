@@ -7,6 +7,7 @@
 - add: cursor property
 - feat: window popup close on click away
 - add: config.onWindowToggled & config.onConfigParsed
+- add: marks property setter to slider #186
 
 ## Breaking Changes
 
