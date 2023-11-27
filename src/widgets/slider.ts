@@ -7,7 +7,7 @@ import Service from '../service.js';
 type EventHandler = (self: AgsSlider, event: Gdk.Event) => void | unknown;
 const positions = ['left', 'right', 'top', 'bottom'] as const;
 type Position = typeof positions[number];
-type Mark = [number, string?, Position?];
+type Mark = [number, string?, Position?] | number;
 export interface SliderProps extends BaseProps<AgsSlider>, Gtk.Scale.ConstructorProperties {
     on_change?: EventHandler,
     value?: number
@@ -28,7 +28,6 @@ export default class AgsSlider extends AgsWidget(Gtk.Scale) {
                 'min': Service.pspec('min', 'double', 'rw'),
                 'max': Service.pspec('max', 'double', 'rw'),
                 'step': Service.pspec('step', 'double', 'rw'),
-                'marks': Service.pspec('marks', 'jsobject', 'rw'),
                 'on-change': Service.pspec('on-change', 'jsobject', 'rw'),
             },
         }, this);
@@ -104,13 +103,18 @@ export default class AgsSlider extends AgsWidget(Gtk.Scale) {
     set marks(marks: Mark[]) {
         this.clear_marks();
         marks.forEach(mark => {
-            let positionType = Gtk.PositionType.TOP;
-            if (mark[2])
-                positionType = positions.findIndex(p => p === mark[2]);
-            this.add_mark(mark[0], positionType, mark[1] || '');
+            if (typeof mark === 'number') {
+                this.add_mark(mark, Gtk.PositionType.TOP, '');
+            }
+            else {
+                let positionType = Gtk.PositionType.TOP;
+                if (mark[2])
+                    positionType = positions.findIndex(p => p === mark[2]);
+                this.add_mark(mark[0], positionType, mark[1] || '');
+            }
         });
-        this.notify('marks');
     }
+
 
     get dragging() { return this._get('dragging'); }
     set dragging(dragging: boolean) { this._set('dragging', dragging); }
