@@ -1,4 +1,4 @@
-# Unreleased
+# 1.5.4
 
 ## Features
 
@@ -14,6 +14,7 @@
 ## Breaking Changes
 
 - feat: Window.exclusivity
+- deprecate: --run-promise cli flag
 
 ## Fixes
 
