@@ -76,7 +76,16 @@ export interface AgsProxy extends Gio.DBusProxy {
     InspectorRemote: () => void;
     QuitRemote: () => void;
     ToggleWindowSync: (name: string) => boolean;
-    RunJsSync: (js: string) => string;
+    RunFileRemote: (
+        js: string,
+        busName?: string,
+        objPath?: string) => void
+    RunJsRemote: (
+        js: string,
+        busName?: string,
+        objPath?: string) => void
+
+    // FIXME: deprecated
     RunPromiseRemote: (
         js: string,
         busName?: string,

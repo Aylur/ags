@@ -8,6 +8,8 @@
 - feat: window popup close on click away
 - add: config.onWindowToggled & config.onConfigParsed
 - add: marks property setter to slider #186
+- feat: --run-js async support
+- add: --run-file
 
 ## Breaking Changes
 

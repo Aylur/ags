@@ -20,8 +20,8 @@ OPTIONS:
     -b, --bus-name          Bus name of the process
     -i, --inspector         Open up the Gtk debug tool
     -t, --toggle-window     Show or hide a window
-    -r, --run-js            Evaluate given string as a function and execute it
-    -p, --run-promise       Evaluate and execute function as Promise
+    -r, --run-js            Execute string as an async function
+    -f, --run-file          Execute file as an async function
     --clear-cache           Remove ${Utils.CACHE_DIR}`;
 
 function isRunning(dbusName: string) {
@@ -44,9 +44,12 @@ export function main(args: string[]) {
         config: DEFAULT_CONF,
         inspector: false,
         runJs: '',
-        runPromise: '',
+        runFile: '',
         toggleWindow: '',
         quit: false,
+
+        // FIXME: deprecated
+        runPromise: '',
     };
 
     for (let i = 1; i < args.length; ++i) {
@@ -90,6 +93,13 @@ export function main(args: string[]) {
                 flags.runJs = args[++i];
                 break;
 
+            case 'run-file':
+            case '-f':
+            case '--run-file':
+                flags.runFile = args[++i];
+                break;
+
+            // FIXME: deprecated
             case 'run-promise':
             case '-p':
             case '--run-promise':
@@ -129,6 +139,10 @@ export function main(args: string[]) {
             if (flags.runJs)
                 app.RunJs(flags.runJs);
 
+            if (flags.runFile)
+                app.RunFile(flags.runFile);
+
+            // FIXME: deprecated
             if (flags.runPromise)
                 app.RunPromise(flags.runPromise);
 
@@ -136,7 +150,7 @@ export function main(args: string[]) {
                 app.Inspector();
         });
 
-        // @ts-expect-error
+        // @ts-expect-error missing type declaration
         return app.runAsync(null);
     }
     else {

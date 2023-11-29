@@ -3,7 +3,7 @@ import Gdk from 'gi://Gdk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Service from './service.js';
-import { timeout } from './utils.js';
+import { timeout, readFileAsync } from './utils.js';
 import { loadInterfaceXML } from './utils.js';
 
 const AgsIFace = (bus: string) =>
@@ -18,7 +18,7 @@ interface Config {
     closeWindowDelay: { [key: string]: number }
     maxStreamVolume: number
     onWindowToggled?: (windowName: string, visible: boolean) => void,
-    onConfigParsed?: () => void,
+    onConfigParsed?: (app: App) => void,
 }
 
 export class App extends Gtk.Application {
@@ -209,7 +209,7 @@ export class App extends Gtk.Application {
                 this.connect('window-toggled', (_, n, v) => config.onWindowToggled!(n, v));
 
             config.windows?.forEach(this.addWindow.bind(this));
-            config.onConfigParsed?.();
+            config.onConfigParsed?.(this);
 
             this.emit('config-parsed');
         } catch (err) {
@@ -233,25 +233,57 @@ export class App extends Gtk.Application {
         );
     }
 
-    RunJs(js: string): string {
-        return js.includes(';')
-            ? `${Function(js)()}`
-            : `${Function('return ' + js)()}`;
+    RunJs(js: string, clientBusName?: string, clientObjPath?: string) {
+        const fn = Function(`return (async function() {
+            ${js.includes(';') ? js : `return ${js}`}
+        })`);
+
+        const response = (out: unknown) => Gio.DBus.session.call(
+            clientBusName!, clientObjPath!, clientBusName!, 'Print',
+            new GLib.Variant('(s)', [`${out}`]),
+            null, Gio.DBusCallFlags.NONE, -1, null, null,
+        );
+
+        fn()()
+            .then((out: unknown) => {
+                if (clientBusName && clientObjPath)
+                    response(out);
+                else
+                    print(`${out}`);
+            })
+            .catch((err: Error) => {
+                console.error(err);
+                response(err);
+            });
+    }
+
+    RunFile(file: string, bus?: string, path?: string) {
+        readFileAsync(file)
+            .then(content => this.RunJs(content, bus, path))
+            .catch(logError);
     }
 
     RunPromise(js: string, busName?: string, objPath?: string) {
+        console.warn('--run-promise is DEPRECATED, ' +
+            ' use --run-js instead, which now supports await syntax');
+
+        const response = (out: unknown) => Gio.DBus.session.call(
+            busName!, objPath!, busName!, 'Print',
+            new GLib.Variant('(s)', [`${out}`]),
+            null, Gio.DBusCallFlags.NONE, -1, null, null,
+        );
+
         new Promise((res, rej) => Function('resolve', 'reject', js)(res, rej))
             .then(out => {
-                if (busName && objPath) {
-                    Gio.DBus.session.call(
-                        busName, objPath, busName, 'Print',
-                        new GLib.Variant('(s)', [`${out}`]),
-                        null, Gio.DBusCallFlags.NONE, -1, null, null,
-                    );
-                }
-                else { print(`${out}`); }
+                if (busName && objPath)
+                    response(out);
+                else
+                    print(`${out}`);
             })
-            .catch(err => console.error(err));
+            .catch(err => {
+                console.error(err);
+                response(response(err));
+            });
     }
 
     ToggleWindow(name: string) {
@@ -264,4 +296,5 @@ export class App extends Gtk.Application {
     Quit() { this.quit(); }
 }
 
-export default new App();
+export const app = new App;
+export default app;
