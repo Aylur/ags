@@ -1,3 +1,10 @@
+# Unreleased
+
+## Features
+- feat: support print from client with --run-js
+- feat: support shebang with --run-file
+
+
 # 1.5.4
 
 ## Features

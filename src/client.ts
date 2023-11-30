@@ -59,36 +59,23 @@ class Client extends Gtk.Application {
         );
     }
 
-    Print(str: string) {
+    Return(str: string) {
         print(str);
         this.quit();
-        return str;
     }
 
-    runJs(body: string) {
-        this._callback = () => this._proxy.RunJsRemote(
-            body,
-            this.application_id!,
-            this._objectPath,
-        );
-        this.run(null);
+    Print(str: string) {
+        print(str);
     }
 
-    runFile(file: string) {
-        this._callback = () => this._proxy.RunFileRemote(
-            file,
-            this.application_id!,
-            this._objectPath,
-        );
-        this.run(null);
-    }
+    // FIXME: promise deprecated
+    remote(method: 'Js' | 'Promise' | 'File', body: string) {
+        if (method === 'Promise') {
+            console.warn('--run-promise is DEPRECATED, ' +
+                ' use --run-js instead, which now supports await syntax');
+        }
 
-    // FIXME: deprecated
-    runPromise(body: string) {
-        console.warn('--run-promise is DEPRECATED, ' +
-            ' use --run-js instead, which now supports promises');
-
-        this._callback = () => this._proxy.RunPromiseRemote(
+        this._callback = () => this._proxy[`Run${method}Remote`](
             body,
             this.application_id!,
             this._objectPath,
@@ -112,10 +99,10 @@ export default function(bus: string, path: string, flags: Flags) {
         print(proxy.ToggleWindowSync(flags.toggleWindow));
 
     else if (flags.runJs)
-        client.runJs(flags.runJs);
+        client.remote('Js', flags.runJs);
 
     else if (flags.runFile)
-        client.runFile(flags.runFile);
+        client.remote('File', flags.runFile);
 
     else if (flags.inspector)
         proxy.InspectorRemote();
@@ -125,7 +112,7 @@ export default function(bus: string, path: string, flags: Flags) {
 
     // FIXME: deprecated
     else if (flags.runPromise)
-        client.runPromise(flags.runPromise);
+        client.remote('Promise', flags.runPromise);
 
     else
         print(`Ags with busname "${flags.busName}" is already running`);

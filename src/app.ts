@@ -234,55 +234,65 @@ export class App extends Gtk.Application {
     }
 
     RunJs(js: string, clientBusName?: string, clientObjPath?: string) {
-        const fn = Function(`return (async function() {
-            ${js.includes(';') ? js : `return ${js}`}
-        })`);
+        let fn;
 
-        const response = (out: unknown) => Gio.DBus.session.call(
-            clientBusName!, clientObjPath!, clientBusName!, 'Print',
+        const dbus = (method: 'Return' | 'Print') => (out: unknown) => Gio.DBus.session.call(
+            clientBusName!, clientObjPath!, clientBusName!, method,
             new GLib.Variant('(s)', [`${out}`]),
             null, Gio.DBusCallFlags.NONE, -1, null, null,
         );
 
-        fn()()
+        const response = dbus('Return');
+        const print = dbus('Print');
+        const client = clientBusName && clientObjPath;
+
+        try {
+            fn = Function(`return (async function(print) {
+                ${js.includes(';') ? js : `return ${js}`}
+            })`);
+        } catch (error) {
+            client ? response(error) : logError(error);
+            return;
+        }
+
+        fn()(print)
             .then((out: unknown) => {
-                if (clientBusName && clientObjPath)
-                    response(out);
-                else
-                    print(`${out}`);
+                client ? response(`${out}`) : print(`${out}`);
             })
             .catch((err: Error) => {
-                console.error(err);
-                response(err);
+                client ? response(`${err}`) : logError(err);
             });
     }
 
     RunFile(file: string, bus?: string, path?: string) {
         readFileAsync(file)
-            .then(content => this.RunJs(content, bus, path))
+            .then(content => {
+                if (content.startsWith('#!'))
+                    content = content.split('\n').slice(1).join('\n');
+
+                this.RunJs(content, bus, path);
+            })
             .catch(logError);
     }
 
+    // FIXME: deprecated
     RunPromise(js: string, busName?: string, objPath?: string) {
         console.warn('--run-promise is DEPRECATED, ' +
             ' use --run-js instead, which now supports await syntax');
 
+        const client = busName && objPath;
         const response = (out: unknown) => Gio.DBus.session.call(
-            busName!, objPath!, busName!, 'Print',
+            busName!, objPath!, busName!, 'Return',
             new GLib.Variant('(s)', [`${out}`]),
             null, Gio.DBusCallFlags.NONE, -1, null, null,
         );
 
         new Promise((res, rej) => Function('resolve', 'reject', js)(res, rej))
             .then(out => {
-                if (busName && objPath)
-                    response(out);
-                else
-                    print(`${out}`);
+                client ? response(`${out}`) : print(`${out}`);
             })
             .catch(err => {
-                console.error(err);
-                response(response(err));
+                client ? response(`${err}`) : console.error(`${err}`);
             });
     }
 
