@@ -68,7 +68,9 @@ export function main(args: string[]) {
 
             case 'clear-cache':
             case '--clear-cache':
-                Gio.File.new_for_path(Utils.CACHE_DIR).trash(null);
+                try {
+                    Gio.File.new_for_path(Utils.CACHE_DIR).trash(null);
+                } catch { /**/ }
                 break;
 
             case '-b':

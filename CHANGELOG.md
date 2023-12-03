@@ -3,7 +3,8 @@
 ## Features
 - feat: support print from client with --run-js
 - feat: support shebang with --run-file
-
+- add: Utils.monitorFile
+- feat: Utils.readFile and readFileAsync can take a Gio.File
 
 # 1.5.4
 
