@@ -93,35 +93,35 @@ Widget.subclass = subclass;
 export const Calendar = subclass<typeof Gtk.Calendar, Gtk.Calendar.ConstructorProperties>(Gtk.Calendar);
 Widget.Calendar = Calendar;
 
-export const Fixed = subclass<typeof Gtk.Fixed, Gtk.Fixed.ConstructorProperties>(Gtk.Fixed);
-Widget.Fixed = Fixed;
-
-export const MenuBar = subclass<typeof Gtk.MenuBar, Gtk.MenuBar.ConstructorProperties>(Gtk.MenuBar);
-Widget.MenuBar = MenuBar;
-
-export const Switch = subclass<typeof Gtk.Switch, Gtk.Switch.ConstructorProperties>(Gtk.Switch);
-Widget.Switch = Switch;
-
-export const ToggleButton = subclass<typeof Gtk.ToggleButton, Gtk.ToggleButton.ConstructorProperties>(Gtk.ToggleButton);
-Widget.ToggleButton = ToggleButton;
-
-export const Separator = subclass<typeof Gtk.Separator, Gtk.Separator.ConstructorProperties>(Gtk.Separator);
-Widget.Separator = Separator;
-
-export const LevelBar = subclass<typeof Gtk.LevelBar, Gtk.LevelBar.ConstructorProperties>(Gtk.LevelBar);
-Widget.LevelBar = LevelBar;
+export const ColorButton = subclass<typeof Gtk.ColorButton, Gtk.ColorButton.ConstructorProperties>(Gtk.ColorButton);
+Widget.ColorButton = ColorButton;
 
 export const DrawingArea = subclass<typeof Gtk.DrawingArea, Gtk.DrawingArea.ConstructorProperties>(Gtk.DrawingArea);
 Widget.DrawingArea = DrawingArea;
 
+export const FileChooserButton = subclass<typeof Gtk.FileChooserButton, Gtk.FileChooserButton.ConstructorProperties>(Gtk.FileChooserButton);
+Widget.FileChooserButton = FileChooserButton;
+
+export const Fixed = subclass<typeof Gtk.Fixed, Gtk.Fixed.ConstructorProperties>(Gtk.Fixed);
+Widget.Fixed = Fixed;
+
+export const FlowBox = subclass<typeof Gtk.FlowBox, Gtk.FlowBox.ConstructorProperties>(Gtk.FlowBox);
+Widget.FlowBox = FlowBox;
+
 export const FontButton = subclass<typeof Gtk.FontButton, Gtk.FontButton.ConstructorProperties>(Gtk.FontButton);
 Widget.FontButton = FontButton;
 
-export const ColorButton = subclass<typeof Gtk.ColorButton, Gtk.ColorButton.ConstructorProperties>(Gtk.ColorButton);
-Widget.ColorButton = ColorButton;
+export const LevelBar = subclass<typeof Gtk.LevelBar, Gtk.LevelBar.ConstructorProperties>(Gtk.LevelBar);
+Widget.LevelBar = LevelBar;
 
-export const FileChooserButton = subclass<typeof Gtk.FileChooserButton, Gtk.FileChooserButton.ConstructorProperties>(Gtk.FileChooserButton);
-Widget.FileChooserButton = FileChooserButton;
+export const ListBox = subclass<typeof Gtk.ListBox, Gtk.ListBox.ConstructorProperties>(Gtk.ListBox);
+Widget.ListBox = ListBox;
+
+export const MenuBar = subclass<typeof Gtk.MenuBar, Gtk.MenuBar.ConstructorProperties>(Gtk.MenuBar);
+Widget.MenuBar = MenuBar;
+
+export const Separator = subclass<typeof Gtk.Separator, Gtk.Separator.ConstructorProperties>(Gtk.Separator);
+Widget.Separator = Separator;
 
 export const SpinButton = subclass<typeof Gtk.SpinButton, Gtk.SpinButton.ConstructorProperties>(Gtk.SpinButton);
 Widget.SpinButton = SpinButton;
@@ -129,7 +129,10 @@ Widget.SpinButton = SpinButton;
 export const Spinner = subclass<typeof Gtk.Spinner, Gtk.Spinner.ConstructorProperties>(Gtk.Spinner);
 Widget.Spinner = Spinner;
 
-export const FlowBox = subclass<typeof Gtk.FlowBox, Gtk.FlowBox.ConstructorProperties>(Gtk.FlowBox);
-Widget.FlowBox = FlowBox;
+export const Switch = subclass<typeof Gtk.Switch, Gtk.Switch.ConstructorProperties>(Gtk.Switch);
+Widget.Switch = Switch;
+
+export const ToggleButton = subclass<typeof Gtk.ToggleButton, Gtk.ToggleButton.ConstructorProperties>(Gtk.ToggleButton);
+Widget.ToggleButton = ToggleButton;
 
 export default Widget;
