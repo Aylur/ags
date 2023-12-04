@@ -178,14 +178,14 @@ export class MprisPlayer extends Service {
     }
 
     private _cacheCoverArt() {
-        this.updateProperty('cover-path', MEDIA_CACHE_PATH + '/' +
-            GLib.compute_checksum_for_string(GLib.ChecksumType.SHA1, this.track_cover_url, -1));
-
-        if (this._trackCoverUrl === '' || this._coverPath === '')
+        if (this._trackCoverUrl === '')
             return;
+
+        this._coverPath = MEDIA_CACHE_PATH + '/' +
+            GLib.compute_checksum_for_string(GLib.ChecksumType.SHA1, this._trackCoverUrl, -1);
 
         if (GLib.file_test(this._coverPath, GLib.FileTest.EXISTS))
-            return;
+            return this.changed('cover-path');
 
         ensureDirectory(MEDIA_CACHE_PATH);
         Gio.File.new_for_uri(this._trackCoverUrl).copy_async(
@@ -199,8 +199,9 @@ export class MprisPlayer extends Service {
                     this.changed('cover-path');
                 }
                 catch (err) {
-                    console.error(`failed to cache ${this._coverPath}`);
-                    console.error(err as Error);
+                    logError(err);
+                    console.error(`failed to cache ${this._coverPath},` +
+                        ' do you have gvfs installed?');
                 }
             },
         );

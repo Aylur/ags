@@ -79,13 +79,13 @@ export default class Service extends GObject.Object {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    connect(signal = 'changed', callback: (_: this, ...args: any[]) => void): number {
+    connect(signal = 'changed', callback: (_: typeof this, ...args: any[]) => void): number {
         return super.connect(signal, callback);
     }
 
     updateProperty(prop: string, value: unknown) {
-        // @ts-expect-error
-        if (this[`_${prop}`] === value)
+        if (this[prop as keyof typeof this] === value ||
+            JSON.stringify(this[prop as keyof typeof this]) === JSON.stringify(value))
             return;
 
         const privateProp = prop
