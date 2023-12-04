@@ -60,13 +60,17 @@ export default class AgsEventBox extends AgsWidget(Gtk.EventBox) {
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
 
         this.connect('enter-notify-event', (_, event: Gdk.Event) => {
-            this.set_state_flags(Gtk.StateFlags.PRELIGHT, false);
-            return this.on_hover?.(this, event);
+            if (this.isHovered(event)) {
+                this.set_state_flags(Gtk.StateFlags.PRELIGHT, false);
+                return this.on_hover?.(this, event);
+            }
         });
 
         this.connect('leave-notify-event', (_, event: Gdk.Event) => {
-            this.unset_state_flags(Gtk.StateFlags.PRELIGHT);
-            return this.on_hover_lost?.(this, event);
+            if (!this.isHovered(event)) {
+                this.unset_state_flags(Gtk.StateFlags.PRELIGHT);
+                return this.on_hover_lost?.(this, event);
+            }
         });
 
         this.connect('button-press-event', (_, event: Gdk.Event) => {

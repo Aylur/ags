@@ -66,11 +66,13 @@ export default class AgsButton extends AgsWidget(Gtk.Button) {
         this.connect('clicked', () => this.on_clicked?.(this));
 
         this.connect('enter-notify-event', (_, event: Gdk.Event) => {
-            return this.on_hover?.(this, event);
+            if (this.isHovered(event))
+                return this.on_hover?.(this, event);
         });
 
         this.connect('leave-notify-event', (_, event: Gdk.Event) => {
-            return this.on_hover_lost?.(this, event);
+            if (!this.isHovered(event))
+                return this.on_hover_lost?.(this, event);
         });
 
         this.connect('button-press-event', (_, event: Gdk.Event) => {

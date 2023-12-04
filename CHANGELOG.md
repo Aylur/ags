@@ -5,6 +5,7 @@
 - feat: support shebang with --run-file
 - add: Utils.monitorFile
 - feat: Utils.readFile and readFileAsync can take a Gio.File
+- improve Button, EventBox hover events
 
 # 1.5.4
 

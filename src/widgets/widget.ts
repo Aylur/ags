@@ -373,5 +373,14 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             this._set('cursor', cursor);
             this._updateCursor();
         }
+
+        isHovered(event?: Gdk.Event) {
+            let [x, y] = this.get_pointer();
+            const { width: w, height: h } = this.get_allocation();
+            if (event)
+                [, x, y] = event.get_coords();
+
+            return x > 0 && x < w && y > 0 && y < h;
+        }
     };
 }
