@@ -1,4 +1,5 @@
 import GObject from 'gi://GObject';
+import { getGObjectProperties } from './utils.js';
 
 type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'double' | 'boolean' | 'gobject';
 type PspecFlag = 'rw' | 'r' | 'w';
@@ -101,6 +102,10 @@ export default class Service extends GObject.Object {
     changed(property: string) {
         this.notify(property);
         this.emit('changed');
+    }
+
+    toJSON() {
+        return getGObjectProperties(this);
     }
 }
 

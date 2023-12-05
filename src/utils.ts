@@ -250,3 +250,21 @@ export function subprocess(
         return null;
     }
 }
+
+export function getGObjectProperties(obj: GObject.Object) {
+    const result = {};
+    //@ts-ignore
+    const props = obj.constructor.list_properties() as GObject.ParamSpec[];
+    props.forEach(p => {
+        try {
+            //@ts-expect-error
+            result[p.name] = this[p.name];
+        }
+        catch (e) {
+            //this is here to ignore this error, might happen with other properties as well.
+            //Error: Can't get field "parent";
+            //GObject introspection supports only fields with simple types, not interface
+        }
+    });
+    return result;
+}

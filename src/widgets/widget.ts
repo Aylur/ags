@@ -6,6 +6,7 @@ import Service from '../service.js';
 import { interval } from '../utils.js';
 import { Variable } from '../variable.js';
 import { App } from '../app.js';
+import { getGObjectProperties } from '../utils.js';
 
 type KebabCase<S extends string> = S extends `${infer Prefix}_${infer Suffix}`
     ? `${Prefix}-${KebabCase<Suffix>}` : S;
@@ -315,7 +316,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         }
 
         get css() {
-            return this._cssProvider.to_string() || '';
+            return this._cssProvider?.to_string() || '';
         }
 
         set css(css: string) {
@@ -381,6 +382,10 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 [, x, y] = event.get_coords();
 
             return x > 0 && x < w && y > 0 && y < h;
+        }
+
+        toJSON() {
+            return getGObjectProperties(this);
         }
     };
 }
