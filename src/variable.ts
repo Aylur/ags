@@ -1,7 +1,7 @@
 import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
-import { execAsync, interval, subprocess, getGObjectProperties } from './utils.js';
+import { execAsync, interval, subprocess } from './utils.js';
 
 type Listen<T> =
     | [string[] | string, (out: string) => T]
@@ -144,10 +144,6 @@ export class Variable<T> extends GObject.Object {
 
     get value() { return this._value; }
     set value(value: T) { this.setValue(value); }
-
-    toJSON() {
-        return getGObjectProperties(this);
-    }
 }
 
 export default <T>(value: T, options?: Options<T>) => new Variable(value, options);

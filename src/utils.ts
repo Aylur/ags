@@ -251,20 +251,23 @@ export function subprocess(
     }
 }
 
-export function getGObjectProperties(obj: GObject.Object) {
+// @ts-ignore
+GObject.Object.prototype.toJSON = function() {
     const result = {};
-    //@ts-ignore
-    const props = obj.constructor.list_properties() as GObject.ParamSpec[];
+    const filter = ['parent', 'window', 'font-options'];
+    const props = (this.constructor as unknown as GObject.ObjectClass)
+        //@ts-ignore
+        .list_properties()
+        .filter(p => !filter.includes(p.name || ''));
+
     props.forEach(p => {
         try {
-            //@ts-expect-error
+            //@ts-ignore
             result[p.name] = this[p.name];
         }
         catch (e) {
-            //this is here to ignore this error, might happen with other properties as well.
-            //Error: Can't get field "parent";
-            //GObject introspection supports only fields with simple types, not interface
+            logError(e);
         }
     });
     return result;
-}
+};
