@@ -38,6 +38,12 @@ function isRunning(dbusName: string) {
     ).deepUnpack()?.toString() === 'true' || false;
 }
 
+function parsePath(path: string) {
+    return path.startsWith('.')
+        ? `${GLib.getenv('PWD')}${path.slice(1)}`
+        : path;
+}
+
 export function main(args: string[]) {
     const flags = {
         busName: BIN_NAME,
@@ -80,7 +86,7 @@ export function main(args: string[]) {
 
             case '-c':
             case '--config':
-                flags.config = args[++i];
+                flags.config = parsePath(args[++i]);
                 break;
 
             case 'inspector':
@@ -98,7 +104,7 @@ export function main(args: string[]) {
             case 'run-file':
             case '-f':
             case '--run-file':
-                flags.runFile = args[++i];
+                flags.runFile = parsePath(args[++i]);
                 break;
 
             // FIXME: deprecated
