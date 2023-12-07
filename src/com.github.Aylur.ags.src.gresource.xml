@@ -4,6 +4,7 @@
     <file>app.js</file>
     <file>client.js</file>
     <file>main.js</file>
+    <file>overrides.js</file>
     <file>service.js</file>
     <file>utils.js</file>
     <file>variable.js</file>
