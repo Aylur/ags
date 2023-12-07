@@ -1,9 +1,9 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import './overrides.js';
 import * as Utils from './utils.js';
 import app from './app.js';
 import client from './client.js';
-import './overrides.js';
 
 const BIN_NAME = pkg.name.split('.').pop() as string;
 const APP_BUS = (name: string) => `${pkg.name}.${name}`;
