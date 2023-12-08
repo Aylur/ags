@@ -181,11 +181,11 @@ export class App extends Gtk.Application {
         try {
             const mod = await import(`file://${this._configPath}`);
             const config = mod.default as Config;
-            config.closeWindowDelay ||= {};
-            config.notificationPopupTimeout ||= 3000;
-            config.notificationForceTimeout ||= false;
-            config.maxStreamVolume ||= 1.5;
-            config.cacheNotificationActions ||= false;
+            config.closeWindowDelay ??= {};
+            config.notificationPopupTimeout ??= 3000;
+            config.notificationForceTimeout ??= false;
+            config.maxStreamVolume ??= 1.5;
+            config.cacheNotificationActions ??= false;
             config.cacheCoverArt ??= true;
             this._config = config;
 
