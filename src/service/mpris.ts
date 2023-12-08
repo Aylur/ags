@@ -1,5 +1,6 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
+import App from '../app.js';
 import Service from '../service.js';
 import { ensureDirectory, timeout } from '../utils.js';
 import { CACHE_DIR } from '../utils.js';
@@ -178,7 +179,7 @@ export class MprisPlayer extends Service {
     }
 
     private _cacheCoverArt() {
-        if (this._trackCoverUrl === '')
+        if (!App.config.cacheCoverArt || this._trackCoverUrl === '')
             return;
 
         this._coverPath = MEDIA_CACHE_PATH + '/' +
@@ -192,7 +193,6 @@ export class MprisPlayer extends Service {
             Gio.File.new_for_path(this._coverPath),
             Gio.FileCopyFlags.OVERWRITE,
             GLib.PRIORITY_DEFAULT,
-            // @ts-expect-error
             null, null, (source: Gio.File, result: Gio.AsyncResult) => {
                 try {
                     source.copy_finish(result);

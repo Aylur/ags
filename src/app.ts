@@ -15,6 +15,7 @@ interface Config {
     notificationPopupTimeout: number
     notificationForceTimeout: boolean
     cacheNotificationActions: boolean
+    cacheCoverArt: boolean
     closeWindowDelay: { [key: string]: number }
     maxStreamVolume: number
     onWindowToggled?: (windowName: string, visible: boolean) => void,
@@ -185,6 +186,7 @@ export class App extends Gtk.Application {
             config.notificationForceTimeout ||= false;
             config.maxStreamVolume ||= 1.5;
             config.cacheNotificationActions ||= false;
+            config.cacheCoverArt ??= true;
             this._config = config;
 
             if (!config) {
