@@ -3,13 +3,16 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Service from '../service.js';
 
-const transitions = [
-    'none', 'crossfade',
-    'slide_right', 'slide_left',
-    'slide_up', 'slide_down',
-] as const;
+const TRANSITION = {
+    'none': Gtk.RevealerTransitionType.NONE,
+    'crossfade': Gtk.RevealerTransitionType.CROSSFADE,
+    'slide_right': Gtk.RevealerTransitionType.SLIDE_RIGHT,
+    'slide_left': Gtk.RevealerTransitionType.SLIDE_LEFT,
+    'slide_up': Gtk.RevealerTransitionType.SLIDE_UP,
+    'slide_down': Gtk.RevealerTransitionType.SLIDE_DOWN,
+} as const;
 
-type Transition = typeof transitions[number];
+export type Transition = keyof typeof TRANSITION;
 
 export interface RevealerProps extends BaseProps<AgsRevealer>, Gtk.Revealer.ConstructorProperties {
     transition?: Transition
@@ -27,17 +30,25 @@ export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
 
     constructor(props: RevealerProps = {}) { super(props); }
 
-    get transition() { return transitions[this.transition_type]; }
+    get transition() {
+        return Object.keys(TRANSITION).find(key => {
+            return TRANSITION[key as Transition] === this.transition_type;
+        }) as Transition;
+    }
+
     set transition(transition: Transition) {
-        if (!transition || this.transition === transition)
+        if (this.transition === transition)
             return;
 
-        if (!transitions.includes(transition)) {
-            console.error('wrong transition value for Revealer');
+        if (!Object.keys(TRANSITION).includes(transition)) {
+            console.error(Error(
+                `transition on Revealer has to be one of ${Object.keys(TRANSITION)}, ` +
+                `but it is ${transition}`,
+            ));
             return;
         }
 
-        this.transition_type = transitions.findIndex(t => t === transition);
+        this.transition_type = TRANSITION[transition];
         this.notify('transition');
     }
 }

@@ -3,8 +3,14 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Service from '../service.js';
 
-const policy = ['automatic', 'always', 'never', 'external'] as const;
-type Policy = typeof policy[number]
+const POLICY = {
+    'automatic': Gtk.PolicyType.AUTOMATIC,
+    'always': Gtk.PolicyType.ALWAYS,
+    'never': Gtk.PolicyType.NEVER,
+    'external': Gtk.PolicyType.EXTERNAL,
+} as const;
+
+export type Policy = keyof typeof POLICY;
 
 export interface ScrollableProps extends
     BaseProps<AgsScrollable>, Gtk.ScrolledWindow.ConstructorProperties {
@@ -31,37 +37,29 @@ export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
         });
     }
 
-    get hscroll() { return this._get('hscroll'); }
-    set hscroll(hscroll: Policy) {
-        if (!hscroll || this.hscroll === hscroll)
+    setScroll(orientation: 'h' | 'v', scroll: Policy) {
+        if (!scroll || this[`${orientation}scroll`] === scroll)
             return;
 
-        if (!policy.includes(hscroll)) {
-            console.error('wrong hscroll value for Scrollable');
-            return;
+        if (!Object.keys(POLICY).includes(scroll)) {
+            return console.error(Error(
+                `${orientation}scroll has to be one of ${Object.keys(POLICY)}, but it is ${scroll}`,
+            ));
         }
 
-        this._set('hscroll', hscroll);
+        this._set(`${orientation}scroll`, scroll);
         this._policy();
     }
+
+    get hscroll() { return this._get('hscroll'); }
+    set hscroll(hscroll: Policy) { this.setScroll('h', hscroll); }
 
     get vscroll() { return this._get('vscroll'); }
-    set vscroll(vscroll: Policy) {
-        if (!vscroll || this.vscroll === vscroll)
-            return;
-
-        if (!policy.includes(vscroll)) {
-            console.error('wrong vscroll value for Scrollable');
-            return;
-        }
-
-        this._set('vscroll', vscroll);
-        this._policy();
-    }
+    set vscroll(vscroll: Policy) { this.setScroll('v', vscroll); }
 
     private _policy() {
-        const hscroll = policy.findIndex(p => p === this.hscroll);
-        const vscroll = policy.findIndex(p => p === this.vscroll);
+        const hscroll = POLICY[this.hscroll];
+        const vscroll = POLICY[this.vscroll];
         this.set_policy(
             hscroll === -1 ? Gtk.PolicyType.AUTOMATIC : hscroll,
             vscroll === -1 ? Gtk.PolicyType.AUTOMATIC : vscroll,

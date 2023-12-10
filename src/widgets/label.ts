@@ -5,11 +5,22 @@ import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
 import Service from '../service.js';
 
-const justifications = ['left', 'center', 'right', 'fill'] as const;
-const truncates = ['none', 'start', 'middle', 'end'] as const;
+const JUSTIFICATION = {
+    'left': Gtk.Justification.LEFT,
+    'right': Gtk.Justification.RIGHT,
+    'center': Gtk.Justification.CENTER,
+    'fill': Gtk.Justification.FILL,
+} as const;
 
-type Justification = typeof justifications[number];
-type Truncate = typeof truncates[number];
+const TRUNCATE = {
+    'none': Pango.EllipsizeMode.NONE,
+    'start': Pango.EllipsizeMode.START,
+    'middle': Pango.EllipsizeMode.MIDDLE,
+    'end': Pango.EllipsizeMode.END,
+} as const;
+
+export type Justification = keyof typeof JUSTIFICATION;
+export type Truncate = keyof typeof TRUNCATE;
 
 export interface Props extends BaseProps<AgsLabel>, Gtk.Label.ConstructorProperties {
     justification?: Justification
@@ -49,31 +60,47 @@ export default class AgsLabel extends AgsWidget(Gtk.Label) {
         super.label = label;
     }
 
-    get truncate() { return truncates[this.ellipsize]; }
+    get truncate() {
+        return Object.keys(TRUNCATE).find(key => {
+            return TRUNCATE[key as Truncate] === this.ellipsize;
+        }) as Truncate;
+    }
+
     set truncate(truncate: Truncate) {
         if (this.truncate === truncate)
             return;
 
-        if (!truncate.includes(truncate)) {
-            console.error('wrong truncate value for Label');
+        if (!Object.keys(TRUNCATE).includes(truncate)) {
+            console.error(Error(
+                `truncate for Label has to be one of ${Object.keys(TRUNCATE)}, ` +
+                `but it is ${truncate}`,
+            ));
             return;
         }
 
-        this.ellipsize = truncates.findIndex(t => t === truncate);
+        this.ellipsize = TRUNCATE[truncate];
         this.notify('truncate');
     }
 
-    get justification() { return justifications[this.justify]; }
+    get justification() {
+        return Object.keys(JUSTIFICATION).find(key => {
+            return JUSTIFICATION[key as Justification] === this.justify;
+        }) as Justification;
+    }
+
     set justification(justify: Justification) {
         if (this.justification === justify)
             return;
 
-        if (!justifications.includes(justify)) {
-            console.error('wrong justification value for Label');
+        if (!Object.keys(JUSTIFICATION).includes(justify)) {
+            console.error(Error(
+                `justify for Label has to be one of ${Object.keys(JUSTIFICATION)}, ` +
+                `but it is ${justify}`,
+            ));
             return;
         }
 
-        this.justify = justifications.findIndex(j => j === justify);
+        this.justify = JUSTIFICATION[justify];
         this.notify('justification');
     }
 }

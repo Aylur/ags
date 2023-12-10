@@ -4,14 +4,26 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 import App from '../app.js';
+// @ts-expect-error missing types FIXME:
+import { default as LayerShell } from 'gi://GtkLayerShell';
 
-const { GtkLayerShell: LayerShell } = imports.gi;
+const ANCHOR = {
+    'left': LayerShell.Edge.LEFT,
+    'right': LayerShell.Edge.RIGHT,
+    'top': LayerShell.Edge.TOP,
+    'bottom': LayerShell.Edge.BOTTOM,
+} as const;
 
-const layers = ['background', 'bottom', 'top', 'overlay'] as const;
-const anchors = ['left', 'right', 'top', 'bottom'] as const;
-type Layer = typeof layers[number];
-type Anchor = typeof anchors[number];
-type Exclusivity = 'normal' | 'ignore' | 'exclusive';
+const LAYER = {
+    'background': LayerShell.Layer.BACKGROUND,
+    'bottom': LayerShell.Layer.BOTTOM,
+    'top': LayerShell.Layer.TOP,
+    'overlay': LayerShell.Layer.OVERLAY,
+} as const;
+
+export type Layer = keyof typeof LAYER;
+export type Anchor = keyof typeof ANCHOR;
+export type Exclusivity = 'normal' | 'ignore' | 'exclusive';
 
 export interface WindowProps extends BaseProps<AgsWindow>, Gtk.Window.ConstructorProperties {
     anchor?: Anchor[]
@@ -141,36 +153,44 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         this.notify('exclusivity');
     }
 
-    get layer() { return layers[LayerShell.get_layer(this)] as Layer; }
+    get layer() {
+        return Object.keys(LAYER).find(layer => {
+            return LAYER[layer as Layer] === LayerShell.get_layer(this);
+        }) as Layer;
+    }
+
     set layer(layer: Layer) {
         if (this.layer === layer)
             return;
 
-        if (!layers.includes(layer)) {
+        if (!Object.keys(LAYER).includes(layer)) {
             console.error('wrong layer value for Window');
             return;
         }
 
-        LayerShell.set_layer(this, layers.findIndex(l => l === layer));
+        LayerShell.set_layer(this, LAYER[layer]);
         this.notify('layer');
     }
 
-    get anchor() { return anchors.filter((_, i) => LayerShell.get_anchor(this, i)) as Anchor[]; }
+    get anchor() {
+        return Object.keys(ANCHOR).filter(key => {
+            return LayerShell.get_anchor(this, ANCHOR[key as Anchor]);
+        }) as Anchor[];
+    }
+
     set anchor(anchor: Anchor[]) {
         if (this.anchor.length === anchor.length &&
             this.anchor.every(a => anchor.includes(a)))
             return;
 
-        ['TOP', 'LEFT', 'RIGHT', 'BOTTOM'].forEach(side =>
-            LayerShell.set_anchor(this, LayerShell.Edge[side], false));
+        // reset
+        Object.values(ANCHOR).forEach(side => LayerShell.set_anchor(this, side, false));
 
         anchor.forEach(side => {
-            if (!anchors.includes(side)) {
-                console.error(`${side} is not a valid anchor`);
-                return;
-            }
+            if (!Object.keys(ANCHOR).includes(side))
+                return console.error(`${side} is not a valid anchor`);
 
-            LayerShell.set_anchor(this, anchors.findIndex(a => a === side), true);
+            LayerShell.set_anchor(this, ANCHOR[side], true);
         });
 
         this.notify('anchor');

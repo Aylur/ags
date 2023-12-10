@@ -12,7 +12,16 @@ type KebabCase<S extends string> = S extends `${infer Prefix}_${infer Suffix}`
 
 type OnlyString<S extends string | unknown> = S extends string ? S : never;
 
-const aligns = ['fill', 'start', 'end', 'center', 'baseline'] as const;
+const ALIGN = {
+    'fill': Gtk.Align.FILL,
+    'start': Gtk.Align.START,
+    'end': Gtk.Align.END,
+    'center': Gtk.Align.CENTER,
+    'baseline': Gtk.Align.BASELINE,
+} as const;
+
+export type Align = keyof typeof ALIGN;
+
 export type Cursor =
     | 'default'
     | 'help'
@@ -48,8 +57,6 @@ export type Cursor =
     | 'nwse-resize'
     | 'zoom-in'
     | 'zoom-out'
-
-export type Align = typeof aligns[number];
 
 export type Property = [prop: string, value: unknown];
 
@@ -111,18 +118,10 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             this.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK);
             this.add_events(Gdk.EventMask.LEAVE_NOTIFY_MASK);
 
-            this.connect('enter-notify-event', () => {
-                this.hovered = true;
-                this._updateCursor();
-            });
-
-            this.connect('leave-notify-event', () => {
-                this.hovered = false;
-                this._updateCursor();
-            });
+            this.connect('enter-notify-event', this._updateCursor.bind(this));
+            this.connect('leave-notify-event', this._updateCursor.bind(this));
         }
 
-        hovered = false;
         _destroyed = false;
 
         // defining private fields for typescript causes
@@ -243,31 +242,30 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             return this;
         }
 
-        get hpack() { return aligns[this.halign]; }
-        set hpack(align: Align) {
+        setPack(orientation: 'h' | 'v', align: Align) {
             if (!align)
                 return;
 
-            if (!aligns.includes(align)) {
-                console.error(Error(`halign has to be on of ${aligns}`));
-                return;
+            if (!Object.keys(ALIGN).includes(align)) {
+                return console.error(Error(
+                    `${orientation}pack has to be on of ${Object.keys(ALIGN)}, but it is ${align}`,
+                ));
             }
 
-            this.halign = aligns.findIndex(a => a === align);
+            this[`${orientation}align`] = ALIGN[align];
         }
 
-        get vpack() { return aligns[this.valign]; }
-        set vpack(align: Align) {
-            if (!align)
-                return;
-
-            if (!aligns.includes(align)) {
-                console.error(Error(`valign has to be on of ${aligns}`));
-                return;
-            }
-
-            this.valign = aligns.findIndex(a => a === align);
+        getPack(orientation: 'h' | 'v') {
+            return Object.keys(ALIGN).find(align => {
+                return ALIGN[align as Align] === this[`${orientation}align`];
+            }) as Align;
         }
+
+        get hpack() { return this.getPack('h'); }
+        set hpack(align: Align) { this.setPack('h', align); }
+
+        get vpack() { return this.getPack('v'); }
+        set vpack(align: Align) { this.setPack('v', align); }
 
         toggleClassName(className: string, condition = true) {
             const c = this.get_style_context();
@@ -356,7 +354,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
 
             const display = Gdk.Display.get_default();
 
-            if (this.hovered && display) {
+            if (this.isHovered() && display) {
                 const cursor = Gdk.Cursor.new_from_name(display, this.cursor);
                 this.get_window()?.set_cursor(cursor);
             }
