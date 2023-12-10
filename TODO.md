@@ -23,3 +23,6 @@
 - subclass more widget
   - [ ] Gtk.Fixed
   - [ ] Gtk.Grid
+
+- [ ] NixOS module
+- [ ] nix binary cache
