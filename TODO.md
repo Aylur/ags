@@ -26,3 +26,11 @@
 
 - [ ] NixOS module
 - [ ] nix binary cache
+
+- Wiki
+    - [ ] Frequent GTK issues page
+        - [ ] Single children issues
+
+    - [ ] Move wiki to aylur.github.io/ags
+        - maybe? rename id from com.github.Aylur.ags to io.Aylur.ags
+
