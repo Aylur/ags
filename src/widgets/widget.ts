@@ -145,10 +145,8 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 return;
 
             connections.forEach(([s, callback, event]) => {
-                if (!s || !callback) {
-                    console.error(Error('missing arguments to connections'));
-                    return;
-                }
+                if (s === undefined || callback === undefined)
+                    return console.error(Error('missing arguments to connections'));
 
                 if (typeof s === 'string')
                     this.connect(s, callback);
@@ -160,7 +158,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                     this.connectTo(s, callback, event);
 
                 else
-                    console.error(Error(`${s} is not a GObject nor a string nor a number`));
+                    console.error(Error(`${s} is not a GObject | string | number`));
             });
         }
 
