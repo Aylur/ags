@@ -17,6 +17,7 @@ ignorePatterns:
   - _build/
   - build/
   - result/
+  - docs/
 plugins:
   - '@typescript-eslint'
 rules:
