@@ -7,5 +7,5 @@ title = "ags documentation"
 
 
 [output.html]
-no-section-label = true
+default-theme = "ayu"
 git-repository-url = "https://github.com/Aylur/ags"
