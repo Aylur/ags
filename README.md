@@ -9,4 +9,4 @@ Currently, only Wayland is supported, but it also works on X11, [see #19](https:
 
 ## Get started
 
-To get started read the [wiki](https://github.com/Aylur/ags/wiki).
+To get started read the [wiki](https://aylur.github.io/ags/).
