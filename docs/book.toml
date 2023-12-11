@@ -9,3 +9,6 @@ title = "ags documentation"
 [output.html]
 default-theme = "ayu"
 git-repository-url = "https://github.com/Aylur/ags"
+
+[output.html.playground]
+runnable = false
