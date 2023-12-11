@@ -1,6 +1,6 @@
-# Summary (line will be ignored)
+# Summary (line will be ignored) https://rust-lang.github.io/mdBook/format/summary.html
 
-[Get started](./GetStarted.md)
+[Index](./Index.md)
 
 # Get Started
 * [Installation](./Installation.md)
