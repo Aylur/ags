@@ -1,0 +1,11 @@
+[book]
+authors = ["aylur"]
+language = "en"
+multilingual = false
+src = "src"
+title = "ags documentation"
+
+
+[output.html]
+no-section-label = true
+git-repository-url = "https://github.com/Aylur/ags"
