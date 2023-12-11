@@ -8,6 +8,9 @@
     * [TypeScript](TypeScript.md)
 * [CLI](CLI.md)
 
+# Discord
+We also have a [Discord server](https://discord.gg/CXQpHwDuhY)
+
 # Docs
 * [Widgets](Widgets.md)
     * [Window](Basic-Widgets.md#window)
@@ -30,19 +33,10 @@
 * [Utils](Utils.md)
 * [Variables](Variable.md)
 * [Services](Service.md)
-    * [Applications](Applications.md)
-    * [Audio](Audio.md)
-    * [Backlight](Backlight.md)
-    * [Battery](Battery.md)
-    * [Bluetooth](Bluetooth.md)
-    * [Hyprland](Hyprland.md)
-    * [Mpris](Mpris.md)
-    * [Network](Network.md)
-    * [Notifications](Notifications.md)
-    * [SystemTray](SystemTray.md)
 * [App](App.md)
 
-# GJS
+# Gnome JavaScript
+these are useful if you want to implement something more complicated
 * [GJS guide](https://gjs.guide/)
 * [GJS docs](https://gjs-docs.gnome.org/)
-* [GTK3 docs](https://docs.gtk.org/gtk3/)
+* [GTK3 docs](https://docs.gtk.org/gtk3/) sometimes the GJS docs are incomplete

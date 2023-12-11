@@ -1,7 +1,7 @@
 ## Nix
 maintainer: [@Aylur](https://github.com/Aylur)
 
-You can use the [Home Manager module](https://github.com/Aylur/ags/wiki/Home-Manager)
+You can use the [Home Manager module](Home-Manager.md)
 
 or use nix flake profile install
 ```bash

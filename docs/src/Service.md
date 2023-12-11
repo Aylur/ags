@@ -63,15 +63,15 @@ import { Battery } from 'resource:///com/github/Aylur/ags/service/battery.js';
 > [!NOTE]  
 > Every service has a `"changed"` signal which is emitted on any kind of state change, unless stated otherwise.
 
-* [Applications](https://github.com/Aylur/ags/wiki/Applications)
-* [Audio](https://github.com/Aylur/ags/wiki/Audio)
-* [Battery](https://github.com/Aylur/ags/wiki/Battery)
-* [Bluetooth](https://github.com/Aylur/ags/wiki/Bluetooth)
-* [Hyprland](https://github.com/Aylur/ags/wiki/Hyprland)
-* [Mpris](https://github.com/Aylur/ags/wiki/Mpris)
-* [Network](https://github.com/Aylur/ags/wiki/Network)
-* [Notifications](https://github.com/Aylur/ags/wiki/Notifications)
-* [SystemTray](https://github.com/Aylur/ags/wiki/SystemTray)
+* [Applications](Applications.md)
+* [Audio](Audio.md)
+* [Battery](Battery.md)
+* [Bluetooth](Bluetooth.md)
+* [Hyprland](Hyprland.md)
+* [Mpris](Mpris.md)
+* [Network](Network.md)
+* [Notifications](Notifications.md)
+* [SystemTray](SystemTray.md)
 
 # Writing custom Services
 

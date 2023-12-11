@@ -1,4 +1,4 @@
-Prerequisites: [JavaScript](https://github.com/Aylur/ags/wiki/javascript)
+Prerequisites: [JavaScript](JavaScript.md)
 
 Start by creating `~/.config/ags/config.js` with the following contents:
 ```js
@@ -175,7 +175,7 @@ label.connect('notify::label', ({ label }) => {
 })
 ```
 
-For *most* of your system, you don't have to use external scripts and binaries to query information. AGS has builtin [Services](https://github.com/Aylur/ags/wiki/service). They are just like `Variables` but instead of a single `value` they have more attributes and methods on them.
+For *most* of your system, you don't have to use external scripts and binaries to query information. AGS has builtin [Services](Service.md). They are just like `Variables` but instead of a single `value` they have more attributes and methods on them.
 ```js
 import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import Battery from 'resource:///com/github/Aylur/ags/service/battery.js';
@@ -242,4 +242,4 @@ export default {
 | `maxStreamVolume` | `number` | maximum possible volume on an Audio Stream
 | `cacheCoverArt` | `boolean` | whether to cache mpris cover arts. `true` by default 
 | `style` | `string` | path to a css file.
-| `windows` | `Array<Gtk.Window>` list of [Windows](https://github.com/Aylur/ags/wiki/Basic-Widgets#window).
+| `windows` | `Array<Gtk.Window>` list of [Windows](Basic-Widgets.md#window).

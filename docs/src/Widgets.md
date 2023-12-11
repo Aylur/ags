@@ -1,6 +1,6 @@
 `Widget` functions return an instance of [Gtk.Widget](https://gjs-docs.gnome.org/gtk30~3.0/gtk.widget). Most common widgets are subclassed and have a few additional properties.
 
-[List of builtin widget](https://github.com/Aylur/ags/wiki/Basic-Widgets)
+[List of builtin widget](Basic-Widgets.md)
 
 These widgets have some additional properties on top of the base Gtk.Widget one:
 

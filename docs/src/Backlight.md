@@ -1,4 +1,4 @@
-You can find an example [Custom Service](https://github.com/Aylur/ags/wiki/service#writing-custom-services) to use with `brightnessctl`
+You can find an example [Custom Service](Service.md#writing-custom-services) to use with `brightnessctl`
 
 ## signals
 * `screen-changed`: `(percent: number)`
