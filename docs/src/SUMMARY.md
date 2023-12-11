@@ -1,4 +1,8 @@
-# Get started
+# Summary (line will be ignored)
+
+[Get started](./GetStarted.md)
+
+# Get Started
 * [Installation](./Installation.md)
     * [Home Manager](./Home-Manager.md)
 * [Configuration](./Configuration.md)
@@ -7,8 +11,10 @@
     * [Examples](./Examples.md)
     * [TypeScript](./TypeScript.md)
 * [CLI](./CLI.md)
+
 # Docs
 * [Widgets](./Widgets.md)
+    * [Widget List](./Basic-Widgets.md)
 * [Utils](./Utils.md)
 * [Variables](./Variable.md)
 * [Services](./Service.md)
@@ -23,3 +29,6 @@
     * [Notifications](./Notifications.md)
     * [SystemTray](./SystemTray.md)
 * [App](./App.md)
+
+# GJS
+* [GnomeJavaScript]()
