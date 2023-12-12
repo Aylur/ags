@@ -182,7 +182,7 @@ const Bar = ({ monitor } = {}) => Widget.Window({
     className: 'bar',
     monitor,
     anchor: ['top', 'left', 'right'],
-    exclusive: true,
+    exclusivity: 'exclusive',
     child: Widget.CenterBox({
         startWidget: Left(),
         centerWidget: Center(),
