@@ -9,7 +9,7 @@ const Bar = (/** @type {number} */ monitor) => Widget.Window({
     monitor,
     name: `bar${monitor}`,
     anchor: ['top', 'left', 'right'],
-    exclusive: true,
+    exclusivity: 'exclusive',
     child: Widget.CenterBox({
         start_widget: Widget.Label({
             hpack: 'center',
