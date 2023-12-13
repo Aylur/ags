@@ -2,7 +2,7 @@
 * `speaker-changed` default speaker's state changed
 * `microphone-changed` default microphone' state changed
 * `stream-added`: `(id: number)` new stream appeared
-* `stream-rmoved`: `(id: number)` stream disappeared
+* `stream-removed`: `(id: number)` stream disappeared
 
 ## properties
 * `control`: [Gvc.MixerControl](https://gjs-docs.gnome.org/gvc10~1.0/gvc.mixercontrol)
