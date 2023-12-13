@@ -26,6 +26,8 @@
 
 - [ ] NixOS module
 - [ ] nix binary cache
+- [ ] github action to package types 
+    - [ ] maybe? install them at /etc/ags with meson
 
 - Wiki
     - [ ] Frequent GTK issues page
