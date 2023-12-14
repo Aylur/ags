@@ -4,10 +4,19 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 
-type EventHandler = (self: AgsSlider, event: Gdk.Event) => void | unknown;
-const positions = ['left', 'right', 'top', 'bottom'] as const;
-type Position = typeof positions[number];
-type Mark = [number, string?, Position?] | number;
+export type EventHandler = (self: AgsSlider, event: Gdk.Event) => void | unknown;
+
+const POSITION = {
+    'left': Gtk.PositionType.LEFT,
+    'right': Gtk.PositionType.RIGHT,
+    'top': Gtk.PositionType.TOP,
+    'bottom': Gtk.PositionType.BOTTOM,
+} as const;
+
+export type Position = keyof typeof POSITION;
+
+export type Mark = [number, string?, Position?] | number;
+
 export interface SliderProps extends BaseProps<AgsSlider>, Gtk.Scale.ConstructorProperties {
     on_change?: EventHandler,
     value?: number
@@ -107,9 +116,10 @@ export default class AgsSlider extends AgsWidget(Gtk.Scale) {
                 this.add_mark(mark, Gtk.PositionType.TOP, '');
             }
             else {
-                let positionType = Gtk.PositionType.TOP;
-                if (mark[2])
-                    positionType = positions.findIndex(p => p === mark[2]);
+                const positionType = mark[2]
+                    ? POSITION[mark[2]]
+                    : Gtk.PositionType.TOP;
+
                 this.add_mark(mark[0], positionType, mark[1] || '');
             }
         });

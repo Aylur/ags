@@ -7,12 +7,34 @@ import { interval } from '../utils.js';
 import { Variable } from '../variable.js';
 import { App } from '../app.js';
 
-type KebabCase<S extends string> = S extends `${infer Prefix}_${infer Suffix}`
-    ? `${Prefix}-${KebabCase<Suffix>}` : S;
+function kebabify(str: string) {
+    return str
+        .split('')
+        .map(char => char === char.toUpperCase()
+            ? '_' + char.toLowerCase()
+            : char,
+        )
+        .join('')
+        .replaceAll('_', '-');
+}
 
 type OnlyString<S extends string | unknown> = S extends string ? S : never;
 
-const aligns = ['fill', 'start', 'end', 'center', 'baseline'] as const;
+type Props<T> = Pick<T, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? never : OnlyString<K>
+}[keyof T]>;
+
+const ALIGN = {
+    'fill': Gtk.Align.FILL,
+    'start': Gtk.Align.START,
+    'end': Gtk.Align.END,
+    'center': Gtk.Align.CENTER,
+    'baseline': Gtk.Align.BASELINE,
+} as const;
+
+export type Align = keyof typeof ALIGN;
+
 export type Cursor =
     | 'default'
     | 'help'
@@ -49,8 +71,6 @@ export type Cursor =
     | 'zoom-in'
     | 'zoom-out'
 
-export type Align = typeof aligns[number];
-
 export type Property = [prop: string, value: unknown];
 
 export type Connection<Self> =
@@ -62,6 +82,7 @@ export type Bind = [
     prop: string,
     obj: GObject.Object,
     objProp?: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     transform?: (value: any) => any,
 ];
 
@@ -111,18 +132,10 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             this.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK);
             this.add_events(Gdk.EventMask.LEAVE_NOTIFY_MASK);
 
-            this.connect('enter-notify-event', () => {
-                this.hovered = true;
-                this._updateCursor();
-            });
-
-            this.connect('leave-notify-event', () => {
-                this.hovered = false;
-                this._updateCursor();
-            });
+            this.connect('enter-notify-event', this._updateCursor.bind(this));
+            this.connect('leave-notify-event', this._updateCursor.bind(this));
         }
 
-        hovered = false;
         _destroyed = false;
 
         // defining private fields for typescript causes
@@ -145,10 +158,8 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 return;
 
             connections.forEach(([s, callback, event]) => {
-                if (!s || !callback) {
-                    console.error(Error('missing arguments to connections'));
-                    return;
-                }
+                if (s === undefined || callback === undefined)
+                    return console.error(Error('missing arguments to connections'));
 
                 if (typeof s === 'string')
                     this.connect(s, callback);
@@ -160,7 +171,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                     this.connectTo(s, callback, event);
 
                 else
-                    console.error(Error(`${s} is not a GObject nor a string nor a number`));
+                    console.error(Error(`${s} is not a GObject | string | number`));
             });
         }
 
@@ -169,12 +180,8 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 return;
 
             binds.forEach(([prop, obj, objProp = 'value', transform = out => out]) => {
-                this.bind(
-                    prop as KebabCase<OnlyString<keyof this>>,
-                    obj,
-                    objProp as keyof typeof obj,
-                    transform,
-                );
+                // @ts-expect-error
+                this.bind(prop, obj, objProp, transform);
             });
         }
 
@@ -195,7 +202,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         }
 
         connectTo<GObject extends GObject.Object>(
-            o: GObject | Service,
+            o: GObject,
             callback: (self: typeof this, ...args: unknown[]) => void,
             event?: string,
         ) {
@@ -227,49 +234,52 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             return this;
         }
 
-        bind<GObject extends GObject.Object>(
-            prop: KebabCase<OnlyString<keyof typeof this>>,
-            target: GObject,
-            targetProp: OnlyString<keyof GObject>,
-            // FIXME: typeof target[targetProp]
-            transform: (value: typeof target[typeof targetProp]) => unknown = out => out,
+        /**
+         * NOTE: this can result in a runtime error if the types don't match
+         */
+        bind<
+            Prop extends keyof this, // keyof Props<this> doesn't work?
+            Gobject extends GObject.Object,
+            ObjProp extends keyof Props<Gobject>,
+        >(
+            prop: Prop,
+            gobject: Gobject,
+            objProp?: ObjProp,
+            transform?: (value: Gobject[ObjProp]) => this[Prop],
         ) {
-            // @ts-expect-error readonly property
-            const callback = () => this[prop] = transform(target[targetProp]);
+            const targetProp = objProp || 'value';
+            const callback = transform
+                ? () => this[prop as Prop] = transform(gobject[targetProp as ObjProp])
+                : () => gobject[targetProp as ObjProp];
 
-            const regex = /^[a-z-]*$/;
-            if (!regex.test(targetProp))
-                return console.warn(Error(`target prop ${targetProp} is not in kebab-case`));
-
-            this.connectTo(target, callback, `notify::${targetProp}`);
+            this.connectTo(gobject, callback, `notify::${kebabify(targetProp)}`);
             return this;
         }
 
-        get hpack() { return aligns[this.halign]; }
-        set hpack(align: Align) {
+        setPack(orientation: 'h' | 'v', align: Align) {
             if (!align)
                 return;
 
-            if (!aligns.includes(align)) {
-                console.error(Error(`halign has to be on of ${aligns}`));
-                return;
+            if (!Object.keys(ALIGN).includes(align)) {
+                return console.error(Error(
+                    `${orientation}pack has to be on of ${Object.keys(ALIGN)}, but it is ${align}`,
+                ));
             }
 
-            this.halign = aligns.findIndex(a => a === align);
+            this[`${orientation}align`] = ALIGN[align];
         }
 
-        get vpack() { return aligns[this.valign]; }
-        set vpack(align: Align) {
-            if (!align)
-                return;
-
-            if (!aligns.includes(align)) {
-                console.error(Error(`valign has to be on of ${aligns}`));
-                return;
-            }
-
-            this.valign = aligns.findIndex(a => a === align);
+        getPack(orientation: 'h' | 'v') {
+            return Object.keys(ALIGN).find(align => {
+                return ALIGN[align as Align] === this[`${orientation}align`];
+            }) as Align;
         }
+
+        get hpack() { return this.getPack('h'); }
+        set hpack(align: Align) { this.setPack('h', align); }
+
+        get vpack() { return this.getPack('v'); }
+        set vpack(align: Align) { this.setPack('v', align); }
 
         toggleClassName(className: string, condition = true) {
             const c = this.get_style_context();
@@ -358,7 +368,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
 
             const display = Gdk.Display.get_default();
 
-            if (this.hovered && display) {
+            if (this.isHovered() && display) {
                 const cursor = Gdk.Cursor.new_from_name(display, this.cursor);
                 this.get_window()?.set_cursor(cursor);
             }
