@@ -35,3 +35,5 @@
   - [ ] Move wiki to aylur.github.io/ags
     - maybe? rename id from com.github.Aylur.ags to io.Aylur.ags
 
+
+- [ ] add JSDoc to most stuff

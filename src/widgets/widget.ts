@@ -12,6 +12,11 @@ type KebabCase<S extends string> = S extends `${infer Prefix}_${infer Suffix}`
 
 type OnlyString<S extends string | unknown> = S extends string ? S : never;
 
+type Props<T> = Pick<T, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? never : OnlyString<K>
+}[keyof T]>;
+
 const ALIGN = {
     'fill': Gtk.Align.FILL,
     'start': Gtk.Align.START,
@@ -69,6 +74,7 @@ export type Bind = [
     prop: string,
     obj: GObject.Object,
     objProp?: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     transform?: (value: any) => any,
 ];
 
@@ -169,7 +175,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 this.bind(
                     prop as KebabCase<OnlyString<keyof this>>,
                     obj,
-                    objProp as keyof typeof obj,
+                    objProp as KebabCase<keyof Props<typeof obj>>,
                     transform,
                 );
             });
@@ -192,7 +198,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         }
 
         connectTo<GObject extends GObject.Object>(
-            o: GObject | Service,
+            o: GObject,
             callback: (self: typeof this, ...args: unknown[]) => void,
             event?: string,
         ) {
@@ -224,21 +230,31 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             return this;
         }
 
-        bind<GObject extends GObject.Object>(
-            prop: KebabCase<OnlyString<keyof typeof this>>,
-            target: GObject,
-            targetProp: OnlyString<keyof GObject>,
-            // FIXME: typeof target[targetProp]
-            transform: (value: typeof target[typeof targetProp]) => unknown = out => out,
+        /**
+         * NOTE: this can result in a runtime error if the types don't match
+         */
+        bind<
+            Prop extends keyof this, // keyof Props<this> doesn't work?
+            GObject extends GObject.Object,
+            ObjProp extends keyof Props<GObject>,
+        >(
+            prop: KebabCase<OnlyString<Prop>>,
+            gobject: GObject,
+            objProp?: KebabCase<ObjProp>,
+            transform?: (value: typeof gobject[ObjProp]) => typeof this[Prop],
         ) {
-            // @ts-expect-error readonly property
-            const callback = () => this[prop] = transform(target[targetProp]);
+            const targetProp = objProp || 'value';
+            const callback = transform
+                ? () => this[prop as Prop] = transform(gobject[targetProp as ObjProp])
+                : () => gobject[targetProp as ObjProp];
 
             const regex = /^[a-z-]*$/;
-            if (!regex.test(targetProp))
-                return console.warn(Error(`target prop ${targetProp} is not in kebab-case`));
+            if (!regex.test(targetProp)) {
+                console.warn(Error(`target prop ${targetProp} is not in kebab-case`));
+                return this;
+            }
 
-            this.connectTo(target, callback, `notify::${targetProp}`);
+            this.connectTo(gobject, callback, `notify::${targetProp}`);
             return this;
         }
 
