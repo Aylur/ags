@@ -7,16 +7,10 @@ import { interval } from '../utils.js';
 import { Variable } from '../variable.js';
 import { App } from '../app.js';
 
-function kebabify(str: string) {
-    return str
-        .split('')
-        .map(char => char === char.toUpperCase()
-            ? '_' + char.toLowerCase()
-            : char,
-        )
-        .join('')
-        .replaceAll('_', '-');
-}
+const kebabify = (str: string) => str
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replaceAll('_', '-')
+    .toLowerCase();
 
 type OnlyString<S extends string | unknown> = S extends string ? S : never;
 
@@ -249,10 +243,10 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         ) {
             const targetProp = objProp || 'value';
             const callback = transform
-                ? () => this[prop as Prop] = transform(gobject[targetProp as ObjProp])
+                ? () => this[prop] = transform(gobject[targetProp as ObjProp])
                 : () => {
                     const v = gobject[targetProp as ObjProp];
-                    this[prop as Prop] = v as unknown as typeof this[Prop];
+                    this[prop] = v as unknown as typeof this[Prop];
                 };
 
             this.connectTo(gobject, callback, `notify::${kebabify(targetProp)}`);
