@@ -32,8 +32,7 @@
 - Wiki
     - [ ] Frequent GTK issues page
         - [ ] Single children issues
-         
-    - [ ] Switch to @victorvintorez's docs made with starlight
 
-    - [ ] maybe? rename id from com.github.Aylur.ags to io.Aylur.ags
+    - [ ] Move wiki to aylur.github.io/ags
+        - maybe? rename id from com.github.Aylur.ags to io.Aylur.ags
 
