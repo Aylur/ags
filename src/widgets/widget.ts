@@ -7,8 +7,16 @@ import { interval } from '../utils.js';
 import { Variable } from '../variable.js';
 import { App } from '../app.js';
 
-type KebabCase<S extends string> = S extends `${infer Prefix}_${infer Suffix}`
-    ? `${Prefix}-${KebabCase<Suffix>}` : S;
+function kebabify(str: string) {
+    return str
+        .split('')
+        .map(char => char === char.toUpperCase()
+            ? '_' + char.toLowerCase()
+            : char,
+        )
+        .join('')
+        .replaceAll('_', '-');
+}
 
 type OnlyString<S extends string | unknown> = S extends string ? S : never;
 
@@ -172,12 +180,8 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 return;
 
             binds.forEach(([prop, obj, objProp = 'value', transform = out => out]) => {
-                this.bind(
-                    prop as KebabCase<OnlyString<keyof this>>,
-                    obj,
-                    objProp as KebabCase<keyof Props<typeof obj>>,
-                    transform,
-                );
+                // @ts-expect-error
+                this.bind(prop, obj, objProp, transform);
             });
         }
 
@@ -235,26 +239,20 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
          */
         bind<
             Prop extends keyof this, // keyof Props<this> doesn't work?
-            GObject extends GObject.Object,
-            ObjProp extends keyof Props<GObject>,
+            Gobject extends GObject.Object,
+            ObjProp extends keyof Props<Gobject>,
         >(
-            prop: KebabCase<OnlyString<Prop>>,
-            gobject: GObject,
-            objProp?: KebabCase<ObjProp>,
-            transform?: (value: typeof gobject[ObjProp]) => typeof this[Prop],
+            prop: Prop,
+            gobject: Gobject,
+            objProp?: ObjProp,
+            transform?: (value: Gobject[ObjProp]) => this[Prop],
         ) {
             const targetProp = objProp || 'value';
             const callback = transform
                 ? () => this[prop as Prop] = transform(gobject[targetProp as ObjProp])
                 : () => gobject[targetProp as ObjProp];
 
-            const regex = /^[a-z-]*$/;
-            if (!regex.test(targetProp)) {
-                console.warn(Error(`target prop ${targetProp} is not in kebab-case`));
-                return this;
-            }
-
-            this.connectTo(gobject, callback, `notify::${targetProp}`);
+            this.connectTo(gobject, callback, `notify::${kebabify(targetProp)}`);
             return this;
         }
 

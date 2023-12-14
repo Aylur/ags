@@ -7,6 +7,7 @@
 - feat: Utils.readFile and readFileAsync can take a Gio.File
 - improve Button, EventBox hover events
 - parse passed files starting with .
+- feat: binds targetProp can be in kebab, camel or snake case too
 
 # 1.5.4
 
