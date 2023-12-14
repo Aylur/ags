@@ -250,7 +250,10 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             const targetProp = objProp || 'value';
             const callback = transform
                 ? () => this[prop as Prop] = transform(gobject[targetProp as ObjProp])
-                : () => gobject[targetProp as ObjProp];
+                : () => {
+                    const v = gobject[targetProp as ObjProp];
+                    this[prop as Prop] = v as unknown as typeof this[Prop];
+                };
 
             this.connectTo(gobject, callback, `notify::${kebabify(targetProp)}`);
             return this;
