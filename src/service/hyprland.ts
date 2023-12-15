@@ -82,6 +82,7 @@ export class Actives extends Service {
 export class Hyprland extends Service {
     static {
         Service.register(this, {
+            'event': ['string', 'string'],
             'urgent-window': ['string'],
             'submap': ['string'],
             'keyboard-layout': ['string', 'string'],
@@ -236,6 +237,8 @@ export class Hyprland extends Service {
 
         const [e, params] = event.split('>>');
         const argv = params.split(',');
+
+        this.emit('event', e, params);
 
         try {
             switch (e) {
