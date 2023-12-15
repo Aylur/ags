@@ -49,6 +49,7 @@ export default class Service extends GObject.Object {
     }
 
     static register(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         service: new (...args: any[]) => GObject.Object,
         signals?: { [signal: string]: string[] },
         properties?: { [prop: string]: [type?: PspecType, handle?: PspecFlag] },

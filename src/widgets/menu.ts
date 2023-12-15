@@ -7,7 +7,9 @@ export interface MenuProps extends BaseProps<AgsMenu>, Gtk.Menu.ConstructorPrope
     children?: Gtk.Widget[]
     on_popup?: (
         self: AgsMenu,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         flipped_rect: any | null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         final_rect: any | null,
         flipped_x: boolean,
         flipped_y: boolean,
