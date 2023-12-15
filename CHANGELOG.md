@@ -1,4 +1,4 @@
-# Unreleased
+# 1.5.5
 
 ## Features
 - feat: support print from client with --run-js
@@ -8,6 +8,7 @@
 - improve Button, EventBox hover events
 - parse passed files starting with .
 - feat: binds targetProp can be in kebab, camel or snake case too
+- add: hook, on, poll, bind, attribute
 
 # 1.5.4
 
