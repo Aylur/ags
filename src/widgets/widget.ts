@@ -87,10 +87,14 @@ export interface BaseProps<Self> extends Gtk.Widget.ConstructorProperties {
     hpack?: Align
     vpack?: Align
     cursor?: Cursor
+    setup?: (self: Self) => void
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    attribute?: any
+
+    // FIXME: deprecated
     connections?: Connection<Self>[]
     properties?: Property[]
     binds?: Bind[],
-    setup?: (self: Self) => void
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,17 +114,18 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                     'hpack': Service.pspec('hpack', 'string', 'rw'),
                     'vpack': Service.pspec('vpack', 'string', 'rw'),
                     'cursor': Service.pspec('cursor', 'string', 'rw'),
+                    'is-destroyed': Service.pspec('is-destroyed', 'boolean', 'r'),
+                    'attribute': Service.pspec('attribute', 'jsobject', 'rw'),
 
-                    // order of these matter
+                    // FIXME: deprecated
                     'properties': pspec('properties'),
-                    'setup': pspec('setup'),
                     'connections': pspec('connections'),
                     'binds': pspec('binds'),
                 },
             }, this);
         }
 
-        _init(config?: Gtk.Widget.ConstructorProperties): void {
+        _init({ setup, ...config }: BaseProps<AgsWidget> = {}): void {
             super._init(config);
 
             this.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK);
@@ -128,9 +133,13 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
 
             this.connect('enter-notify-event', this._updateCursor.bind(this));
             this.connect('leave-notify-event', this._updateCursor.bind(this));
+            this.connect('destroy', () => this._set('is-destroyed', true));
+
+            if (setup)
+                setup(this);
         }
 
-        _destroyed = false;
+        get is_destroyed() { return this._get('is-destroyed') || false; }
 
         // defining private fields for typescript causes
         // gobject constructor field setters to be overridden
@@ -139,14 +148,17 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             return (this as unknown as { [key: string]: unknown })[`__${field}`] as T;
         }
 
-        _set<T>(field: string, value: T) {
+        _set<T>(field: string, value: T, notify = true) {
             if (this._get(field) === value)
                 return;
 
             (this as unknown as { [key: string]: T })[`__${field}`] = value;
-            this.notify(field);
+
+            if (notify)
+                this.notify(field);
         }
 
+        // FIXME: deprecated
         set connections(connections: Connection<AgsWidget>[]) {
             if (!connections)
                 return;
@@ -162,13 +174,14 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                     interval(s, () => callback(this), this);
 
                 else if (s instanceof GObject.Object)
-                    this.connectTo(s, callback, event);
+                    this.hook(s, callback, event);
 
                 else
                     console.error(Error(`${s} is not a GObject | string | number`));
             });
         }
 
+        // FIXME: deprecated
         set binds(binds: Bind[]) {
             if (!binds)
                 return;
@@ -179,6 +192,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             });
         }
 
+        // FIXME: deprecated
         set properties(properties: Property[]) {
             if (!properties)
                 return;
@@ -188,38 +202,50 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             });
         }
 
-        set setup(setup: (self: AgsWidget) => void) {
-            if (!setup)
-                return;
-
-            setup(this);
+        // FIXME: deprecated
+        connectTo<GObject extends GObject.Object>(
+            gobject: GObject,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            callback: (self: typeof this, ...args: any[]) => void,
+            signal?: string,
+        ) {
+            console.warn(Error('connectTo was renamed to hook'));
+            return this.hook(gobject, callback, signal);
         }
 
-        connectTo<GObject extends GObject.Object>(
-            o: GObject,
-            callback: (self: typeof this, ...args: unknown[]) => void,
-            event?: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        set attribute(attr: any) { this._set('attribute', attr); }
+        get attribute() { return this._get('attribute'); }
+
+        hook<GObject extends GObject.Object>(
+            gobject: GObject,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            callback: (self: typeof this, ...args: any[]) => void,
+            signal?: string,
         ) {
-            if (!(o instanceof GObject.Object)) {
-                console.error(Error(`${o} is not a GObject`));
+            if (!(gobject instanceof GObject.Object)) {
+                console.error(Error(`${gobject} is not a GObject`));
                 return this;
             }
 
-            if (!(o instanceof Service || o instanceof App || o instanceof Variable) && !event) {
+            if (!(gobject instanceof Service ||
+                gobject instanceof App ||
+                gobject instanceof Variable) &&
+                !signal) {
                 console.error(Error('you are trying to connect to a regular GObject ' +
                     'without specifying the signal'));
                 return this;
             }
 
-            const id = o.connect(event!, (_, ...args: unknown[]) => callback(this, ...args));
+            const id = gobject.connect(signal!, (_, ...args: unknown[]) => callback(this, ...args));
 
             this.connect('destroy', () => {
-                this._destroyed = true;
-                o.disconnect(id);
+                this._set('is-destroyed', true);
+                gobject.disconnect(id);
             });
 
             GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                if (!this._destroyed)
+                if (!this.is_destroyed)
                     callback(this);
 
                 return GLib.SOURCE_REMOVE;
@@ -228,9 +254,6 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             return this;
         }
 
-        /**
-         * NOTE: this can result in a runtime error if the types don't match
-         */
         bind<
             Prop extends keyof this, // keyof Props<this> doesn't work?
             Gobject extends GObject.Object,
@@ -249,11 +272,26 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                     this[prop] = v as unknown as typeof this[Prop];
                 };
 
-            this.connectTo(gobject, callback, `notify::${kebabify(targetProp)}`);
+            this.hook(gobject, callback, `notify::${kebabify(targetProp)}`);
             return this;
         }
 
-        setPack(orientation: 'h' | 'v', align: Align) {
+        on(
+            signal: string, // Parameters<this['connect']>[0], // this only has the last entry,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            callback: (self: this, ...args: any[]) => void,
+        ) {
+            this.connect(signal, callback);
+            return this;
+        }
+
+        poll(timeout: number, callback: (self: this) => void) {
+            callback(this);
+            interval(timeout, () => callback(this), this);
+            return this;
+        }
+
+        _setPack(orientation: 'h' | 'v', align: Align) {
             if (!align)
                 return;
 
@@ -266,17 +304,17 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             this[`${orientation}align`] = ALIGN[align];
         }
 
-        getPack(orientation: 'h' | 'v') {
+        _getPack(orientation: 'h' | 'v') {
             return Object.keys(ALIGN).find(align => {
                 return ALIGN[align as Align] === this[`${orientation}align`];
             }) as Align;
         }
 
-        get hpack() { return this.getPack('h'); }
-        set hpack(align: Align) { this.setPack('h', align); }
+        get hpack() { return this._getPack('h'); }
+        set hpack(align: Align) { this._setPack('h', align); }
 
-        get vpack() { return this.getPack('v'); }
-        set vpack(align: Align) { this.setPack('v', align); }
+        get vpack() { return this._getPack('v'); }
+        set vpack(align: Align) { this._setPack('v', align); }
 
         toggleClassName(className: string, condition = true) {
             const c = this.get_style_context();
