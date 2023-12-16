@@ -32,6 +32,7 @@ export interface WindowProps extends BaseProps<AgsWindow>, Gtk.Window.Constructo
     layer?: Layer
     margins?: number[]
     monitor?: number
+    gdkmonitor?: Gdk.Monitor
     popup?: boolean
     visible?: boolean
 
@@ -66,6 +67,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         layer = 'top',
         margins = [],
         monitor = -1,
+        gdkmonitor = undefined,
         popup = false,
         visible = true,
         ...params
@@ -81,9 +83,18 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         this.layer = layer;
         this.margins = margins;
         this.monitor = monitor;
+        if (gdkmonitor)
+            this.gdkmonitor = gdkmonitor;
         this.show_all();
         this.popup = popup;
         this.visible = visible === true || visible === null && !popup;
+    }
+
+    _gdkmonitor: Gdk.Monitor | null = null;
+    get gdkmonitor(): Gdk.Monitor { return this._gdkmonitor ?? this.monitor }
+    set gdkmonitor(monitor: Gdk.Monitor ) {
+        this._gdkmonitor = monitor;
+        LayerShell.set_monitor(this, monitor);
     }
 
     get monitor(): Gdk.Monitor { return this._get('monitor'); }
