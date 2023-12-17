@@ -13,13 +13,13 @@ interface Context {
     $dispose: () => void
 }
 
-export interface CircularProgressProps extends
-    BaseProps<AgsCircularProgress>, Gtk.Bin.ConstructorProperties {
+export type CircularProgressProps = BaseProps<AgsCircularProgress, Gtk.Bin.ConstructorProperties &
+{
     rounded?: boolean
     value?: number
     inverted?: boolean
     start_at?: number
-}
+}>
 
 export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
     static {
@@ -35,7 +35,9 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         }, this);
     }
 
-    constructor(props: CircularProgressProps = {}) { super(props); }
+    constructor(props: CircularProgressProps = {}) {
+        super(props as Gtk.Bin.ConstructorProperties);
+    }
 
     get rounded() { return this._get('rounded') || false; }
     set rounded(r: boolean) {

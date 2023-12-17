@@ -2,22 +2,10 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib?version=2.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service from '../service.js';
+import Service, { kebabify, Props, BindableProps, Binding } from '../service.js';
 import { interval } from '../utils.js';
 import { Variable } from '../variable.js';
 import { App } from '../app.js';
-
-const kebabify = (str: string) => str
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replaceAll('_', '-')
-    .toLowerCase();
-
-type OnlyString<S extends string | unknown> = S extends string ? S : never;
-
-type Props<T> = Pick<T, {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [K in keyof T]: T[K] extends (...args: any[]) => any ? never : OnlyString<K>
-}[keyof T]>;
 
 const ALIGN = {
     'fill': Gtk.Align.FILL,
@@ -76,28 +64,26 @@ export type Bind = [
     prop: string,
     obj: GObject.Object,
     objProp?: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     transform?: (value: any) => any,
 ];
 
-export interface BaseProps<Self> extends Gtk.Widget.ConstructorProperties {
+export type BaseProps<Self, Props> = {
+    setup?: (self: Self) => void
+} & BindableProps<Props & {
     class_name?: string
     class_names?: string[]
     css?: string
     hpack?: Align
     vpack?: Align
     cursor?: Cursor
-    setup?: (self: Self) => void
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     attribute?: any
 
     // FIXME: deprecated
     connections?: Connection<Self>[]
     properties?: Property[]
     binds?: Bind[],
-}
+}>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type WidgetCtor = new (...args: any[]) => Gtk.Widget;
 export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
     return class AgsWidget extends Widget {
@@ -125,8 +111,39 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             }, this);
         }
 
-        _init({ setup, ...config }: BaseProps<AgsWidget> = {}): void {
-            super._init(config);
+        _handleParamProp<
+            Prop extends keyof this
+        >(prop: Prop, value?: this[Prop] | Binding<any, any, this[Prop]>) {
+            if (value === undefined)
+                return;
+
+            if (value instanceof Binding)
+                this.bind(prop, value.emitter, value.prop, value.transformFn);
+            else
+                this[prop] = value;
+        }
+
+        _init(config: Gtk.Widget.ConstructorProperties = {}) {
+            // this type casting is here becaus _init's signature can't be altered
+            const params = config as BaseProps<AgsWidget, Gtk.Widget.ConstructorProperties>;
+            const { setup, ...props } = params;
+
+            const binds = (Object.keys(props) as Array<keyof typeof props>)
+                .map(prop => {
+                    if (props[prop] instanceof Binding) {
+                        const bind = [prop, props[prop]];
+                        delete props[prop];
+                        return bind;
+                    }
+                })
+                .filter(pair => pair);
+
+            super._init(props as Gtk.Widget.ConstructorProperties);
+
+            (binds as unknown as Array<[keyof typeof this, Binding<any, any, any>]>)
+                .forEach(([selfProp, { emitter, prop, transformFn }]) => {
+                    this.bind(selfProp, emitter, prop, transformFn);
+                });
 
             this.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK);
             this.add_events(Gdk.EventMask.LEAVE_NOTIFY_MASK);
@@ -205,7 +222,6 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         // FIXME: deprecated
         connectTo<GObject extends GObject.Object>(
             gobject: GObject,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             callback: (self: typeof this, ...args: any[]) => void,
             signal?: string,
         ) {
@@ -213,13 +229,11 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             return this.hook(gobject, callback, signal);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         set attribute(attr: any) { this._set('attribute', attr); }
         get attribute() { return this._get('attribute'); }
 
         hook<GObject extends GObject.Object>(
-            gobject: GObject,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            gobject: GObject | App,
             callback: (self: typeof this, ...args: any[]) => void,
             signal?: string,
         ) {
@@ -278,7 +292,6 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
 
         on(
             signal: string, // Parameters<this['connect']>[0], // this only has the last entry,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             callback: (self: this, ...args: any[]) => void,
         ) {
             this.connect(signal, callback);

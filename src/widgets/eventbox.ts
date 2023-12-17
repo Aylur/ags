@@ -4,9 +4,8 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import Service from '../service.js';
 
-type EventHandler = (self: AgsEventBox, event: Gdk.Event) => boolean | unknown;
-
-export interface EventBoxProps extends BaseProps<AgsEventBox>, Gtk.EventBox.ConstructorProperties {
+export type EventHandler = (self: AgsEventBox, event: Gdk.Event) => boolean | unknown;
+export type EventBoxProps = BaseProps<AgsEventBox, Gtk.EventBox.ConstructorProperties & {
     on_hover?: EventHandler
     on_hover_lost?: EventHandler
 
@@ -20,7 +19,7 @@ export interface EventBoxProps extends BaseProps<AgsEventBox>, Gtk.EventBox.Cons
     on_primary_click_release?: EventHandler
     on_middle_click_release?: EventHandler
     on_secondary_click_release?: EventHandler
-}
+}>
 
 export default class AgsEventBox extends AgsWidget(Gtk.EventBox) {
     static {
@@ -55,7 +54,7 @@ export default class AgsEventBox extends AgsWidget(Gtk.EventBox) {
     }
 
     constructor(props: EventBoxProps = {}) {
-        super(props);
+        super(props as Gtk.EventBox.ConstructorProperties);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
 

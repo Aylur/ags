@@ -14,9 +14,9 @@ const TRANSITION = {
 
 export type Transition = keyof typeof TRANSITION;
 
-export interface RevealerProps extends BaseProps<AgsRevealer>, Gtk.Revealer.ConstructorProperties {
+export type RevealerProps = BaseProps<AgsRevealer, Gtk.Revealer.ConstructorProperties & {
     transition?: Transition
-}
+}>
 
 export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
     static {
@@ -28,7 +28,9 @@ export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
         }, this);
     }
 
-    constructor(props: RevealerProps = {}) { super(props); }
+    constructor(props: RevealerProps = {}) {
+        super(props as Gtk.Revealer.ConstructorProperties);
+    }
 
     get transition() {
         return Object.keys(TRANSITION).find(key => {

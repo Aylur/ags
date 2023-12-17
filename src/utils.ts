@@ -110,11 +110,7 @@ export function loadInterfaceXML(iface: string) {
 
 export function bulkConnect(
     service: GObject.Object,
-    list: [
-        event: string,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        callback: (...args: any[]) => void
-    ][],
+    list: Array<[event: string, callback: (...args: any[]) => void]>,
 ) {
     const ids = [];
     for (const [event, callback] of list)

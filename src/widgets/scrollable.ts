@@ -12,11 +12,11 @@ const POLICY = {
 
 export type Policy = keyof typeof POLICY;
 
-export interface ScrollableProps extends
-    BaseProps<AgsScrollable>, Gtk.ScrolledWindow.ConstructorProperties {
+export type ScrollableProps = BaseProps<AgsScrollable, Gtk.ScrolledWindow.ConstructorProperties &
+{
     hscroll?: Policy,
     vscroll?: Policy,
-}
+}>
 
 export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
     static {
@@ -31,7 +31,7 @@ export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
 
     constructor(props: ScrollableProps = {}) {
         super({
-            ...props,
+            ...props as Gtk.ScrolledWindow.ConstructorProperties,
             hadjustment: new Gtk.Adjustment(),
             vadjustment: new Gtk.Adjustment(),
         });

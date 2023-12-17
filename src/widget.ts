@@ -19,7 +19,7 @@ import { AgsMenu, AgsMenuItem } from './widgets/menu.js';
 import AgsWindow from './widgets/window.js';
 import AgsCircularProgress from './widgets/circularprogress.js';
 
-function createCtor<T extends typeof Gtk.Widget>(Widget: T) {
+function createCtor<T extends { new(...args: any[]): any }>(Widget: T) {
     return (...props: ConstructorParameters<T>) => new Widget(...props) as InstanceType<T>;
 }
 
@@ -82,11 +82,11 @@ Widget.Window = Window;
 export function subclass<T extends typeof Gtk.Widget, Props>(W: T, GTypeName?: string) {
     class Widget extends AgsWidget(W, `Gtk${W.name}`) {
         static { GObject.registerClass({ GTypeName: GTypeName || `Ags${W.name}` }, this); }
-        constructor(props: BaseProps<InstanceType<T> & Widget> & Props) {
+        constructor(props?: BaseProps<Widget, Props>) {
             super(props as Gtk.Widget.ConstructorProperties);
         }
     }
-    return (props?: BaseProps<InstanceType<T> & Widget> & Props) => new Widget(props) as InstanceType<T> & Widget;
+    return (props?: BaseProps<Widget, Props>) => new Widget(props) as Widget & InstanceType<T>;
 }
 Widget.subclass = subclass;
 

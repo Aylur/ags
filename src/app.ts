@@ -103,7 +103,6 @@ export class App extends Gtk.Application {
         this._load();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     connect(signal = 'window-toggled', callback: (_: this, ...args: any[]) => void): number {
         return super.connect(signal, callback);
     }

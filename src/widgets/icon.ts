@@ -8,10 +8,10 @@ import Service from '../service.js';
 import cairo from '@girs/cairo-1.0';
 import { lookUpIcon } from '../utils.js';
 
-export interface Props extends BaseProps<AgsIcon>, Gtk.Image.ConstructorProperties {
+export type Props = BaseProps<AgsIcon, Gtk.Image.ConstructorProperties & {
     icon?: string | GdkPixbuf.Pixbuf
     size?: number
-}
+}>
 
 export type IconProps = Props | string | GdkPixbuf.Pixbuf | undefined
 
@@ -29,11 +29,13 @@ export default class AgsIcon extends AgsWidget(Gtk.Image) {
 
     constructor(props: IconProps = {}) {
         const { icon = '', ...rest } = props as Props;
-        super(typeof props === 'string' || props instanceof GdkPixbuf.Pixbuf ? {} : rest);
+        super(typeof props === 'string' || props instanceof GdkPixbuf.Pixbuf
+            ? {}
+            : rest as Gtk.Image.ConstructorProperties);
 
-        // jsobject pspec can't take a string, so we have to set it after constructor
-        this.icon = typeof props === 'string' || props instanceof GdkPixbuf.Pixbuf
-            ? props : icon;
+        // jsobject pspec can't take a string, so we have to set it after the constructor
+        this._handleParamProp('icon', typeof props === 'string' || props instanceof GdkPixbuf.Pixbuf
+            ? props : icon);
     }
 
     get size() { return this._get('size') || this._fontSize || 0; }

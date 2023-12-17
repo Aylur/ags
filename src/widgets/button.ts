@@ -6,7 +6,7 @@ import Service from '../service.js';
 
 type EventHandler = (self: AgsButton, event: Gdk.Event) => boolean | unknown;
 
-export interface ButtonProps extends BaseProps<AgsButton>, Gtk.Button.ConstructorProperties {
+export type ButtonProps = BaseProps<AgsButton, Gtk.Button.ConstructorProperties & {
     on_clicked?: (self: AgsButton) => void
 
     on_hover?: EventHandler
@@ -22,7 +22,7 @@ export interface ButtonProps extends BaseProps<AgsButton>, Gtk.Button.Constructo
     on_primary_click_release?: EventHandler
     on_middle_click_release?: EventHandler
     on_secondary_click_release?: EventHandler
-}
+}>;
 
 export default class AgsButton extends AgsWidget(Gtk.Button) {
     static {
@@ -59,7 +59,7 @@ export default class AgsButton extends AgsWidget(Gtk.Button) {
     }
 
     constructor(props: ButtonProps = {}) {
-        super(props);
+        super(props as Gtk.Button.ConstructorProperties);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
 
@@ -107,7 +107,7 @@ export default class AgsButton extends AgsWidget(Gtk.Button) {
     }
 
     get on_clicked() { return this._get('on-clicked'); }
-    set on_clicked(callback: ButtonProps['on_clicked']) {
+    set on_clicked(callback: (self: AgsButton) => void) {
         this._set('on-clicked', callback);
     }
 

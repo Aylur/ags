@@ -22,10 +22,10 @@ const TRUNCATE = {
 export type Justification = keyof typeof JUSTIFICATION;
 export type Truncate = keyof typeof TRUNCATE;
 
-export interface Props extends BaseProps<AgsLabel>, Gtk.Label.ConstructorProperties {
+export type Props = BaseProps<AgsLabel, Gtk.Label.ConstructorProperties & {
     justification?: Justification
     truncate?: Truncate
-}
+}>
 
 export type LabelProps = Props | string | undefined
 
@@ -41,7 +41,8 @@ export default class AgsLabel extends AgsWidget(Gtk.Label) {
     }
 
     constructor(props: LabelProps = {}) {
-        super(typeof props === 'string' ? { label: props } : props);
+        const config = props as Gtk.Label.ConstructorProperties;
+        super(typeof props === 'string' ? { label: props } : config);
     }
 
     get label() { return super.label || ''; }

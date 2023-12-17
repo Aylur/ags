@@ -28,11 +28,11 @@ const TRANSITION = {
 
 export type Transition = keyof typeof TRANSITION;
 
-export interface StackProps extends BaseProps<AgsStack>, Gtk.Stack.ConstructorProperties {
+export type StackProps = BaseProps<AgsStack, Gtk.Stack.ConstructorProperties & {
     shown?: string
     items?: [string, Gtk.Widget][]
     transition?: Transition
-}
+}>
 
 export default class AgsStack extends AgsWidget(Gtk.Stack) {
     static {
@@ -46,7 +46,9 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
         }, this);
     }
 
-    constructor(props: StackProps = {}) { super(props); }
+    constructor(props: StackProps = {}) {
+        super(props as Gtk.Stack.ConstructorProperties);
+    }
 
     add_named(child: Gtk.Widget, name: string): void {
         this.items.push([name, child]);

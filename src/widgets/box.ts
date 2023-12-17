@@ -3,10 +3,10 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Service from '../service.js';
 
-export interface BoxProps<T> extends BaseProps<T>, Gtk.Box.ConstructorProperties {
+export type BoxProps = BaseProps<AgsBox, Gtk.Box.ConstructorProperties & {
     children?: Gtk.Widget[]
     vertical?: boolean
-}
+}>;
 
 export default class AgsBox extends AgsWidget(Gtk.Box) {
     static {
@@ -19,7 +19,9 @@ export default class AgsBox extends AgsWidget(Gtk.Box) {
         }, this);
     }
 
-    constructor(props: BoxProps<AgsBox> = {}) { super(props); }
+    constructor(props: BoxProps = {}) {
+        super(props as Gtk.Box.ConstructorProperties);
+    }
 
     get children() { return this.get_children(); }
     set children(children: Gtk.Widget[]) {

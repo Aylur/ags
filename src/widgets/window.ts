@@ -2,7 +2,7 @@ import AgsWidget, { type BaseProps } from './widget.js';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service from '../service.js';
+import Service, { Binding } from '../service.js';
 import App from '../app.js';
 // @ts-expect-error missing types FIXME:
 import { default as LayerShell } from 'gi://GtkLayerShell';
@@ -25,7 +25,7 @@ export type Layer = keyof typeof LAYER;
 export type Anchor = keyof typeof ANCHOR;
 export type Exclusivity = 'normal' | 'ignore' | 'exclusive';
 
-export interface WindowProps extends BaseProps<AgsWindow>, Gtk.Window.ConstructorProperties {
+export type WindowProps = BaseProps<AgsWindow, Gtk.Window.ConstructorProperties & {
     anchor?: Anchor[]
     exclusivity?: Exclusivity
     focusable?: boolean
@@ -37,7 +37,7 @@ export interface WindowProps extends BaseProps<AgsWindow>, Gtk.Window.Constructo
 
     // FIXME: deprecated
     exclusive?: boolean
-}
+}>
 
 export default class AgsWindow extends AgsWidget(Gtk.Window) {
     static {
@@ -70,20 +70,27 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         visible = true,
         ...params
     }: WindowProps = {}) {
-        super(params);
+        super(params as Gtk.Window.ConstructorProperties);
         LayerShell.init_for_window(this);
         LayerShell.set_namespace(this, this.name);
 
-        this.anchor = anchor;
-        this.exclusivity = exclusivity;
-        this.exclusive = exclusive;
-        this.focusable = focusable;
-        this.layer = layer;
-        this.margins = margins;
-        this.monitor = monitor;
+        this._handleParamProp('anchor', anchor);
+        this._handleParamProp('exclusive', exclusive);
+        this._handleParamProp('exclusivity', exclusivity);
+        this._handleParamProp('focusable', focusable);
+        this._handleParamProp('layer', layer);
+        this._handleParamProp('margins', margins);
+
+        // @ts-expect-error
+        this._handleParamProp('monitor', monitor);
+
         this.show_all();
-        this.popup = popup;
-        this.visible = visible === true || visible === null && !popup;
+        this._handleParamProp('popup', popup);
+
+        if (visible instanceof Binding)
+            this._handleParamProp('visible', visible);
+        else
+            this.visible = visible === true || visible === null && !popup;
     }
 
     get monitor(): Gdk.Monitor { return this._get('monitor'); }
@@ -103,7 +110,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
 
     // FIXME: deprecated
     get exclusive() { return LayerShell.auto_exclusive_zone_is_enabled(this); }
-    set exclusive(exclusive: boolean | undefined) {
+    set exclusive(exclusive: boolean) {
         if (exclusive === undefined)
             return;
 

@@ -17,14 +17,14 @@ export type Position = keyof typeof POSITION;
 
 export type Mark = [number, string?, Position?] | number;
 
-export interface SliderProps extends BaseProps<AgsSlider>, Gtk.Scale.ConstructorProperties {
+export type SliderProps = BaseProps<AgsSlider, Gtk.Scale.ConstructorProperties & {
     on_change?: EventHandler,
     value?: number
     min?: number
     max?: number
     step?: number
     marks?: Mark[]
-}
+}>
 
 export default class AgsSlider extends AgsWidget(Gtk.Scale) {
     static {
@@ -51,16 +51,15 @@ export default class AgsSlider extends AgsWidget(Gtk.Scale) {
         ...rest
     }: SliderProps = {}) {
         super({
-            ...rest,
-            adjustment: new Gtk.Adjustment({
-                lower: min,
-                upper: max,
-                step_increment: step,
-                value: value,
-            }),
+            adjustment: new Gtk.Adjustment,
+            ...rest as Gtk.Scale.ConstructorProperties,
         });
 
-        this.marks = marks;
+        this._handleParamProp('value', value);
+        this._handleParamProp('min', min);
+        this._handleParamProp('max', max);
+        this._handleParamProp('step', step);
+        this._handleParamProp('marks', marks);
 
         this.adjustment.connect('notify::value', (_, event: Gdk.Event) => {
             if (!this.dragging)

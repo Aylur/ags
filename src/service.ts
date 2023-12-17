@@ -1,7 +1,44 @@
 import GObject from 'gi://GObject';
 
-type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'double' | 'boolean' | 'gobject';
-type PspecFlag = 'rw' | 'r' | 'w';
+export type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'double' | 'boolean' | 'gobject';
+export type PspecFlag = 'rw' | 'r' | 'w';
+
+export const kebabify = (str: string) => str
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replaceAll('_', '-')
+    .toLowerCase();
+
+export type OnlyString<S extends string | unknown> = S extends string ? S : never;
+
+export type Props<T> = Pick<T, {
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? never : OnlyString<K>
+}[keyof T]>;
+
+export type BindableProps<T> = {
+    [K in keyof T]: Binding<any, any, NonNullable<T[K]>> | T[K];
+}
+
+export class Binding<
+    Emitter extends GObject.Object,
+    Prop extends keyof Props<Emitter>,
+    Return = Emitter[Prop],
+> {
+    emitter: Emitter;
+    prop: Prop;
+    transformFn = (v: Return) => v;
+    constructor(emitter: Emitter, prop: Prop) {
+        this.emitter = emitter;
+        this.prop = prop;
+    }
+
+    transform<T>(fn: (v: Return) => T) {
+        const bind = new Binding<Emitter, Prop, T>(this.emitter, this.prop);
+        const prev = bind.transformFn;
+        // @ts-expect-error
+        bind.transformFn = (v: Return) => fn(prev(v));
+        return bind;
+    }
+}
 
 export default class Service extends GObject.Object {
     static {
@@ -49,7 +86,6 @@ export default class Service extends GObject.Object {
     }
 
     static register(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         service: new (...args: any[]) => GObject.Object,
         signals?: { [signal: string]: string[] },
         properties?: { [prop: string]: [type?: PspecType, handle?: PspecFlag] },
@@ -79,8 +115,7 @@ export default class Service extends GObject.Object {
         GObject.registerClass({ Signals, Properties }, service);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    connect(signal = 'changed', callback: (_: typeof this, ...args: any[]) => void): number {
+    connect(signal = 'changed', callback: (_: this, ...args: any[]) => void): number {
         return super.connect(signal, callback);
     }
 
@@ -103,5 +138,8 @@ export default class Service extends GObject.Object {
         this.notify(property);
         this.emit('changed');
     }
-}
 
+    bind<Prop extends keyof Props<this>>(prop: Prop) {
+        return new Binding(this, prop);
+    }
+}

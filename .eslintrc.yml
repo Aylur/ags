@@ -24,9 +24,10 @@ rules:
     - 'off'
   '@typescript-eslint/no-non-null-assertion':
     - 'off'
+  '@typescript-eslint/no-explicit-any':
+    - 'off'
   '@typescript-eslint/no-unused-vars':
     - error
-    # Vars use a suffix _ instead of a prefix because of file-scope private vars
     - varsIgnorePattern: (^unused|_$)
       argsIgnorePattern: ^(unused|_)
 
