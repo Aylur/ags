@@ -126,7 +126,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         _init(config: Gtk.Widget.ConstructorProperties = {}) {
             // this type casting is here becaus _init's signature can't be altered
             const params = config as BaseProps<AgsWidget, Gtk.Widget.ConstructorProperties>;
-            const { setup, ...props } = params;
+            const { setup, attribute, ...props } = params;
 
             const binds = (Object.keys(props) as Array<keyof typeof props>)
                 .map(prop => {
@@ -139,6 +139,9 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 .filter(pair => pair);
 
             super._init(props as Gtk.Widget.ConstructorProperties);
+
+            if (attribute)
+                this.attribute = attribute;
 
             (binds as unknown as Array<[keyof typeof this, Binding<any, any, any>]>)
                 .forEach(([selfProp, { emitter, prop, transformFn }]) => {
