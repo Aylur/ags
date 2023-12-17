@@ -1,3 +1,8 @@
+# Unreleased
+
+## Features
+- feat: Service.bind and Variable.bind
+
 # 1.5.5
 
 ## Features
