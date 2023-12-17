@@ -35,11 +35,13 @@
     <file>service/mpris.js</file>
     <file>service/network.js</file>
     <file>service/notifications.js</file>
+    <file>service/powerprofiles.js</file>
     <file>service/systemtray.js</file>
 
     <file>dbus/types.js</file>
     <file>dbus/com.github.Aylur.ags.xml</file>
     <file>dbus/com.github.Aylur.ags.client.xml</file>
+    <file>dbus/net.hadess.PowerProfiles.xml</file>
     <file>dbus/org.freedesktop.DBus.xml</file>
     <file>dbus/org.freedesktop.Notifications.xml</file>
     <file>dbus/org.freedesktop.UPower.Device.xml</file>
