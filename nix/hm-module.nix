@@ -4,23 +4,30 @@ self: {
   lib,
   ...
 }: let
-  cfg = config.programs.ags;
+  inherit (lib) mkMerge types;
+  inherit (lib.modules) mkIf;
+  inherit (lib.lists) optional;
+  inherit (lib.options) mkOption mkEnableOption literalExpression;
+
   defaultAgsPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  cfg = config.programs.ags;
 in {
-  meta.maintainers = [
-    lib.maintainers.Jappie3
-    lib.maintainers.Aylur
+  meta.maintainers = with lib.maintainers; [
+    Jappie3
+    Aylur
   ];
 
-  options.programs.ags = with lib; {
+  options.programs.ags = {
     enable = mkEnableOption "ags";
 
     package = mkOption {
       type = with types; nullOr package;
       default = defaultAgsPackage;
-      defaultText = literalExpression "ags.packages.${pkgs.stdenv.hostPlatform.system}.default";
-      description = mkDoc ''
-        The Ags package to use. Defaults to the one provided by the flake.
+      defaultText = literalExpression "inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.default";
+      description = ''
+        The Ags package to use.
+
+        By default, this option will use the `packages.default` as exposed by this flake.
       '';
     };
 
@@ -28,7 +35,7 @@ in {
       type = with types; nullOr path;
       default = null;
       example = literalExpression "./ags-config";
-      description = mkDoc ''
+      description = ''
         The directory to symlink to {file}`$XDG_CONFIG_HOME/ags`.
       '';
     };
@@ -36,19 +43,19 @@ in {
     extraPackages = mkOption {
       type = with types; listOf package;
       default = [];
-      description = mkDoc ''
+      description = ''
         Additional packages to add to gjs's runtime.
       '';
-      example = lib.literalExpression "[ pkgs.libsoup_3 ]";
+      example = literalExpression "[ pkgs.libsoup_3 ]";
     };
   };
 
-  config = with lib; mkIf cfg.enable (mkMerge [
+  config = mkIf cfg.enable (mkMerge [
     (mkIf (cfg.configDir != null) {
       xdg.configFile."ags".source = cfg.configDir;
     })
     {
-      home.packages = lib.optional (cfg.package != null) (cfg.package.override {
+      home.packages = optional (cfg.package != null) (cfg.package.override {
         extraPackages = cfg.extraPackages;
       });
     }
