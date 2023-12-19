@@ -1,8 +1,6 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service from '../service.js';
 
 type EventHandler = (self: AgsButton, event: Gdk.Event) => boolean | unknown;
 
@@ -26,36 +24,25 @@ export type ButtonProps = BaseProps<AgsButton, Gtk.Button.ConstructorProperties 
 
 export default class AgsButton extends AgsWidget(Gtk.Button) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsButton',
-            Properties: {
-                'on-clicked': Service.pspec('on-clicked', 'jsobject', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'on-clicked': ['jsobject', 'rw'],
 
-                'on-hover':
-                    Service.pspec('on-hover', 'jsobject', 'rw'),
-                'on-hover-lost':
-                    Service.pspec('on-hover-lost', 'jsobject', 'rw'),
+                'on-hover': ['jsobject', 'rw'],
+                'on-hover-lost': ['jsobject', 'rw'],
 
-                'on-scroll-up':
-                    Service.pspec('on-scroll-up', 'jsobject', 'rw'),
-                'on-scroll-down':
-                    Service.pspec('on-scroll-down', 'jsobject', 'rw'),
+                'on-scroll-up': ['jsobject', 'rw'],
+                'on-scroll-down': ['jsobject', 'rw'],
 
-                'on-primary-click':
-                    Service.pspec('on-primary-click', 'jsobject', 'rw'),
-                'on-secondary-click':
-                    Service.pspec('on-secondary-click', 'jsobject', 'rw'),
-                'on-middle-click':
-                    Service.pspec('on-middle-click', 'jsobject', 'rw'),
+                'on-primary-click': ['jsobject', 'rw'],
+                'on-secondary-click': ['jsobject', 'rw'],
+                'on-middle-click': ['jsobject', 'rw'],
 
-                'on-primary-click-release':
-                    Service.pspec('on-primary-click-release', 'jsobject', 'rw'),
-                'on-secondary-click-release':
-                    Service.pspec('on-secondary-click-release', 'jsobject', 'rw'),
-                'on-middle-click-release':
-                    Service.pspec('on-middle-click-release', 'jsobject', 'rw'),
+                'on-primary-click-release': ['jsobject', 'rw'],
+                'on-secondary-click-release': ['jsobject', 'rw'],
+                'on-middle-click-release': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: ButtonProps = {}) {

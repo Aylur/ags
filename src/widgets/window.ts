@@ -1,8 +1,7 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service, { Binding } from '../service.js';
+import { Binding } from '../service.js';
 import App from '../app.js';
 // @ts-expect-error missing types FIXME:
 import { default as LayerShell } from 'gi://GtkLayerShell';
@@ -41,19 +40,18 @@ export type WindowProps = BaseProps<AgsWindow, Gtk.Window.ConstructorProperties 
 
 export default class AgsWindow extends AgsWidget(Gtk.Window) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsWindow',
-            Properties: {
-                'anchor': Service.pspec('anchor', 'jsobject', 'rw'),
-                'exclusive': Service.pspec('exclusive', 'boolean', 'rw'),
-                'exclusivity': Service.pspec('exclusivity', 'string', 'rw'),
-                'focusable': Service.pspec('focusable', 'boolean', 'rw'),
-                'layer': Service.pspec('layer', 'string', 'rw'),
-                'margins': Service.pspec('margins', 'jsobject', 'rw'),
-                'monitor': Service.pspec('monitor', 'int', 'rw'),
-                'popup': Service.pspec('popup', 'boolean', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'anchor': ['jsobject', 'rw'],
+                'exclusive': ['boolean', 'rw'],
+                'exclusivity': ['string', 'rw'],
+                'focusable': ['boolean', 'rw'],
+                'layer': ['string', 'rw'],
+                'margins': ['jsobject', 'rw'],
+                'monitor': ['int', 'rw'],
+                'popup': ['boolean', 'rw'],
             },
-        }, this);
+        });
     }
 
     // the window has to be set as a layer,

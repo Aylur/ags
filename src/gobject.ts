@@ -58,6 +58,7 @@ export function registerGObject<
         typename?: string,
         signals?: { [signal: string]: PspecType[] },
         properties?: { [prop: string]: [type?: PspecType, handle?: PspecFlag] },
+        cssName?: string,
     },
 >(object: Obj, config?: Config) {
     const Signals: {
@@ -82,9 +83,9 @@ export function registerGObject<
         );
     }
 
-    GObject.registerClass({
+    GObject.registerClass(Object.assign({
         GTypeName: config?.typename || `Ags_${object.name}`,
         Signals,
         Properties,
-    }, object);
+    }, config?.cssName ? { CssName: config.cssName } : {}), object);
 }

@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
 import Gtk from 'gi://Gtk?version=3.0';
-import GObject from 'gi://GObject?version=2.0';
 import AgsWidget, { type BaseProps, type Connectable } from './widgets/widget.js';
 import AgsBox from './widgets/box.js';
 import AgsCenterBox from './widgets/centerbox.js';
@@ -85,9 +84,9 @@ Widget.Stack = Stack;
 Widget.Window = Window;
 
 Widget.subclass = subclass;
-export function subclass<T extends typeof Gtk.Widget, Props>(W: T, GTypeName = W.name) {
+export function subclass<T extends typeof Gtk.Widget, Props>(W: T, typename = W.name) {
     class Widget extends AgsWidget(W) {
-        static { GObject.registerClass({ GTypeName }, this); }
+        static { AgsWidget.register(this, { typename }); }
         constructor(props?: BaseProps<Widget, Props>) {
             super(props as Gtk.Widget.ConstructorProperties);
         }

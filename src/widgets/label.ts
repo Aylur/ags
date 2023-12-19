@@ -1,9 +1,7 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
-import Service from '../service.js';
 
 const JUSTIFICATION = {
     'left': Gtk.Justification.LEFT,
@@ -31,13 +29,12 @@ export type LabelProps = Props | string | undefined
 
 export default class AgsLabel extends AgsWidget(Gtk.Label) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsLabel',
-            Properties: {
-                'justification': Service.pspec('justification', 'string', 'rw'),
-                'truncate': Service.pspec('truncate', 'string', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'justification': ['string', 'rw'],
+                'truncate': ['string', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: LabelProps = {}) {

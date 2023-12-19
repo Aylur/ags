@@ -1,8 +1,6 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service from '../service.js';
 
 export type EventHandler = (self: AgsSlider, event: Gdk.Event) => void | unknown;
 
@@ -28,18 +26,17 @@ export type SliderProps = BaseProps<AgsSlider, Gtk.Scale.ConstructorProperties &
 
 export default class AgsSlider extends AgsWidget(Gtk.Scale) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsSlider',
-            Properties: {
-                'dragging': Service.pspec('dragging', 'boolean', 'r'),
-                'vertical': Service.pspec('vertical', 'boolean', 'rw'),
-                'value': Service.pspec('value', 'double', 'rw'),
-                'min': Service.pspec('min', 'double', 'rw'),
-                'max': Service.pspec('max', 'double', 'rw'),
-                'step': Service.pspec('step', 'double', 'rw'),
-                'on-change': Service.pspec('on-change', 'jsobject', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'dragging': ['boolean', 'r'],
+                'vertical': ['boolean', 'rw'],
+                'value': ['double', 'rw'],
+                'min': ['double', 'rw'],
+                'max': ['double', 'rw'],
+                'step': ['double', 'rw'],
+                'on-change': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor({

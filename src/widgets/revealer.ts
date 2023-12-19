@@ -1,7 +1,5 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
 const TRANSITION = {
     'none': Gtk.RevealerTransitionType.NONE,
@@ -20,12 +18,9 @@ export type RevealerProps = BaseProps<AgsRevealer, Gtk.Revealer.ConstructorPrope
 
 export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsRevealer',
-            Properties: {
-                'transition': Service.pspec('transition', 'string', 'rw'),
-            },
-        }, this);
+        AgsWidget.register(this, {
+            properties: { 'transition': ['string', 'rw'] },
+        });
     }
 
     constructor(props: RevealerProps = {}) {

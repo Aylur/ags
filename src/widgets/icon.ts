@@ -1,10 +1,9 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service, { Binding } from '../service.js';
+import { Binding } from '../service.js';
 import cairo from '@girs/cairo-1.0';
 import { lookUpIcon } from '../utils.js';
 
@@ -21,14 +20,13 @@ export type IconProps = Props | string | GdkPixbuf.Pixbuf | undefined
 
 export default class AgsIcon extends AgsWidget(Gtk.Image) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsIcon',
-            Properties: {
-                'size': Service.pspec('size', 'double', 'rw'),
-                'icon': Service.pspec('icon', 'jsobject', 'rw'),
-                'type': Service.pspec('type', 'string', 'r'),
+        AgsWidget.register(this, {
+            properties: {
+                'size': ['double', 'rw'],
+                'icon': ['jsobject', 'rw'],
+                'type': ['string', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: IconProps = {}) {

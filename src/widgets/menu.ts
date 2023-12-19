@@ -1,7 +1,5 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
 type MenuEventHandler = {
     on_popup?: (
@@ -20,14 +18,13 @@ export type MenuProps = BaseProps<AgsMenu, Gtk.Menu.ConstructorProperties & {
 
 export class AgsMenu extends AgsWidget(Gtk.Menu) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsMenu',
-            Properties: {
-                'children': Service.pspec('children', 'jsobject', 'rw'),
-                'on-popup': Service.pspec('on-popup', 'jsobject', 'rw'),
-                'on-move-scroll': Service.pspec('on-move-scroll', 'jsobject', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'children': ['jsobject', 'rw'],
+                'on-popup': ['jsobject', 'rw'],
+                'on-move-scroll': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: MenuProps = {}) {
@@ -71,14 +68,13 @@ export type MenuItemProps = BaseProps<AgsMenuItem, Gtk.MenuItem.ConstructorPrope
 
 export class AgsMenuItem extends AgsWidget(Gtk.MenuItem) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsMenuItem',
-            Properties: {
-                'on-activate': Service.pspec('on-activate', 'jsobject', 'rw'),
-                'on-select': Service.pspec('on-select', 'jsobject', 'rw'),
-                'on-deselect': Service.pspec('on-deselect', 'jsobject', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'on-activate': ['jsobject', 'rw'],
+                'on-select': ['jsobject', 'rw'],
+                'on-deselect': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: MenuItemProps = {}) {

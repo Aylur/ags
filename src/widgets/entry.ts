@@ -1,7 +1,5 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
 export type EventHandler = (self: AgsEntry) => void | unknown;
 export type EntryProps = BaseProps<AgsEntry, Gtk.Entry.ConstructorProperties & {
@@ -11,13 +9,12 @@ export type EntryProps = BaseProps<AgsEntry, Gtk.Entry.ConstructorProperties & {
 
 export default class AgsEntry extends AgsWidget(Gtk.Entry) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsEntry',
-            Properties: {
-                'on-accept': Service.pspec('on-accept', 'jsobject', 'rw'),
-                'on-change': Service.pspec('on-change', 'jsobject', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'on-accept': ['jsobject', 'rw'],
+                'on-change': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: EntryProps = {}) {

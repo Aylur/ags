@@ -1,7 +1,5 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
 export type OverlayProps = BaseProps<AgsOverlay, Gtk.Overlay.ConstructorProperties & {
     pass_through?: boolean
@@ -10,13 +8,12 @@ export type OverlayProps = BaseProps<AgsOverlay, Gtk.Overlay.ConstructorProperti
 
 export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsOverlay',
-            Properties: {
-                'pass-through': Service.pspec('pass-through', 'boolean', 'rw'),
-                'overlays': Service.pspec('overlays', 'jsobject', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'pass-through': ['boolean', 'rw'],
+                'overlays': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: OverlayProps = {}) {

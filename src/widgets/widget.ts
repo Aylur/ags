@@ -88,27 +88,13 @@ export type BaseProps<Self extends Gtk.Widget, Props> = {
 AgsWidget.register = register;
 export function register<T extends WidgetCtor>(
     klass: T,
-    config: Parameters<typeof registerGObject>[1],
+    config: Parameters<typeof registerGObject>[1] & { cssName?: string },
 ) {
     registerGObject(klass, {
+        cssName: config?.cssName,
         typename: config?.typename || `Ags_${klass.name}`,
-        signals: config?.signals || {},
-        properties: {
-            ...config?.properties,
-            'class-name': ['string', 'rw'],
-            'class-names': ['jsobject', 'rw'],
-            'css': ['string', 'rw'],
-            'hpack': ['string', 'rw'],
-            'vpack': ['string', 'rw'],
-            'cursor': ['string', 'rw'],
-            'is-destroyed': ['boolean', 'r'],
-            'attribute': ['jsobject', 'rw'],
-
-            // FIXME: deprecated
-            'properties': ['jsobject', 'w'],
-            'connections': ['jsobject', 'w'],
-            'binds': ['jsobject', 'w'],
-        },
+        signals: config?.signals,
+        properties: config?.properties,
     });
 }
 
@@ -206,18 +192,32 @@ type WidgetCtor = new (...args: any[]) => Gtk.Widget;
 export default function AgsWidget<
     W extends WidgetCtor,
     Self extends InstanceType<W>,
->(Widget: W, GTypeName = Widget.name) {
+>(Widget: W, typename = Widget.name) {
     return class AgsWidget extends Widget {
         static {
-            // TODO: remove this and move them to each subclass
-            register(this, { typename: `Ags_${GTypeName}` });
             Object.getOwnPropertyNames(Connectable.prototype).forEach(name => {
-                Object.defineProperty(
-                    this.prototype,
-                    name,
+                Object.defineProperty(this.prototype, name,
                     Object.getOwnPropertyDescriptor(Connectable.prototype, name) ||
                     Object.create(null),
                 );
+            });
+            registerGObject(this, {
+                typename: `AgsBase_${typename}`,
+                properties: {
+                    'class-name': ['string', 'rw'],
+                    'class-names': ['jsobject', 'rw'],
+                    'css': ['string', 'rw'],
+                    'hpack': ['string', 'rw'],
+                    'vpack': ['string', 'rw'],
+                    'cursor': ['string', 'rw'],
+                    'is-destroyed': ['boolean', 'r'],
+                    'attribute': ['jsobject', 'rw'],
+
+                    // FIXME: deprecated
+                    'properties': ['jsobject', 'w'],
+                    'connections': ['jsobject', 'w'],
+                    'binds': ['jsobject', 'w'],
+                },
             });
         }
 

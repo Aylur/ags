@@ -2,6 +2,7 @@
 
 ## Features
 - feat: Service.bind and Variable.bind
+- feat: AgsWidget.register
 
 # 1.5.5
 

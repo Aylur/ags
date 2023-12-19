@@ -1,7 +1,5 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
 const TRANSITION = {
     'none': Gtk.StackTransitionType.NONE,
@@ -36,14 +34,13 @@ export type StackProps = BaseProps<AgsStack, Gtk.Stack.ConstructorProperties & {
 
 export default class AgsStack extends AgsWidget(Gtk.Stack) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsStack',
-            Properties: {
-                'transition': Service.pspec('transition', 'string', 'rw'),
-                'shown': Service.pspec('shown', 'string', 'rw'),
-                'items': Service.pspec('items', 'jsobject', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'transition': ['string', 'rw'],
+                'shown': ['string', 'rw'],
+                'items': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: StackProps = {}) {
