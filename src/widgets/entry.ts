@@ -25,6 +25,7 @@ export default class AgsEntry extends AgsWidget(Gtk.Entry) {
 
         this.connect('activate', () => this.on_accept?.(this));
         this.connect('notify::text', () => this.on_change?.(this));
+        this.connect('backspace', () => this.on_change?.(this));
     }
 
     get on_accept() { return this._get('on-accept'); }
