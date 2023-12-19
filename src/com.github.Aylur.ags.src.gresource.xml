@@ -8,6 +8,7 @@
     <file>utils.js</file>
     <file>variable.js</file>
     <file>widget.js</file>
+    <file>gobject.js</file>
 
     <file>widgets/widget.js</file>
     <file>widgets/box.js</file>

@@ -3,6 +3,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib?version=2.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import Service, { kebabify, Props, BindableProps, Binding } from '../service.js';
+import { registerGObject } from '../gobject.js';
 import { interval } from '../utils.js';
 import { Variable } from '../variable.js';
 import { App } from '../app.js';
@@ -67,8 +68,8 @@ export type Bind = [
     transform?: (value: any) => any,
 ];
 
-export type BaseProps<Self, Props> = {
-    setup?: (self: Self) => void
+export type BaseProps<Self extends Gtk.Widget, Props> = {
+    setup?: (self: Connectable<Self> & Self) => void
 } & BindableProps<Props & {
     class_name?: string
     class_names?: string[]
@@ -84,43 +85,140 @@ export type BaseProps<Self, Props> = {
     binds?: Bind[],
 }>
 
-type WidgetCtor = new (...args: any[]) => Gtk.Widget;
-export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
-    return class AgsWidget extends Widget {
-        static {
-            const pspec = (name: string) => GObject.ParamSpec.jsobject(
-                name, name, name, GObject.ParamFlags.CONSTRUCT_ONLY | GObject.ParamFlags.WRITABLE);
+AgsWidget.register = register;
+export function register<T extends WidgetCtor>(
+    klass: T,
+    config: Parameters<typeof registerGObject>[1],
+) {
+    registerGObject(klass, {
+        typename: config?.typename || `Ags_${klass.name}`,
+        signals: config?.signals || {},
+        properties: {
+            ...config?.properties,
+            'class-name': ['string', 'rw'],
+            'class-names': ['jsobject', 'rw'],
+            'css': ['string', 'rw'],
+            'hpack': ['string', 'rw'],
+            'vpack': ['string', 'rw'],
+            'cursor': ['string', 'rw'],
+            'is-destroyed': ['boolean', 'r'],
+            'attribute': ['jsobject', 'rw'],
 
-            GObject.registerClass({
-                GTypeName: `Ags_${GTypeName || Widget.name}`,
-                Properties: {
-                    'class-name': Service.pspec('class-name', 'string', 'rw'),
-                    'class-names': Service.pspec('class-names', 'jsobject', 'rw'),
-                    'css': Service.pspec('css', 'string', 'rw'),
-                    'hpack': Service.pspec('hpack', 'string', 'rw'),
-                    'vpack': Service.pspec('vpack', 'string', 'rw'),
-                    'cursor': Service.pspec('cursor', 'string', 'rw'),
-                    'is-destroyed': Service.pspec('is-destroyed', 'boolean', 'r'),
-                    'attribute': Service.pspec('attribute', 'jsobject', 'rw'),
+            // FIXME: deprecated
+            'properties': ['jsobject', 'w'],
+            'connections': ['jsobject', 'w'],
+            'binds': ['jsobject', 'w'],
+        },
+    });
+}
 
-                    // FIXME: deprecated
-                    'properties': pspec('properties'),
-                    'connections': pspec('connections'),
-                    'binds': pspec('binds'),
-                },
-            }, this);
+export class Connectable<T> extends Gtk.Widget {
+    hook<
+        Self extends Connectable<T> & T,
+        GObject extends GObject.Object,
+    >(
+        gobject: GObject | App,
+        callback: (self: Self, ...args: any[]) => void,
+        signal?: string,
+    ): Self {
+        if (!(gobject instanceof GObject.Object)) {
+            console.error(Error(`${gobject} is not a GObject`));
+            return this as unknown as Self;
         }
 
-        _handleParamProp<
-            Prop extends keyof this
-        >(prop: Prop, value?: this[Prop] | Binding<any, any, this[Prop]>) {
-            if (value === undefined)
-                return;
+        if (!(gobject instanceof Service ||
+            gobject instanceof App ||
+            gobject instanceof Variable) &&
+            !signal) {
+            console.error(Error('you are trying to connect to a regular GObject ' +
+                'without specifying the signal'));
+            return this as unknown as Self;
+        }
 
-            if (value instanceof Binding)
-                this.bind(prop, value.emitter, value.prop, value.transformFn);
-            else
-                this[prop] = value;
+        const id = gobject.connect(signal!, (_, ...args: unknown[]) => {
+            callback(this as unknown as Self, ...args);
+        });
+
+        this.connect('destroy', () => {
+            gobject.disconnect(id);
+        });
+
+        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            // @ts-expect-error implementation in mixin class
+            if (!this.is_destroyed)
+                callback(this as unknown as Self);
+
+            return GLib.SOURCE_REMOVE;
+        });
+
+        return this as unknown as Self;
+    }
+
+    bind<
+        Self extends Connectable<T> & T,
+        Prop extends keyof Props<T>,
+        Gobject extends GObject.Object,
+        ObjProp extends keyof Props<Gobject>,
+    >(
+        prop: Prop,
+        gobject: Gobject,
+        objProp?: ObjProp,
+        transform?: (value: Gobject[ObjProp]) => T[Prop],
+    ): Self {
+        const targetProp = objProp || 'value';
+        const callback = transform
+            ? () => {
+                // @ts-expect-error too lazy to type
+                this[prop] = transform(gobject[targetProp]);
+            }
+            : () => {
+                // @ts-expect-error too lazy to type
+                this[prop] = gobject[targetProp];
+            };
+
+        this.hook(gobject, callback, `notify::${kebabify(targetProp)}`);
+        return this as unknown as Self;
+    }
+
+    on<
+        Self extends Connectable<T> & T,
+    >(
+        signal: string,
+        callback: (self: Self, ...args: any[]) => void,
+    ): Self {
+        this.connect(signal, callback);
+        return this as unknown as Self;
+    }
+
+    poll<
+        Self extends Connectable<T> & T,
+    >(
+        timeout: number,
+        callback: (self: Self) => void,
+    ): Self {
+        callback(this as unknown as Self);
+        interval(timeout, () => callback(this as unknown as Self), this);
+        return this as unknown as Self;
+    }
+}
+
+type WidgetCtor = new (...args: any[]) => Gtk.Widget;
+export default function AgsWidget<
+    W extends WidgetCtor,
+    Self extends InstanceType<W>,
+>(Widget: W, GTypeName = Widget.name) {
+    return class AgsWidget extends Widget {
+        static {
+            // TODO: remove this and move them to each subclass
+            register(this, { typename: `Ags_${GTypeName}` });
+            Object.getOwnPropertyNames(Connectable.prototype).forEach(name => {
+                Object.defineProperty(
+                    this.prototype,
+                    name,
+                    Object.getOwnPropertyDescriptor(Connectable.prototype, name) ||
+                    Object.create(null),
+                );
+            });
         }
 
         _init(config: Gtk.Widget.ConstructorProperties = {}) {
@@ -143,8 +241,9 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             if (attribute)
                 this.attribute = attribute;
 
-            (binds as unknown as Array<[keyof typeof this, Binding<any, any, any>]>)
+            (binds as unknown as Array<[keyof Props<Self>, Binding<any, any, any>]>)
                 .forEach(([selfProp, { emitter, prop, transformFn }]) => {
+                    // @ts-expect-error implementation in Connectable
                     this.bind(selfProp, emitter, prop, transformFn);
                 });
 
@@ -156,10 +255,22 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             this.connect('destroy', () => this._set('is-destroyed', true));
 
             if (setup)
+                // @ts-expect-error
                 setup(this);
         }
 
-        get is_destroyed() { return this._get('is-destroyed') || false; }
+        _handleParamProp<Prop extends keyof this>(prop: Prop, value: any) {
+            if (value === undefined)
+                return;
+
+            if (value instanceof Binding)
+                // @ts-expect-error implementation in Connectable
+                this.bind(prop, value.emitter, value.prop, value.transformFn);
+            else
+                this[prop] = value;
+        }
+
+        get is_destroyed(): boolean { return this._get('is-destroyed') || false; }
 
         // defining private fields for typescript causes
         // gobject constructor field setters to be overridden
@@ -179,7 +290,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         }
 
         // FIXME: deprecated
-        set connections(connections: Connection<AgsWidget>[]) {
+        set connections(connections: Connection<Self>[]) {
             if (!connections)
                 return;
 
@@ -191,9 +302,10 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                     this.connect(s, callback);
 
                 else if (typeof s === 'number')
-                    interval(s, () => callback(this), this);
+                    interval(s, () => callback(this as unknown as Self), this);
 
                 else if (s instanceof GObject.Object)
+                    // @ts-expect-error implementation in Connectable
                     this.hook(s, callback, event);
 
                 else
@@ -225,87 +337,16 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         // FIXME: deprecated
         connectTo<GObject extends GObject.Object>(
             gobject: GObject,
-            callback: (self: typeof this, ...args: any[]) => void,
+            callback: (self: Self, ...args: any[]) => void,
             signal?: string,
         ) {
             console.warn(Error('connectTo was renamed to hook'));
+            // @ts-expect-error implementation in Connectable
             return this.hook(gobject, callback, signal);
         }
 
         set attribute(attr: any) { this._set('attribute', attr); }
         get attribute() { return this._get('attribute'); }
-
-        hook<GObject extends GObject.Object>(
-            gobject: GObject | App,
-            callback: (self: typeof this, ...args: any[]) => void,
-            signal?: string,
-        ) {
-            if (!(gobject instanceof GObject.Object)) {
-                console.error(Error(`${gobject} is not a GObject`));
-                return this;
-            }
-
-            if (!(gobject instanceof Service ||
-                gobject instanceof App ||
-                gobject instanceof Variable) &&
-                !signal) {
-                console.error(Error('you are trying to connect to a regular GObject ' +
-                    'without specifying the signal'));
-                return this;
-            }
-
-            const id = gobject.connect(signal!, (_, ...args: unknown[]) => callback(this, ...args));
-
-            this.connect('destroy', () => {
-                this._set('is-destroyed', true);
-                gobject.disconnect(id);
-            });
-
-            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                if (!this.is_destroyed)
-                    callback(this);
-
-                return GLib.SOURCE_REMOVE;
-            });
-
-            return this;
-        }
-
-        bind<
-            Prop extends keyof this, // keyof Props<this> doesn't work?
-            Gobject extends GObject.Object,
-            ObjProp extends keyof Props<Gobject>,
-        >(
-            prop: Prop,
-            gobject: Gobject,
-            objProp?: ObjProp,
-            transform?: (value: Gobject[ObjProp]) => this[Prop],
-        ) {
-            const targetProp = objProp || 'value';
-            const callback = transform
-                ? () => this[prop] = transform(gobject[targetProp as ObjProp])
-                : () => {
-                    const v = gobject[targetProp as ObjProp];
-                    this[prop] = v as unknown as typeof this[Prop];
-                };
-
-            this.hook(gobject, callback, `notify::${kebabify(targetProp)}`);
-            return this;
-        }
-
-        on(
-            signal: string, // Parameters<this['connect']>[0], // this only has the last entry,
-            callback: (self: this, ...args: any[]) => void,
-        ) {
-            this.connect(signal, callback);
-            return this;
-        }
-
-        poll(timeout: number, callback: (self: this) => void) {
-            callback(this);
-            interval(timeout, () => callback(this), this);
-            return this;
-        }
 
         _setPack(orientation: 'h' | 'v', align: Align) {
             if (!align)

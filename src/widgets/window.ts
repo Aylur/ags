@@ -80,8 +80,6 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         this._handleParamProp('focusable', focusable);
         this._handleParamProp('layer', layer);
         this._handleParamProp('margins', margins);
-
-        // @ts-expect-error
         this._handleParamProp('monitor', monitor);
 
         this.show_all();
