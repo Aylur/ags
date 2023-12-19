@@ -115,7 +115,7 @@ export class Cpu extends Service {
             return true;
         });
 
-        App.connect('destroy', this.close);
+        App.connect('shutdown', this.close);
     }
 
     private readStats(): ProcStat {
