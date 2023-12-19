@@ -20,9 +20,7 @@ export class Cpu extends Service {
     static {
         Service.register(
             this,
-            {
-                'closed': [],
-            },
+            {},
             {
                 'usage': ['float'],
                 'user': ['int'],
@@ -41,46 +39,56 @@ export class Cpu extends Service {
 
     private stats: ProcStat;
     private _usage = 0;
-    private cancellable: Gio.Cancellable;
     private stream: Gio.DataInputStream;
     private timeoutId: number;
 
+    // The total amount of time spent on normal processes executing in user mode
     get user() {
         return this.stats.user;
     }
 
+    // The total amount of time spent on niced (lower priority) processes executing in user mode
     get nice() {
         return this.stats.nice;
     }
 
+    // The total amount of time spent on processes executing in kernel mode
     get system() {
         return this.stats.system;
     }
 
+    // The total amount of time spent not executing any processes
     get idle() {
         return this.stats.idle;
     }
 
+    // The total amount of time tasks have spent waiting on I/O to complete
     get iowait() {
         return this.stats.iowait;
     }
 
+    // The total amount of time the processor has spent servicing hard interrupts
     get irq() {
         return this.stats.irq;
     }
 
+    // The total amount of time the processor has spent servicing deferrable interrupts
     get softirq() {
         return this.stats.softirq;
     }
 
+    // The total amount of time virtual cpus are involuntarily waiting on physical cpus
+    // for processing time
     get steal() {
         return this.stats.steal;
     }
 
+    // The total amount of time runnning virtual cpu processes
     get guest() {
         return this.stats.guest;
     }
 
+    // The total amount of time running niced (lower priority) virtual cpu processes
     get guest_nice() {
         return this.stats.guest_nice;
     }
@@ -93,8 +101,7 @@ export class Cpu extends Service {
         super();
 
         const file = Gio.File.new_for_path('/proc/stat');
-        this.cancellable = new Gio.Cancellable();
-        this.stream = new Gio.DataInputStream({ base_stream: file.read(this.cancellable) });
+        this.stream = new Gio.DataInputStream({ base_stream: file.read(null) });
         this.stats = this.readStats();
         this.timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
             const oldStats = this.stats;
@@ -115,12 +122,15 @@ export class Cpu extends Service {
             return true;
         });
 
-        App.connect('shutdown', this.close);
+        App.connect('shutdown', () => {
+            GLib.source_remove(this.timeoutId);
+            this.stream.close(null);
+        });
     }
 
     private readStats(): ProcStat {
-        this.stream.seek(0, GLib.SeekType.SET, this.cancellable);
-        const [line] = this.stream.read_line_utf8(this.cancellable);
+        this.stream.seek(0, GLib.SeekType.SET, null);
+        const [line] = this.stream.read_line_utf8(null);
         const [
             _,
             user, nice, system, idle, iowait,
@@ -138,15 +148,6 @@ export class Cpu extends Service {
             guest: parseInt(guest),
             guest_nice: parseInt(guest_nice),
         };
-    }
-
-    private close() {
-        GLib.source_remove(this.timeoutId);
-        this.stream.close(this.cancellable);
-    }
-
-    connect(event = 'changed', callback: (...args: any[]) => void) {
-        return super.connect(event, callback);
     }
 }
 
