@@ -3,6 +3,7 @@
 ## Features
 - feat: Service.bind and Variable.bind
 - feat: AgsWidget.register
+- export Widget.createCtor utility
 
 # 1.5.5
 
