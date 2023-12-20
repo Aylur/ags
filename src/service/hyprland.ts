@@ -8,14 +8,7 @@ const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
 const socket = (path: string) => new Gio.SocketClient()
     .connect(new Gio.UnixSocketAddress({ path }), null);
 
-export class Active extends Service {
-    updateProperty(prop: string, value: unknown): void {
-        super.updateProperty(prop, value);
-        this.emit('changed');
-    }
-}
-
-export class ActiveClient extends Active {
+export class ActiveClient extends Service {
     static {
         Service.register(this, {}, {
             'address': ['string'],
@@ -31,9 +24,14 @@ export class ActiveClient extends Active {
     get address() { return this._address; }
     get title() { return this._title; }
     get class() { return this._class; }
+
+    updateProperty(prop: 'address' | 'title' | 'class', value: unknown) {
+        super.updateProperty(prop, value);
+        this.emit('changed');
+    }
 }
 
-export class ActiveWorkspace extends Active {
+export class ActiveID extends Service {
     static {
         Service.register(this, {}, {
             'id': ['int'],
@@ -46,33 +44,37 @@ export class ActiveWorkspace extends Active {
 
     get id() { return this._id; }
     get name() { return this._name; }
+
+    update(id: number, name: string) {
+        super.updateProperty('id', id);
+        super.updateProperty('name', name);
+        this.emit('changed');
+    }
 }
 
 export class Actives extends Service {
     static {
         Service.register(this, {}, {
             'client': ['jsobject'],
-            'monitor': ['string'],
+            'monitor': ['jsobject'],
             'workspace': ['jsobject'],
         });
     }
 
+    private _client = new ActiveClient;
+    private _monitor = new ActiveID;
+    private _workspace = new ActiveID;
+
     constructor() {
         super();
 
-        [this._client, this._workspace].forEach(s =>
-            s.connect('changed', () => this.emit('changed')));
-
-        ['id', 'name'].forEach(attr =>
-            this._workspace.connect(`notify::${attr}`, () => this.changed('workspace')));
-
-        ['address', 'title', 'class'].forEach(attr =>
-            this._client.connect(`notify::${attr}`, () => this.changed('client')));
+        (['client', 'workspace', 'monitor'] as const).forEach(obj => {
+            this[`_${obj}`].connect('changed', () => {
+                this.notify(obj);
+                this.emit('changed');
+            });
+        });
     }
-
-    private _client = new ActiveClient();
-    private _monitor = '';
-    private _workspace = new ActiveWorkspace();
 
     get client() { return this._client; }
     get monitor() { return this._monitor; }
@@ -143,10 +145,8 @@ export class Hyprland extends Service {
 
     private _watchSocket(stream: Gio.DataInputStream) {
         stream.read_line_async(0, null, (stream, result) => {
-            if (!stream) {
-                console.error('Error reading Hyprland socket');
-                return;
-            }
+            if (!stream)
+                return console.error('Error reading Hyprland socket');
 
             const [line] = stream.read_line_finish(result);
             this._onEvent(this._decoder.decode(line));
@@ -176,59 +176,45 @@ export class Hyprland extends Service {
 
     private async _syncMonitors() {
         try {
-            const monitors = await this.sendMessage('j/monitors');
+            const msg = await this.sendMessage('j/monitors');
             this._monitors = new Map();
-            const json = JSON.parse(monitors) as {
-                id: number
-                name: string
-                focused: boolean
-                activeWorkspace: {
-                    id: number
-                    name: string
-                }
-            }[];
-            json.forEach(monitor => {
+            (JSON.parse(msg) as Array<Monitor>).forEach(monitor => {
+                const { activeWorkspace } = monitor;
                 this._monitors.set(monitor.id, monitor);
                 if (monitor.focused) {
-                    this._active.updateProperty('monitor', monitor.name);
-                    this._active.workspace.updateProperty('id', monitor.activeWorkspace.id);
-                    this._active.workspace.updateProperty('name', monitor.activeWorkspace.name);
+                    this._active.monitor.update(monitor.id, monitor.name);
+                    this._active.workspace.update(activeWorkspace.id, activeWorkspace.name);
                 }
             });
             this.notify('monitors');
         } catch (error) {
-            if (error instanceof Error)
-                console.error(error.message);
+            logError(error);
         }
     }
 
     private async _syncWorkspaces() {
         try {
-            const workspaces = await this.sendMessage('j/workspaces');
+            const msg = await this.sendMessage('j/workspaces');
             this._workspaces = new Map();
-            const json = JSON.parse(workspaces) as { id: number }[];
-            json.forEach(ws => {
+            (JSON.parse(msg) as Array<Workspace>).forEach(ws => {
                 this._workspaces.set(ws.id, ws);
             });
             this.notify('workspaces');
         } catch (error) {
-            if (error instanceof Error)
-                console.error(error.message);
+            logError(error);
         }
     }
 
     private async _syncClients() {
         try {
-            const clients = await this.sendMessage('j/clients');
+            const msg = await this.sendMessage('j/clients');
             this._clients = new Map();
-            const json = JSON.parse(clients) as { address: string }[];
-            json.forEach(client => {
+            (JSON.parse(msg) as Array<Client>).forEach(client => {
                 this._clients.set(client.address, client);
             });
             this.notify('clients');
         } catch (error) {
-            if (error instanceof Error)
-                console.error(error.message);
+            logError(error);
         }
     }
 
@@ -339,6 +325,78 @@ export class Hyprland extends Service {
 
         this.emit('changed');
     }
+}
+
+interface Monitor {
+    id: number,
+    name: string,
+    description: string,
+    make: string,
+    model: string,
+    serial: string,
+    width: number,
+    height: number,
+    refreshRate: number
+    x: number
+    y: number
+    activeWorkspace: {
+        id: number
+        name: string
+    }
+    specialWorkspace: {
+        id: number
+        name: string
+    },
+    reserved: [
+        number,
+        number,
+        number,
+        number,
+    ]
+    scale: number
+    transform: number
+    focused: boolean
+    dpmsStatus: boolean
+    vrr: boolean
+    activelyTearing: boolean
+}
+
+interface Workspace {
+    id: number
+    name: string
+    monitor: string
+    monitorID: number
+    windows: number
+    hasfullscreen: boolean
+    lastwindow: string
+    lastwindowtitle: string
+}
+
+interface Client {
+    address: string
+    mapped: boolean
+    hidden: boolean
+    at: [number, number]
+    size: [number, number]
+    workspace: {
+        id: number
+        name: string
+    }
+    floating: boolean
+    monitor: number
+    class: string
+    title: string
+    initialClass: string
+    initialTitle: string
+    pid: number
+    xwayland: boolean
+    pinned: boolean
+    fullscreen: boolean
+    fullscreenMode: number
+    fakeFullscreen: boolean
+    grouped: [string],
+    swallowing: string
+    focusHistoryID: number
 }
 
 export const hyprland = new Hyprland;
