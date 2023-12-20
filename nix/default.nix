@@ -33,7 +33,7 @@ let
 in
 stdenv.mkDerivation {
   pname = "ags";
-  version = "1.6.1";
+  version = "1.6.2";
 
   src = buildNpmPackage {
     name = "ags";
@@ -41,7 +41,7 @@ stdenv.mkDerivation {
 
     dontBuild = true;
 
-    npmDepsHash = "sha256-SXhAhGxuWgvhcQ3U9rA3agHvqiEDg+rifRESRjKhzA4=";
+    npmDepsHash = "sha256-G0kJIC17IXTZlVV9ALqBiXx0vFgM3SMSi7Jp/xuwZiA=";
 
     installPhase = ''
       mkdir $out
