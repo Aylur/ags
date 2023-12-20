@@ -104,9 +104,9 @@ export class Hyprland extends Service {
     }
 
     private _active: Actives;
-    private _monitors: Map<number, object>;
-    private _workspaces: Map<number, object>;
-    private _clients: Map<string, object>;
+    private _monitors: Map<number, Monitor>;
+    private _workspaces: Map<number, Workspace>;
+    private _clients: Map<string, Client>;
     private _decoder = new TextDecoder();
     private _encoder = new TextEncoder();
 
@@ -307,7 +307,6 @@ export class Hyprland extends Service {
                 case 'changefloatingmode': {
                     const client = this._clients.get('0x' + argv[0]);
                     if (client)
-                        // @ts-expect-error
                         client.floating = argv[1] === '1';
                     break;
                 }
@@ -327,7 +326,7 @@ export class Hyprland extends Service {
     }
 }
 
-interface Monitor {
+export interface Monitor {
     id: number,
     name: string,
     description: string,
@@ -361,7 +360,7 @@ interface Monitor {
     activelyTearing: boolean
 }
 
-interface Workspace {
+export interface Workspace {
     id: number
     name: string
     monitor: string
@@ -372,7 +371,7 @@ interface Workspace {
     lastwindowtitle: string
 }
 
-interface Client {
+export interface Client {
     address: string
     mapped: boolean
     hidden: boolean
