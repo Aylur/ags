@@ -14,7 +14,7 @@ const DBusProxy = Gio.DBusProxy.makeProxyWrapper(DBusIFace) as unknown as DBusPr
 const PlayerProxy = Gio.DBusProxy.makeProxyWrapper(PlayerIFace) as unknown as PlayerProxy;
 const MprisProxy = Gio.DBusProxy.makeProxyWrapper(MprisIFace) as unknown as MprisProxy;
 
-const DBUS_PREFIX = 'org.mpris.MediaPlayer2';
+const DBUS_PREFIX = 'org.mpris.MediaPlayer2.';
 const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
 
 type PlaybackStatus = 'Playing' | 'Paused' | 'Stopped';
@@ -329,10 +329,8 @@ export class Mpris extends Service {
         this._initialzed = true;
         const [names] = await this._proxy.ListNamesAsync();
         for (const name of names) {
-            if (!name.startsWith(DBUS_PREFIX))
-                return;
-
-            this._addPlayer(name);
+            if (name.startsWith(DBUS_PREFIX))
+                this._addPlayer(name);
         }
 
         this._proxy.connectSignal('NameOwnerChanged',
@@ -344,7 +342,7 @@ export class Mpris extends Service {
         _sender: string,
         [name, oldOwner, newOwner]: string[],
     ) {
-        if (!name.startsWith('org.mpris.MediaPlayer2.'))
+        if (!name.startsWith(DBUS_PREFIX))
             return;
 
         if (newOwner && !oldOwner)
