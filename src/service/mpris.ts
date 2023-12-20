@@ -14,6 +14,7 @@ const DBusProxy = Gio.DBusProxy.makeProxyWrapper(DBusIFace) as unknown as DBusPr
 const PlayerProxy = Gio.DBusProxy.makeProxyWrapper(PlayerIFace) as unknown as PlayerProxy;
 const MprisProxy = Gio.DBusProxy.makeProxyWrapper(MprisIFace) as unknown as MprisProxy;
 
+const DBUS_PREFIX = 'org.mpris.MediaPlayer2';
 const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
 
 type PlaybackStatus = 'Playing' | 'Paused' | 'Stopped';
@@ -266,7 +267,6 @@ export class MprisPlayer extends Service {
     }
 }
 
-type Players = Map<string, MprisPlayer>;
 export class Mpris extends Service {
     static {
         Service.register(this, {
@@ -278,24 +278,30 @@ export class Mpris extends Service {
         });
     }
 
-    private _players!: Players;
     private _proxy: DBusProxy;
+    private _players: Map<string, MprisPlayer> = new Map;
+    private _initialzed = false;
 
-    get players() { return Array.from(this._players.values()); }
+    get players() {
+        if (!this._initialzed) {
+            console.warn('accessing Mpris.players on top level will return an empty array ' +
+                'because the list is not initialzed yet');
+        }
+        return Array.from(this._players.values());
+    }
 
     constructor() {
         super();
 
-        this._players = new Map();
         this._proxy = new DBusProxy(Gio.DBus.session,
             'org.freedesktop.DBus',
-            '/org/freedesktop/DBus');
-
-        this._onProxyReady();
+            '/org/freedesktop/DBus',
+            this._onProxyReady.bind(this),
+            null, Gio.DBusProxyFlags.NONE);
     }
 
     private _addPlayer(busName: string) {
-        if (this._players.get(busName))
+        if (this._players.has(busName))
             return;
 
         const player = new MprisPlayer(busName);
@@ -316,15 +322,19 @@ export class Mpris extends Service {
         this.changed('players');
     }
 
-    private _onProxyReady() {
-        this._proxy.ListNamesRemote(([names]) => {
-            names.forEach(name => {
-                if (!name.startsWith('org.mpris.MediaPlayer2.'))
-                    return;
+    private async _onProxyReady(_: DBusProxy, error: GLib.Error) {
+        if (error)
+            return logError(error);
 
-                this._addPlayer(name);
-            });
-        });
+        this._initialzed = true;
+        const [names] = await this._proxy.ListNamesAsync();
+        for (const name of names) {
+            if (!name.startsWith(DBUS_PREFIX))
+                return;
+
+            this._addPlayer(name);
+        }
+
         this._proxy.connectSignal('NameOwnerChanged',
             this._onNameOwnerChanged.bind(this));
     }
