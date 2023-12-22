@@ -7,6 +7,7 @@
 - add: Applications.reload
 - add: Utils.idle
 - use GLib.shell_parse_argv on Utils.execAsync
+- feat: Utils.fetch
 
 ## Breaking Changes
 - update: Hyprland.active.monitor to be an object

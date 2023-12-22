@@ -3,6 +3,7 @@ import * as Exec from './utils/exec.js';
 import * as File from './utils/file.js';
 import * as Etc from './utils/etc.js';
 import * as Timeout from './utils/timeout.js';
+import * as Fetch from './utils/fetch.js';
 
 export const USER = GLib.get_user_name();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name.split('.').pop()}`;
@@ -26,9 +27,12 @@ export const bulkDisconnect = Etc.bulkDisconnect;
 export const ensureDirectory = Etc.ensureDirectory;
 export const lookUpIcon = Etc.lookUpIcon;
 
+export const fetch = Fetch.fetch;
+
 export default {
     exec, execAsync, subprocess,
     readFile, readFileAsync, writeFile, monitorFile,
     timeout, interval, idle,
     loadInterfaceXML, bulkConnect, bulkDisconnect, ensureDirectory, lookUpIcon,
+    fetch,
 };

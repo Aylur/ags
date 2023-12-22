@@ -53,5 +53,6 @@
     <file>utils/exec.js</file>
     <file>utils/file.js</file>
     <file>utils/timeout.js</file>
+    <file>utils/fetch.js</file>
   </gresource>
 </gresources>

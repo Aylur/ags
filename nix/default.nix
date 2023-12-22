@@ -19,6 +19,7 @@
 , networkmanager
 , libdbusmenu-gtk3
 , gvfs
+, libsoup_3
 , extraPackages ? []
 }:
 
@@ -41,7 +42,7 @@ stdenv.mkDerivation {
 
     dontBuild = true;
 
-    npmDepsHash = "sha256-G0kJIC17IXTZlVV9ALqBiXx0vFgM3SMSi7Jp/xuwZiA=";
+    npmDepsHash = "sha256-1CyVl0DAKT4difSjG0SX/aQscgXrpotMPUZo3f3Xf58=";
 
     installPhase = ''
       mkdir $out
@@ -80,6 +81,7 @@ stdenv.mkDerivation {
     networkmanager
     libdbusmenu-gtk3
     gvfs
+    libsoup_3
   ] ++ extraPackages;
 
   meta = with lib; {
