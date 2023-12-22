@@ -417,7 +417,7 @@ export default function AgsWidget<
         }
 
         get css() {
-            return this._cssProvider.to_string() || '';
+            return this._cssProvider?.to_string() || '';
         }
 
         set css(css: string) {

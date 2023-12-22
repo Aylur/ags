@@ -1,3 +1,4 @@
+import './overrides.js';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import * as Utils from './utils.js';

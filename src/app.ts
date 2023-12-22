@@ -234,6 +234,14 @@ export class App extends Gtk.Application {
         );
     }
 
+    toJSON() {
+        return {
+            bus: this.application_id,
+            configDir: this.configDir,
+            windows: Object.fromEntries(this.windows.entries()),
+        };
+    }
+
     RunJs(js: string, clientBusName?: string, clientObjPath?: string) {
         let fn;
 
