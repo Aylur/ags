@@ -3,13 +3,22 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
 export function execAsync(cmd: string | string[]): Promise<string> {
-    const proc = Gio.Subprocess.new(
-        typeof cmd === 'string' ? cmd.split(/\s+/) : cmd,
-        Gio.SubprocessFlags.STDOUT_PIPE |
-        Gio.SubprocessFlags.STDERR_PIPE,
-    );
-
     return new Promise((resolve, reject) => {
+        if (typeof cmd === 'string') {
+            try {
+                const [, argv] = GLib.shell_parse_argv(cmd);
+                cmd = argv;
+            } catch (error) {
+                return reject(error);
+            }
+        }
+
+        const proc = Gio.Subprocess.new(
+            cmd,
+            Gio.SubprocessFlags.STDOUT_PIPE |
+            Gio.SubprocessFlags.STDERR_PIPE,
+        );
+
         proc.communicate_utf8_async(null, null, (proc, res) => {
             try {
                 if (!proc)

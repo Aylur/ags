@@ -6,6 +6,7 @@
 - export Widget.createCtor utility
 - add: Applications.reload
 - add: Utils.idle
+- use GLib.shell_parse_argv on Utils.execAsync
 
 ## Breaking Changes
 - update: Hyprland.active.monitor to be an object
