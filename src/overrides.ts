@@ -1,24 +1,22 @@
 import GObject from 'gi://GObject';
-import Gio from 'gi://Gio';
 
-Gio._promisify(Gio.DataInputStream.prototype, 'read_upto_async');
+const PROP_FILTER = ['parent', 'window', 'font-options', 'pixels'];
 
-// @ts-ignore
+// @ts-expect-error
 GObject.Object.prototype.toJSON = function() {
     const result = {};
-    const filter = ['parent', 'window', 'font-options'];
     const props = (this.constructor as unknown as GObject.ObjectClass)
-        //@ts-ignore
+        //@ts-expect-error
         .list_properties()
-        .filter(p => !filter.includes(p.name || ''));
+        .filter(p => !PROP_FILTER.includes(p.name || ''));
 
     props.forEach(p => {
         try {
-            //@ts-ignore
+            //@ts-expect-error
             result[p.name] = this[p.name];
         }
         catch (e) {
-            logError(e);
+            logError(e as object, p.name);
         }
     });
     return result;
