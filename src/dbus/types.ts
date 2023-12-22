@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-new */
-import GLib from "gi://GLib";
-import Gio from "gi://Gio";
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
 
 export interface DBusProxy extends Gio.DBusProxy {
     new(...args: unknown[]): DBusProxy
@@ -119,13 +119,11 @@ export interface StatusNotifierItemProxy extends Gio.DBusProxy {
 export interface PowerProfilesProxy extends Gio.DBusProxy {
     new(...args: unknown[]): PowerProfilesProxy;
     ActiveProfile: string;
+    PerformanceInhibited: string;
     PerformanceDegraded: string;
-    Profiles: [{ Profile: string; Driver: string }];
+    Profiles: [{ [key: string]: GLib.Variant }];
     Actions: [string];
-    ActiveProfileHolds: [
-        { profile: string; reason: string; application_id: string },
-    ];
+    ActiveProfileHolds: [{ [key: string]: GLib.Variant }];
     HoldProfile(profile: string, reason: string, application_id: string): number;
     ReleaseProfile(cookie: number): void;
-    ProfileReleased: number;
 }

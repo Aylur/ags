@@ -1,81 +1,71 @@
-import Gio from "gi://Gio";
-import Service from "../service.js";
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+import Service from '../service.js';
+import { loadInterfaceXML } from '../utils.js';
+import { PowerProfilesProxy } from '../dbus/types.js';
 
-import { loadInterfaceXML } from "../utils.js";
-import { PowerProfilesProxy } from "../dbus/types.js";
-
-const PowerProfilesIFace = loadInterfaceXML("net.hadess.PowerProfiles")!;
+const PowerProfilesIFace = loadInterfaceXML('net.hadess.PowerProfiles')!;
 const PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(
-  PowerProfilesIFace,
-) as unknown as PowerProfilesProxy;
-
-const icon = (name: string) => `power-profile-${name}-symbolic`;
+    PowerProfilesIFace) as unknown as PowerProfilesProxy;
 
 class PowerProfiles extends Service {
-  // deno-lint-ignore no-explicit-any
-  [x: string]: any;
-  static {
-    Service.register(this, {
-      "profile-released": ["int"],
-    }, {
-      "actions": ["string", "r"],
-      "active-profile": ["string", "rw"],
-      "active-profile-holds": ["jsobject", "r"],
-      "performance-degraded": ["string", "r"],
-      "profiles": ["jsobject", "r"],
-      "icon": ["string", "r"],
-    });
-  }
+    static {
+        Service.register(this, {
+            'profile-released': ['int'],
+        }, {
+            'active-profile': ['string', 'rw'],
+            'performance-inhibited': ['string', 'r'],
+            'performance-degraded': ['string', 'r'],
+            'profiles': ['jsobject', 'r'],
+            'actions': ['jsobject', 'r'],
+            'active-profile-holds': ['jsobject', 'r'],
+            'icon-name': ['string', 'r'],
+        });
+    }
 
-  #proxy = PowerProfilesProxy;
+    private _proxy = PowerProfilesProxy;
+    private _unpackDict(dict: { [prop: string]: GLib.Variant }) {
+        const data = {};
+        for (const prop in dict)
+            data[prop as keyof typeof data] = dict[prop].unpack();
 
-  constructor() {
-    super();
+        return data;
+    }
 
-    this.#proxy = new PowerProfilesProxy(
-      Gio.DBus.system,
-      "net.hadess.PowerProfiles",
-      "/net/hadess/PowerProfiles",
-    );
-  }
+    constructor() {
+        super();
 
-  get actions() {
-    return this.#proxy.Actions;
-  }
+        this._proxy = new PowerProfilesProxy(
+            Gio.DBus.system,
+            'net.hadess.PowerProfiles',
+            '/net/hadess/PowerProfiles');
 
-  get profiles() {
-    return this.#proxy.Profiles.map((p) => {
-      return {
-        profile: p.Profile,
-        driver: p.Driver,
-        icon: icon(p.Profile),
-      };
-    });
-  }
+        this._proxy.connect('g-properties-changed', () => {
+            this.emit('changed');
+            // TODO: notify possible changes
+            // this.notify('active-profile');
+        });
 
-  get activeProfile() {
-    return this.#proxy.ActiveProfile;
-  }
+        this._proxy.connectSignal('ProfileReleased', (_p, _n, [cookie]) => {
+            this.emit('profile-released', cookie);
+        });
+    }
 
-  set activeProfile(profile) {
-    this.#proxy.ActiveProfile = profile;
-    this.notify("icon");
-    this.notify("active-profile");
-  }
+    get active_profile() { return this._proxy.ActiveProfile; }
+    set active_profile(profile: string) {
+        this._proxy.ActiveProfile = profile;
+        this.notify('active-profile');
+        this.notify('icon');
+        this.emit('changed');
+    }
 
-  get activeProfileHolds() {
-    return this.#proxy.ActiveProfileHolds;
-  }
-
-  get performanceDegraded() {
-    return this.#proxy.PerformanceDegraded;
-  }
-
-  get icon() {
-    return icon(this.#proxy.ActiveProfile);
-  }
+    get performance_inhibited() { return this._proxy.PerformanceInhibited; }
+    get performance_degraded() { return this._proxy.PerformanceDegraded; }
+    get profiles() { return this._proxy.Profiles.map(this._unpackDict); }
+    get actions() { return this._proxy.Actions; }
+    get active_profile_holds() { return this._proxy.ActiveProfileHolds.map(this._unpackDict); }
+    get icon_name() { return `power-profile-${this.active_profile}-symbolic`; }
 }
 
-const service = new PowerProfiles();
-
+const service = new PowerProfiles;
 export default service;
