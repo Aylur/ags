@@ -8,6 +8,7 @@
     <file>utils.js</file>
     <file>variable.js</file>
     <file>widget.js</file>
+    <file>gobject.js</file>
 
     <file>widgets/widget.js</file>
     <file>widgets/box.js</file>
@@ -47,5 +48,10 @@
     <file>dbus/org.mpris.MediaPlayer2.xml</file>
     <file>dbus/org.kde.StatusNotifierWatcher.xml</file>
     <file>dbus/org.kde.StatusNotifierItem.xml</file>
+
+    <file>utils/etc.js</file>
+    <file>utils/exec.js</file>
+    <file>utils/file.js</file>
+    <file>utils/timeout.js</file>
   </gresource>
 </gresources>

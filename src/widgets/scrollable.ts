@@ -1,7 +1,5 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
 const POLICY = {
     'automatic': Gtk.PolicyType.AUTOMATIC,
@@ -12,26 +10,25 @@ const POLICY = {
 
 export type Policy = keyof typeof POLICY;
 
-export interface ScrollableProps extends
-    BaseProps<AgsScrollable>, Gtk.ScrolledWindow.ConstructorProperties {
+export type ScrollableProps = BaseProps<AgsScrollable, Gtk.ScrolledWindow.ConstructorProperties &
+{
     hscroll?: Policy,
     vscroll?: Policy,
-}
+}>
 
 export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsScrollable',
-            Properties: {
-                'hscroll': Service.pspec('hscroll', 'string', 'rw'),
-                'vscroll': Service.pspec('vscroll', 'string', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'hscroll': ['string', 'rw'],
+                'vscroll': ['string', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: ScrollableProps = {}) {
         super({
-            ...props,
+            ...props as Gtk.ScrolledWindow.ConstructorProperties,
             hadjustment: new Gtk.Adjustment(),
             vadjustment: new Gtk.Adjustment(),
         });

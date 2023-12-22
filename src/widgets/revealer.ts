@@ -1,7 +1,5 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
 const TRANSITION = {
     'none': Gtk.RevealerTransitionType.NONE,
@@ -14,21 +12,20 @@ const TRANSITION = {
 
 export type Transition = keyof typeof TRANSITION;
 
-export interface RevealerProps extends BaseProps<AgsRevealer>, Gtk.Revealer.ConstructorProperties {
+export type RevealerProps = BaseProps<AgsRevealer, Gtk.Revealer.ConstructorProperties & {
     transition?: Transition
-}
+}>
 
 export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsRevealer',
-            Properties: {
-                'transition': Service.pspec('transition', 'string', 'rw'),
-            },
-        }, this);
+        AgsWidget.register(this, {
+            properties: { 'transition': ['string', 'rw'] },
+        });
     }
 
-    constructor(props: RevealerProps = {}) { super(props); }
+    constructor(props: RevealerProps = {}) {
+        super(props as Gtk.Revealer.ConstructorProperties);
+    }
 
     get transition() {
         return Object.keys(TRANSITION).find(key => {

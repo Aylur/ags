@@ -1,3 +1,16 @@
+# Unreleased
+
+## Features
+- feat: Service.bind and Variable.bind
+- feat: AgsWidget.register
+- export Widget.createCtor utility
+- add: Applications.reload
+- add: Utils.idle
+- use GLib.shell_parse_argv on Utils.execAsync
+
+## Breaking Changes
+- update: Hyprland.active.monitor to be an object
+
 # 1.5.5
 
 ## Features
@@ -13,7 +26,6 @@
 # 1.5.4
 
 ## Features
-
 - add: notificationForceTimeout option
 - add: bluetooth device-added, device-removed signal
 - add: cursor property
@@ -24,10 +36,8 @@
 - add: --run-file
 
 ## Breaking Changes
-
 - feat: Window.exclusivity
 - deprecate: --run-promise cli flag
 
 ## Fixes
-
 - overlay pass-through #168

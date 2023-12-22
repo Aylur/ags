@@ -1,6 +1,7 @@
 import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import Service, { Binding, Props } from './service.js';
 import { execAsync, interval, subprocess } from './utils.js';
 
 type Listen<T> =
@@ -20,16 +21,11 @@ interface Options<T> {
 
 export class Variable<T> extends GObject.Object {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsVariable',
-            Signals: { 'changed': {} },
-            Properties: {
-                'value': GObject.ParamSpec.jsobject(
-                    'value', 'value', 'value',
-                    GObject.ParamFlags.READWRITE,
-                ),
-            },
-        }, this);
+        Service.register(this, {
+            'changed': [],
+        }, {
+            'value': ['jsobject', 'rw'],
+        });
     }
 
     private _value!: T;
@@ -51,10 +47,6 @@ export class Variable<T> extends GObject.Object {
             this._listen = listen;
             this.startListen();
         }
-    }
-
-    connect(signal = 'notify::value', callback: GObject.Object.NotifySignalCallback) {
-        return super.connect(signal, callback);
     }
 
     startPoll() {
@@ -144,6 +136,14 @@ export class Variable<T> extends GObject.Object {
 
     get value() { return this._value; }
     set value(value: T) { this.setValue(value); }
+
+    connect(signal = 'notify::value', callback: (self: this, ...args: any[]) => void): number {
+        return super.connect(signal, callback);
+    }
+
+    bind<Prop extends keyof Props<this>>(prop: Prop = 'value' as Prop) {
+        return new Binding(this, prop);
+    }
 }
 
 export default <T>(value: T, options?: Options<T>) => new Variable(value, options);

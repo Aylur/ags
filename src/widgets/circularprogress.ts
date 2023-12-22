@@ -1,7 +1,5 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
 interface Context {
     setSourceRGBA: (r: number, g: number, b: number, a: number) => void
@@ -13,29 +11,30 @@ interface Context {
     $dispose: () => void
 }
 
-export interface CircularProgressProps extends
-    BaseProps<AgsCircularProgress>, Gtk.Bin.ConstructorProperties {
+export type CircularProgressProps = BaseProps<AgsCircularProgress, Gtk.Bin.ConstructorProperties &
+{
     rounded?: boolean
     value?: number
     inverted?: boolean
     start_at?: number
-}
+}>
 
 export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsCircularProgress',
-            CssName: 'circular-progress',
-            Properties: {
-                'start-at': Service.pspec('start-at', 'float', 'rw'),
-                'value': Service.pspec('value', 'float', 'rw'),
-                'inverted': Service.pspec('inverted', 'boolean', 'rw'),
-                'rounded': Service.pspec('rounded', 'boolean', 'rw'),
+        AgsWidget.register(this, {
+            cssName: 'circular-progress',
+            properties: {
+                'start-at': ['float', 'rw'],
+                'value': ['float', 'rw'],
+                'inverted': ['boolean', 'rw'],
+                'rounded': ['boolean', 'rw'],
             },
-        }, this);
+        });
     }
 
-    constructor(props: CircularProgressProps = {}) { super(props); }
+    constructor(props: CircularProgressProps = {}) {
+        super(props as Gtk.Bin.ConstructorProperties);
+    }
 
     get rounded() { return this._get('rounded') || false; }
     set rounded(r: boolean) {

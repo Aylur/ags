@@ -4,7 +4,7 @@ import Gio from 'gi://Gio';
 
 export interface DBusProxy extends Gio.DBusProxy {
     new(...args: unknown[]): DBusProxy
-    ListNamesRemote: (callback: (names: string[][]) => void) => void
+    ListNamesAsync: () => Promise<string[][]>
 }
 
 export interface PlayerProxy extends Gio.DBusProxy {

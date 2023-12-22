@@ -34,7 +34,7 @@ let
 in
 stdenv.mkDerivation {
   pname = "ags";
-  version = "1.5.5";
+  version = "1.6.2";
 
   src = buildNpmPackage {
     name = "ags";
