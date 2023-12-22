@@ -48,5 +48,10 @@
     <file>dbus/org.mpris.MediaPlayer2.xml</file>
     <file>dbus/org.kde.StatusNotifierWatcher.xml</file>
     <file>dbus/org.kde.StatusNotifierItem.xml</file>
+
+    <file>utils/etc.js</file>
+    <file>utils/exec.js</file>
+    <file>utils/file.js</file>
+    <file>utils/timeout.js</file>
   </gresource>
 </gresources>
