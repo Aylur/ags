@@ -1,39 +1,44 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service from '../service.js';
+import { Binding } from '../service.js';
 import cairo from '@girs/cairo-1.0';
 import { lookUpIcon } from '../utils.js';
 
-export interface Props extends BaseProps<AgsIcon>, Gtk.Image.ConstructorProperties {
-    icon?: string | GdkPixbuf.Pixbuf
+export type Props = BaseProps<AgsIcon, Gtk.Image.ConstructorProperties & {
     size?: number
-}
+    icon?: // Binding is here because unions mess up BaseProps
+    | string
+    | GdkPixbuf.Pixbuf
+    | Binding<any, any, string>
+    | Binding<any, any, GdkPixbuf.Pixbuf>;
+}>
 
 export type IconProps = Props | string | GdkPixbuf.Pixbuf | undefined
 
 export default class AgsIcon extends AgsWidget(Gtk.Image) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsIcon',
-            Properties: {
-                'size': Service.pspec('size', 'double', 'rw'),
-                'icon': Service.pspec('icon', 'jsobject', 'rw'),
-                'type': Service.pspec('type', 'string', 'r'),
+        AgsWidget.register(this, {
+            properties: {
+                'size': ['double', 'rw'],
+                'icon': ['jsobject', 'rw'],
+                'type': ['string', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: IconProps = {}) {
         const { icon = '', ...rest } = props as Props;
-        super(typeof props === 'string' || props instanceof GdkPixbuf.Pixbuf ? {} : rest);
+        super(typeof props === 'string' || props instanceof GdkPixbuf.Pixbuf
+            ? {}
+            : rest as Gtk.Image.ConstructorProperties);
 
-        // jsobject pspec can't take a string, so we have to set it after constructor
-        this.icon = typeof props === 'string' || props instanceof GdkPixbuf.Pixbuf
-            ? props : icon;
+        // jsobject pspec can't take a string, so we have to set it after the constructor
+        this._handleParamProp('icon',
+            typeof props === 'string' || props instanceof GdkPixbuf.Pixbuf
+                ? props : icon);
     }
 
     get size() { return this._get('size') || this._fontSize || 0; }

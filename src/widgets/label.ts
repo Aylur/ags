@@ -1,9 +1,7 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
-import Service from '../service.js';
 
 const JUSTIFICATION = {
     'left': Gtk.Justification.LEFT,
@@ -22,26 +20,26 @@ const TRUNCATE = {
 export type Justification = keyof typeof JUSTIFICATION;
 export type Truncate = keyof typeof TRUNCATE;
 
-export interface Props extends BaseProps<AgsLabel>, Gtk.Label.ConstructorProperties {
+export type Props = BaseProps<AgsLabel, Gtk.Label.ConstructorProperties & {
     justification?: Justification
     truncate?: Truncate
-}
+}>
 
 export type LabelProps = Props | string | undefined
 
 export default class AgsLabel extends AgsWidget(Gtk.Label) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsLabel',
-            Properties: {
-                'justification': Service.pspec('justification', 'string', 'rw'),
-                'truncate': Service.pspec('truncate', 'string', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'justification': ['string', 'rw'],
+                'truncate': ['string', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: LabelProps = {}) {
-        super(typeof props === 'string' ? { label: props } : props);
+        const config = props as Gtk.Label.ConstructorProperties;
+        super(typeof props === 'string' ? { label: props } : config);
     }
 
     get label() { return super.label || ''; }
@@ -54,7 +52,7 @@ export default class AgsLabel extends AgsWidget(Gtk.Label) {
                 if (e instanceof GLib.MarkupError)
                     label = GLib.markup_escape_text(label, -1) || '';
                 else
-                    console.error(e as Error);
+                    logError(e);
             }
         }
         super.label = label;
