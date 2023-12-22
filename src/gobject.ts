@@ -1,4 +1,4 @@
-import Gtk from 'gi://Gtk';
+import Gtk from 'gi://Gtk?version=3.0';
 import GObject from 'gi://GObject';
 
 export type PspecFlag = 'rw' | 'r' | 'w';

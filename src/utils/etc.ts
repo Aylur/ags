@@ -1,6 +1,6 @@
+import Gtk from 'gi://Gtk?version=3.0';
 import GObject from 'gi://GObject';
 import GLib from 'gi://GLib';
-import Gtk from 'gi://Gtk';
 import Gio from 'gi://Gio';
 
 export function loadInterfaceXML(iface: string) {
