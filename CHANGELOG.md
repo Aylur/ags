@@ -4,6 +4,7 @@
 - feat: Service.bind and Variable.bind
 - feat: AgsWidget.register
 - export Widget.createCtor utility
+- add: Applications.reload
 
 ## Breaking Changes
 - update: Hyprland.active.monitor to be an object
