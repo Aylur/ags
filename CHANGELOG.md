@@ -8,6 +8,7 @@
 - add: Utils.idle
 - use GLib.shell_parse_argv on Utils.execAsync
 - feat: Utils.fetch
+- overwrite toJSON method on GObjects
 
 ## Breaking Changes
 - update: Hyprland.active.monitor to be an object
