@@ -1,38 +1,27 @@
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
+import AgsWidget, { type BaseProps } from './widget.js';
 import AgsBox, { type BoxProps } from './box.js';
 
-export interface CenterBoxProps extends BoxProps<AgsCenterBox> {
+export type CenterBoxProps = BaseProps<AgsCenterBox, Gtk.Box.ConstructorProperties & {
     start_widget?: Gtk.Widget
     center_widget?: Gtk.Widget
     end_widget?: Gtk.Widget
-}
+}>;
 
 export default class AgsCenterBox extends AgsBox {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsCenterBox',
-            Properties: {
-                'start-widget': GObject.ParamSpec.object(
-                    'start-widget', 'Start Widget', 'Start Widget',
-                    GObject.ParamFlags.READWRITE,
-                    Gtk.Widget.$gtype,
-                ),
-                'center-widget': GObject.ParamSpec.object(
-                    'center-widget', 'Center Widget', 'Center Widget',
-                    GObject.ParamFlags.READWRITE,
-                    Gtk.Widget.$gtype,
-                ),
-                'end-widget': GObject.ParamSpec.object(
-                    'end-widget', 'End Widget', 'End Widget',
-                    GObject.ParamFlags.READWRITE,
-                    Gtk.Widget.$gtype,
-                ),
+        AgsWidget.register(this, {
+            properties: {
+                'start-widget': ['widget', 'rw'],
+                'center-widget': ['widget', 'rw'],
+                'end-widget': ['widget', 'rw'],
             },
-        }, this);
+        });
     }
 
-    constructor(props: CenterBoxProps = {}) { super(props as BoxProps<AgsBox>); }
+    constructor(props: CenterBoxProps = {}) {
+        super(props as BoxProps);
+    }
 
     set children(children: Gtk.Widget[]) {
         const newChildren = children || [];

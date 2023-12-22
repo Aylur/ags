@@ -103,7 +103,6 @@ export class App extends Gtk.Application {
         this._load();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     connect(signal = 'window-toggled', callback: (_: this, ...args: any[]) => void): number {
         return super.connect(signal, callback);
     }
@@ -215,7 +214,7 @@ export class App extends Gtk.Application {
 
             this.emit('config-parsed');
         } catch (err) {
-            console.error(err as Error);
+            logError(err);
         }
     }
 
@@ -233,6 +232,14 @@ export class App extends Gtk.Application {
             null,
             null,
         );
+    }
+
+    toJSON() {
+        return {
+            bus: this.application_id,
+            configDir: this.configDir,
+            windows: Object.fromEntries(this.windows.entries()),
+        };
     }
 
     RunJs(js: string, clientBusName?: string, clientObjPath?: string) {
