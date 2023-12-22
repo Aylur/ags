@@ -5,6 +5,7 @@
 - feat: AgsWidget.register
 - export Widget.createCtor utility
 - add: Applications.reload
+- add: Utils.idle
 
 ## Breaking Changes
 - update: Hyprland.active.monitor to be an object

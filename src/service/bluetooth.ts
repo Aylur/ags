@@ -1,9 +1,8 @@
+// @ts-expect-error missing types
+import GnomeBluetooth from 'gi://GnomeBluetooth?version=3.0';
 import Service from '../service.js';
 import Gio from 'gi://Gio';
 import { bulkConnect, bulkDisconnect } from '../utils.js';
-
-imports.gi.versions.GnomeBluetooth = '3.0';
-const { GnomeBluetooth } = imports.gi;
 
 const _ADAPTER_STATE = {
     [GnomeBluetooth.AdapterState.ABSENT]: 'absent',
@@ -30,14 +29,12 @@ export class BluetoothDevice extends Service {
         });
     }
 
-    // @ts-expect-error
     private _device: GnomeBluetooth.Device;
     private _ids: number[];
     private _connecting = false;
 
     get device() { return this._device; }
 
-    // @ts-expect-error
     constructor(device: GnomeBluetooth.Device) {
         super();
 
@@ -99,7 +96,6 @@ export class Bluetooth extends Service {
         });
     }
 
-    // @ts-expect-error
     private _client: GnomeBluetooth.Client;
     private _devices: Map<string, BluetoothDevice>;
 
@@ -136,8 +132,7 @@ export class Bluetooth extends Service {
         return devices;
     }
 
-    // @ts-expect-error
-    private _deviceAdded(_, device: GnomeBluetooth.Device) {
+    private _deviceAdded(_: GnomeBluetooth.Client, device: GnomeBluetooth.Device) {
         if (this._devices.has(device.address))
             return;
 
@@ -149,8 +144,7 @@ export class Bluetooth extends Service {
         this.emit('device-added', device.address);
     }
 
-    // @ts-expect-error
-    private _deviceRemoved(_, device: GnomeBluetooth.Device) {
+    private _deviceRemoved(_: GnomeBluetooth.Client, device: GnomeBluetooth.Device) {
         if (!this._devices.has(device.address))
             return;
 
@@ -171,7 +165,6 @@ export class Bluetooth extends Service {
             device.device.get_object_path(),
             connect,
             null,
-            // @ts-expect-error
             (client: GnomeBluetooth.Client, res: Gio.AsyncResult) => {
                 try {
                     const s = client.connect_service_finish(res);

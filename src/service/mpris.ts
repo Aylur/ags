@@ -2,7 +2,7 @@ import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import App from '../app.js';
 import Service from '../service.js';
-import { ensureDirectory, timeout } from '../utils.js';
+import { ensureDirectory, idle } from '../utils.js';
 import { CACHE_DIR } from '../utils.js';
 import { loadInterfaceXML } from '../utils.js';
 import { DBusProxy, PlayerProxy, MprisProxy } from '../dbus/types.js';
@@ -91,7 +91,7 @@ export class MprisPlayer extends Service {
     private _loopStatus!: LoopStatus | null;
     private _length!: number;
 
-    private _binding: { mpris: number, player: number };
+    private _binding = { mpris: 0, player: 0 };
     private _mprisProxy: MprisProxy;
     private _playerProxy: PlayerProxy;
 
@@ -101,7 +101,6 @@ export class MprisPlayer extends Service {
         this._busName = busName;
         this._name = busName.substring(23).split('.')[0];
 
-        this._binding = { mpris: 0, player: 0 };
         this._mprisProxy = new MprisProxy(
             Gio.DBus.session, busName,
             '/org/mpris/MediaPlayer2');
@@ -110,10 +109,9 @@ export class MprisPlayer extends Service {
             Gio.DBus.session, busName,
             '/org/mpris/MediaPlayer2');
 
-        this._onMprisProxyReady();
         this._onPlayerProxyReady();
-
-        timeout(100, this._updateState.bind(this));
+        this._onMprisProxyReady();
+        idle(this._updateState.bind(this));
     }
 
     close() {
@@ -139,8 +137,6 @@ export class MprisPlayer extends Service {
     private _onPlayerProxyReady() {
         this._binding.player = this._playerProxy.connect(
             'g-properties-changed', () => this._updateState());
-
-        this._updateState();
     }
 
     private _updateState() {

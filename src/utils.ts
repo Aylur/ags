@@ -147,6 +147,13 @@ export function timeout(ms: number, callback: () => void) {
     });
 }
 
+export function idle(callback: () => void, prio = GLib.PRIORITY_DEFAULT) {
+    return GLib.idle_add(prio, () => {
+        callback();
+        return GLib.SOURCE_REMOVE;
+    });
+}
+
 export function lookUpIcon(name?: string, size = 16) {
     if (!name)
         return null;
