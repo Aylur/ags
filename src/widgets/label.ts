@@ -52,7 +52,7 @@ export default class AgsLabel extends AgsWidget(Gtk.Label) {
                 if (e instanceof GLib.MarkupError)
                     label = GLib.markup_escape_text(label, -1) || '';
                 else
-                    console.error(e as Error);
+                    logError(e);
             }
         }
         super.label = label;

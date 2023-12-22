@@ -238,7 +238,7 @@ export class Network extends Service {
             this._clientReady();
         }
         catch (e) {
-            console.error(e as Error);
+            logError(e);
         }
     }
 

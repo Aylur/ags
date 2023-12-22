@@ -179,9 +179,7 @@ export class Bluetooth extends Service {
 
                     this.changed('connected-devices');
                 } catch (error) {
-                    if (error instanceof Error)
-                        console.error(error.message);
-
+                    logError(error);
                     callback(false);
                 }
             },

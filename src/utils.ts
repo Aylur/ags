@@ -102,7 +102,7 @@ export function loadInterfaceXML(iface: string) {
         const [, bytes] = f.load_contents(null);
         return new TextDecoder().decode(bytes);
     } catch (e) {
-        console.error(e as Error);
+        logError(e);
         return null;
     }
 }
@@ -213,7 +213,7 @@ export function subprocess(
                         read(stdout);
                     }
                 } catch (e) {
-                    onError(e as Error);
+                    logError(e);
                 }
             });
         };
@@ -242,7 +242,7 @@ export function subprocess(
 
         return proc;
     } catch (e) {
-        onError(e as Error);
+        logError(e);
         return null;
     }
 }

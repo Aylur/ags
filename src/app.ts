@@ -214,7 +214,7 @@ export class App extends Gtk.Application {
 
             this.emit('config-parsed');
         } catch (err) {
-            console.error(err as Error);
+            logError(err);
         }
     }
 
