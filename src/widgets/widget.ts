@@ -88,7 +88,7 @@ export type BaseProps<Self extends Gtk.Widget, Props> = {
 AgsWidget.register = register;
 export function register<T extends WidgetCtor>(
     klass: T,
-    config: Parameters<typeof registerGObject>[1] & { cssName?: string },
+    config?: Parameters<typeof registerGObject>[1] & { cssName?: string },
 ) {
     registerGObject(klass, {
         cssName: config?.cssName,
