@@ -28,11 +28,11 @@ export class Variable<T> extends GObject.Object {
         });
     }
 
-    private _value!: T;
-    private _poll?: Poll<T>;
-    private _listen?: Listen<T>;
-    private _interval?: number;
-    private _subprocess?: Gio.Subprocess | null;
+    protected _value!: T;
+    protected _poll?: Poll<T>;
+    protected _listen?: Listen<T>;
+    protected _interval?: number;
+    protected _subprocess?: Gio.Subprocess | null;
 
     constructor(value: T, { poll, listen }: Options<T> = {}) {
         super();
