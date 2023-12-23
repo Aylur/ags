@@ -1,7 +1,7 @@
 # Planned features/improvements
 
 - services
-  - [ ] power profiles
+  - [x] power profiles [#218](https://github.com/Aylur/ags/pull/218)
   - [ ] greetd - this would allow to create login managers
   - [ ] evolution data server - allows for to sync with calendars, todos and contact lists
   - [ ] improve Network service - its currently very barebones, and state changes are not properly signaled
@@ -9,11 +9,8 @@
 - [ ] utility gobject based library in c
   - to be able to use wayland protocols especially for lockscreens in the form of a PAM util function for authentication and input inhibitor
 
-- [ ] fetch util function
-  - we can currently use `curl` or `wget` but a fetch like the web api would be useful
-
-- [ ] toJSON overridies
-  - currently logging with `JSON.stringify` isn't very useful
+- [x] fetch util function [#187](https://github.com/Aylur/ags/pull/187)
+- [x] toJSON overridies [#203](https://github.com/Aylur/ags/pull/203)
 
 - [ ] circular slider widget
 
@@ -29,6 +26,7 @@
   - [ ] maybe? install them at /etc/ags with meson
 
 - Wiki
+  - [ ] update to use `bind` `hook` `on` `poll`
   - [ ] Frequent GTK issues page
     - [ ] Single children issues
 
