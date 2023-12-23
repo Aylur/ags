@@ -3,6 +3,7 @@ import Gio from 'gi://Gio';
 import Service from '../service.js';
 import { loadInterfaceXML } from '../utils.js';
 import { PowerProfilesProxy } from '../dbus/types.js';
+import { kebabify } from '../service.js';
 
 const PowerProfilesIFace = loadInterfaceXML('net.hadess.PowerProfiles')!;
 const PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(
@@ -40,10 +41,14 @@ class PowerProfiles extends Service {
             'net.hadess.PowerProfiles',
             '/net/hadess/PowerProfiles');
 
-        this._proxy.connect('g-properties-changed', () => {
+        this._proxy.connect('g-properties-changed', (_, changed) => {
+            for (const prop of Object.keys(changed.deepUnpack())) {
+                this.notify(kebabify(prop));
+                if (prop === 'ActiveProfile')
+                    this.notify('icon-name');
+            }
+
             this.emit('changed');
-            // TODO: notify possible changes
-            // this.notify('active-profile');
         });
 
         this._proxy.connectSignal('ProfileReleased', (_p, _n, [cookie]) => {
@@ -52,12 +57,7 @@ class PowerProfiles extends Service {
     }
 
     get active_profile() { return this._proxy.ActiveProfile; }
-    set active_profile(profile: string) {
-        this._proxy.ActiveProfile = profile;
-        this.notify('active-profile');
-        this.notify('icon');
-        this.emit('changed');
-    }
+    set active_profile(profile: string) { this._proxy.ActiveProfile = profile; }
 
     get performance_inhibited() { return this._proxy.PerformanceInhibited; }
     get performance_degraded() { return this._proxy.PerformanceDegraded; }
