@@ -9,6 +9,7 @@
 - use GLib.shell_parse_argv on Utils.execAsync
 - feat: Utils.fetch
 - overwrite toJSON method on GObjects
+- feat: PowerProfile Service
 
 ## Breaking Changes
 - update: Hyprland.active.monitor to be an object
