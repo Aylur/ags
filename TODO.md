@@ -26,7 +26,8 @@
   - [ ] maybe? install them at /etc/ags with meson
 
 - Wiki
-  - [ ] update to use `bind` `hook` `on` `poll`
+  - [x] update to use `bind` `hook` `on` `poll`
+  - [ ] update examples
   - [ ] Frequent GTK issues page
     - [ ] Single children issues
 
