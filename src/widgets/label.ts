@@ -38,8 +38,10 @@ export default class AgsLabel extends AgsWidget(Gtk.Label) {
     }
 
     constructor(props: LabelProps = {}) {
-        const config = props as Gtk.Label.ConstructorProperties;
-        super(typeof props === 'string' ? { label: props } : config);
+        const { label, ...config } = props as Gtk.Label.ConstructorProperties;
+        const text = typeof props === 'string' ? props : label;
+        super(typeof props === 'string' ? {} : config);
+        this._handleParamProp('label', text || '');
     }
 
     get label() { return super.label || ''; }
