@@ -111,6 +111,7 @@ export class MprisPlayer extends Service {
 
         this._onPlayerProxyReady();
         this._onMprisProxyReady();
+        this._updateState();
         idle(this._updateState.bind(this));
     }
 
