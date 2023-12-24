@@ -61,15 +61,14 @@ const Media = () => Widget.Button({
     on_primary_click: () => Mpris.getPlayer('')?.playPause(),
     on_scroll_up: () => Mpris.getPlayer('')?.next(),
     on_scroll_down: () => Mpris.getPlayer('')?.previous(),
-    child: Widget.Label({
-        label: Mpris.bind('players').transform(players => {
-            if (players[0]) {
-                const { track_artists, track_title } = players[0];
-                return `${track_artists.join(', ')} - ${track_title}`;
-            }
-            return 'Nothing is playing';
-        }),
-    }),
+    child: Widget.Label('-').hook(Mpris, self => {
+        if (Mpris.players[0]) {
+            const { track_artists, track_title } = Mpris.players[0];
+            self.label = `${track_artists.join(', ')} - ${track_title}`;
+        } else {
+            self.label = 'Nothing is playing';
+        }
+    }, 'player-changed'),
 });
 
 const Volume = () => Widget.Box({
