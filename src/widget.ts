@@ -1,7 +1,6 @@
 /* eslint-disable max-len */
 import Gtk from 'gi://Gtk?version=3.0';
-import GObject from 'gi://GObject?version=2.0';
-import AgsWidget, { type BaseProps } from './widgets/widget.js';
+import AgsWidget, { type BaseProps, type Connectable } from './widgets/widget.js';
 import AgsBox from './widgets/box.js';
 import AgsCenterBox from './widgets/centerbox.js';
 import AgsEventBox from './widgets/eventbox.js';
@@ -19,8 +18,11 @@ import { AgsMenu, AgsMenuItem } from './widgets/menu.js';
 import AgsWindow from './widgets/window.js';
 import AgsCircularProgress from './widgets/circularprogress.js';
 
-function createCtor<T extends typeof Gtk.Widget>(Widget: T) {
-    return (...props: ConstructorParameters<T>) => new Widget(...props) as InstanceType<T>;
+Widget.createCtor = createCtor;
+export function createCtor<T extends { new(...args: any[]): any }>(Widget: T) {
+    return (...props: ConstructorParameters<T>) => {
+        return new Widget(...props) as InstanceType<T> & Connectable<InstanceType<T>>;
+    };
 }
 
 export const Window = createCtor(AgsWindow);
@@ -40,6 +42,8 @@ export const Revealer = createCtor(AgsRevealer);
 export const Scrollable = createCtor(AgsScrollable);
 export const Slider = createCtor(AgsSlider);
 export const Stack = createCtor(AgsStack);
+
+export default Widget;
 
 const ctors = new Map();
 export function Widget<
@@ -79,16 +83,14 @@ Widget.Slider = Slider;
 Widget.Stack = Stack;
 Widget.Window = Window;
 
-export function subclass<T extends typeof Gtk.Widget, Props>(W: T, GTypeName?: string) {
-    class Widget extends AgsWidget(W, `Gtk${W.name}`) {
-        static { GObject.registerClass({ GTypeName: GTypeName || `Ags${W.name}` }, this); }
-        constructor(props: BaseProps<InstanceType<T> & Widget> & Props) {
-            super(props as Gtk.Widget.ConstructorProperties);
-        }
-    }
-    return (props?: BaseProps<InstanceType<T> & Widget> & Props) => new Widget(props) as InstanceType<T> & Widget;
-}
 Widget.subclass = subclass;
+export function subclass<T extends typeof Gtk.Widget, Props>(W: T, typename = W.name) {
+    const Widget = AgsWidget(W, typename);
+    return (props: BaseProps<InstanceType<typeof Widget>, Props>) => {
+        return new Widget(props as Gtk.Widget.ConstructorProperties) as
+            InstanceType<typeof Widget> & Connectable<InstanceType<typeof Widget>>;
+    };
+}
 
 export const Calendar = subclass<typeof Gtk.Calendar, Gtk.Calendar.ConstructorProperties>(Gtk.Calendar);
 Widget.Calendar = Calendar;
@@ -134,5 +136,3 @@ Widget.Switch = Switch;
 
 export const ToggleButton = subclass<typeof Gtk.ToggleButton, Gtk.ToggleButton.ConstructorProperties>(Gtk.ToggleButton);
 Widget.ToggleButton = ToggleButton;
-
-export default Widget;

@@ -1,7 +1,6 @@
 import Gio from 'gi://Gio';
 import Service from '../service.js';
-import { timeout } from '../utils.js';
-import { loadInterfaceXML } from '../utils.js';
+import { idle, loadInterfaceXML } from '../utils.js';
 import { type BatteryProxy } from '../dbus/types.js';
 
 const BatteryIFace = loadInterfaceXML('org.freedesktop.UPower.Device')!;
@@ -60,8 +59,7 @@ export class Battery extends Service {
             '/org/freedesktop/UPower/devices/DisplayDevice');
 
         this._proxy.connect('g-properties-changed', () => this._sync());
-
-        timeout(100, this._sync.bind(this));
+        idle(this._sync.bind(this));
     }
 
     private _sync() {

@@ -1,8 +1,6 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service from '../service.js';
 
 export type EventHandler = (self: AgsSlider, event: Gdk.Event) => void | unknown;
 
@@ -17,29 +15,28 @@ export type Position = keyof typeof POSITION;
 
 export type Mark = [number, string?, Position?] | number;
 
-export interface SliderProps extends BaseProps<AgsSlider>, Gtk.Scale.ConstructorProperties {
+export type SliderProps = BaseProps<AgsSlider, Gtk.Scale.ConstructorProperties & {
     on_change?: EventHandler,
     value?: number
     min?: number
     max?: number
     step?: number
     marks?: Mark[]
-}
+}>
 
 export default class AgsSlider extends AgsWidget(Gtk.Scale) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsSlider',
-            Properties: {
-                'dragging': Service.pspec('dragging', 'boolean', 'r'),
-                'vertical': Service.pspec('vertical', 'boolean', 'rw'),
-                'value': Service.pspec('value', 'double', 'rw'),
-                'min': Service.pspec('min', 'double', 'rw'),
-                'max': Service.pspec('max', 'double', 'rw'),
-                'step': Service.pspec('step', 'double', 'rw'),
-                'on-change': Service.pspec('on-change', 'jsobject', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'dragging': ['boolean', 'r'],
+                'vertical': ['boolean', 'rw'],
+                'value': ['double', 'rw'],
+                'min': ['double', 'rw'],
+                'max': ['double', 'rw'],
+                'step': ['double', 'rw'],
+                'on-change': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor({
@@ -51,16 +48,15 @@ export default class AgsSlider extends AgsWidget(Gtk.Scale) {
         ...rest
     }: SliderProps = {}) {
         super({
-            ...rest,
-            adjustment: new Gtk.Adjustment({
-                lower: min,
-                upper: max,
-                step_increment: step,
-                value: value,
-            }),
+            adjustment: new Gtk.Adjustment,
+            ...rest as Gtk.Scale.ConstructorProperties,
         });
 
-        this.marks = marks;
+        this._handleParamProp('value', value);
+        this._handleParamProp('min', min);
+        this._handleParamProp('max', max);
+        this._handleParamProp('step', step);
+        this._handleParamProp('marks', marks);
 
         this.adjustment.connect('notify::value', (_, event: Gdk.Event) => {
             if (!this.dragging)
