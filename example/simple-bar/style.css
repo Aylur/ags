@@ -1,49 +1,40 @@
+window.bar {
+    background-color: @theme_bg_color;
+    color: @theme_fg_color;
+}
+
+button {
+    min-width: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    background-color: transparent;
+}
+
+button:active {
+    background-color: @theme_selected_bg_color;
+}
+
+button:hover {
+    border-bottom: 3px solid @theme_fg_color;
+}
+
 label {
     font-weight: bold;
 }
 
-.workspaces button,
-.media {
-    background-color: transparent;
-    color: #eee;
-}
-
-.workspaces button:hover,
-.media:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #efefef;
-}
-
-.workspaces button:active,
-.media:active {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #fff;
-}
-
 .workspaces button.focused {
-    border-bottom: 3px solid aqua;
+    border-bottom: 3px solid @theme_selected_bg_color;
 }
 
 .client-title {
-    margin-left: 1em;
-    color: aqua;
+    color: @theme_selected_bg_color;
 }
 
-.notification image {
+.notification {
     color: yellow;
-    margin-left: 1em;
 }
 
-.battery progressbar {
-    margin: 0 6px;
-}
-
-.clock {
-    margin: 0 6px;
-    font-size: 1.1em;
-}
-
-progress, highlight {
-    background-color: aqua;
+progress,
+highlight {
     min-height: 8px;
 }

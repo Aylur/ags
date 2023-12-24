@@ -1,4 +1,3 @@
-// importing 
 import Hyprland from 'resource:///com/github/Aylur/ags/service/hyprland.js';
 import Notifications from 'resource:///com/github/Aylur/ags/service/notifications.js';
 import Mpris from 'resource:///com/github/Aylur/ags/service/mpris.js';
@@ -10,150 +9,133 @@ import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import { exec, execAsync } from 'resource:///com/github/Aylur/ags/utils.js';
 
 // widgets can be only assigned as a child in one container
-// so to make a reuseable widget, just make it a function
-// then you can use it by calling simply calling it
+// so to make a reuseable widget, make it a function
+// then you can simply instantiate one by calling it
 
 const Workspaces = () => Widget.Box({
-    className: 'workspaces',
-    connections: [[Hyprland.active.workspace, self => {
-        // generate an array [1..10] then make buttons from the index
-        const arr = Array.from({ length: 10 }, (_, i) => i + 1);
-        self.children = arr.map(i => Widget.Button({
-            onClicked: () => execAsync(`hyprctl dispatch workspace ${i}`),
-            child: Widget.Label(`${i}`),
-            className: Hyprland.active.workspace.id == i ? 'focused' : '',
+    class_name: 'workspaces',
+    children: Hyprland.bind('workspaces').transform(ws => {
+        return ws.map(({ id }) => Widget.Button({
+            on_clicked: () => Hyprland.sendMessage(`dispatch workspace ${id}`),
+            child: Widget.Label(`${id}`),
+            class_name: Hyprland.active.workspace.bind('id')
+                .transform(i => `${i === id ? 'focused' : ''}`),
         }));
-    }]],
+    }),
 });
 
 const ClientTitle = () => Widget.Label({
-    className: 'client-title',
-    binds: [
-        ['label', Hyprland.active.client, 'title'],
-    ],
+    class_name: 'client-title',
+    label: Hyprland.active.client.bind('title'),
 });
 
 const Clock = () => Widget.Label({
-    className: 'clock',
-    connections: [
+    class_name: 'clock',
+    setup: self => self
         // this is bad practice, since exec() will block the main event loop
         // in the case of a simple date its not really a problem
-        [1000, self => self.label = exec('date "+%H:%M:%S %b %e."')],
+        .poll(1000, self => self.label = exec('date "+%H:%M:%S %b %e."'))
 
         // this is what you should do
-        [1000, self => execAsync(['date', '+%H:%M:%S %b %e.'])
-            .then(date => self.label = date).catch(console.error)],
-    ],
+        .poll(1000, self => execAsync(['date', '+%H:%M:%S %b %e.'])
+            .then(date => self.label = date)),
 });
 
 // we don't need dunst or any other notification daemon
 // because the Notifications module is a notification daemon itself
 const Notification = () => Widget.Box({
-    className: 'notification',
+    class_name: 'notification',
+    visible: Notifications.bind('popups').transform(p => p.length > 0),
     children: [
         Widget.Icon({
             icon: 'preferences-system-notifications-symbolic',
-            connections: [
-                [Notifications, self => self.visible = Notifications.popups.length > 0],
-            ],
         }),
         Widget.Label({
-            connections: [[Notifications, self => {
-                self.label = Notifications.popups[0]?.summary || '';
-            }]],
+            label: Notifications.bind('popups').transform(p => p[0]?.summary || ''),
         }),
     ],
 });
 
 const Media = () => Widget.Button({
-    className: 'media',
-    onPrimaryClick: () => Mpris.getPlayer('')?.playPause(),
-    onScrollUp: () => Mpris.getPlayer('')?.next(),
-    onScrollDown: () => Mpris.getPlayer('')?.previous(),
+    class_name: 'media',
+    on_primary_click: () => Mpris.getPlayer('')?.playPause(),
+    on_scroll_up: () => Mpris.getPlayer('')?.next(),
+    on_scroll_down: () => Mpris.getPlayer('')?.previous(),
     child: Widget.Label({
-        connections: [[Mpris, self => {
-            const mpris = Mpris.getPlayer('');
-            // mpris player can be undefined
-            if (mpris)
-                self.label = `${mpris.trackArtists.join(', ')} - ${mpris.trackTitle}`;
-            else
-                self.label = 'Nothing is playing';
-        }]],
+        label: Mpris.bind('players').transform(players => {
+            if (players[0]) {
+                const { track_artists, track_title } = players[0];
+                return `${track_artists.join(', ')} - ${track_title}`;
+            }
+            return 'Nothing is playing';
+        }),
     }),
 });
 
 const Volume = () => Widget.Box({
-    className: 'volume',
+    class_name: 'volume',
     css: 'min-width: 180px',
     children: [
-        Widget.Stack({
-            items: [
-                // tuples of [string, Widget]
-                ['101', Widget.Icon('audio-volume-overamplified-symbolic')],
-                ['67', Widget.Icon('audio-volume-high-symbolic')],
-                ['34', Widget.Icon('audio-volume-medium-symbolic')],
-                ['1', Widget.Icon('audio-volume-low-symbolic')],
-                ['0', Widget.Icon('audio-volume-muted-symbolic')],
-            ],
-            connections: [[Audio, self => {
-                if (!Audio.speaker)
-                    return;
+        Widget.Icon().hook(Audio, self => {
+            if (!Audio.speaker)
+                return;
 
-                if (Audio.speaker.isMuted) {
-                    self.shown = '0';
-                    return;
-                }
+            const category = {
+                101: 'overamplified',
+                67: 'high',
+                34: 'medium',
+                1: 'low',
+                0: 'muted',
+            };
 
-                const show = [101, 67, 34, 1, 0].find(
-                    threshold => threshold <= Audio.speaker.volume * 100);
+            const icon = Audio.speaker.is_muted ? 0 : [101, 67, 34, 1, 0].find(
+                threshold => threshold <= Audio.speaker.volume * 100);
 
-                self.shown = `${show}`;
-            }, 'speaker-changed']],
-        }),
+            self.icon = `audio-volume-${category[icon]}-symbolic`;
+        }, 'speaker-changed'),
         Widget.Slider({
             hexpand: true,
-            drawValue: false,
-            onChange: ({ value }) => Audio.speaker.volume = value,
-            connections: [[Audio, self => {
+            draw_value: false,
+            on_change: ({ value }) => Audio.speaker.volume = value,
+            setup: self => self.hook(Audio, () => {
                 self.value = Audio.speaker?.volume || 0;
-            }, 'speaker-changed']],
+            }, 'speaker-changed'),
         }),
     ],
 });
 
 const BatteryLabel = () => Widget.Box({
-    className: 'battery',
+    class_name: 'battery',
+    visible: Battery.bind('available'),
     children: [
         Widget.Icon({
-            connections: [[Battery, self => {
-                self.icon = `battery-level-${Math.floor(Battery.percent / 10) * 10}-symbolic`;
-            }]],
+            icon: Battery.bind('percent').transform(p => {
+                return `battery-level-${Math.floor(p / 10) * 10}-symbolic`;
+            }),
         }),
         Widget.ProgressBar({
             vpack: 'center',
-            connections: [[Battery, self => {
-                if (Battery.percent < 0)
-                    return;
-
-                self.fraction = Battery.percent / 100;
-            }]],
+            fraction: Battery.bind('percent').transform(p => {
+                return p > 0 ? p / 100 : 0;
+            }),
         }),
     ],
 });
 
 const SysTray = () => Widget.Box({
-    connections: [[SystemTray, self => {
-        self.children = SystemTray.items.map(item => Widget.Button({
+    children: SystemTray.bind('items').transform(items => {
+        return items.map(item => Widget.Button({
             child: Widget.Icon({ binds: [['icon', item, 'icon']] }),
-            onPrimaryClick: (_, event) => item.activate(event),
-            onSecondaryClick: (_, event) => item.openMenu(event),
+            on_primary_click: (_, event) => item.activate(event),
+            on_secondary_click: (_, event) => item.openMenu(event),
             binds: [['tooltip-markup', item, 'tooltip-markup']],
         }));
-    }]],
+    }),
 });
 
 // layout of the bar
 const Left = () => Widget.Box({
+    spacing: 8,
     children: [
         Workspaces(),
         ClientTitle(),
@@ -161,6 +143,7 @@ const Left = () => Widget.Box({
 });
 
 const Center = () => Widget.Box({
+    spacing: 8,
     children: [
         Media(),
         Notification(),
@@ -169,6 +152,7 @@ const Center = () => Widget.Box({
 
 const Right = () => Widget.Box({
     hpack: 'end',
+    spacing: 8,
     children: [
         Volume(),
         BatteryLabel(),
@@ -177,18 +161,28 @@ const Right = () => Widget.Box({
     ],
 });
 
-const Bar = ({ monitor } = {}) => Widget.Window({
+const Bar = (monitor = 0) => Widget.Window({
     name: `bar-${monitor}`, // name has to be unique
-    className: 'bar',
+    class_name: 'bar',
     monitor,
     anchor: ['top', 'left', 'right'],
     exclusivity: 'exclusive',
     child: Widget.CenterBox({
-        startWidget: Left(),
-        centerWidget: Center(),
-        endWidget: Right(),
+        start_widget: Left(),
+        center_widget: Center(),
+        end_widget: Right(),
     }),
-})
+});
+
+import { monitorFile } from 'resource:///com/github/Aylur/ags/utils.js';
+
+monitorFile(
+    `${App.configDir}/style.css`,
+    function() {
+        App.resetCss();
+        App.applyCss(`${App.configDir}/style.css`);
+    },
+);
 
 // exporting the config so ags can manage the windows
 export default {
@@ -197,7 +191,7 @@ export default {
         Bar(),
 
         // you can call it, for each monitor
-        // Bar({ monitor: 0 }),
-        // Bar({ monitor: 1 })
+        // Bar(0),
+        // Bar(1)
     ],
 };
