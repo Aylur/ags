@@ -1,4 +1,5 @@
 ## signals
+* `event`: `(name: string, data: string)`: [hyprland ipc events](https://wiki.hyprland.org/IPC/#events-list)
 * `urgent-window`: `(windowaddress: int)`
 * `keyboard-layout`: `(keyboardname: string, layoutname: string)`
 * `submap`: `(name: string)`
@@ -23,9 +24,11 @@
 
 ## Active
 ```ts
-// its structure
 interface Active {
-    monitor: string
+    monitor: {
+        id: number
+        name: string
+    },
     workspace: {
         id: number
         name: string
@@ -36,24 +39,24 @@ interface Active {
         class: string
     },
 }
-
-// the active prop is composed by subservices
-// meaning you connect to any sub prop
+```
+The `active` property is composed by subservices, meaning you connect to any sub prop
+```js
 const widget = Widget({
-    connections: [
-        [Hyprland, self => {}],
-        [Hyprland.active, self => {}],
-        [Hyprland.active.workspace, self => {}],
-        [Hyprland.active.client, self => {}],
-    ],
-    binds: [
-        ['prop', Hyprland, 'active', active => {}],
-        ['prop', Hyprland.active, 'monitor', monitor => {}],
-        ['prop', Hyprland.active, 'workspace', ws => {}],
-        ['prop', Hyprland.active, 'client', client => {}],
-        ['prop', Hyprland.active.client, 'address', address => {}],
-        ['prop', Hyprland.active.workspace, 'id', id => {}],
-    ]
+    setup: self => self
+        .hook(Hyprland, self => {})
+        .hook(Hyprland.active, self => {})
+        .hook(Hyprland.active.monitor, self => {})
+        .hook(Hyprland.active.workspace, self => {})
+        .hook(Hyprland.active.client, self => {})
+
+        .bind('prop', Hyprland, 'active', active => {})
+        .bind('prop', Hyprland.active, 'monitor', monitor => {})
+        .bind('prop', Hyprland.active, 'workspace', ws => {})
+        .bind('prop', Hyprland.active, 'client', client => {})
+        .bind('prop', Hyprland.active.monitor, 'id', id => {})
+        .bind('prop', Hyprland.active.workspace, 'id', id => {})
+        .bind('prop', Hyprland.active.client, 'address', address => {}),
 })
 ```
 
@@ -64,28 +67,27 @@ import Hyprland from 'resource:///com/github/Aylur/ags/service/hyprland.js';
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js';
 
 const focusedTitle = Widget.Label({
-    binds: [
-        ['label', Hyprland.active.client, 'title'],
-        ['visible', Hyprland.active.client, 'address', addr => !!addr],
-    ],
+    label: Hyprland.active.client.bind('title'),
+    visible: Hyprland.active.client.bind('address')
+        .transform(addr => !!addr),
 });
 
-const dispatch = ws => Utils.execAsync(`hyprctl dispatch workspace ${ws}`);
+const dispatch = ws => Hyprland.sendMessage(`dispatch workspace ${ws}`);
 
 const Workspaces = () => Widget.EventBox({
     onScrollUp: () => dispatch('+1'),
     onScrollDown: () => dispatch('-1'),
     child: Widget.Box({
         children: Array.from({ length: 10 }, (_, i) => i + 1).map(i => Widget.Button({
-            setup: btn => btn.id = i,
+            attribute: i,
             label: `${i}`,
             onClicked: () => dispatch(i),
         })),
 
-        // remove this connection if you want fixed number of buttons
-        connections: [[Hyprland, box => box.children.forEach(btn => {
-            btn.visible = Hyprland.workspaces.some(ws => ws.id === btn.id);
-        })]],
+        // remove this setup hook if you want fixed number of buttons
+        setup: self => self.hook(Hyprland, () => box.children.forEach(btn => {
+            btn.visible = Hyprland.workspaces.some(ws => ws.id === btn.attribute);
+        })),
     }),
 });
 ```

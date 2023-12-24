@@ -25,12 +25,10 @@ import App from 'resource:///com/github/Aylur/ags/app.js';
 
 // this is only signaled for windows exported in config.js
 // or added with App.addWindow
-const label = Widget.Label({
-    connections: [
-        [App, (self, windowName, visible) => {
-            self.label = `${windowName} is ${visible ? 'visible' : 'not visible'}`;
-        }, 'window-toggled'],
-    ],
+const label = Widget.Label()
+    .hook(App, (self, windowName, visible) => {
+        self.label = `${windowName} is ${visible ? 'visible' : 'not visible'}`;
+    }, 'window-toggled')
 });
 ```
 

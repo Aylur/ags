@@ -38,7 +38,7 @@ import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import Bluetooth from 'resource:///com/github/Aylur/ags/service/bluetooth.js';
 
 const connectedList = Widget.Box({
-    connections: [[Bluetooth, self => {
+    setup: self => self.hook(Bluetooth, self => {
         self.children = Bluetooth.connectedDevices
             .map(({ iconName, name }) => Label({
                 indicator: Widget.Icon(iconName + '-symbolic'),
@@ -46,11 +46,11 @@ const connectedList = Widget.Box({
             }));
 
         self.visible = Bluetooth.connectedDevices.length > 0;
-    }, 'notify::connected-devices']],
+    }, 'notify::connected-devices'),
 });
 
 const indicator = Widget.Icon({
-    binds: [['icon', Bluetooth, 'enabled', on =>
-        `bluetooth-${on ? 'active' : 'disabled'}-symbolic`]],
+    icon: Bluetooth.bind('enabled').transform(on =>
+        `bluetooth-${on ? 'active' : 'disabled'}-symbolic`),
 });
 ```

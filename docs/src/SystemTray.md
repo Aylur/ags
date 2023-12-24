@@ -40,13 +40,12 @@ import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import SystemTray from 'resource:///com/github/Aylur/ags/service/systemtray.js';
 
 const SysTrayItem = item => Widget.Button({
-    child: Widget.Icon({ binds: [['icon', item, 'icon']] }),
-    binds: [['tooltip-markup', item, 'tooltip-markup']],
+    child: Widget.Icon().bind('icon', item, 'icon'),
+    tooltipMarkup: item.bind('tooltip-markup'),
     onPrimaryClick: (_, event) => item.activate(event),
     onSecondaryClick: (_, event) => item.openMenu(event),
 });
 
-const sysTray = Widget.Box({
-    binds: [['children', SystemTray, 'items', i => i.map(SysTrayItem)]],
-});
+const sysTray = Widget.Box()
+    .bind('children', SystemTray, 'items', i => i.map(SysTrayItem))
 ```

@@ -33,15 +33,16 @@
 import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import Audio from 'resource:///com/github/Aylur/ags/service/audio.js';
 
+/** @param {'speaker' | 'microphone'} type */
 const VolumeSlider = (type = 'speaker') => Widget.Slider({
     hexpand: true,
     drawValue: false,
     onChange: ({ value }) => Audio[type].volume = value,
-    connections: [[Audio, self => {
+    setup: self => self.hook(Audio, () => {
         // Audio.speaker and Audio.microphone can be undefined
         // to workaround this use the ? chain operator
         self.value = Audio[type]?.volume || 0;
-    }, `${type}-changed`]],
+    }, `${type}-changed`),
 });
 
 const speakerSlider = VolumeSlider('speaker');
@@ -55,23 +56,21 @@ import Audio from 'resource:///com/github/Aylur/ags/service/audio.js';
 
 const volumeIndicator = Widget.Button({
     onClicked: () => Audio.speaker.isMuted = !Audio.speaker.isMuted,
-    child: Widget.Icon({
-        connections: [[Audio, self => {
-            if (!Audio.speaker)
-                return;
+    child: Widget.Icon().hook(Audio, self => {
+        if (!Audio.speaker)
+            return;
 
-            const vol = Audio.speaker.volume * 100;
-            const icon = [
-                [101, 'overamplified'],
-                [67,  'high'],
-                [34,  'medium'],
-                [1,   'low'],
-                [0,   'muted'],
-            ].find(([threshold]) => threshold <= vol)[1];
+        const vol = Audio.speaker.volume * 100;
+        const icon = [
+            [101, 'overamplified'],
+            [67,  'high'],
+            [34,  'medium'],
+            [1,   'low'],
+            [0,   'muted'],
+        ].find(([threshold]) => threshold <= vol)[1];
 
-            self.icon = `audio-volume-${icon}-symbolic`;
-            self.tooltipText = `Volume ${Math.floor(vol)}%`;
-        }, 'speaker-changed']],
-    }),
+        self.icon = `audio-volume-${icon}-symbolic`;
+        self.tooltipText = `Volume ${Math.floor(vol)}%`;
+    }, 'speaker-changed'),
 });
 ```

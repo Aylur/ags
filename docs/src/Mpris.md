@@ -55,18 +55,14 @@
 import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import Mpris from 'resource:///com/github/Aylur/ags/service/mpris.js';
 
-const currentlyPlaying = Widget.Button({
-    onClicked: () => Mpris.players[0]?.playPause(),
-    child: Widget.Label(),
-    visible: false,
-    connections: [[Mpris, self => {
-        const player = Mpris.players[0];
-        self.visible = player;
-        if (!player)
-            return;
-
+const Player = player => Widget.Button({
+    onClicked: () => player.playPause(),
+    child: Widget.Label().hook(player, label => {
         const { trackArtists, trackTitle } = player;
-        self.child.label = `${trackArtists.join(', ')} - ${trackTitle}`;
-    }]],
-});
+        label.label = `${trackArtists.join(', ')} - ${trackTitle}`;
+    }),
+})
+
+const players = Widget.Box()
+    .bind('children', Mpris, 'players', p => p.map(Player))
 ```

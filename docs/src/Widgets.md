@@ -1,21 +1,17 @@
-`Widget` functions return an instance of [Gtk.Widget](https://gjs-docs.gnome.org/gtk30~3.0/gtk.widget). Most common widgets are subclassed and have a few additional properties.
+`Widget` functions return an instance of [Gtk.Widget](https://gjs-docs.gnome.org/gtk31~3.0/gtk.widget). Most common widgets are subclassed and have a few additional properties.
 
-[List of builtin widget](Basic-Widgets.md)
-
-These widgets have some additional properties on top of the base Gtk.Widget one:
+These widgets have some additional properties on top of the base Gtk.Widget ones:
 
 | Property | Type | Description |
 |----------|------|-------------|
-| class-name | string | List of class CSS selectors separated by white space.
-| class-names | string[] | List of class CSS selectors.
-| css | string | Inline CSS. e.g `label { color: white; }`. If no selector is specifed `*` will be assumed. e.g `color: white;` will be inferred as `*{ color: white; }`.
-| hpack | string | Horizontal alignment, behaves like `halign`. `halign` takes an enum, but for convenience `hpack` can be given with a string, so one of `"start"`, `"center"`, `"end"`, `"fill"`.
-| vpack | string | Vertical alignment.
-| cursor | string | Cursor style when hovering over widgets that have hover states, e.g it won't work on labels. [list of valid values](https://docs.gtk.org/gdk3/ctor.Cursor.new_from_name.html).
-| properties | tuple[] | Read below.
-| connections | connection[] | Read below.
-| binds | bind[] | Read below.
-| setup | (self) => void | Read below.
+| class-name | `string` | List of class CSS selectors separated by white space.
+| class-names | `Array<string>` | List of class CSS selectors.
+| css | `string` | Inline CSS. e.g `label { color: white; }`. If no selector is specifed `*` will be assumed. e.g `color: white;` will be inferred as `*{ color: white; }`.
+| hpack | `string` | Horizontal alignment, behaves like `halign`. `halign` takes an enum, but for convenience `hpack` can be given with a string, so one of `"start"`, `"center"`, `"end"`, `"fill"`.
+| vpack | `string` | Vertical alignment.
+| cursor | `string` | Cursor style when hovering over widgets that have hover states, e.g it won't work on labels. [list of valid values](https://docs.gtk.org/gdk3/ctor.Cursor.new_from_name.html).
+| attribute | `any` | Any additional attributes on `self`
+| setup | `(self) => void` | A callback function to execute on `self`
 
 Some common Gtk.Widget properties you might want for example
 
@@ -26,210 +22,6 @@ Some common Gtk.Widget properties you might want for example
 | sensitive | boolean | Makes the widget interactable.
 | tooltip-text | string | Tooltip popup when the widget is hovered over.
 | visible | boolean | Visibility of the widget. Setting this to `false` doesn't have any effect if the parent container calls `show_all()`, for example when you set a Box's childen dynamically.
-
-### Connections
-
-```js
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-import Audio from 'resource:///com/github/Aylur/ags/service/audio.js';
-import Gtk from 'gi://Gtk';
-```
-
-Let's say you want a label that shows the current volume level, this is how you would do it with Gtk
-```js
-const MyLabelImperative = () => {
-
-    // make the label and initalize its text
-    const label = new Gtk.Label({
-        label: `${Audio.speaker.volume * 100}%`,
-    });
-
-    // connect to Audio Service so whenever it updates we update the label's text
-    const id = Audio.connect('speaker-changed', () => {
-        label.label = `${Audio.speaker?.volume * 100}%`;
-    });
-
-    // disconnect if the label gets destroyed
-    label.connect('destroy', () => Audio.disconnect(id));
-
-    // return the label
-    return label;
-};
-```
-
-↑ That looks kind of ugly so lets use Widget.Label and connections property instead
-```js
-const MyLabelDeclarative = () => Widget.Label({
-    // no need to initalize it with the label property
-    label: `${Audio.speaker.volume * 100}%`, // unnecessary
-
-    // connections sets up the connect, disconnect and calls the function
-    connections: [
-        // [Service, callback, event] event is 'changed' by default
-        [Audio, self => {
-            // this gets run whenever Audio signals 'speaker-changed'
-            self.label = `${Audio.speaker?.volume * 100}%`;
-        }, 'speaker-changed'],
-    ],
-});
-```
-
-The connection can also be a `['signal', callback]` where the signal is the name of a signal that the widget emits, e.g when a button is clicked it emits the 'clicked' signal
-```js
-const myButton = Widget.Button({
-    connections: [
-        ['clicked', self => { /*do something*/ }],
-    ],
-});
-```
-
-Or a `[number, callback]` which sets up a poll
-```js
-const clock = Widget.Label({
-    // will run immediately upon construction and every second
-    connections: [[1000, self => self.label = exec('date')]],
-});
-```
-
-### Binds
-A bind is a simple connection that updates a widget's property with another object's property.
-
-```js
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-import Battery from 'resource:///com/github/Aylur/ags/service/battery.js';
-```
-
-```js
-const label = Widget.Label({
-    binds: [
-        [
-            'label', // selfProp: string
-            Battery, // targetObject: GObject.Object
-            'percent', // targetProp: string "value" by default
-            percent => `${percent}%`, // transform: (val) => val
-        ],
-    ],
-
-    // this is what it translates to
-    connections: [
-        [
-            Battery,
-            self => self['label'] = `${Battery['percent']}%`,
-            'notify::percent',
-        ],
-    ],
-});
-```
-
-> [!IMPORTANT]
-> The `targetProp` parameter has to be in `kebab-case`.
-
-```js
-const icon = Widget.Icon({
-    binds: [
-        // selfProp can be in kebab-case snake_case or camelCase
-        // but targetProp has to be in kebab-case
-        ['icon', Battery, 'icon-name'],
-    ],
-});
-```
-
-### Properties
-
-Let's make a button that counts the times it was clicked.
-```js
-const CounterButton = () => {
-    let count = 0;
-
-    return Button({
-        child: Label(`${count}`),
-        onClicked: button => {
-            count++;
-            button.child.label = `${count}`;
-        },
-    });
-};
-```
-
-Using `properties`
-```js
-const counter2 = Button({
-    properties: [
-        ['count', 0],
-    ],
-    child: Label('0'),
-    onClicked: button => {
-        button._count++;
-        button.child.label = `${button._count}`;
-    },
-});
-```
-
-> [!IMPORTANT]
-> You can set any property on any object (which is a blessing and a curse on dynamic languages like JS).
-> Make sure that the property you are trying to set is not something predefined for Gtk.Widget like Gtk.Label's label property. Prefixing with an underscore is good practice to avoid conflicts.
-
-```js
-const label = Label({
-    // this is label._label
-    properties: [
-        ['label', 'hi mom'],
-    ],
-    // this is label.label
-    label: 'hi mom',
-});
-```
-
-### Setup
-The setup prop is useful when you want to nest widgets and also do something imperatively.
-```js
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-import Gtk from 'gi://Gtk';
-
-const nested = Widget.Box({
-    children: [
-        Widget.Label('nested example'),
-        Widget.SpinButton({
-            setup: self => {
-                // range can be only set like this
-                self.set_range(0, 100);
-                self.set_increments(1, 5);
-            },
-        }),
-    ],
-});
-```
-
-### Using Gtk.Widgets not builtin
-```js
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-import Gtk from 'gi://Gtk';
-```
-
-Use them like a regular GTK widget
-```js
-const calendar = new Gtk.Calendar({
-    showDayNames: false,
-    showHeading: true,
-});
-```
-
-You can subclass Gtk.Widgets not builtin to behave like AGS widgets.
-```js
-const Calendar = Widget.subclass(Gtk.Calendar)
-
-const calendar1 = Calendar({
-    showDayNames: false,
-    showHeading: true,
-    // now you can set AGS props
-    connections: [/* */],
-    className: '',
-});
-```
-
-> [!NOTE]
-> Open up an issue/PR if you want to see a widget to be builtin.
-## Methods
 
 If you don't want to mutate the `classNames` array, there is `toggleClassName`: `(name: string, enable: boolean) => void`
 ```js
@@ -242,117 +34,362 @@ label.toggleClassName('my-awesome-label', true)
 label.toggleClassName('my-awesome-label', false)
 ```
 
-Adding connections and binds after construction
+Importing
 ```js
-import Battery from 'resource:///com/github/Aylur/ags/service/battery.js';
-
-const label = Widget.Label()
-
-label.bind('label', Battery, 'percent', p => p / 100)
-
-label.connectTo(Battery, self => self.label = Battery.percent / 100)
+import Widget from 'resource:///com/github/Aylur/ags/widget.js'
 ```
 
-## Custom Widgets
-Usually in GTK custom widgets are achieved by subclassing. The idea behind AGS is to use functions that create widgets and utilize [closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures).
+You can also import individual widgets
 ```js
-function CounterButton(({ color = 'aqua', ...rest })) {
-    let count = 0;
+import { Label, Box } from 'resource:///com/github/Aylur/ags/widget.js'
+```
 
-    const label = Widget.Label({
-        label: '0',
-        style: `color: ${color}`,
-    });
+The properties listed here are just the additional properties on top of their base Gtk.Widget classes. [Refer to the Gtk3 docs](https://gjs-docs.gnome.org/gtk30~3.0/) for the rest of them.
+### Window
+subclass of [Gtk.Window](https://gjs-docs.gnome.org/gtk30~3.0/gtk.window)
 
-    return Widget.Button({
-        ...rest, // spread passed parameters
-        child: label,
-        onClicked: () => {
-            label.label = `${count++}`;
-        }
+| Property | Type | Description |
+|----------|------|-------------|
+| child | Widget |
+| name | string | Name of the window. This has to be unique, if you pass it in config. This will also be the name of the layer.
+| anchor | string[] | Valid values are `"top"`, `"bottom"`, `"left"`, `"right"`. Anchor points of the window. Leave it empty to make it centered.
+| exclusivity | string | Specify if the compositor should reserve space for the window automatically or how the window should interact with windows that do. Possible values: `exclusive` (space should be reserved), `normal` (the window should move if occluding another), `ignore` (the window should not be moved). Default: `normal`.
+| focusable | boolean | Useful if you have an `entry` or other widgets that require user input.
+| layer | string | Valid values are `"overlay"`, `"top"`, `"bottom"`, `"background"`. It is `"top"` by default.
+| margins | number[] | Corresponds to CSS notation, e.g `[0, 6]` would have 0 margin on the top and bottom and would have 6 on the right and left.
+| monitor | number | Which monitor to show the window on. If it is left undefined the window will show on the currently focused monitor.
+| popup | boolean | Pressing `ESC` while the window has focus will close it.
+```js
+const window = Widget.Window({
+    name: 'window-name',
+    anchor: ['top', 'left', 'right'],
+    exclusive: false,
+    focusable: false,
+    layer: 'top',
+    margin: [0, 6],
+    monitor: 0,
+    child: Widget.Label('hello'),
+});
+```
+### Box
+subclass of [Gtk.Box](https://gjs-docs.gnome.org/gtk30~3.0/gtk.box)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| vertical | bool | setting `vertical: true` is the same as `orientation: 1` |
+| children | Widget[] | List of child widgets.
+
+```js
+const box = Widget.Box({
+    spacing: 8,
+    homogeneous: false,
+    vertical: false,
+
+    // set children dynamically
+    setup: self => self.hook(SomeService, () => {
+        self.children = [
+            /* widgets */
+        ]
+
+        // or if you want to add one child
+        self.add(/* widget */)
+        self.show_all(); // widgets are invisible by default
     })
-}
+});
+```
 
-// or like this
-const CounterButton = ({ color = 'aqua', ...rest }) => Button({
-    ...rest,
-    properties: [['count', 0]],
-    child: Label({
-        label: '0',
-        style: `color: ${color}`,
+### Button
+subclass of [Gtk.Button](https://gjs-docs.gnome.org/gtk30~3.0/gtk.button)
+
+| Property | Type |
+|----------|------|
+| child | Widget
+| on-clicked | `() => void`
+| on-primary-click | `(event: Gdk.Event) => boolean`
+| on-secondary-click | `(event: Gdk.Event) => boolean`
+| on-middle-click | `(event: Gdk.Event) => boolean`
+| on-primary-click-release | `(event: Gdk.Event) => boolean`
+| on-secondary-click-release | `(event: Gdk.Event) => boolean`
+| on-middle-click-release | `(event: Gdk.Event) => boolean`
+| on-hover | `(event: Gdk.Event) => boolean`
+| on-hover-lost | `(event: Gdk.Event) => boolean`
+| on-scroll-up | `(event: Gdk.Event) => boolean`
+| on-scroll-down | `(event: Gdk.Event) => boolean`
+
+```js
+const button = Widget.Button({
+    child: Widget.Label('click me!'),
+    on_primary_click: () => print('echo hello')
+});
+```
+
+### CenterBox
+subclass of Box
+
+| Property | Type |
+|----------|------|
+| start-widget | Gtk.Widget |
+| center-widget | Gtk.Widget |
+| end-widget | Gtk.Widget |
+
+```js
+const centerBox = Widget.CenterBox({
+    spacing: 8,
+    vertical: false,
+    start_widget: Widget.Label('left widget'),
+    center_widget: Widget.Label('center widget'),
+    end_widget: Widget.Label('right widget'),
+})
+```
+
+### CircularProgress
+subclass of [Gtk.Bin](https://gjs-docs.gnome.org/gtk30~3.0/gtk.bin)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| start-at | number | Number between 0 and 1, e.g 0.75 is the top
+| inverted | boolean |
+| rounded | boolean | Wether the progress bar should have rounded ends
+| value | number | Number between 0 and 1
+
+```js
+const progress = Widget.CircularProgress({
+    style:
+        'min-width: 50px;' + // its size is min(min-height, min-width)
+        'min-height: 50px;' +
+        'font-size: 6px;' + // to set its thickness set font-size on it
+        'margin: 4px;' + // you can set margin on it
+        'background-color: #131313;' + // set its bg color
+        'color: aqua;', // set its fg color
+
+    value: Battery.bind('percent').transform(p => p / 100),
+    child: Widget.Icon({
+        icon: Battery.bind('icon-name'),
     }),
-    onClicked: self => {
-        self.child.label = `${self._count++}`;
-    },
-});
-
-// then simply call it
-const button = CounterButton({
-    color: 'blue',
-    className: 'my-widget',
+    rounded: false,
+    inverted: false,
+    startAt: 0.75,
 });
 ```
 
-This approach comes with the limitation that parameters passed to these functions are that, just parameters and not `GObject` properties. If you still want to subclass, you can do so by subclassing `AgsWidget`.
+### Entry
+subclass of [Gtk.Entry](https://gjs-docs.gnome.org/gtk30~3.0/gtk.entry)
+
+| Property | Type |
+|----------|------|
+| on-change | `() => void`
+| on-accept | `() => void`
+
 ```js
-import AgsWidget from 'resource:///com/github/Aylur/ags/widgets/widget.js';
-
-class CounterButton extends AgsWidget(Gtk.Button, 'CounterButton') {
-    static {
-        GObject.registerClass({
-            GTypeName: 'CounterButton',
-            Properties: {
-                'count': GObject.ParamSpec.int64(
-                    'count', 'Count', 'The counting number',
-                    GObject.ParamFlags.READWRITE,
-                    Number.MIN_SAFE_INTEGER,
-                    Number.MAX_SAFE_INTEGER,
-                    0,
-                ),
-            },
-        }, this);
-    }
-
-    // if you define the ParamSpec
-    // the super constructor will take care of setting the count prop
-    // so you don't have to explicitly set count in the constructor
-    constructor(props) {
-        super(props);
-
-        const label = new Gtk.Label({
-            label: `${this.count}`,
-        });
-
-        this.add(label);
-
-        this.connect('clicked', () => {
-            this.count++;
-            label.label = `${this.count}`;
-        });
-    }
-
-    get count() {
-        return this._count || 0;
-    }
-
-    set count(num) {
-        this._count = num;
-        this.notify('count');
-    }
-}
+const entry = Widget.Entry({
+    placeholder_text: 'type here',
+    text: 'initial text',
+    visibility: true, // set to false for passwords
+    on_accept: ({ text }) => print(text),
+});
 ```
 
-You can now construct it like any other Gtk.Widget with the `new` keyword.
+### EventBox
+subclass of [Gtk.EventBox](https://gjs-docs.gnome.org/gtk30~3.0/gtk.eventbox)
+
+| Property | Type |
+|----------|------|
+| child | Widget |
+| on-primary-click | `(event: Gdk.Event) => boolean`
+| on-secondary-click | `(event: Gdk.Event) => boolean`
+| on-middle-click | `(event: Gdk.Event) => boolean`
+| on-primary-click-release | `(event: Gdk.Event) => boolean`
+| on-secondary-click-release | `(event: Gdk.Event) => boolean`
+| on-middle-click-release | `(event: Gdk.Event) => boolean`
+| on-hover | `(event: Gdk.Event) => boolean`
+| on-hover-lost | `(event: Gdk.Event) => boolean`
+| on-scroll-up | `(event: Gdk.Event) => boolean`
+| on-scroll-down | `(event: Gdk.Event) => boolean`
+
+### Icon
+subclass of [Gtk.Image](https://gjs-docs.gnome.org/gtk30~3.0/gtk.image)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| icon | string | Name of an icon or path to a file |
+| size | number | Forced size |
+
 ```js
-const counterButton = new CounterButton({
-    count: 0,
+Widget.Icon({ icon: 'dialog-information-symbolic' })
 
-    // you can set AGS widget props on it
-    className: '',
-    connections: [],
-})
+// if you only want an icon, it can be shortened like this
+Widget.Icon('dialog-information-symbolic')
 
-counterButton.connect('notify::count', ({ count }) => {
-    print(count);
+// if you don't set a size, it will be computed from css font-size
+Widget.Icon({
+    icon: 'dialog-information-symbolic',
+    style: 'font-size: 30px',
+});
+
+// NOTE:
+// setting the icon dynamically has a flicker currently
+// to fix it, use a forced size
+Widget.Icon({
+    icon: 'dialog-information-symbolic',
+    size: 30,
+});
+```
+### Label
+subclass of [Gtk.Label](https://gjs-docs.gnome.org/gtk30~3.0/gtk.label)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| justification | string | Valid values are `"left"`, `"center"`, `"right"`, `"fill"`. Same as `justify` but represented as a string instead of enum. |
+| truncate | string | Valid values are `"none"`, `"start"`, `"middle"`, `"end"`. Same as `ellipsize` but represented as a string instead of enum. |
+
+```js
+const label = Widget.Label({
+    label: 'some text to show',
+    justification: 'left',
+    truncate: 'end',
+    xalign: 0,
+    max_width_chars: 24,
+    wrap: true,
+    use_markup: true,
+});
+```
+
+### Overlay
+subclass of [Gtk.Overlay](https://gjs-docs.gnome.org/gtk30~3.0/gtk.overlay)
+Takes the size of its first child, then places subsequent children on top of each other and won't render them outside the container.
+
+| Property | Type | Description|
+|----------|------|------------|
+| child | Widget | Child which will determine the size of the overlay
+| overlays | Widget[] | Overlayed children
+| pass-through | boolean | Whether the overlay childs should pass the input through
+
+### ProgressBar
+subclass of [Gtk.ProgressBar](https://gjs-docs.gnome.org/gtk30~3.0/gtk.progressbar)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| vertical | bool | Setting `vertical: true` is the same as `orientation: 1` |
+| value | number | Same as `ProgressBar.fraction` |
+
+### Revealer
+subclass of [Gtk.Revealer](https://gjs-docs.gnome.org/gtk30~3.0/gtk.revealer)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| child | Widget | |
+| transition | string | Valid values are `"none"`, `"crossfade"`, `"slide_left"`, `"slide_right"`, `"slide_down"`, `"slide_up"`. This is `transitionType` represented as a string instead of enum. |
+
+```js
+const revealer = Widget.Revealer({
+    reveal_child: false,
+    transition_duration: 1000,
+    transition: 'slide_right',
+    child: Widget.Label('hello!'),
+    setup: self => self.poll(2000, () => {
+        self.reveal_child = !self.reveal_child;
+    }),
+});
+```
+
+### Scrollable
+subclass of [Gtk.ScrolledWindow](https://gjs-docs.gnome.org/gtk30~3.0/gtk.scrolledwindow)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| child | Widget | |
+| hscroll | string | Valid values are `"always`, `"automatic"`, `"external"`, `"never"`. |
+| vscroll | string | Valid values are `"always`, `"automatic"`, `"external"`, `"never"`. |
+
+```js
+const scrollable = Widget.Scrollable({
+    hscroll: 'always',
+    vscroll: 'never',
+    style: 'min-width: 20px;',
+    child: Widget.Label('Lorem ipsum dolor sit amet, ' +
+        'officia excepteur ex fugiat reprehenderit enim ' +
+        'labore culpa sint ad nisi Lorem pariatur mollit'),
+});
+```
+
+### Slider
+subclass of [Gtk.Scale](https://gjs-docs.gnome.org/gtk30~3.0/gtk.scale)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| vertical | bool | Setting `vertical: true` is the same as `orientation: 1` |
+| value | number |
+| min | number |
+| max | number |
+| marks | tuple or number | where tuple is [number, string?, Position?], Position is `"top"`, `"left`, `"right`, `"bottom"`
+| on-change | `(event: Gdk.Event) => void`
+
+```js
+Widget.Slider({
+    on_change: ({ value }) => print(value),
+    vertical: true,
+    value: 0,
+    min: 0,
+    max: 1,
+    marks: [
+        1,
+        2,
+        [3, 'label'],
+        [4, 'label', 'bottom'],
+    ],
 })
 ```
+
+### Stack
+subclass of [Gtk.Stack](https://gjs-docs.gnome.org/gtk30~3.0/gtk.stack)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| items | \[string, Widget\] | name - Widget pairs |
+| shown | string | Name of the widget to show. This can't be set on construction, instead the first give widget will be shown. |
+| transition | string | `transitionType` represented as a string. Valid values are `none`, `crossfade`, `slide_right`, `slide_left`, `slide_up`, `slide_down`, `slide_left_right`, `slide_up_down`, `over_up`, `over_down`, `over_left`, `over_right`, `under_up`, `under_down`, `under_left`, `under_right`, `over_up_down`, `over_down_up`, `over_left_right`, `over_right_left`
+
+```js
+const stack = Widget.Stack({
+    items: [
+        ['child1', Widget.Label('first child')],
+        ['child2', Widget.Label('second child')],
+    ],
+    setup: self => self.hook(SomeService, () => {
+        self.shown = 'child2';
+    })
+});
+```
+
+### Menu
+subclass of [Gtk.Menu](https://gjs-docs.gnome.org/gtk30~3.0/gtk.menu)
+
+| Property | Type |
+|----------|------|
+| children | MenuItem[] |
+| on-popup | `(flipped_rect: void, final_rect: void, flipped_x: boolean, flipped_y: boolean) => void` |
+| on-move-scroll | `(scroll_type: Gtk.ScrollType) => void` |
+
+```js
+// to have a menu popup on click
+const button = Widget.Button({
+    child: Widget.Label('click to open menu'),
+    on_primary_click: (_, event) => Widget.Menu({
+        children: [
+            Widget.MenuItem({
+                child: Widget.Label('hello'),
+            }),
+        ],
+    }).popup_at_pointer(event),
+});
+```
+
+### MenuItem
+subclass of [Gtk.MenuItem](https://gjs-docs.gnome.org/gtk30~3.0/gtk.menuitem)
+
+| Property | Type | Description |
+|----------|------|-------------|
+| child | Widget |
+| on-activate | `() => boolean`
+| on-select | `() => boolean`
+| on-deselect | `() => boolean`

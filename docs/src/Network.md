@@ -54,24 +54,23 @@ import Network from 'resource:///com/github/Aylur/ags/service/network.js';
 const WifiIndicator = () => Widget.Box({
     children: [
         Widget.Icon({
-            binds: [['icon', Network.wifi, 'icon-name']],
+            icon: Network.wifi.bind('icon-name'),
         }),
         Widget.Label({
-            binds: [['label', Network.wifi, 'ssid']],
+            label: Network.wifi.bind('ssid'),
         }),
     ],
-});
+})
 
 const WiredIndicator = () => Widget.Icon({
-    binds: [['icon', Network.wired, 'icon-name']],
-});
+    icon: Network.wired.bind('icon-name'),
+})
 
 const NetworkIndicator = () => Widget.Stack({
     items: [
         ['wifi', WifiIndicator()],
         ['wired', WiredIndicator()],
     ],
-    binds: [['shown', Network, 'primary', p => p || 'wifi']],
-});
-
+    shown: Network.bind('primary').transform(p => p || 'wifi'),
+})
 ```

@@ -1,28 +1,42 @@
 Since the widget toolkit is **GTK3** the theeming is done with **CSS**.
 
-> [!IMPORTANT]  
-> GTK is **not the web**, while most features are also implemented in GTK, you can't assume anything that works on the web will work with GTK. Refer to the GTK docs to see what is available.
-
 * [CSS tutorial](https://www.w3schools.com/css/)
 * [GTK CSS Overview wiki](https://docs.gtk.org/gtk3/css-overview.html)
 * [GTK CSS Properties Overview wiki ](https://docs.gtk.org/gtk3/css-properties.html)
 
-Specify it at startup
+> [!IMPORTANT]  
+> GTK is **not the web**, while most features are also implemented in GTK, you can't assume anything that works on the web will work with GTK. Refer to the [GTK docs](https://docs.gtk.org/gtk3/css-overview.html) to see what is available.
+
+So far every widget you made used your default GTK3 theme. To make them more custom, you can apply stylesheets to them, which are either imported `css` files or `inline css` applied with the `css` property.
+
+Setting a css file to be set on startup
 ```js
 // config.js
+import App from 'resource:///com/github/Aylur/ags/app.js';
+
 export default {
-    style: '/full/path/to/file.css'
+    // this style attribute takes a full path to a css file
+    style: '/home/username/.config/ags/style.css',
+
+    // you can get the current config directory through App
+    style: App.configDir + '/style.css',
 }
 ```
 
-Apply it at runtime
+Using `css` prop on a widget
+```js
+Widget.Label({
+    css: 'color: blue; padding: 1em;',
+    label: 'hello'
+})
+```
+
+You can apply stylesheets at runtime
 
 > [!WARNING]
 > `App.applyCss` will apply over other stylesheets applied before. You can reset stylesheets with `App.resetCss`
 
 ```js
-import App from 'resource:///com/github/Aylur/ags/app.js'
-
 App.resetCss() // reset if need
 App.applyCss('/full/path/to/file.css')
 ```
@@ -34,8 +48,7 @@ If you are not sure about the widget hierarchy or any CSS selector, you can use 
 ags --inspector
 ```
 
-> [!NOTE]
-> If you are coming from [Eww](https://github.com/elkowar/eww) and you want to use SCSS
+## Using pre-processors like SCSS
 
 ```js
 // in config.js
@@ -53,7 +66,7 @@ exec(`sassc ${scss} ${css}`)
 
 export default {
     style: css,
-    windows: [ /* */ ],
+    windows: [ /* windows */ ],
 }
 ```
 
@@ -65,7 +78,7 @@ import App from 'resource:///com/github/Aylur/ags/app.js'
 import * as Utils from 'resource:///com/github/Aylur/ags/utils.js'
 
 Utils.monitorFile(
-    // directory that contains scss files
+    // directory that contains the scss files
     `${App.configDir}/style`,
 
     // reload function

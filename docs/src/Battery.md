@@ -20,13 +20,11 @@ import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import Battery from 'resource:///com/github/Aylur/ags/service/battery.js';
 
 const batteryProgress = Widget.CircularProgress({
-    class_name: 'progress',
     child: Widget.Icon({
-        binds: [['icon', Battery, 'icon-name']],
+        icon: Battery.bind('icon-name')
     }),
-    binds: [
-        ['value', Battery, 'percent', p => p > 0 ? p / 100 : 0],
-        ['class-name', Battery, 'charging', c => c ? 'charging' : ''],
-    ],
+    visible: Battery.bind('available'),
+    value: Battery.bind('percent').transform(p => p > 0 ? p / 100 : 0),
+    class_name: Battery.bind('charging').transform(ch => ch ? 'charging' : ''),
 });
 ```

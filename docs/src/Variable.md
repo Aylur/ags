@@ -67,21 +67,14 @@ print(variable.isPolling);
 Usage with widgets
 ```js
 const label = Widget.Label({
-    binds: [
-        // [propName: string, variable: Variable]
-        // this means that whenever myVar's value changes
-        // Label.label will be updated
-        ['label', myVar],
+    label: myVar.bind(),
 
-        // you can specify a transform function like this
-        ['label', myVar, 'value', value => value.toString()],
-    ],
-    connections: [
-        // can also be connected to
-        [myVar, self => {
-            self.label = myVar.value.toString();
-        }],
-    ],
+    // optional transform method
+    label: myVar.bind().transform(value => value.toString()),
+
+    setup: self => self.hook(myVar, () => {
+        self.label = myVar.value.toString();
+    })
 });
 ```
 
@@ -116,10 +109,10 @@ const ram = Variable(0, {
 });
 
 const cpuProgress = Widget.CircularProgress({
-    binds: [['value', cpu]],
+    value: cpu.bind()
 });
 
 const ramProgress = Widget.CircularProgress({
-    binds: [['value', ram]],
+    value: ram.bind()
 });
 ```

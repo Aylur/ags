@@ -206,3 +206,12 @@ else {
     // null if it wasn't found in the current Icon Theme
 }
 ```
+
+# Fetch
+should be pretty close to the web api
+```js
+Utils.fetch('http://wttr.in/?format=3')
+    .then(res => res.text())
+    .then(print)
+    .catch(console.error);
+```

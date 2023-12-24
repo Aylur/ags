@@ -1,5 +1,3 @@
-Prerequisites: [JavaScript](JavaScript.md)
-
 Start by creating `~/.config/ags/config.js` with the following contents:
 ```js
 export default {
@@ -62,8 +60,7 @@ function Bar(monitor = 0) {
     
     const win = Widget.Window({
         monitor,
-        // name has to be unique
-        name: `bar${monitor}`,
+        name: `bar${monitor}`, // this name has to be unique
         anchor: ['top', 'left', 'right'],
         child: myLabel,
     })
@@ -78,7 +75,7 @@ export default { windows: [Bar(0), Bar(1)] }
 > The `name` attribute only has to be unique, if you pass it to `windows` in the exported object.
 
 > [!IMPORTANT]
-> Calling `Widget.Window` will create and show the window by default. You don't necessarily have to pass a reference to `windows` in the exported object, but if you don't, you won't be able to toggle it with `ags --toggle-window`
+> Calling `Widget.Window` will create and show the window by default. You don't necessarily have to pass a reference to `windows` in the exported object, but if you don't, you won't be able to toggle it with `ags --toggle-window` or through `App.toggleWindow`
 
 Alright, but static text is boring, let's make it dynamically change by updating the label every second with a `date`.
 ```js
@@ -108,17 +105,29 @@ function Bar(monitor = 0) {
 > JavaScript is **single threaded** and `exec` is a **blocking operation**, for a `date` call it's fine, but usually you want to use its **async** version: `execAsync`.
 
 Looking great, but that code has too much boilerplate for my taste. Let's use a [fat arrow](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
-instead of the `function` keyword, and instead of calling `interval` let's use the `connection` property.
+instead of the `function` keyword, and instead of calling `interval` let's use the `poll` method.
 ```js
 const Bar = (monitor = 0) => Widget.Window({
     monitor,
     name: `bar${monitor}`,
     anchor: ['top', 'left', 'right'],
-    child: Widget.Label({
-        connections: [
-            [1000, self => { self.label = exec('date') }],
-        ]
-    })
+    child: Widget.Label()
+        .poll(1000, label => label.label = exec('date'))
+})
+```
+
+> [!NOTE]
+>That is still not the best solution, because when you create multiple instances of `Bar` each will call `exec`. What you want to do is, move the date into a `Variable` and `bind` it.
+```js
+import Variable from 'resource:///com/github/Aylur/ags/variable.js';
+
+const date = Variable('', {
+	poll: [1000, 'data']
+})
+
+const Bar = () => Widget.Window({
+    child: Widget.Label()
+        .bind('label', date)
 })
 ```
 
@@ -136,11 +145,8 @@ myVariable.connect('changed', ({ value }) => {
 
 const bar = Widget.Window({
     name: 'bar',
-    child: Widget.Label({
-        connections: [[myVariable, self => {
-            self.label = `${myVariable.value}`
-        }]]
-    })
+    child: Widget.Label()
+        .bind('label', myVariable, 'value', v => `value: ${v}`)
 })
 
 myVariable.value++
@@ -148,7 +154,7 @@ myVariable.value++
 myVariable.value++
 ```
 
-For example with `pactl` you can get information about the volume level, but you don't want to have an interval that checks it periodically. You want a signal that signals everytime its **changed**, so you only do operations when its needed. `pactl subscribe` writes to stdout everytime there is a change.
+For example with `pactl` you can get information about the volume level, but you don't want to have an interval that checks it periodically. You want a **signal** that signals every time its **changed**, so you only do operations when its needed. `pactl subscribe` writes to stdout everytime there is a change.
 
 ```js
 const pactl = Variable({ count: 0, msg: '' }, {
@@ -158,16 +164,14 @@ const pactl = Variable({ count: 0, msg: '' }, {
     })]
 })
 
-pactl.connect('changed', ({value}) => {
+pactl.connect('changed', ({ value }) => {
     print(value.msg, value.count)
 })
 
-const label = Widget.Label({
-    connections: [[pactl, self => {
-        const { count, msg } = pactl.value
-        self.label = `${msg} ${count}`
-    }]]
-})
+const label = Widget.Label()
+    .bind('label', pactl, 'value', ({ count, msg }) => {
+        return `${msg} ${count}`
+    })
 
 // widgets are GObjects too
 label.connect('notify::label', ({ label }) => {
@@ -175,71 +179,15 @@ label.connect('notify::label', ({ label }) => {
 })
 ```
 
-For *most* of your system, you don't have to use external scripts and binaries to query information. AGS has builtin [Services](Service.md). They are just like `Variables` but instead of a single `value` they have more attributes and methods on them.
+For *most* of your system, you don't have to use external scripts and binaries to query information. AGS has builtin [Services](Service.md). They are just like [Variables](Variable.md) but instead of a single `value` they have more attributes and methods on them.
 ```js
 import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import Battery from 'resource:///com/github/Aylur/ags/service/battery.js';
 
 const batteryProgress = Widget.CircularProgress({
-    className: 'progress',
+    value: Battery.bind('percent').transform(p => p / 100),
     child: Widget.Icon({
-        binds: [['icon', Battery, 'icon-name']],
-    }),
-    connections: [[Battery, self => {
-        self.value = Battery.percent / 100;
-    }]]
+        icon: Battery.bind('icon_name'),
+    })
 })
 ```
-
-## CSS
-
-So far every widget you made used your default gtk3 theme. To make them more custom, you can apply stylesheets to them, which are either imported `css` files or inline css applied with the `css` property.
-```js
-import App from 'resource:///com/github/Aylur/ags/app.js';
-
-export default {
-    // this style attribute takes a full path
-    style: '/home/username/.config/ags/style.css',
-
-    // you can get the current config directory through App
-    style: App.configDir + '/style.css',
-}
-```
-
-> [!IMPORTANT]  
-> GTK is **not the web**, while most features are also implemented in GTK, you can't assume anything that works on the web will work with GTK. Refer to the [GTK docs](https://docs.gtk.org/gtk3/css-overview.html) to see what is available.
-
-## Config object
-
-When you start `ags`, it will try to `import` the `default` `export` from a module which defaults to `~/.config/ags/config.js`. Even if you mutate this object after initialization, the config **will not be reloaded**.
-
-```js
-export default {
-    closeWindowDelay: {
-        'window-name': 500, // milliseconds
-    },
-    notificationPopupTimeout: 5000, // milliseconds
-    notificationForceTimeout: false,
-    cacheNotificationActions: false,
-    maxStreamVolume: 1.5, // float
-    cacheCoverArt: true,
-
-    style: App.configDir + '/style.css',
-    windows: [
-        // Array<Gtk.Window>
-    ],
-}
-```
-
-## The exported config object
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `closeWindowDelay` | `Record<string, number>` | delays the closing of a window, this is useful for making animations with a revealer
-| `notificationPopupTimeout` | `number` | how long should a notification be flagged for popup
-| `notificationForceTimeout` | `boolean` | force `notificationPopupTimeout` and ignore timeout set by notifications
-| `cacheNotificationActions` | `boolean` | whether to cache notification actions, so that they can be reloaded
-| `maxStreamVolume` | `number` | maximum possible volume on an Audio Stream
-| `cacheCoverArt` | `boolean` | whether to cache mpris cover arts. `true` by default 
-| `style` | `string` | path to a css file.
-| `windows` | `Array<Gtk.Window>` list of [Windows](Basic-Widgets.md#window).

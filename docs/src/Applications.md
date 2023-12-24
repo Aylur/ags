@@ -19,6 +19,7 @@
 
 #### methods
 * `launch`: `() => void` launches the app, you could also do `Utils.execAsync(['bash', '-c', app.executable])`, but the launch method keeps track of the frequency of launches which is used to sort the query
-* `match`: `(string) => boolean`: returns wether a search term matches the app
+* `match`: `(string) => boolean` returns whether a search term matches the app
+- `reload`: `() => void` rereads .desktop files
 
 ## [Example Applauncher](https://github.com/Aylur/ags/tree/main/example/applauncher)
