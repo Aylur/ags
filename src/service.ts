@@ -31,7 +31,7 @@ export class Binding<
 
     transform<T>(fn: (v: Return) => T) {
         const bind = new Binding<Emitter, Prop, T>(this.emitter, this.prop);
-        const prev = bind.transformFn;
+        const prev = this.transformFn;
         // @ts-expect-error
         bind.transformFn = (v: Return) => fn(prev(v));
         return bind;
