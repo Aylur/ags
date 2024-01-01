@@ -33,8 +33,6 @@ export async function fetch(url: string, options: FetchOptions = {}) {
             .join('&');
     }
 
-    print(url)
-
     const message = new Soup.Message({
         method: options.method || 'GET',
         uri: GLib.Uri.parse(url, GLib.UriFlags.NONE),
