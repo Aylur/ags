@@ -19,6 +19,7 @@
 , networkmanager
 , libdbusmenu-gtk3
 , gvfs
+, libsoup_3
 , extraPackages ? []
 }:
 
@@ -33,7 +34,7 @@ let
 in
 stdenv.mkDerivation {
   pname = "ags";
-  version = "1.5.1";
+  version = "1.6.3";
 
   src = buildNpmPackage {
     name = "ags";
@@ -41,7 +42,7 @@ stdenv.mkDerivation {
 
     dontBuild = true;
 
-    npmDepsHash = "sha256-LSx7cvtQffAMA4jHGUmuvhnUOY2PAu0VGW8OHHd67WY=";
+    npmDepsHash = "sha256-xTeidwd9VTpuAXoKo8zp26JSV1e9KPJElHztS8DpTvQ=";
 
     installPhase = ''
       mkdir $out
@@ -80,6 +81,7 @@ stdenv.mkDerivation {
     networkmanager
     libdbusmenu-gtk3
     gvfs
+    libsoup_3
   ] ++ extraPackages;
 
   meta = with lib; {

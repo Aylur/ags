@@ -90,7 +90,7 @@ export class Applications extends Service {
 
     constructor() {
         super();
-        Gio.AppInfoMonitor.get().connect('changed', this._sync.bind(this));
+        Gio.AppInfoMonitor.get().connect('changed', this.reload.bind(this));
 
         try {
             this._frequents =
@@ -99,7 +99,7 @@ export class Applications extends Service {
             this._frequents = {};
         }
 
-        this._sync();
+        this.reload();
     }
 
     get list() { return this._list; }
@@ -119,7 +119,7 @@ export class Applications extends Service {
         this.changed('frequents');
     }
 
-    private _sync() {
+    reload() {
         this._list = Gio.AppInfo.get_all()
             .filter(app => app.should_show())
             .map(app => Gio.DesktopAppInfo.new(app.get_id() || ''))

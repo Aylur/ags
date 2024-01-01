@@ -2,17 +2,22 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib?version=2.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service from '../service.js';
+import Service, { kebabify, Props, BindableProps, Binding } from '../service.js';
+import { registerGObject } from '../gobject.js';
 import { interval } from '../utils.js';
 import { Variable } from '../variable.js';
 import { App } from '../app.js';
 
-type KebabCase<S extends string> = S extends `${infer Prefix}_${infer Suffix}`
-    ? `${Prefix}-${KebabCase<Suffix>}` : S;
+const ALIGN = {
+    'fill': Gtk.Align.FILL,
+    'start': Gtk.Align.START,
+    'end': Gtk.Align.END,
+    'center': Gtk.Align.CENTER,
+    'baseline': Gtk.Align.BASELINE,
+} as const;
 
-type OnlyString<S extends string | unknown> = S extends string ? S : never;
+export type Align = keyof typeof ALIGN;
 
-const aligns = ['fill', 'start', 'end', 'center', 'baseline'] as const;
 export type Cursor =
     | 'default'
     | 'help'
@@ -49,8 +54,6 @@ export type Cursor =
     | 'zoom-in'
     | 'zoom-out'
 
-export type Align = typeof aligns[number];
-
 export type Property = [prop: string, value: unknown];
 
 export type Connection<Self> =
@@ -65,73 +68,209 @@ export type Bind = [
     transform?: (value: any) => any,
 ];
 
-export interface BaseProps<Self> extends Gtk.Widget.ConstructorProperties {
+export type BaseProps<Self extends Gtk.Widget, Props> = {
+    setup?: (self: Connectable<Self> & Self) => void
+} & BindableProps<Props & {
     class_name?: string
     class_names?: string[]
     css?: string
     hpack?: Align
     vpack?: Align
+    cursor?: Cursor
+    attribute?: any
+
+    // FIXME: deprecated
     connections?: Connection<Self>[]
     properties?: Property[]
     binds?: Bind[],
-    setup?: (self: Self) => void
+}>
+
+AgsWidget.register = register;
+export function register<T extends WidgetCtor>(
+    klass: T,
+    config?: Parameters<typeof registerGObject>[1] & { cssName?: string },
+) {
+    registerGObject(klass, {
+        cssName: config?.cssName,
+        typename: config?.typename || `Ags_${klass.name}`,
+        signals: config?.signals,
+        properties: config?.properties,
+    });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type WidgetCtor = new (...args: any[]) => Gtk.Widget;
-export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
-    return class AgsWidget extends Widget {
-        static {
-            const pspec = (name: string) => GObject.ParamSpec.jsobject(
-                name, name, name, GObject.ParamFlags.CONSTRUCT_ONLY | GObject.ParamFlags.WRITABLE);
-
-            GObject.registerClass({
-                GTypeName: `Ags_${GTypeName || Widget.name}`,
-                Properties: {
-                    'class-name': Service.pspec('class-name', 'string', 'rw'),
-                    'class-names': Service.pspec('class-names', 'jsobject', 'rw'),
-                    'css': Service.pspec('css', 'string', 'rw'),
-                    'hpack': Service.pspec('hpack', 'string', 'rw'),
-                    'vpack': Service.pspec('vpack', 'string', 'rw'),
-                    'cursor': Service.pspec('cursor', 'string', 'rw'),
-
-                    // order of these matter
-                    'properties': pspec('properties'),
-                    'setup': pspec('setup'),
-                    'connections': pspec('connections'),
-                    'binds': pspec('binds'),
-                },
-            }, this);
+export class Connectable<T> extends Gtk.Widget {
+    hook<
+        Self extends Connectable<T> & T,
+        GObject extends GObject.Object,
+    >(
+        gobject: GObject | App,
+        callback: (self: Self, ...args: any[]) => void,
+        signal?: string,
+    ): Self {
+        if (!(gobject instanceof GObject.Object)) {
+            console.error(Error(`${gobject} is not a GObject`));
+            return this as unknown as Self;
         }
 
-        _init(config?: Gtk.Widget.ConstructorProperties): void {
-            super._init(config);
+        if (!(gobject instanceof Service ||
+            gobject instanceof App ||
+            gobject instanceof Variable) &&
+            !signal) {
+            console.error(Error('you are trying to connect to a regular GObject ' +
+                'without specifying the signal'));
+            return this as unknown as Self;
+        }
 
-            this.connect('destroy', () => {
-                this._destroyed = true;
+        const id = gobject.connect(signal!, (_, ...args: unknown[]) => {
+            callback(this as unknown as Self, ...args);
+        });
+
+        this.connect('destroy', () => {
+            gobject.disconnect(id);
+        });
+
+        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            // @ts-expect-error implementation in mixin class
+            if (!this.is_destroyed)
+                callback(this as unknown as Self);
+
+            return GLib.SOURCE_REMOVE;
+        });
+
+        return this as unknown as Self;
+    }
+
+    bind<
+        Self extends Connectable<T> & T,
+        Prop extends keyof Props<T>,
+        Gobject extends GObject.Object,
+        ObjProp extends keyof Props<Gobject>,
+    >(
+        prop: Prop,
+        gobject: Gobject,
+        objProp?: ObjProp,
+        transform?: (value: Gobject[ObjProp]) => T[Prop],
+    ): Self {
+        const targetProp = objProp || 'value';
+        const callback = transform
+            ? () => {
+                // @ts-expect-error too lazy to type
+                this[prop] = transform(gobject[targetProp]);
+            }
+            : () => {
+                // @ts-expect-error too lazy to type
+                this[prop] = gobject[targetProp];
+            };
+
+        this.hook(gobject, callback, `notify::${kebabify(targetProp)}`);
+        return this as unknown as Self;
+    }
+
+    on<
+        Self extends Connectable<T> & T,
+    >(
+        signal: string,
+        callback: (self: Self, ...args: any[]) => void,
+    ): Self {
+        this.connect(signal, callback);
+        return this as unknown as Self;
+    }
+
+    poll<
+        Self extends Connectable<T> & T,
+    >(
+        timeout: number,
+        callback: (self: Self) => void,
+    ): Self {
+        callback(this as unknown as Self);
+        interval(timeout, () => callback(this as unknown as Self), this);
+        return this as unknown as Self;
+    }
+}
+
+type WidgetCtor = new (...args: any[]) => Gtk.Widget;
+export default function AgsWidget<
+    W extends WidgetCtor,
+    Self extends InstanceType<W>,
+>(Widget: W, typename = Widget.name) {
+    return class AgsWidget extends Widget {
+        static {
+            Object.getOwnPropertyNames(Connectable.prototype).forEach(name => {
+                Object.defineProperty(this.prototype, name,
+                    Object.getOwnPropertyDescriptor(Connectable.prototype, name) ||
+                    Object.create(null),
+                );
             });
+            registerGObject(this, {
+                typename: `AgsBase_${typename}`,
+                properties: {
+                    'class-name': ['string', 'rw'],
+                    'class-names': ['jsobject', 'rw'],
+                    'css': ['string', 'rw'],
+                    'hpack': ['string', 'rw'],
+                    'vpack': ['string', 'rw'],
+                    'cursor': ['string', 'rw'],
+                    'is-destroyed': ['boolean', 'r'],
+                    'attribute': ['jsobject', 'rw'],
+
+                    // FIXME: deprecated
+                    'properties': ['jsobject', 'w'],
+                    'connections': ['jsobject', 'w'],
+                    'binds': ['jsobject', 'w'],
+                },
+            });
+        }
+
+        _init(config: Gtk.Widget.ConstructorProperties = {}) {
+            // this type casting is here becaus _init's signature can't be altered
+            const params = config as BaseProps<AgsWidget, Gtk.Widget.ConstructorProperties>;
+            const { setup, attribute, ...props } = params;
+
+            const binds = (Object.keys(props) as Array<keyof typeof props>)
+                .map(prop => {
+                    if (props[prop] instanceof Binding) {
+                        const bind = [prop, props[prop]];
+                        delete props[prop];
+                        return bind;
+                    }
+                })
+                .filter(pair => pair);
+
+            super._init(props as Gtk.Widget.ConstructorProperties);
+
+            if (attribute)
+                this.attribute = attribute;
+
+            (binds as unknown as Array<[keyof Props<Self>, Binding<any, any, any>]>)
+                .forEach(([selfProp, { emitter, prop, transformFn }]) => {
+                    // @ts-expect-error implementation in Connectable
+                    this.bind(selfProp, emitter, prop, transformFn);
+                });
 
             this.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK);
             this.add_events(Gdk.EventMask.LEAVE_NOTIFY_MASK);
 
-            const display = Gdk.Display.get_default();
+            this.connect('enter-notify-event', this._updateCursor.bind(this));
+            this.connect('leave-notify-event', this._updateCursor.bind(this));
+            this.connect('destroy', () => this._set('is-destroyed', true));
 
-            this.connect('enter-notify-event', () => {
-                if (display) {
-                    const cursor = Gdk.Cursor.new_from_name(display, this.cursor);
-                    this.get_window()?.set_cursor(cursor);
-                }
-            });
-
-            this.connect('leave-notify-event', () => {
-                if (display) {
-                    const cursor = Gdk.Cursor.new_from_name(display, 'default');
-                    this.get_window()?.set_cursor(cursor);
-                }
-            });
+            if (setup)
+                // @ts-expect-error
+                setup(this);
         }
 
-        _destroyed = false;
+        _handleParamProp<Prop extends keyof this>(prop: Prop, value: any) {
+            if (value === undefined)
+                return;
+
+            if (value instanceof Binding)
+                // @ts-expect-error implementation in Connectable
+                this.bind(prop, value.emitter, value.prop, value.transformFn);
+            else
+                this[prop] = value;
+        }
+
+        get is_destroyed(): boolean { return this._get('is-destroyed') || false; }
 
         // defining private fields for typescript causes
         // gobject constructor field setters to be overridden
@@ -140,52 +279,52 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             return (this as unknown as { [key: string]: unknown })[`__${field}`] as T;
         }
 
-        _set<T>(field: string, value: T) {
+        _set<T>(field: string, value: T, notify = true) {
             if (this._get(field) === value)
                 return;
 
             (this as unknown as { [key: string]: T })[`__${field}`] = value;
-            this.notify(field);
+
+            if (notify)
+                this.notify(field);
         }
 
-        set connections(connections: Connection<AgsWidget>[]) {
+        // FIXME: deprecated
+        set connections(connections: Connection<Self>[]) {
             if (!connections)
                 return;
 
             connections.forEach(([s, callback, event]) => {
-                if (!s || !callback) {
-                    console.error(Error('missing arguments to connections'));
-                    return;
-                }
+                if (s === undefined || callback === undefined)
+                    return console.error(Error('missing arguments to connections'));
 
                 if (typeof s === 'string')
                     this.connect(s, callback);
 
                 else if (typeof s === 'number')
-                    interval(s, () => callback(this), this);
+                    interval(s, () => callback(this as unknown as Self), this);
 
                 else if (s instanceof GObject.Object)
-                    this.connectTo(s, callback, event);
+                    // @ts-expect-error implementation in Connectable
+                    this.hook(s, callback, event);
 
                 else
-                    console.error(Error(`${s} is not a GObject nor a string nor a number`));
+                    console.error(Error(`${s} is not a GObject | string | number`));
             });
         }
 
+        // FIXME: deprecated
         set binds(binds: Bind[]) {
             if (!binds)
                 return;
 
             binds.forEach(([prop, obj, objProp = 'value', transform = out => out]) => {
-                this.bind(
-                    prop as KebabCase<OnlyString<keyof this>>,
-                    obj,
-                    objProp as keyof typeof obj,
-                    transform,
-                );
+                // @ts-expect-error
+                this.bind(prop, obj, objProp, transform);
             });
         }
 
+        // FIXME: deprecated
         set properties(properties: Property[]) {
             if (!properties)
                 return;
@@ -195,84 +334,44 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
             });
         }
 
-        set setup(setup: (self: AgsWidget) => void) {
-            if (!setup)
-                return;
-
-            setup(this);
-        }
-
+        // FIXME: deprecated
         connectTo<GObject extends GObject.Object>(
-            o: GObject | Service,
-            callback: (self: typeof this, ...args: unknown[]) => void,
-            event?: string,
+            gobject: GObject,
+            callback: (self: Self, ...args: any[]) => void,
+            signal?: string,
         ) {
-            if (!(o instanceof GObject.Object)) {
-                console.error(Error(`${o} is not a GObject`));
-                return this;
-            }
-
-            if (!(o instanceof Service || o instanceof App || o instanceof Variable) && !event) {
-                console.error(Error('you are trying to connect to a regular GObject ' +
-                    'without specifying the signal'));
-                return this;
-            }
-
-            const id = o.connect(event!, (_, ...args: unknown[]) => callback(this, ...args));
-
-            this.connect('destroy', () => {
-                this._destroyed = true;
-                o.disconnect(id);
-            });
-
-            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
-                if (!this._destroyed)
-                    callback(this);
-
-                return GLib.SOURCE_REMOVE;
-            });
-
-            return this;
+            console.warn(Error('connectTo was renamed to hook'));
+            // @ts-expect-error implementation in Connectable
+            return this.hook(gobject, callback, signal);
         }
 
-        bind<GObject extends GObject.Object>(
-            prop: KebabCase<OnlyString<keyof typeof this>>,
-            target: GObject,
-            targetProp: OnlyString<keyof GObject>,
-            // FIXME: typeof target[targetProp]
-            transform: (value: typeof target[typeof targetProp]) => unknown = out => out,
-        ) {
-            // @ts-expect-error readonly property
-            const callback = () => this[prop] = transform(target[targetProp]);
-            this.connectTo(target, callback, `notify::${targetProp}`);
-            return this;
-        }
+        set attribute(attr: any) { this._set('attribute', attr); }
+        get attribute() { return this._get('attribute'); }
 
-        get hpack() { return aligns[this.halign]; }
-        set hpack(align: Align) {
+        _setPack(orientation: 'h' | 'v', align: Align) {
             if (!align)
                 return;
 
-            if (!aligns.includes(align)) {
-                console.error(Error(`halign has to be on of ${aligns}`));
-                return;
+            if (!Object.keys(ALIGN).includes(align)) {
+                return console.error(Error(
+                    `${orientation}pack has to be on of ${Object.keys(ALIGN)}, but it is ${align}`,
+                ));
             }
 
-            this.halign = aligns.findIndex(a => a === align);
+            this[`${orientation}align`] = ALIGN[align];
         }
 
-        get vpack() { return aligns[this.valign]; }
-        set vpack(align: Align) {
-            if (!align)
-                return;
-
-            if (!aligns.includes(align)) {
-                console.error(Error(`valign has to be on of ${aligns}`));
-                return;
-            }
-
-            this.valign = aligns.findIndex(a => a === align);
+        _getPack(orientation: 'h' | 'v') {
+            return Object.keys(ALIGN).find(align => {
+                return ALIGN[align as Align] === this[`${orientation}align`];
+            }) as Align;
         }
+
+        get hpack() { return this._getPack('h'); }
+        set hpack(align: Align) { this._setPack('h', align); }
+
+        get vpack() { return this._getPack('v'); }
+        set vpack(align: Align) { this._setPack('v', align); }
 
         toggleClassName(className: string, condition = true) {
             const c = this.get_style_context();
@@ -318,7 +417,7 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
         }
 
         get css() {
-            return this._cssProvider.to_string() || '';
+            return this._cssProvider?.to_string() || '';
         }
 
         set css(css: string) {
@@ -355,7 +454,35 @@ export default function <T extends WidgetCtor>(Widget: T, GTypeName?: string) {
                 console.error(Error(`can't set child on ${this}`));
         }
 
-        set cursor(cursor: Cursor) { this._set('cursor', cursor); }
-        get cursor() { return this._get('cursor') || 'default'; }
+        _updateCursor() {
+            if (!this.cursor)
+                return;
+
+            const display = Gdk.Display.get_default();
+
+            if (this.isHovered() && display) {
+                const cursor = Gdk.Cursor.new_from_name(display, this.cursor);
+                this.get_window()?.set_cursor(cursor);
+            }
+            else if (display) {
+                const cursor = Gdk.Cursor.new_from_name(display, 'default');
+                this.get_window()?.set_cursor(cursor);
+            }
+        }
+
+        get cursor() { return this._get('cursor'); }
+        set cursor(cursor: Cursor) {
+            this._set('cursor', cursor);
+            this._updateCursor();
+        }
+
+        isHovered(event?: Gdk.Event) {
+            let [x, y] = this.get_pointer();
+            const { width: w, height: h } = this.get_allocation();
+            if (event)
+                [, x, y] = event.get_coords();
+
+            return x > 0 && x < w && y > 0 && y < h;
+        }
     };
 }

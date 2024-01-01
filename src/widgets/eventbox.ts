@@ -1,12 +1,9 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service from '../service.js';
 
-type EventHandler = (self: AgsEventBox, event: Gdk.Event) => boolean | unknown;
-
-export interface EventBoxProps extends BaseProps<AgsEventBox>, Gtk.EventBox.ConstructorProperties {
+export type EventHandler = (self: AgsEventBox, event: Gdk.Event) => boolean | unknown;
+export type EventBoxProps = BaseProps<AgsEventBox, Gtk.EventBox.ConstructorProperties & {
     on_hover?: EventHandler
     on_hover_lost?: EventHandler
 
@@ -20,53 +17,48 @@ export interface EventBoxProps extends BaseProps<AgsEventBox>, Gtk.EventBox.Cons
     on_primary_click_release?: EventHandler
     on_middle_click_release?: EventHandler
     on_secondary_click_release?: EventHandler
-}
+}>
 
 export default class AgsEventBox extends AgsWidget(Gtk.EventBox) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsEventBox',
-            Properties: {
-                'on-hover':
-                    Service.pspec('on-hover', 'jsobject', 'rw'),
-                'on-hover-lost':
-                    Service.pspec('on-hover-lost', 'jsobject', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'on-clicked': ['jsobject', 'rw'],
 
-                'on-scroll-up':
-                    Service.pspec('on-scroll-up', 'jsobject', 'rw'),
-                'on-scroll-down':
-                    Service.pspec('on-scroll-down', 'jsobject', 'rw'),
+                'on-hover': ['jsobject', 'rw'],
+                'on-hover-lost': ['jsobject', 'rw'],
 
-                'on-primary-click':
-                    Service.pspec('on-primary-click', 'jsobject', 'rw'),
-                'on-secondary-click':
-                    Service.pspec('on-secondary-click', 'jsobject', 'rw'),
-                'on-middle-click':
-                    Service.pspec('on-middle-click', 'jsobject', 'rw'),
+                'on-scroll-up': ['jsobject', 'rw'],
+                'on-scroll-down': ['jsobject', 'rw'],
 
-                'on-primary-click-release':
-                    Service.pspec('on-primary-click-release', 'jsobject', 'rw'),
-                'on-secondary-click-release':
-                    Service.pspec('on-secondary-click-release', 'jsobject', 'rw'),
-                'on-middle-click-release':
-                    Service.pspec('on-middle-click-release', 'jsobject', 'rw'),
+                'on-primary-click': ['jsobject', 'rw'],
+                'on-secondary-click': ['jsobject', 'rw'],
+                'on-middle-click': ['jsobject', 'rw'],
+
+                'on-primary-click-release': ['jsobject', 'rw'],
+                'on-secondary-click-release': ['jsobject', 'rw'],
+                'on-middle-click-release': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: EventBoxProps = {}) {
-        super(props);
+        super(props as Gtk.EventBox.ConstructorProperties);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
 
         this.connect('enter-notify-event', (_, event: Gdk.Event) => {
-            this.set_state_flags(Gtk.StateFlags.PRELIGHT, false);
-            return this.on_hover?.(this, event);
+            if (this.isHovered(event)) {
+                this.set_state_flags(Gtk.StateFlags.PRELIGHT, false);
+                return this.on_hover?.(this, event);
+            }
         });
 
         this.connect('leave-notify-event', (_, event: Gdk.Event) => {
-            this.unset_state_flags(Gtk.StateFlags.PRELIGHT);
-            return this.on_hover_lost?.(this, event);
+            if (!this.isHovered(event)) {
+                this.unset_state_flags(Gtk.StateFlags.PRELIGHT);
+                return this.on_hover_lost?.(this, event);
+            }
         });
 
         this.connect('button-press-event', (_, event: Gdk.Event) => {

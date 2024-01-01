@@ -4,10 +4,12 @@
     <file>app.js</file>
     <file>client.js</file>
     <file>main.js</file>
+    <file>overrides.js</file>
     <file>service.js</file>
     <file>utils.js</file>
     <file>variable.js</file>
     <file>widget.js</file>
+    <file>gobject.js</file>
 
     <file>widgets/widget.js</file>
     <file>widgets/box.js</file>
@@ -35,6 +37,7 @@
     <file>service/mpris.js</file>
     <file>service/network.js</file>
     <file>service/notifications.js</file>
+    <file>service/powerprofiles.js</file>
     <file>service/systemtray.js</file>
     <file>service/evolutionDataServer.js</file>
     <file>service/tasks.js</file>
@@ -43,6 +46,7 @@
     <file>dbus/types.js</file>
     <file>dbus/com.github.Aylur.ags.xml</file>
     <file>dbus/com.github.Aylur.ags.client.xml</file>
+    <file>dbus/net.hadess.PowerProfiles.xml</file>
     <file>dbus/org.freedesktop.DBus.xml</file>
     <file>dbus/org.freedesktop.Notifications.xml</file>
     <file>dbus/org.freedesktop.UPower.Device.xml</file>
@@ -50,5 +54,11 @@
     <file>dbus/org.mpris.MediaPlayer2.xml</file>
     <file>dbus/org.kde.StatusNotifierWatcher.xml</file>
     <file>dbus/org.kde.StatusNotifierItem.xml</file>
+
+    <file>utils/etc.js</file>
+    <file>utils/exec.js</file>
+    <file>utils/file.js</file>
+    <file>utils/timeout.js</file>
+    <file>utils/fetch.js</file>
   </gresource>
 </gresources>

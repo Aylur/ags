@@ -1,12 +1,10 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service from '../service.js';
 
 type EventHandler = (self: AgsButton, event: Gdk.Event) => boolean | unknown;
 
-export interface ButtonProps extends BaseProps<AgsButton>, Gtk.Button.ConstructorProperties {
+export type ButtonProps = BaseProps<AgsButton, Gtk.Button.ConstructorProperties & {
     on_clicked?: (self: AgsButton) => void
 
     on_hover?: EventHandler
@@ -22,55 +20,46 @@ export interface ButtonProps extends BaseProps<AgsButton>, Gtk.Button.Constructo
     on_primary_click_release?: EventHandler
     on_middle_click_release?: EventHandler
     on_secondary_click_release?: EventHandler
-}
+}>;
 
 export default class AgsButton extends AgsWidget(Gtk.Button) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsButton',
-            Properties: {
-                'on-clicked': Service.pspec('on-clicked', 'jsobject', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'on-clicked': ['jsobject', 'rw'],
 
-                'on-hover':
-                    Service.pspec('on-hover', 'jsobject', 'rw'),
-                'on-hover-lost':
-                    Service.pspec('on-hover-lost', 'jsobject', 'rw'),
+                'on-hover': ['jsobject', 'rw'],
+                'on-hover-lost': ['jsobject', 'rw'],
 
-                'on-scroll-up':
-                    Service.pspec('on-scroll-up', 'jsobject', 'rw'),
-                'on-scroll-down':
-                    Service.pspec('on-scroll-down', 'jsobject', 'rw'),
+                'on-scroll-up': ['jsobject', 'rw'],
+                'on-scroll-down': ['jsobject', 'rw'],
 
-                'on-primary-click':
-                    Service.pspec('on-primary-click', 'jsobject', 'rw'),
-                'on-secondary-click':
-                    Service.pspec('on-secondary-click', 'jsobject', 'rw'),
-                'on-middle-click':
-                    Service.pspec('on-middle-click', 'jsobject', 'rw'),
+                'on-primary-click': ['jsobject', 'rw'],
+                'on-secondary-click': ['jsobject', 'rw'],
+                'on-middle-click': ['jsobject', 'rw'],
 
-                'on-primary-click-release':
-                    Service.pspec('on-primary-click-release', 'jsobject', 'rw'),
-                'on-secondary-click-release':
-                    Service.pspec('on-secondary-click-release', 'jsobject', 'rw'),
-                'on-middle-click-release':
-                    Service.pspec('on-middle-click-release', 'jsobject', 'rw'),
+                'on-primary-click-release': ['jsobject', 'rw'],
+                'on-secondary-click-release': ['jsobject', 'rw'],
+                'on-middle-click-release': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
     constructor(props: ButtonProps = {}) {
-        super(props);
+        super(props as Gtk.Button.ConstructorProperties);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
 
         this.connect('clicked', () => this.on_clicked?.(this));
 
         this.connect('enter-notify-event', (_, event: Gdk.Event) => {
-            return this.on_hover?.(this, event);
+            if (this.isHovered(event))
+                return this.on_hover?.(this, event);
         });
 
         this.connect('leave-notify-event', (_, event: Gdk.Event) => {
-            return this.on_hover_lost?.(this, event);
+            if (!this.isHovered(event))
+                return this.on_hover_lost?.(this, event);
         });
 
         this.connect('button-press-event', (_, event: Gdk.Event) => {
@@ -105,7 +94,7 @@ export default class AgsButton extends AgsWidget(Gtk.Button) {
     }
 
     get on_clicked() { return this._get('on-clicked'); }
-    set on_clicked(callback: ButtonProps['on_clicked']) {
+    set on_clicked(callback: (self: AgsButton) => void) {
         this._set('on-clicked', callback);
     }
 

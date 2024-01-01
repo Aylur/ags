@@ -1,19 +1,30 @@
 import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service from '../service.js';
+import { Binding } from '../service.js';
 import App from '../app.js';
+// @ts-expect-error missing types FIXME:
+import { default as LayerShell } from 'gi://GtkLayerShell';
 
-const { GtkLayerShell: LayerShell } = imports.gi;
+const ANCHOR = {
+    'left': LayerShell.Edge.LEFT,
+    'right': LayerShell.Edge.RIGHT,
+    'top': LayerShell.Edge.TOP,
+    'bottom': LayerShell.Edge.BOTTOM,
+} as const;
 
-const layers = ['background', 'bottom', 'top', 'overlay'] as const;
-const anchors = ['left', 'right', 'top', 'bottom'] as const;
-type Layer = typeof layers[number];
-type Anchor = typeof anchors[number];
-type Exclusivity = 'normal' | 'ignore' | 'exclusive';
+const LAYER = {
+    'background': LayerShell.Layer.BACKGROUND,
+    'bottom': LayerShell.Layer.BOTTOM,
+    'top': LayerShell.Layer.TOP,
+    'overlay': LayerShell.Layer.OVERLAY,
+} as const;
 
-export interface WindowProps extends BaseProps<AgsWindow>, Gtk.Window.ConstructorProperties {
+export type Layer = keyof typeof LAYER;
+export type Anchor = keyof typeof ANCHOR;
+export type Exclusivity = 'normal' | 'ignore' | 'exclusive';
+
+export type WindowProps = BaseProps<AgsWindow, Gtk.Window.ConstructorProperties & {
     anchor?: Anchor[]
     exclusivity?: Exclusivity
     focusable?: boolean
@@ -25,23 +36,22 @@ export interface WindowProps extends BaseProps<AgsWindow>, Gtk.Window.Constructo
 
     // FIXME: deprecated
     exclusive?: boolean
-}
+}>
 
 export default class AgsWindow extends AgsWidget(Gtk.Window) {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsWindow',
-            Properties: {
-                'anchor': Service.pspec('anchor', 'jsobject', 'rw'),
-                'exclusive': Service.pspec('exclusive', 'boolean', 'rw'),
-                'exclusivity': Service.pspec('exclusivity', 'string', 'rw'),
-                'focusable': Service.pspec('focusable', 'boolean', 'rw'),
-                'layer': Service.pspec('layer', 'string', 'rw'),
-                'margins': Service.pspec('margins', 'jsobject', 'rw'),
-                'monitor': Service.pspec('monitor', 'int', 'rw'),
-                'popup': Service.pspec('popup', 'boolean', 'rw'),
+        AgsWidget.register(this, {
+            properties: {
+                'anchor': ['jsobject', 'rw'],
+                'exclusive': ['boolean', 'rw'],
+                'exclusivity': ['string', 'rw'],
+                'focusable': ['boolean', 'rw'],
+                'layer': ['string', 'rw'],
+                'margins': ['jsobject', 'rw'],
+                'monitor': ['int', 'rw'],
+                'popup': ['boolean', 'rw'],
             },
-        }, this);
+        });
     }
 
     // the window has to be set as a layer,
@@ -58,20 +68,25 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         visible = true,
         ...params
     }: WindowProps = {}) {
-        super(params);
+        super(params as Gtk.Window.ConstructorProperties);
         LayerShell.init_for_window(this);
         LayerShell.set_namespace(this, this.name);
 
-        this.anchor = anchor;
-        this.exclusivity = exclusivity;
-        this.exclusive = exclusive;
-        this.focusable = focusable;
-        this.layer = layer;
-        this.margins = margins;
-        this.monitor = monitor;
+        this._handleParamProp('anchor', anchor);
+        this._handleParamProp('exclusive', exclusive);
+        this._handleParamProp('exclusivity', exclusivity);
+        this._handleParamProp('focusable', focusable);
+        this._handleParamProp('layer', layer);
+        this._handleParamProp('margins', margins);
+        this._handleParamProp('monitor', monitor);
+
         this.show_all();
-        this.popup = popup;
-        this.visible = visible === true || visible === null && !popup;
+        this._handleParamProp('popup', popup);
+
+        if (visible instanceof Binding)
+            this._handleParamProp('visible', visible);
+        else
+            this.visible = visible === true || visible === null && !popup;
     }
 
     get monitor(): Gdk.Monitor { return this._get('monitor'); }
@@ -91,7 +106,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
 
     // FIXME: deprecated
     get exclusive() { return LayerShell.auto_exclusive_zone_is_enabled(this); }
-    set exclusive(exclusive: boolean | undefined) {
+    set exclusive(exclusive: boolean) {
         if (exclusive === undefined)
             return;
 
@@ -134,43 +149,51 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
                 break;
 
             default:
-                console.error(Error('wrong valur for exclusive'));
+                console.error(Error('wrong value for exclusivity'));
                 break;
         }
 
         this.notify('exclusivity');
     }
 
-    get layer() { return layers[LayerShell.get_layer(this)] as Layer; }
+    get layer() {
+        return Object.keys(LAYER).find(layer => {
+            return LAYER[layer as Layer] === LayerShell.get_layer(this);
+        }) as Layer;
+    }
+
     set layer(layer: Layer) {
         if (this.layer === layer)
             return;
 
-        if (!layers.includes(layer)) {
+        if (!Object.keys(LAYER).includes(layer)) {
             console.error('wrong layer value for Window');
             return;
         }
 
-        LayerShell.set_layer(this, layers.findIndex(l => l === layer));
+        LayerShell.set_layer(this, LAYER[layer]);
         this.notify('layer');
     }
 
-    get anchor() { return anchors.filter((_, i) => LayerShell.get_anchor(this, i)) as Anchor[]; }
+    get anchor() {
+        return Object.keys(ANCHOR).filter(key => {
+            return LayerShell.get_anchor(this, ANCHOR[key as Anchor]);
+        }) as Anchor[];
+    }
+
     set anchor(anchor: Anchor[]) {
         if (this.anchor.length === anchor.length &&
             this.anchor.every(a => anchor.includes(a)))
             return;
 
-        ['TOP', 'LEFT', 'RIGHT', 'BOTTOM'].forEach(side =>
-            LayerShell.set_anchor(this, LayerShell.Edge[side], false));
+        // reset
+        Object.values(ANCHOR).forEach(side => LayerShell.set_anchor(this, side, false));
 
         anchor.forEach(side => {
-            if (!anchors.includes(side)) {
-                console.error(`${side} is not a valid anchor`);
-                return;
-            }
+            if (!Object.keys(ANCHOR).includes(side))
+                return console.error(`${side} is not a valid anchor`);
 
-            LayerShell.set_anchor(this, anchors.findIndex(a => a === side), true);
+            LayerShell.set_anchor(this, ANCHOR[side], true);
         });
 
         this.notify('anchor');
@@ -214,17 +237,28 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         if (this.popup === popup)
             return;
 
-        if (this.popup)
-            this.disconnect(this._get('popup'));
+        if (this.popup) {
+            const [esc, click] = this._get<[number, number]>('popup');
+            this.disconnect(esc);
+            this.disconnect(click);
+        }
 
         if (popup) {
-            this._set('popup', this.connect('key-press-event', (_, event: Gdk.Event) => {
+            const esc = this.connect('key-press-event', (_, event: Gdk.Event) => {
                 if (event.get_keyval()[1] === Gdk.KEY_Escape) {
                     App.getWindow(this.name!)
                         ? App.closeWindow(this.name!)
                         : this.hide();
                 }
-            }));
+            });
+
+            const click = this.connect('button-release-event', () => {
+                const [x, y] = this.get_pointer();
+                if (x === 0 && y === 0)
+                    App.closeWindow(this.name!);
+            });
+
+            this._set('popup', [esc, click]);
         }
     }
 

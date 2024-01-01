@@ -1,7 +1,8 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
+import App from '../app.js';
 import Service from '../service.js';
-import { ensureDirectory, timeout } from '../utils.js';
+import { ensureDirectory, idle } from '../utils.js';
 import { CACHE_DIR } from '../utils.js';
 import { loadInterfaceXML } from '../utils.js';
 import { DBusProxy, PlayerProxy, MprisProxy } from '../dbus/types.js';
@@ -13,6 +14,7 @@ const DBusProxy = Gio.DBusProxy.makeProxyWrapper(DBusIFace) as unknown as DBusPr
 const PlayerProxy = Gio.DBusProxy.makeProxyWrapper(PlayerIFace) as unknown as PlayerProxy;
 const MprisProxy = Gio.DBusProxy.makeProxyWrapper(MprisIFace) as unknown as MprisProxy;
 
+const DBUS_PREFIX = 'org.mpris.MediaPlayer2.';
 const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
 
 type PlaybackStatus = 'Playing' | 'Paused' | 'Stopped';
@@ -89,7 +91,7 @@ export class MprisPlayer extends Service {
     private _loopStatus!: LoopStatus | null;
     private _length!: number;
 
-    private _binding: { mpris: number, player: number };
+    private _binding = { mpris: 0, player: 0 };
     private _mprisProxy: MprisProxy;
     private _playerProxy: PlayerProxy;
 
@@ -99,7 +101,6 @@ export class MprisPlayer extends Service {
         this._busName = busName;
         this._name = busName.substring(23).split('.')[0];
 
-        this._binding = { mpris: 0, player: 0 };
         this._mprisProxy = new MprisProxy(
             Gio.DBus.session, busName,
             '/org/mpris/MediaPlayer2');
@@ -108,10 +109,10 @@ export class MprisPlayer extends Service {
             Gio.DBus.session, busName,
             '/org/mpris/MediaPlayer2');
 
-        this._onMprisProxyReady();
         this._onPlayerProxyReady();
-
-        timeout(100, this._updateState.bind(this));
+        this._onMprisProxyReady();
+        this._updateState();
+        idle(this._updateState.bind(this));
     }
 
     close() {
@@ -137,8 +138,6 @@ export class MprisPlayer extends Service {
     private _onPlayerProxyReady() {
         this._binding.player = this._playerProxy.connect(
             'g-properties-changed', () => this._updateState());
-
-        this._updateState();
     }
 
     private _updateState() {
@@ -178,29 +177,29 @@ export class MprisPlayer extends Service {
     }
 
     private _cacheCoverArt() {
-        this.updateProperty('cover-path', MEDIA_CACHE_PATH + '/' +
-            GLib.compute_checksum_for_string(GLib.ChecksumType.SHA1, this.track_cover_url, -1));
-
-        if (this._trackCoverUrl === '' || this._coverPath === '')
+        if (!App.config.cacheCoverArt || this._trackCoverUrl === '')
             return;
+
+        this._coverPath = MEDIA_CACHE_PATH + '/' +
+            GLib.compute_checksum_for_string(GLib.ChecksumType.SHA1, this._trackCoverUrl, -1);
 
         if (GLib.file_test(this._coverPath, GLib.FileTest.EXISTS))
-            return;
+            return this.changed('cover-path');
 
         ensureDirectory(MEDIA_CACHE_PATH);
         Gio.File.new_for_uri(this._trackCoverUrl).copy_async(
             Gio.File.new_for_path(this._coverPath),
             Gio.FileCopyFlags.OVERWRITE,
             GLib.PRIORITY_DEFAULT,
-            // @ts-expect-error
             null, null, (source: Gio.File, result: Gio.AsyncResult) => {
                 try {
                     source.copy_finish(result);
                     this.changed('cover-path');
                 }
                 catch (err) {
-                    console.error(`failed to cache ${this._coverPath}`);
-                    console.error(err as Error);
+                    logError(err);
+                    console.error(`failed to cache ${this._coverPath},` +
+                        ' do you have gvfs installed?');
                 }
             },
         );
@@ -265,7 +264,6 @@ export class MprisPlayer extends Service {
     }
 }
 
-type Players = Map<string, MprisPlayer>;
 export class Mpris extends Service {
     static {
         Service.register(this, {
@@ -277,24 +275,30 @@ export class Mpris extends Service {
         });
     }
 
-    private _players!: Players;
     private _proxy: DBusProxy;
+    private _players: Map<string, MprisPlayer> = new Map;
+    private _initialzed = false;
 
-    get players() { return Array.from(this._players.values()); }
+    get players() {
+        if (!this._initialzed) {
+            console.warn('accessing Mpris.players on top level will return an empty array ' +
+                'because the list is not initialzed yet');
+        }
+        return Array.from(this._players.values());
+    }
 
     constructor() {
         super();
 
-        this._players = new Map();
         this._proxy = new DBusProxy(Gio.DBus.session,
             'org.freedesktop.DBus',
-            '/org/freedesktop/DBus');
-
-        this._onProxyReady();
+            '/org/freedesktop/DBus',
+            this._onProxyReady.bind(this),
+            null, Gio.DBusProxyFlags.NONE);
     }
 
     private _addPlayer(busName: string) {
-        if (this._players.get(busName))
+        if (this._players.has(busName))
             return;
 
         const player = new MprisPlayer(busName);
@@ -315,15 +319,17 @@ export class Mpris extends Service {
         this.changed('players');
     }
 
-    private _onProxyReady() {
-        this._proxy.ListNamesRemote(([names]) => {
-            names.forEach(name => {
-                if (!name.startsWith('org.mpris.MediaPlayer2.'))
-                    return;
+    private async _onProxyReady(_: DBusProxy, error: GLib.Error) {
+        if (error)
+            return logError(error);
 
+        this._initialzed = true;
+        const [names] = await this._proxy.ListNamesAsync();
+        for (const name of names) {
+            if (name.startsWith(DBUS_PREFIX))
                 this._addPlayer(name);
-            });
-        });
+        }
+
         this._proxy.connectSignal('NameOwnerChanged',
             this._onNameOwnerChanged.bind(this));
     }
@@ -333,7 +339,7 @@ export class Mpris extends Service {
         _sender: string,
         [name, oldOwner, newOwner]: string[],
     ) {
-        if (!name.startsWith('org.mpris.MediaPlayer2.'))
+        if (!name.startsWith(DBUS_PREFIX))
             return;
 
         if (newOwner && !oldOwner)

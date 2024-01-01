@@ -205,7 +205,7 @@ export class CollectionObject extends Service {
         return this._ecalToDate(dtstart);
     }
 
-    set dtstart(dtstart :Date | undefined) {
+    set dtstart(dtstart: Date | undefined) {
         if (!dtstart)
             this._source.set_dtstart(null);
         else
@@ -219,7 +219,7 @@ export class CollectionObject extends Service {
         return this._ecalToDate(dtend);
     }
 
-    set dtend(dtend :Date | undefined) {
+    set dtend(dtend: Date | undefined) {
         if (!dtend)
             this._source.set_dtend(null);
         else
@@ -276,15 +276,16 @@ export class CollectionObject extends Service {
 
     _dateToEcal(datetime: Date) {
         const icaltime = ICalGLib.Time.new_from_timet_with_zone(
-            datetime.getTime()/1000, 0, ECal.util_get_system_timezone());
+            datetime.getTime() / 1000, 0, ECal.util_get_system_timezone());
         icaltime.set_timezone(ECal.util_get_system_timezone());
         return new ECal.ComponentDateTime(icaltime, null);
     }
 }
 
 interface ICollection {
-    new (source: EDataServer.Source): Collection;
+    new(source: EDataServer.Source): Collection;
 }
+
 export class Collection extends Service {
     static {
         Service.register(
@@ -348,7 +349,8 @@ export class CollectionTypeService extends Service {
     }
 
     protected _collections = new Map();
-    private ctor;
+    private readonly ctor;
+
     constructor(type: string, ctor: ICollection) {
         super();
         this.ctor = ctor;
