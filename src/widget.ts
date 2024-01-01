@@ -136,3 +136,6 @@ Widget.Switch = Switch;
 
 export const ToggleButton = subclass<typeof Gtk.ToggleButton, Gtk.ToggleButton.ConstructorProperties>(Gtk.ToggleButton);
 Widget.ToggleButton = ToggleButton;
+
+export const CheckButton = subclass<typeof Gtk.CheckButton, Gtk.CheckButton.ConstructorProperties>(Gtk.CheckButton);
+Widget.CheckButton = CheckButton;
