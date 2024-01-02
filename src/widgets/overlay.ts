@@ -4,6 +4,7 @@ import Gtk from 'gi://Gtk?version=3.0';
 export type OverlayProps = BaseProps<AgsOverlay, Gtk.Overlay.ConstructorProperties & {
     pass_through?: boolean
     overlays?: Gtk.Widget[]
+    overlay?: Gtk.Widget
 }>
 
 export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
@@ -12,6 +13,7 @@ export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
             properties: {
                 'pass-through': ['boolean', 'rw'],
                 'overlays': ['jsobject', 'rw'],
+                'overlay': ['jsobject', 'rw'],
             },
         });
     }
@@ -33,6 +35,12 @@ export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
         this._set('pass-through', passthrough);
         this._updatePassThrough();
         this.notify('pass-through');
+    }
+
+    get overlay() { return this.overlays[0]; }
+    set overlay(overlay: Gtk.Widget) {
+        this.overlays = [overlay];
+        this.notify('overlay');
     }
 
     get overlays() {
