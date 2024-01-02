@@ -20,6 +20,11 @@ export default class AgsBox extends AgsWidget(Gtk.Box) {
         super(props as Gtk.Box.ConstructorProperties);
     }
 
+    get child() { return this.children[0]; }
+    set child(child: Gtk.Widget) {
+        this.children = [child];
+    }
+
     get children() { return this.get_children(); }
     set children(children: Gtk.Widget[]) {
         const newChildren = children || [];
