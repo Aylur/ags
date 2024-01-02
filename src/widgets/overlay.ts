@@ -36,7 +36,7 @@ export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
     }
 
     get overlays() {
-        return this.get_children().filter(ch => ch === this.child);
+        return this.get_children().filter(ch => ch !== this.child);
     }
 
     set overlays(overlays: Gtk.Widget[]) {
