@@ -186,6 +186,9 @@ export class Notification extends Service {
         const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
             data, GdkPixbuf.Colorspace.RGB, alpha, bps, w, h, rs);
 
+        if (!pixbuf)
+            return null;
+
         const outputStream = Gio.File.new_for_path(fileName)
             .replace(null, false, Gio.FileCreateFlags.NONE, null);
 
