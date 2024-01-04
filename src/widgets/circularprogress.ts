@@ -17,6 +17,8 @@ export type CircularProgressProps = BaseProps<AgsCircularProgress, Gtk.Bin.Const
     value?: number
     inverted?: boolean
     start_at?: number
+    start_draw?: number
+    end_draw?: number
 }>
 
 export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
@@ -25,6 +27,8 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
             cssName: 'circular-progress',
             properties: {
                 'start-at': ['float', 'rw'],
+                'start-draw': ['float', 'rw'],
+                'end-draw': ['float', 'rw'],
                 'value': ['float', 'rw'],
                 'inverted': ['boolean', 'rw'],
                 'rounded': ['boolean', 'rw'],
@@ -69,6 +73,37 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         this.queue_draw();
     }
 
+    get start_draw() { return this._get('start-draw') || 0; }
+    set start_draw(value: number) {
+        if (this.start_draw === value)
+            return;
+
+        if (value > 1)
+            value = 1;
+
+        if (value < 0)
+            value = 0;
+
+
+        this._set('start-draw', value);
+        this.queue_draw();
+    }
+
+    get end_draw() { return this._get('end-draw') || 1; }
+    set end_draw(value: number) {
+        if (this.end_draw === value)
+            return;
+
+        if (value > 1)
+            value = 1;
+
+        if (value < 0)
+            value = 0;
+
+        this._set('end-draw', value);
+        this.queue_draw();
+    }
+
     get value() { return this._get('value') || 0; }
     set value(value: number) {
         if (this.value === value)
@@ -108,6 +143,20 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         return (percentage / 100) * (2 * Math.PI);
     }
 
+    private mapValueToRange(start: number, end: number, value: number): number {
+        // Ensure that start is less than or equal to end
+        if (start > end)
+            [start, end] = [end, start];
+
+
+        // Map the value from [0, 1] to the range [start, end]
+        const mappedValue = start + (end - start) * value;
+
+        // Ensure the mapped value is within the range [start, end]
+        return Math.max(start, Math.min(end, mappedValue));
+    }
+
+
     vfunc_draw(cr: Context): boolean {
         const allocation = this.get_allocation();
         const styles = this.get_style_context();
@@ -121,12 +170,27 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         const fgStroke = thickness;
         const radius = Math.min(width, height) / 2.0 - Math.max(bgStroke, fgStroke) / 2.0;
         const center = { x: width / 2, y: height / 2 };
+
+        const startDraw = this._toRadian(this.start_draw);
+        const endDraw = this._toRadian(this.end_draw);
+
+        const rangedValue = this.mapValueToRange(
+            this.start_at,
+            this.end_draw,
+            this.value,
+        );
+
+        // Starts from the same point of start_draw if not a circle
+        if (this.start_draw != 0 || this.end_draw != 1)
+            this.start_at = this.start_draw;
+
         const from = this._toRadian(this.start_at);
-        const to = this._toRadian(this.value + this.start_at);
+        const to = this._toRadian(rangedValue);
 
         // Draw background
         cr.setSourceRGBA(bg.red, bg.green, bg.blue, bg.alpha);
-        cr.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+        cr.arc(center.x, center.y, radius, startDraw, endDraw);
+
         cr.setLineWidth(bgStroke);
         cr.stroke();
 
