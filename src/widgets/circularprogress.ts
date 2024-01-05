@@ -17,8 +17,7 @@ export type CircularProgressProps = BaseProps<AgsCircularProgress, Gtk.Bin.Const
     value?: number
     inverted?: boolean
     start_at?: number
-    start_draw?: number
-    end_draw?: number
+    end_at?: number
 }>
 
 export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
@@ -27,8 +26,7 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
             cssName: 'circular-progress',
             properties: {
                 'start-at': ['float', 'rw'],
-                'start-draw': ['float', 'rw'],
-                'end-draw': ['float', 'rw'],
+                'end-at': ['float', 'rw'],
                 'value': ['float', 'rw'],
                 'inverted': ['boolean', 'rw'],
                 'rounded': ['boolean', 'rw'],
@@ -73,9 +71,10 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         this.queue_draw();
     }
 
-    get start_draw() { return this._get('start-draw') || 0; }
-    set start_draw(value: number) {
-        if (this.start_draw === value)
+    get end_at() { return this._get('end-at') || this.start_at; }
+    // Check if end_at is not provided and calculate it to complete a full circle
+    set end_at(value: number) {
+        if (this.end_at === value)
             return;
 
         if (value > 1)
@@ -84,23 +83,7 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         if (value < 0)
             value = 0;
 
-
-        this._set('start-draw', value);
-        this.queue_draw();
-    }
-
-    get end_draw() { return this._get('end-draw') || 1; }
-    set end_draw(value: number) {
-        if (this.end_draw === value)
-            return;
-
-        if (value > 1)
-            value = 1;
-
-        if (value < 0)
-            value = 0;
-
-        this._set('end-draw', value);
+        this._set('end-at', value);
         this.queue_draw();
     }
 
@@ -172,7 +155,6 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         return position;
     }
 
-
     vfunc_draw(cr: Context): boolean {
         const allocation = this.get_allocation();
         const styles = this.get_style_context();
@@ -187,30 +169,29 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         const radius = Math.min(width, height) / 2.0 - Math.max(bgStroke, fgStroke) / 2.0;
         const center = { x: width / 2, y: height / 2 };
 
-        const startDraw = this._toRadian(this.start_draw);
-        const endDraw = this._toRadian(this.end_draw);
+        const from = this._toRadian(this.start_at);
         let rangedValue = this.value + this.start_at;
+        let endDraw = this._toRadian(this.end_at);
 
-        const isArc = !this._isFullCircle(this.start_draw, this.end_draw);
+        const isCircle = this._isFullCircle(this.start_at, this.end_at);
 
-        if (isArc) {
+        if (isCircle) {
+            // Redefine endDraw in radius to create an accurate full circle
+            endDraw = from + 2 * Math.PI;
+        } else {
             // Range the value for the arc shape
             rangedValue = this._mapArcValueToRange(
                 this.start_at,
-                this.end_draw,
+                this.end_at,
                 this.value,
             );
-
-            // Starts from the same point of start_draw if not a circle
-            this.start_at = this.start_draw;
         }
 
-        const from = this._toRadian(this.start_at);
         const to = this._toRadian(rangedValue);
 
         // Draw background
         cr.setSourceRGBA(bg.red, bg.green, bg.blue, bg.alpha);
-        cr.arc(center.x, center.y, radius, startDraw, endDraw);
+        cr.arc(center.x, center.y, radius, from, endDraw);
 
         cr.setLineWidth(bgStroke);
         cr.stroke();
