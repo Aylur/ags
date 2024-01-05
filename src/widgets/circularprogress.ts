@@ -143,17 +143,33 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         return (percentage / 100) * (2 * Math.PI);
     }
 
-    private mapValueToRange(start: number, end: number, value: number): number {
-        // Ensure that start is less than or equal to end
-        if (start > end)
-            [start, end] = [end, start];
 
+    private _isFullCircle(start: number, end: number, epsilon = 1e-10): boolean {
+        // Ensure that start and end are between 0 and 1
+        start = (start % 1 + 1) % 1;
+        end = (end % 1 + 1) % 1;
 
-        // Map the value from [0, 1] to the range [start, end]
-        const mappedValue = start + (end - start) * value;
+        // Check if the difference between start and end is close to 1
+        return Math.abs(start - end) <= epsilon;
+    }
 
-        // Ensure the mapped value is within the range [start, end]
-        return Math.max(start, Math.min(end, mappedValue));
+    private _mapArcValueToRange(start: number, end: number, value: number): number {
+        // Ensure that start and end are between 0 and 1
+        start = (start % 1 + 1) % 1;
+        end = (end % 1 + 1) % 1;
+
+        // Calculate the length of the arc
+        let arcLength = end - start;
+        if (arcLength < 0)
+            arcLength += 1; // Adjust for circular representation
+
+        // Calculate the position on the arc based on the percentage value
+        let position = start + (arcLength * value);
+
+        // Ensure the position is between 0 and 1
+        position = (position % 1 + 1) % 1;
+
+        return position;
     }
 
 
@@ -173,16 +189,21 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
 
         const startDraw = this._toRadian(this.start_draw);
         const endDraw = this._toRadian(this.end_draw);
+        let rangedValue = this.value + this.start_at;
 
-        const rangedValue = this.mapValueToRange(
-            this.start_at,
-            this.end_draw,
-            this.value,
-        );
+        const isArc = !this._isFullCircle(this.start_draw, this.end_draw);
 
-        // Starts from the same point of start_draw if not a circle
-        if (this.start_draw != 0 || this.end_draw != 1)
+        if (isArc) {
+            // Range the value for the arc shape
+            rangedValue = this._mapArcValueToRange(
+                this.start_at,
+                this.end_draw,
+                this.value,
+            );
+
+            // Starts from the same point of start_draw if not a circle
             this.start_at = this.start_draw;
+        }
 
         const from = this._toRadian(this.start_at);
         const to = this._toRadian(rangedValue);
