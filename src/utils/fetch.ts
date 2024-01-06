@@ -11,10 +11,27 @@ export type FetchOptions = {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     body?: string;
     headers?: Record<string, string>;
+    params?: Record<string, any>;
 };
 
 export async function fetch(url: string, options: FetchOptions = {}) {
     const session = new Soup.Session();
+
+    if (options.params) {
+        url += '?' + Object.entries(options.params)
+            .map(([key, value]) => {
+                if (Array.isArray(value)) {
+                    return value.map(val =>
+                        `${encodeURIComponent(key)}=${encodeURIComponent(val)}`).join('&');
+                } else if (typeof value === 'object') {
+                    return `${encodeURIComponent(key)}=${encodeURIComponent(
+                        JSON.stringify(value))}`;
+                } else {
+                    return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+                }
+            })
+            .join('&');
+    }
 
     const message = new Soup.Message({
         method: options.method || 'GET',
