@@ -183,8 +183,17 @@ export class Notification extends Service {
         const [w, h, rs, alpha, bps, _, data] = imageData // iiibiiay
             .recursiveUnpack<[number, number, number, boolean, number, number, GLib.Bytes]>();
 
+        if (bps !== 8) {
+            console.warn(`Notification image error from ${this.app_name}: ` +
+                'Currently only RGB images with 8 bits per sample are supported.');
+            return null;
+        }
+
         const pixbuf = GdkPixbuf.Pixbuf.new_from_bytes(
             data, GdkPixbuf.Colorspace.RGB, alpha, bps, w, h, rs);
+
+        if (!pixbuf)
+            return null;
 
         const outputStream = Gio.File.new_for_path(fileName)
             .replace(null, false, Gio.FileCreateFlags.NONE, null);
