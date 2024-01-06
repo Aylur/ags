@@ -1,6 +1,18 @@
 # Unreleased
 
 ## Features
+
+- add: Overlay.overlay Box.child
+- add: params to Utils.fetch
+
+## Fixes
+
+- notifications: warn on non 8 bits image
+
+# 1.6.3
+
+## Features
+
 - feat: Service.bind and Variable.bind
 - feat: AgsWidget.register
 - export Widget.createCtor utility
@@ -12,11 +24,13 @@
 - feat: PowerProfile Service
 
 ## Breaking Changes
+
 - update: Hyprland.active.monitor to be an object
 
 # 1.5.5
 
 ## Features
+
 - feat: support print from client with --run-js
 - feat: support shebang with --run-file
 - add: Utils.monitorFile
@@ -29,6 +43,7 @@
 # 1.5.4
 
 ## Features
+
 - add: notificationForceTimeout option
 - add: bluetooth device-added, device-removed signal
 - add: cursor property
@@ -39,8 +54,10 @@
 - add: --run-file
 
 ## Breaking Changes
+
 - feat: Window.exclusivity
 - deprecate: --run-promise cli flag
 
 ## Fixes
+
 - overlay pass-through #168

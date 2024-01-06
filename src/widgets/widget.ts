@@ -8,6 +8,16 @@ import { interval } from '../utils.js';
 import { Variable } from '../variable.js';
 import { App } from '../app.js';
 
+let warned = false;
+function deprecated() {
+    if (warned)
+        return;
+
+    console.warn(Error('Using "connections" and "binds" props are DEPRECATED\n' +
+        'Use .hook() .bind() .poll() .on() instead, refer to the wiki to see examples'));
+    warned = true;
+}
+
 const ALIGN = {
     'fill': Gtk.Align.FILL,
     'start': Gtk.Align.START,
@@ -54,14 +64,14 @@ export type Cursor =
     | 'zoom-in'
     | 'zoom-out'
 
-export type Property = [prop: string, value: unknown];
+type Property = [prop: string, value: unknown];
 
-export type Connection<Self> =
+type Connection<Self> =
     | [GObject.Object, (self: Self, ...args: unknown[]) => unknown, string?]
     | [string, (self: Self, ...args: unknown[]) => unknown]
     | [number, (self: Self, ...args: unknown[]) => unknown];
 
-export type Bind = [
+type Bind = [
     prop: string,
     obj: GObject.Object,
     objProp?: string,
@@ -78,11 +88,6 @@ export type BaseProps<Self extends Gtk.Widget, Props> = {
     vpack?: Align
     cursor?: Cursor
     attribute?: any
-
-    // FIXME: deprecated
-    connections?: Connection<Self>[]
-    properties?: Property[]
-    binds?: Bind[],
 }>
 
 AgsWidget.register = register;
@@ -294,6 +299,7 @@ export default function AgsWidget<
             if (!connections)
                 return;
 
+            deprecated();
             connections.forEach(([s, callback, event]) => {
                 if (s === undefined || callback === undefined)
                     return console.error(Error('missing arguments to connections'));
@@ -318,6 +324,7 @@ export default function AgsWidget<
             if (!binds)
                 return;
 
+            deprecated();
             binds.forEach(([prop, obj, objProp = 'value', transform = out => out]) => {
                 // @ts-expect-error
                 this.bind(prop, obj, objProp, transform);
@@ -329,6 +336,7 @@ export default function AgsWidget<
             if (!properties)
                 return;
 
+            console.warn(Error('"properties" is deprecated use "attribute" instead'));
             properties.forEach(([key, value]) => {
                 (this as unknown as { [key: string]: unknown })[`_${key}`] = value;
             });
