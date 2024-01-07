@@ -54,6 +54,7 @@ class TaskList extends Collection {
         super(source, ECal.ClientSourceType.TASKS);
     }
 
+    // TODO: add more functions to filter tasks, eg only get uncompleted
     async getTasks() {
         const tasks = await this.queryObjects('#t').then(tasks =>
             tasks.map(ecal => new Task(ecal, this._client)));

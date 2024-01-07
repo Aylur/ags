@@ -78,7 +78,7 @@ async function _getObjectListAsComps(
     });
 }
 
-async function unused_getView(client: ECal.Client, sexp: string) {
+async function _getView(client: ECal.Client, sexp: string): Promise<[boolean, ECal.ClientView]> {
     return new Promise((resolve, reject) => {
         client.get_view(sexp, null, (client, res) => {
             try {
@@ -90,7 +90,7 @@ async function unused_getView(client: ECal.Client, sexp: string) {
     });
 }
 
-async function _getECalClient(source: EDataServer.Source, type: ECal.ClientSourceType) {
+async function _getECalClient(source: EDataServer.Source, type: ECal.ClientSourceType): Promise<EDataServer.Client | null> {
     return new Promise((resolve, reject) => {
         ECal.Client.connect(
             source,
@@ -174,7 +174,7 @@ export class CollectionObject extends Service {
         Service.register(
             this,
             {},
-            {},
+            {}
         );
     }
 
@@ -290,7 +290,9 @@ export class Collection extends Service {
     static {
         Service.register(
             this,
-            {},
+            {
+              'ready': [],
+            },
             {},
         );
     }
@@ -305,10 +307,10 @@ export class Collection extends Service {
 
         this._source = source;
         this.type = type;
-        this._initCollection();
+        this._initCollection().catch(logError);
     }
 
-    queryObjects(sexp: string) {
+    async queryObjects(sexp: string) {
         //@ts-ignore
         return _getObjectListAsComps(this._client, sexp)
             .then(res => {
@@ -334,7 +336,13 @@ export class Collection extends Service {
     async _initCollection() {
         this._client = await _getECalClient(
             this._source, this.type) as ECal.Client;
-        //TODO create an ECal.CientView to get signals, from EDS on changes
+        [, this._clientView] = await _getView(this._client, '#t');
+        this._clientView.connect("objects-added", () => this.emit('changed'));
+        this._clientView.connect("objects-removed", () => this.emit('changed'));
+        this._clientView.connect("objects-modified", () => this.emit('changed'));
+        this._clientView.start();
+
+        this.emit('ready');
         this.emit('changed');
     }
 }
@@ -343,7 +351,11 @@ export class CollectionTypeService extends Service {
     static {
         Service.register(
             this,
-            {},
+            {
+              'collection-added': ['jsobject'],
+              'collection-removed': ['jsobject'],
+              'collection-changed': ['jsobject'],
+            },
             {},
         );
     }
@@ -366,19 +378,24 @@ export class CollectionTypeService extends Service {
     _CollectionAdded(registry: EvolutionDataServer, source: EDataServer.Source) {
         if (!this._collections.has(source.uid)) {
             const tl = new this.ctor(source);
-            tl.connect('changed', () => this.emit('changed'));
-            this._collections.set(source.uid, tl);
+            // tl.connect('changed', () => this.emit('changed'));
+            tl.connect('ready', () => {
+              this._collections.set(source.uid, tl);
+              this.emit('collection-added', tl);
+              this.emit('changed');
+            });
         }
-        this.emit('changed');
     }
 
     _CollectionRemoved(registry: EvolutionDataServer, source: EDataServer.Source) {
+        this.emit('collection-removed', this._collections.get(source.uid));
         this._collections.delete(source.uid);
         this.emit('changed');
     }
 
     _CollectionChanged(registry: EvolutionDataServer, source: EDataServer.Source) {
         this._collections.get(source.uid).emit('changed');
+        this.emit('collection-changed', this._collections.get(source.uid));
         this.emit('changed');
     }
 }
