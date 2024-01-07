@@ -72,7 +72,6 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
     }
 
     get end_at() { return this._get('end-at') || this.start_at; }
-    // Check if end_at is not provided and calculate it to complete a full circle
     set end_at(value: number) {
         if (this.end_at === value)
             return;
@@ -188,17 +187,31 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         }
 
         const to = this._toRadian(rangedValue);
+        let startAngle, endAngle;
+        let backgroundStart, backgroundEnd;
+
+        if (this.inverted) {
+            startAngle = this._toRadian(360) - to;
+            endAngle = this._toRadian(360) - from;
+            backgroundStart = this._toRadian(360) - endDraw;
+            backgroundEnd = this._toRadian(360) - from;
+        } else {
+            startAngle = from;
+            endAngle = to;
+            backgroundStart = from;
+            backgroundEnd = endDraw;
+        }
 
         // Draw background
         cr.setSourceRGBA(bg.red, bg.green, bg.blue, bg.alpha);
-        cr.arc(center.x, center.y, radius, from, endDraw);
+        cr.arc(center.x, center.y, radius, backgroundStart, backgroundEnd);
 
         cr.setLineWidth(bgStroke);
         cr.stroke();
 
         // Draw progress
         cr.setSourceRGBA(fg.red, fg.green, fg.blue, fg.alpha);
-        cr.arc(center.x, center.y, radius, this.inverted ? to : from, this.inverted ? from : to);
+        cr.arc(center.x, center.y, radius, startAngle, endAngle);
         cr.setLineWidth(fgStroke);
         cr.stroke();
 
