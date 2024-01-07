@@ -17,6 +17,7 @@ export type CircularProgressProps = BaseProps<AgsCircularProgress, Gtk.Bin.Const
     value?: number
     inverted?: boolean
     start_at?: number
+    end_at?: number
 }>
 
 export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
@@ -25,6 +26,7 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
             cssName: 'circular-progress',
             properties: {
                 'start-at': ['float', 'rw'],
+                'end-at': ['float', 'rw'],
                 'value': ['float', 'rw'],
                 'inverted': ['boolean', 'rw'],
                 'rounded': ['boolean', 'rw'],
@@ -69,6 +71,21 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         this.queue_draw();
     }
 
+    get end_at() { return this._get('end-at') || this.start_at; }
+    set end_at(value: number) {
+        if (this.end_at === value)
+            return;
+
+        if (value > 1)
+            value = 1;
+
+        if (value < 0)
+            value = 0;
+
+        this._set('end-at', value);
+        this.queue_draw();
+    }
+
     get value() { return this._get('value') || 0; }
     set value(value: number) {
         if (this.value === value)
@@ -108,6 +125,35 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         return (percentage / 100) * (2 * Math.PI);
     }
 
+
+    private _isFullCircle(start: number, end: number, epsilon = 1e-10): boolean {
+        // Ensure that start and end are between 0 and 1
+        start = (start % 1 + 1) % 1;
+        end = (end % 1 + 1) % 1;
+
+        // Check if the difference between start and end is close to 1
+        return Math.abs(start - end) <= epsilon;
+    }
+
+    private _mapArcValueToRange(start: number, end: number, value: number): number {
+        // Ensure that start and end are between 0 and 1
+        start = (start % 1 + 1) % 1;
+        end = (end % 1 + 1) % 1;
+
+        // Calculate the length of the arc
+        let arcLength = end - start;
+        if (arcLength < 0)
+            arcLength += 1; // Adjust for circular representation
+
+        // Calculate the position on the arc based on the percentage value
+        let position = start + (arcLength * value);
+
+        // Ensure the position is between 0 and 1
+        position = (position % 1 + 1) % 1;
+
+        return position;
+    }
+
     vfunc_draw(cr: Context): boolean {
         const allocation = this.get_allocation();
         const styles = this.get_style_context();
@@ -121,26 +167,59 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         const fgStroke = thickness;
         const radius = Math.min(width, height) / 2.0 - Math.max(bgStroke, fgStroke) / 2.0;
         const center = { x: width / 2, y: height / 2 };
-        const from = this._toRadian(this.start_at);
-        const to = this._toRadian(this.value + this.start_at);
+
+        let rangedValue = this.value + this.start_at;
+        const calculatedStartAngle = this._toRadian(this.start_at);
+        let calculatedEndAngle = this._toRadian(this.end_at);
+
+        const isCircle = this._isFullCircle(this.start_at, this.end_at);
+
+        if (isCircle) {
+            // Redefine endDraw in radius to create an accurate full circle
+            calculatedEndAngle = calculatedStartAngle + 2 * Math.PI;
+        } else {
+            // Range the value for the arc shape
+            rangedValue = this._mapArcValueToRange(
+                this.start_at,
+                this.end_at,
+                this.value,
+            );
+        }
+
+        const to = this._toRadian(rangedValue);
+        let startBackground, endBackground;
+        let startProgress, endProgress;
+
+        if (this.inverted) {
+            startProgress = this._toRadian(360) - to;
+            endProgress = this._toRadian(360) - calculatedStartAngle;
+            startBackground = this._toRadian(360) - calculatedEndAngle;
+            endBackground = this._toRadian(360) - calculatedStartAngle;
+        } else {
+            startProgress = calculatedStartAngle;
+            endProgress = to;
+            startBackground = calculatedStartAngle;
+            endBackground = calculatedEndAngle;
+        }
 
         // Draw background
         cr.setSourceRGBA(bg.red, bg.green, bg.blue, bg.alpha);
-        cr.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+        cr.arc(center.x, center.y, radius, startBackground, endBackground);
+
         cr.setLineWidth(bgStroke);
         cr.stroke();
 
         // Draw progress
         cr.setSourceRGBA(fg.red, fg.green, fg.blue, fg.alpha);
-        cr.arc(center.x, center.y, radius, this.inverted ? to : from, this.inverted ? from : to);
+        cr.arc(center.x, center.y, radius, startProgress, endProgress);
         cr.setLineWidth(fgStroke);
         cr.stroke();
 
         // Draw rounded ends
         if (this.rounded) {
             const start = {
-                x: center.x + Math.cos(from) * radius,
-                y: center.y + Math.sin(from) * radius,
+                x: center.x + Math.cos(calculatedStartAngle) * radius,
+                y: center.y + Math.sin(calculatedStartAngle) * radius,
             };
             const end = {
                 x: center.x + Math.cos(to) * radius,
