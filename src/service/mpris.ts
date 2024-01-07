@@ -277,13 +277,8 @@ export class Mpris extends Service {
 
     private _proxy: DBusProxy;
     private _players: Map<string, MprisPlayer> = new Map;
-    private _initialzed = false;
 
     get players() {
-        if (!this._initialzed) {
-            console.warn('accessing Mpris.players on top level will return an empty array ' +
-                'because the list is not initialzed yet');
-        }
         return Array.from(this._players.values());
     }
 
@@ -323,7 +318,6 @@ export class Mpris extends Service {
         if (error)
             return logError(error);
 
-        this._initialzed = true;
         const [names] = await this._proxy.ListNamesAsync();
         for (const name of names) {
             if (name.startsWith(DBUS_PREFIX))
