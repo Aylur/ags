@@ -1,7 +1,6 @@
 import AgsWidget, { type BaseProps } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Cairo from 'gi://cairo?version=1.0';
 import { Binding } from '../service.js';
 import App from '../app.js';
 // @ts-expect-error missing types FIXME:
@@ -282,10 +281,8 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
     }
 
     set clickthrough(clickthrough: boolean) {
-        if(clickthrough) {
-            const region = new Cairo.Region();
-            this.input_shape_combine_region(region);
-        }
+        if(clickthrough) 
+            this.input_shape_combine_region(null);
         this.notify('clickthrough');
     }
 }
