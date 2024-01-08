@@ -1,6 +1,6 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import Service from './service.js';
+import Service from '../service.js';
 
 const SIS = GLib.getenv('SWAYSOCK');
 
@@ -22,11 +22,11 @@ const enum PAYLOAD_TYPE {
     MESSAGE_GET_SEATS = 101,
     EVENT_WORKSPACE = 0x80000000,
     EVENT_MODE = 0x80000002,
-    EVENT_WINDOW =  0x80000003,
+    EVENT_WINDOW = 0x80000003,
     EVENT_BARCONFIG_UPDATE = 0x80000004,
     EVENT_BINDING = 0x80000005,
     EVENT_SHUTDOWN = 0x80000006,
-    EVENT_TICK =  0x80000007,
+    EVENT_TICK = 0x80000007,
     EVENT_BAR_STATE_UPDATE = 0x80000014,
     EVENT_INPUT = 0x80000015,
 }
@@ -50,13 +50,13 @@ interface Geometry {
 }
 
 //NOTE: not all properties are listed here
-interface Node {
+export interface Node {
     id: number,
     name: string,
     type: string,
     border: string
     current_border_width: number
-    layout:  string
+    layout: string
     orientation: string
     percent: number
     rect: Geometry
@@ -94,56 +94,113 @@ interface Node {
     }
 }
 
-interface Active {
-    client: {
-        id: number
-        title: string
-        class: string
+export class SwayActiveClient extends Service {
+    static {
+        Service.register(this, {}, {
+            'id': ['int'],
+            'name': ['string'],
+            'class': ['string'],
+        });
     }
-    monitor: string
-    workspace: {
-        id: number
-        name: string
+
+    private _id = 0;
+    private _name = '';
+    private _class = '';
+
+    get id() { return this._id; }
+    get name() { return this._name; }
+    get class() { return this._class; }
+
+    updateProperty(prop: 'id' | 'name' | 'class', value: unknown) {
+        super.updateProperty(prop, value);
+        this.emit('changed');
     }
 }
 
-class SwayService extends Service {
+export class SwayActiveID extends Service {
     static {
-        Service.register(this);
+        Service.register(this, {}, {
+            'id': ['int'],
+            'name': ['string'],
+        });
+    }
+
+    private _id = 1;
+    private _name = '';
+
+    get id() { return this._id; }
+    get name() { return this._name; }
+
+    update(id: number, name: string) {
+        super.updateProperty('id', id);
+        super.updateProperty('name', name);
+        this.emit('changed');
+    }
+}
+
+export class SwayActives extends Service {
+    static {
+        Service.register(this, {}, {
+            'client': ['jsobject'],
+            'monitor': ['jsobject'],
+            'workspace': ['jsobject'],
+        });
+    }
+
+    private _client = new SwayActiveClient;
+    private _monitor = new SwayActiveID;
+    private _workspace = new SwayActiveID;
+
+    constructor() {
+        super();
+
+        (['client', 'workspace', 'monitor'] as const).forEach(obj => {
+            this[`_${obj}`].connect('changed', () => {
+                this.notify(obj);
+                this.emit('changed');
+            });
+        });
+    }
+
+    get client() { return this._client; }
+    get monitor() { return this._monitor; }
+    get workspace() { return this._workspace; }
+}
+
+export class Sway extends Service {
+    static {
+        Service.register(this, {}, {
+            'active': ['jsobject'],
+            'monitors': ['jsobject'],
+            'workspaces': ['jsobject'],
+            'clients': ['jsobject'],
+        });
     }
 
     private _decoder = new TextDecoder();
     private _encoder = new TextEncoder();
     private _output_stream: Gio.OutputStream;
 
-    private _active: Active;
+    private _active: SwayActives;
     private _monitors: Map<number, object>;
-    private _workspaces: Map<number, object>;
+    private _workspaces: Map<string, object>;
     private _clients: Map<number, Node>;
 
     get active() { return this._active; }
-    get monitors() { return this._monitors; }
-    get workspaces() { return this._workspaces; }
-    get clients() { return this._clients; }
+    get monitors() { return Array.from(this._monitors.values()); }
+    get workspaces() { return Array.from(this._workspaces.values()); }
+    get clients() { return Array.from(this._clients.values()); }
+
+    getMonitor(id: number) { return this._monitors.get(id); }
+    getWorkspace(name: string) { return this._workspaces.get(name); }
+    getClient(id: number) { return this._clients.get(id); }
 
     constructor() {
         if (!SIS)
             console.error('Sway is not running');
         super();
 
-        this._active = {
-            client: {
-                id: 0,
-                title: '',
-                class: '',
-            },
-            monitor: '',
-            workspace: {
-                id: 0,
-                name: '',
-            },
-        };
-
+        this._active = new SwayActives();
         this._monitors = new Map();
         this._workspaces = new Map();
         this._clients = new Map();
@@ -157,6 +214,10 @@ class SwayService extends Service {
         this._output_stream = socket.get_output_stream();
         this.send(PAYLOAD_TYPE.MESSAGE_GET_TREE, '');
         this.send(PAYLOAD_TYPE.MESSAGE_SUBSCRIBE, JSON.stringify(['window', 'workspace']));
+
+        this._active.connect('changed', () => this.emit('changed'));
+        ['monitor', 'workspace', 'client'].forEach(active =>
+            this._active.connect(`notify::${active}`, () => this.notify('active')));
     }
 
     send(payloadType: PAYLOAD_TYPE, payload: string) {
@@ -169,7 +230,7 @@ class SwayService extends Service {
             ...(new Uint8Array(pl.buffer)),
             ...(new Uint8Array(type.buffer)),
             ...pb]);
-        this._output_stream.write_bytes(data, null);
+        this._output_stream.write(data, null);
     }
 
     private _watchSocket(stream: Gio.InputStream) {
@@ -220,29 +281,34 @@ class SwayService extends Service {
         const workspace = workspaceEvent.current;
         switch (workspaceEvent.change) {
             case 'init':
-                this._workspaces.set(workspace.id, workspace);
+                this._workspaces.set(workspace.name, workspace);
+                this.notify('workspaces');
                 break;
             case 'empty':
-                this._workspaces.delete(workspace.id);
+                this._workspaces.delete(workspace.name);
+                this.notify('workspaces');
                 break;
             case 'focus':
-                this._active.workspace.id = workspace.id;
-                this._active.workspace.name = workspace.name;
-                this._active.monitor = workspace.output;
-                this._workspaces.set(workspace.id, workspace);
-                this._workspaces.set(workspaceEvent.old.id, workspaceEvent.old);
+                this._active.workspace.update(workspace.id, workspace.name);
+                this._active.monitor.update(1, workspace.output);
+
+                this._workspaces.set(workspace.name, workspace);
+                this._workspaces.set(workspaceEvent.old.name, workspaceEvent.old);
+                this.notify('workspaces');
                 break;
             case 'rename':
                 if (this._active.workspace.id === workspace.id)
-                    this._active.workspace.name = workspace.name;
-                this._workspaces.set(workspace.id, workspace);
+                    this._active.workspace.updateProperty('name', workspace.name);
+                this._workspaces.set(workspace.name, workspace);
+                this.notify('workspaces');
                 break;
             case 'reload':
                 break;
             case 'move':
             case 'urgent':
             default:
-                this._workspaces.set(workspace.id, workspace);
+                this._workspaces.set(workspace.name, workspace);
+                this.notify('workspaces');
         }
     }
 
@@ -252,9 +318,11 @@ class SwayService extends Service {
         switch (clientEvent.change) {
             case 'new':
                 this._clients.set(id, client);
+                this.notify('clients');
                 break;
             case 'close':
                 this._clients.delete(id);
+                this.notify('clients');
                 break;
             case 'focus':
                 if (this._active.client.id === id)
@@ -263,16 +331,18 @@ class SwayService extends Service {
                 const current_active = this._clients.get(this._active.client.id);
                 if (current_active)
                     current_active.focused = false;
-                this._active.client.id = id;
-                this._active.client.title = client.name;
-                this._active.client.class = client.shell === 'xwayland'
+                this._active.client.updateProperty('id', id);
+                this._active.client.updateProperty('name', client.name);
+                this._active.client.updateProperty('class', client.shell === 'xwayland'
                     ? client.window_properties?.class || ''
-                    : client.app_id;
+                    : client.app_id,
+                );
                 break;
             case 'title':
                 if (client.focused)
-                    this._active.client.title = client.name;
+                    this._active.client.updateProperty('name', client.name);
                 this._clients.set(id, client);
+                this.notify('clients');
                 break;
             case 'fullscreen_mode':
             case 'move':
@@ -281,64 +351,57 @@ class SwayService extends Service {
             case 'mark':
             default:
                 this._clients.set(id, client);
+                this.notify('clients');
         }
     }
 
     private _handleTreeMessage(node: Node) {
-        switch (node.type ) {
+        switch (node.type) {
             case 'root':
                 this._workspaces.clear();
                 this._clients.clear();
                 this._monitors.clear();
                 node.nodes.map(n => this._handleTreeMessage(n));
+                ['workspaces', 'clients', 'monitors'].forEach(t => {
+                    this.notify(t);
+                });
                 break;
             case 'output':
                 this._monitors.set(node.id, node);
                 if (node.active)
-                    this._active.monitor = node.name;
+                    this._active.monitor.updateProperty('name', node.name);
                 node.nodes.map(n => this._handleTreeMessage(n));
+                this.notify('monitors');
                 break;
             case 'workspace':
-                this._workspaces.set(node.id, node);
+                this._workspaces.set(node.name, node);
                 // I think I'm missing something. There has to be a better way.
                 // eslint-disable-next-line no-case-declarations
                 const hasFocusedChild: (n: Node) => boolean =
                     (n: Node) => n.nodes.some(c => c.focused || hasFocusedChild(c));
-                if (hasFocusedChild(node)) {
-                    this._active.workspace.id = node.id;
-                    this._active.workspace.name = node.name;
-                }
+                if (hasFocusedChild(node))
+                    this._active.workspace.update(node.id, node.name);
+
                 node.nodes.map(n => this._handleTreeMessage(n));
+                this.notify('workspaces');
                 break;
             case 'con':
             case 'floating_con':
                 this._clients.set(node.id, node);
                 if (node.focused) {
-                    this._active.client.id = node.id;
-                    this._active.client.title = node.name;
-                    this._active.client.class = node.shell === 'xwayland'
+                    this._active.client.updateProperty('id', node.id);
+                    this._active.client.updateProperty('name', node.name);
+                    this._active.client.updateProperty('class', node.shell === 'xwayland'
                         ? node.window_properties?.class || ''
-                        : node.app_id;
+                        : node.app_id,
+                    );
                 }
                 node.nodes.map(n => this._handleTreeMessage(n));
+                this.notify('clients');
                 break;
         }
     }
 }
 
-export default class Sway {
-    static _instance: SwayService;
-
-    static get instance() {
-        Service.ensureInstance(Sway, SwayService);
-        return Sway._instance;
-    }
-
-    static get monitors() { return Array.from(Sway.instance.monitors.values()); }
-    static getMonitor(id: number) { return Sway.instance.monitors.get(id); }
-    static get workspaces() { return Array.from(Sway.instance.workspaces.values()); }
-    static getWorkspace(id: number) { return Sway.instance.workspaces.get(id); }
-    static get clients() { return Array.from(Sway.instance.clients.values()); }
-    static getClient(id: number) { return Sway.instance.clients.get(id); }
-    static get active() { return Sway.instance.active; }
-}
+export const sway = new Sway;
+export default sway;
