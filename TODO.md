@@ -27,12 +27,11 @@
 
 - Wiki
   - [x] update to use `bind` `hook` `on` `poll`
-  - [ ] update examples
-  - [ ] Frequent GTK issues page
-    - [ ] Single children issues
+  - [x] update examples
+  - [x] Frequent GTK issues page
+    - [x] Single children issues
 
-  - [ ] Move wiki to aylur.github.io/ags
-    - maybe? rename id from com.github.Aylur.ags to io.Aylur.ags
-
+  - [x] Move wiki to aylur.github.io/ags
+    - ~~maybe? rename id from com.github.Aylur.ags to io.Aylur.ags~~
 
 - [ ] add JSDoc to most stuff
