@@ -168,15 +168,15 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         const radius = Math.min(width, height) / 2.0 - Math.max(bgStroke, fgStroke) / 2.0;
         const center = { x: width / 2, y: height / 2 };
 
+        const startBackground = this._toRadian(this.start_at);
+        let endBackground = this._toRadian(this.end_at);
         let rangedValue = this.value + this.start_at;
-        const calculatedStartAngle = this._toRadian(this.start_at);
-        let calculatedEndAngle = this._toRadian(this.end_at);
 
         const isCircle = this._isFullCircle(this.start_at, this.end_at);
 
         if (isCircle) {
             // Redefine endDraw in radius to create an accurate full circle
-            calculatedEndAngle = calculatedStartAngle + 2 * Math.PI;
+            endBackground = startBackground + 2 * Math.PI;
         } else {
             // Range the value for the arc shape
             rangedValue = this._mapArcValueToRange(
@@ -187,19 +187,14 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         }
 
         const to = this._toRadian(rangedValue);
-        let startBackground, endBackground;
         let startProgress, endProgress;
 
         if (this.inverted) {
-            startProgress = this._toRadian(360) - to;
-            endProgress = this._toRadian(360) - calculatedStartAngle;
-            startBackground = this._toRadian(360) - calculatedEndAngle;
-            endBackground = this._toRadian(360) - calculatedStartAngle;
+            startProgress = (2 * Math.PI - to) - startBackground;
+            endProgress = (2 * Math.PI - startBackground) - startBackground;
         } else {
-            startProgress = calculatedStartAngle;
+            startProgress = startBackground;
             endProgress = to;
-            startBackground = calculatedStartAngle;
-            endBackground = calculatedEndAngle;
         }
 
         // Draw background
@@ -218,8 +213,8 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         // Draw rounded ends
         if (this.rounded) {
             const start = {
-                x: center.x + Math.cos(calculatedStartAngle) * radius,
-                y: center.y + Math.sin(calculatedStartAngle) * radius,
+                x: center.x + Math.cos(startBackground) * radius,
+                y: center.y + Math.sin(startBackground) * radius,
             };
             const end = {
                 x: center.x + Math.cos(to) * radius,
