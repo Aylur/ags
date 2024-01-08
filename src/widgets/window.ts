@@ -1,6 +1,7 @@
 import AgsWidget, { type BaseProps } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
+import Cairo from 'gi://cairo?version=1.0';
 import { Binding } from '../service.js';
 import App from '../app.js';
 // @ts-expect-error missing types FIXME:
@@ -26,6 +27,7 @@ export type Exclusivity = 'normal' | 'ignore' | 'exclusive';
 
 export type WindowProps = BaseProps<AgsWindow, Gtk.Window.ConstructorProperties & {
     anchor?: Anchor[]
+    clickthrough?: boolean
     exclusivity?: Exclusivity
     focusable?: boolean
     layer?: Layer
@@ -43,6 +45,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         AgsWidget.register(this, {
             properties: {
                 'anchor': ['jsobject', 'rw'],
+                'clickthrough': ['boolean', 'rw'],
                 'exclusive': ['boolean', 'rw'],
                 'exclusivity': ['string', 'rw'],
                 'focusable': ['boolean', 'rw'],
@@ -58,6 +61,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
     // so we can't rely on gobject constructor
     constructor({
         anchor = [],
+        clickthrough = false,
         exclusive,
         exclusivity = 'normal',
         focusable = false,
@@ -73,6 +77,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         LayerShell.set_namespace(this, this.name);
 
         this._handleParamProp('anchor', anchor);
+        this._handleParamProp('clickthrough', clickthrough);
         this._handleParamProp('exclusive', exclusive);
         this._handleParamProp('exclusivity', exclusivity);
         this._handleParamProp('focusable', focusable);
@@ -274,5 +279,13 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
             this, LayerShell.KeyboardMode[focusable ? 'ON_DEMAND' : 'NONE']);
 
         this.notify('focusable');
+    }
+
+    set clickthrough(clickthrough: boolean) {
+        if(clickthrough) {
+            const region = new Cairo.Region();
+            this.input_shape_combine_region(region);
+        }
+        this.notify('clickthrough');
     }
 }
