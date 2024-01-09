@@ -56,6 +56,8 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         });
     }
 
+    _clickthrough = false;
+
     // the window has to be set as a layer,
     // so we can't rely on gobject constructor
     constructor({
@@ -280,9 +282,15 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         this.notify('focusable');
     }
 
+    get clickthrough() {
+        return this._clickthrough;
+    }
+
     set clickthrough(clickthrough: boolean) {
-        if(clickthrough) 
+        if (clickthrough) {
+            this._clickthrough = clickthrough;
             this.input_shape_combine_region(null);
+        }
         this.notify('clickthrough');
     }
 }
