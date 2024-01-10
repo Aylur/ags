@@ -288,8 +288,8 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
     }
 
     set clickthrough(clickthrough: boolean) {
+        this._clickthrough = clickthrough;
         if (clickthrough) {
-            this._clickthrough = clickthrough;
             const region = new Cairo.Region();
             this.input_shape_combine_region(region);
         }
