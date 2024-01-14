@@ -267,6 +267,7 @@ export class Hyprland extends Service {
                     break;
 
                 case 'moveworkspace':
+                    await this._syncClients();
                     await this._syncWorkspaces();
                     await this._syncMonitors();
                     break;
