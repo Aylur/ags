@@ -3,6 +3,7 @@ import AgsWidget, { type BaseProps } from './widget.js';
 import AgsBox, { type BoxProps } from './box.js';
 
 export type CenterBoxProps = BaseProps<AgsCenterBox, Gtk.Box.ConstructorProperties & {
+    vertical?: boolean
     start_widget?: Gtk.Widget
     center_widget?: Gtk.Widget
     end_widget?: Gtk.Widget
