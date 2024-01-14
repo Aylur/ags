@@ -226,8 +226,6 @@ export class Hyprland extends Service {
         const [e, params] = event.split('>>');
         const argv = params.split(',');
 
-        this.emit('event', e, params);
-
         try {
             switch (e) {
                 case 'workspace':
@@ -268,6 +266,7 @@ export class Hyprland extends Service {
                     break;
 
                 case 'moveworkspace':
+                    await this._syncClients();
                     await this._syncWorkspaces();
                     await this._syncMonitors();
                     break;
@@ -292,7 +291,7 @@ export class Hyprland extends Service {
                     this._active.client.updateProperty('title', '');
                     this._active.client.updateProperty('address', '');
                     await this._syncWorkspaces();
-                    this._clients.delete('0x' + argv[0]);
+                    await this._syncClients();
                     this.emit('client-removed', '0x' + argv[0]);
                     this.notify('clients');
                     break;
@@ -323,6 +322,7 @@ export class Hyprland extends Service {
                 console.error(error.message);
         }
 
+        this.emit('event', e, params);
         this.emit('changed');
     }
 }
