@@ -167,7 +167,7 @@ export class Hyprland extends Service {
         });
 
         try {
-            const result = await inputStream.read_upto_async('\x04', -1, 0, null)
+            const result = await inputStream.read_upto_async('\x04', -1, 0, null);
             const [response] = result as unknown as [string, number];
             return response;
         } finally {
