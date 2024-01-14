@@ -2,6 +2,7 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib?version=2.0';
 import Gdk from 'gi://Gdk?version=3.0';
+import Cairo from 'gi://cairo?version=1.0';
 import Service, { kebabify, Props, BindableProps, Binding } from '../service.js';
 import { registerGObject } from '../gobject.js';
 import { interval } from '../utils.js';
@@ -83,6 +84,7 @@ export type BaseProps<Self extends Gtk.Widget, Props> = {
 } & BindableProps<Props & {
     class_name?: string
     class_names?: string[]
+    click_through?: boolean
     css?: string
     hpack?: Align
     vpack?: Align
@@ -217,6 +219,7 @@ export default function AgsWidget<
                     'cursor': ['string', 'rw'],
                     'is-destroyed': ['boolean', 'r'],
                     'attribute': ['jsobject', 'rw'],
+                    'click-through': ['boolean', 'rw'],
 
                     // FIXME: deprecated
                     'properties': ['jsobject', 'w'],
@@ -491,6 +494,17 @@ export default function AgsWidget<
                 [, x, y] = event.get_coords();
 
             return x > 0 && x < w && y > 0 && y < h;
+        }
+
+        get click_through() { return !!this._get('click-through'); }
+        set click_through(clickThrough: boolean) {
+            if (this.click_through === clickThrough)
+                return;
+
+            const value = clickThrough ? new Cairo.Region : null;
+            this.input_shape_combine_region(value);
+            this._set('click-through', value);
+            this.notify('click-through');
         }
     };
 }
