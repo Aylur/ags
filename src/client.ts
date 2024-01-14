@@ -46,7 +46,7 @@ class Client extends Gtk.Application {
     private _register() {
         Gio.bus_own_name(
             Gio.BusType.SESSION,
-            this.application_id,
+            this.application_id!,
             Gio.BusNameOwnerFlags.NONE,
             (connection: Gio.DBusConnection) => {
                 this._dbus = Gio.DBusExportedObject

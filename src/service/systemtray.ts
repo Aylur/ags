@@ -161,7 +161,7 @@ export class TrayItem extends Service {
     private _refreshAllProperties() {
         this._proxy.g_connection.call(
             this._proxy.g_name,
-            this._proxy.g_object_path,
+            this._proxy.g_object_path!,
             'org.freedesktop.DBus.Properties',
             'GetAll',
             new GLib.Variant('(s)', [this._proxy.g_interface_name]),

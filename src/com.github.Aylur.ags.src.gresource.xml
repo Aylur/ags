@@ -57,5 +57,6 @@
     <file>utils/file.js</file>
     <file>utils/timeout.js</file>
     <file>utils/fetch.js</file>
+    <file>utils/notify.js</file>
   </gresource>
 </gresources>

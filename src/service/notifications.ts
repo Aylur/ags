@@ -13,32 +13,53 @@ const NOTIFICATIONS_CACHE_PATH = `${CACHE_DIR}/notifications`;
 const CACHE_FILE = NOTIFICATIONS_CACHE_PATH + '/notifications.json';
 const NotificationIFace = loadInterfaceXML('org.freedesktop.Notifications');
 
-interface Action {
+export interface Action {
     id: string
     label: string
 }
 
-interface Hints {
-    'image-data'?: GLib.Variant
-    'desktop-entry'?: GLib.Variant
-    'urgency'?: GLib.Variant
+export interface Hints {
+    'action-icons'?: GLib.Variant // boolean
+    'category'?: GLib.Variant // string
+    'desktop-entry'?: GLib.Variant // string
+    'image-data'?: GLib.Variant // iiibiiay
+    'image-path'?: GLib.Variant // string
+    'resident'?: GLib.Variant // boolean
+    'sound-file'?: GLib.Variant // string
+    'sound-name'?: GLib.Variant // string
+    'suppress-sound'?: GLib.Variant // boolean
+    'transient'?: GLib.Variant // boolean
+    'urgency'?: GLib.Variant // 0 | 1 | 2
+    'x'?: GLib.Variant // number
+    'y'?: GLib.Variant // number
     [hint: string]: GLib.Variant | undefined
 }
 
 interface NotifcationJson {
     id: number
     appName: string
-    appEntry: string | null
     appIcon: string
     summary: string
     body: string
     actions: Action[]
-    urgency: string
+    urgency: Urgency
     time: number
-    image: string | null
+    image?: string;
+    appEntry?: string;
+    actionIcons?: boolean;
+    category?: string;
+    resident?: boolean;
+    soundFile?: string;
+    soundName?: string;
+    suppressSound?: boolean;
+    transient?: boolean;
+    x?: number;
+    y?: number;
 }
 
-const _URGENCY = (urgency?: number) => {
+export type Urgency = 'low' | 'critical' | 'normal'
+
+const _URGENCY = (urgency?: number): Urgency => {
     switch (urgency) {
         case 0: return 'low';
         case 2: return 'critical';
@@ -53,46 +74,78 @@ export class Notification extends Service {
             'closed': [],
             'invoked': ['string'],
         }, {
-            'id': ['int'],
-            'app-name': ['string'],
+            'action-icons': ['boolean'],
+            'actions': ['jsobject'],
             'app-entry': ['string'],
             'app-icon': ['string'],
-            'summary': ['string'],
+            'app-name': ['string'],
             'body': ['string'],
-            'actions': ['jsobject'],
-            'urgency': ['string'],
-            'time': ['int'],
+            'category': ['string'],
+            'id': ['int'],
             'image': ['string'],
             'popup': ['boolean'],
+            'resident': ['boolean'],
+            'sound-file': ['string'],
+            'sound-name': ['string'],
+            'summary': ['string'],
+            'suppress-sound': ['boolean'],
+            'time': ['int'],
+            'timeout': ['int', 'rw'],
+            'transient': ['boolean'],
+            'urgency': ['string'],
+            'x': ['int'],
+            'y': ['int'],
             'hints': ['jsobject'],
         });
     }
 
-    _id: number;
-    _appName: string;
-    _appEntry: string | null;
-    _appIcon: string;
-    _summary: string;
-    _body: string;
-    _actions: Action[] = [];
-    _urgency: string;
-    _time: number;
-    _image: string | null;
-    _popup: boolean;
-    _hints: Hints = {};
+    private _actionIcons?: boolean;
+    private _actions: Action[] = [];
+    private _appEntry?: string;
+    private _appIcon: string;
+    private _appName: string;
+    private _body: string;
+    private _category?: string;
+    private _id: number;
+    private _image?: string;
+    private _popup: boolean;
+    private _resident?: boolean;
+    private _soundFile?: string;
+    private _soundName?: string;
+    private _summary: string;
+    private _suppressSound?: boolean;
+    private _time: number;
+    private _timeout!: number;
+    private _transient?: boolean;
+    private _urgency: Urgency;
+    private _x?: number;
+    private _y?: number;
+    private _hints: Hints = {};
 
-    get id() { return this._id; }
-    get app_name() { return this._appName; }
+    get action_icons() { return this._actionIcons; }
+    get actions() { return this._actions; }
     get app_entry() { return this._appEntry; }
     get app_icon() { return this._appIcon; }
-    get summary() { return this._summary; }
+    get app_name() { return this._appName; }
     get body() { return this._body; }
-    get actions() { return this._actions; }
-    get urgency() { return this._urgency; }
-    get time() { return this._time; }
+    get category() { return this._category; }
+    get id() { return this._id; }
     get image() { return this._image; }
     get popup() { return this._popup; }
+    get resident() { return this._resident; }
+    get sound_file() { return this._soundFile; }
+    get sound_name() { return this._soundName; }
+    get summary() { return this._summary; }
+    get suppress_sound() { return this._suppressSound; }
+    get time() { return this._time; }
+    get transient() { return this._transient; }
+    get urgency() { return this._urgency; }
+    get x() { return this._x; }
+    get y() { return this._y; }
     get hints() { return this._hints; }
+
+    set timeout(t: number) { this._timeout = t; }
+    get timeout() { return this._timeout; }
 
     constructor(
         appName: string,
@@ -113,16 +166,29 @@ export class Notification extends Service {
             });
         }
 
-        this._urgency = _URGENCY(hints['urgency']?.unpack<number>());
         this._id = id;
         this._appName = appName;
-        this._appEntry = hints['desktop-entry']?.unpack<string>() || null;
         this._appIcon = appIcon;
         this._summary = summary;
         this._body = body;
         this._time = GLib.DateTime.new_now_local().to_unix();
-        this._image = this._appIconIsFile() ? appIcon : this._parseImageData(hints['image-data']);
+        this._image = this._appIconImage() ||
+            this._parseImageData(hints['image-data']) ||
+            hints['image-path']?.unpack();
+
         this._popup = popup;
+        this._urgency = _URGENCY(hints['urgency']?.unpack());
+
+        this._appEntry = hints['desktop-entry']?.unpack();
+        this._actionIcons = hints['action-icons']?.unpack();
+        this._category = hints['category']?.unpack();
+        this._resident = hints['resident']?.unpack();
+        this._soundFile = hints['sound-file']?.unpack();
+        this._soundName = hints['sound-name']?.unpack();
+        this._suppressSound = hints['suppress-sound']?.unpack();
+        this._transient = hints['transient']?.unpack();
+        this._x = hints['x']?.unpack();
+        this._y = hints['y']?.unpack();
         this._hints = hints;
     }
 
@@ -138,40 +204,49 @@ export class Notification extends Service {
 
     invoke(id: string) {
         this.emit('invoked', id);
-        this.close();
+        if (!this.resident)
+            this.close();
     }
 
-    toJson(cacheActions = App.config.cacheNotificationActions) {
+    toJson(cacheActions = App.config.cacheNotificationActions): NotifcationJson {
         return {
-            id: this._id,
-            appName: this._appName,
+            actionIcons: this._actionIcons,
+            actions: cacheActions ? this._actions : [],
             appEntry: this._appEntry,
             appIcon: this._appIcon,
-            summary: this._summary,
+            appName: this._appName,
             body: this._body,
-            actions: cacheActions ? this._actions : [],
-            urgency: this._urgency,
-            time: this._time,
+            category: this._category,
+            id: this._id,
             image: this._image,
+            resident: this._resident,
+            soundFile: this._soundFile,
+            soundName: this._soundName,
+            summary: this._summary,
+            suppressSound: this._suppressSound,
+            time: this._time,
+            transient: this._transient,
+            urgency: this._urgency,
+            x: this._x,
+            y: this._y,
         };
     }
 
     static fromJson(json: NotifcationJson) {
-        const { id, appName, appEntry, appIcon, summary,
-            body, actions, urgency, time, image } = json;
+        const { id, appName, appIcon, summary, body, ...j } = json;
 
         const n = new Notification(appName, id, appIcon, summary, body, [], {}, false);
-        n._actions = actions;
-        n._appEntry = appEntry;
-        n._urgency = urgency;
-        n._time = time;
-        n._image = image;
+        for (const key of Object.keys(j))
+            // @ts-expect-error too lazy to type
+            n[`_${key}`] = j[key];
+
         return n;
     }
 
-    private _appIconIsFile() {
-        return GLib.file_test(this._appIcon, GLib.FileTest.EXISTS) ||
-            GLib.file_test(this._appIcon.replace(/^(file\:\/\/)/, ''), GLib.FileTest.EXISTS);
+    private _appIconImage() {
+        if (GLib.file_test(this._appIcon, GLib.FileTest.EXISTS) ||
+            GLib.file_test(this._appIcon.replace(/^(file\:\/\/)/, ''), GLib.FileTest.EXISTS))
+            return this._appIcon;
     }
 
     private _parseImageData(imageData?: InstanceType<typeof GLib.Variant>) {
@@ -273,11 +348,12 @@ export class Notifications extends Service {
         const n = new Notification(appName, id, appIcon, summary, body, acts, hints, !this.dnd);
 
         if (App.config.notificationForceTimeout) {
+            n.timeout = App.config.notificationPopupTimeout;
             timeout(App.config.notificationPopupTimeout, () => this.DismissNotification(id));
-        }
-        else if (expiration !== 0) {
-            const tout = expiration > 0 ? expiration : App.config.notificationPopupTimeout;
-            timeout(tout, () => this.DismissNotification(id));
+        } else {
+            n.timeout = expiration;
+            if (expiration > 0)
+                timeout(expiration, () => this.DismissNotification(id));
         }
 
         this._addNotification(n);
@@ -304,7 +380,16 @@ export class Notifications extends Service {
     }
 
     GetCapabilities() {
-        return ['actions', 'body', 'icon-static', 'persistence'];
+        return [
+            'action-icons',
+            'actions',
+            'body',
+            'body-hyperlinks',
+            'body-markup',
+            'icon-static',
+            'persistence',
+            'sound',
+        ];
     }
 
     GetServerInformation() {

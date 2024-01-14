@@ -104,7 +104,7 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
 
     get shown() { return this.visible_child_name; }
     set shown(name: string | null) {
-        if (!this.get_child_by_name(name)) {
+        if (!name || !this.get_child_by_name(name)) {
             this.visible = false;
             return;
         }

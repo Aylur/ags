@@ -20,6 +20,7 @@
 , libdbusmenu-gtk3
 , gvfs
 , libsoup_3
+, libnotify
 , extraPackages ? []
 }:
 
@@ -34,7 +35,7 @@ let
 in
 stdenv.mkDerivation {
   pname = "ags";
-  version = "1.6.4";
+  version = "1.7.0";
 
   src = buildNpmPackage {
     name = "ags";
@@ -42,7 +43,7 @@ stdenv.mkDerivation {
 
     dontBuild = true;
 
-    npmDepsHash = "sha256-3r9sdTsSsi5TP7UDdRFlZw94FeZpPz4HG22aeKzdmLQ=";
+    npmDepsHash = "sha256-VC3bhZNOuCBQq/uzdLUsSheOU+KhzftAccFKhlrf4Vk=";
 
     installPhase = ''
       mkdir $out
@@ -82,6 +83,7 @@ stdenv.mkDerivation {
     libdbusmenu-gtk3
     gvfs
     libsoup_3
+    libnotify
   ] ++ extraPackages;
 
   meta = with lib; {

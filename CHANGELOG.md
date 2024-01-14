@@ -5,6 +5,8 @@
 - add: Overlay.overlay Box.child
 - add: params to Utils.fetch
 - feat(circular-progress): end-at property (#239)
+- feat(Utils.notify)
+- feat(notifications): support every hint
 
 ## Fixes
 
