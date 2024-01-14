@@ -166,12 +166,13 @@ export class Hyprland extends Service {
             base_stream: connection.get_input_stream(),
         });
 
-        return inputStream.read_upto_async('\x04', -1, 0, null)
-            .then(result => {
-                const [response] = result as unknown as [string, number];
-                connection.close(null);
-                return response;
-            });
+        try {
+            const result = await inputStream.read_upto_async('\x04', -1, 0, null);
+            const [response] = result as unknown as [string, number];
+            return response;
+        } finally {
+            connection.close(null);
+        }
     }
 
     private async _syncMonitors() {
