@@ -293,6 +293,7 @@ export class Hyprland extends Service {
                     this._active.client.updateProperty('address', '');
                     await this._syncWorkspaces();
                     this._clients.delete('0x' + argv[0]);
+                    await this._syncClients();
                     this.emit('client-removed', '0x' + argv[0]);
                     this.notify('clients');
                     break;
