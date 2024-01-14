@@ -54,8 +54,6 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         });
     }
 
-    _clickthrough = false;
-
     // the window has to be set as a layer,
     // so we can't rely on gobject constructor
     constructor({
