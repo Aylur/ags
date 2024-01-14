@@ -1,9 +1,7 @@
 {
     "name": "ags",
-    "version": "1.7.0",
-    "description": "description",
-    "main": "src/main.ts",
-    "repository": "",
+    "version": "1.0.0",
+    "repository": "https://github.com/Aylur/ags",
     "author": "Aylur",
     "license": "GPL",
     "dependencies": {

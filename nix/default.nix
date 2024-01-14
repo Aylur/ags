@@ -21,7 +21,8 @@
 , gvfs
 , libsoup_3
 , libnotify
-, extraPackages ? []
+, extraPackages ? [ ]
+, version ? "git"
 }:
 
 let
@@ -33,17 +34,17 @@ let
     sha256 = "sha256-FosJwgTCp6/EI6WVbJhPisokRBA6oT0eo7d+Ya7fFX8=";
   };
 in
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   pname = "ags";
-  version = "1.7.0";
+  inherit version;
 
   src = buildNpmPackage {
-    name = "ags";
+    name = pname;
     src = ../.;
 
     dontBuild = true;
 
-    npmDepsHash = "sha256-VC3bhZNOuCBQq/uzdLUsSheOU+KhzftAccFKhlrf4Vk=";
+    npmDepsHash = "sha256-ucWdADdMqAdLXQYKGOXHNRNM9bhjKX4vkMcQ8q/GZ20=";
 
     installPhase = ''
       mkdir $out
@@ -91,6 +92,6 @@ stdenv.mkDerivation {
     homepage = "https://github.com/Aylur/ags";
     platforms = [ "x86_64-linux" "aarch64-linux" ];
     license = licenses.gpl3;
-    meta.maintainers = [lib.maintainers.Aylur];
+    meta.maintainers = [ lib.maintainers.Aylur ];
   };
 }
