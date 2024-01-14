@@ -320,7 +320,7 @@ export class Hyprland extends Service {
             if (error instanceof Error)
                 console.error(error.message);
         }
-        
+
         this.emit('event', e, params);
         this.emit('changed');
     }
