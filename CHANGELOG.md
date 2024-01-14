@@ -7,6 +7,7 @@
 - feat(circular-progress): end-at property (#239)
 - feat(Utils.notify)
 - feat(notifications): support every hint
+- add: Widget.click-through (#245)
 
 ## Fixes
 
