@@ -1,11 +1,31 @@
 // code mostly take from https://github.com/sonnyp/troll
 
-import Soup from 'gi://Soup?version=3.0';
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 
-Gio._promisify(Soup.Session.prototype, 'send_async');
-Gio._promisify(Gio.MemoryOutputStream.prototype, 'splice_async');
+/*
+ * this module gets loaded on startup, so in order
+ * to make libsoup an optional dependency we do this
+ */
+let init = false;
+async function libnotify() {
+    try {
+        import('gi://Soup?version=3.0');
+    } catch (error) {
+        console.error(Error('Missing dependency: libsoup3'));
+        return null;
+    }
+
+    const Soup = (await import('gi://Soup?version=3.0')).default;
+
+    if (init)
+        return Soup;
+
+    init = true;
+    Gio._promisify(Soup.Session.prototype, 'send_async');
+    Gio._promisify(Gio.MemoryOutputStream.prototype, 'splice_async');
+    return Soup;
+}
 
 export type FetchOptions = {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -14,7 +34,70 @@ export type FetchOptions = {
     params?: Record<string, any>;
 };
 
+export class Response {
+    status: number;
+    statusText: string | null;
+    ok: boolean;
+    stream: Gio.InputStream | null;
+    type = 'basic';
+
+    constructor(
+        status: number,
+        statusText: string | null,
+        ok: boolean,
+        stream: Gio.InputStream | null,
+    ) {
+        this.status = status;
+        this.statusText = statusText;
+        this.ok = ok;
+        this.stream = stream;
+    }
+
+    async json() {
+        const text = await this.text();
+        return JSON.parse(text);
+    }
+
+    async text() {
+        const gBytes = await this.gBytes();
+        return new TextDecoder().decode(gBytes ? gBytes.toArray() : []);
+    }
+
+    async arrayBuffer() {
+        const gBytes = await this.gBytes();
+        if (!gBytes)
+            return null;
+
+        return gBytes.toArray().buffer;
+    }
+
+    async gBytes() {
+        const outputStream = Gio.MemoryOutputStream.new_resizable();
+        if (!this.stream)
+            return null;
+
+        await outputStream.splice_async(this.stream,
+            Gio.OutputStreamSpliceFlags.CLOSE_TARGET |
+            Gio.OutputStreamSpliceFlags.CLOSE_SOURCE,
+            GLib.PRIORITY_DEFAULT,
+            null);
+
+        return outputStream.steal_as_bytes();
+    }
+}
+
 export async function fetch(url: string, options: FetchOptions = {}) {
+    const Soup = await libnotify();
+    if (!Soup) {
+        console.error(Error('missing dependency: libsoup3'));
+        return new Response(
+            400,
+            'can not fetch: missing dependency: libsoup3',
+            false,
+            null,
+        );
+    }
+
     const session = new Soup.Session();
 
     if (options.params) {
@@ -52,33 +135,5 @@ export async function fetch(url: string, options: FetchOptions = {}) {
     const { status_code, reason_phrase } = message;
     const ok = status_code >= 200 && status_code < 300;
 
-    return {
-        status: status_code,
-        statusText: reason_phrase,
-        ok,
-        type: 'basic',
-        async json() {
-            const text = await this.text();
-            return JSON.parse(text);
-        },
-        async text() {
-            const gBytes = await this.gBytes();
-            return new TextDecoder().decode(gBytes.toArray());
-        },
-        async arrayBuffer() {
-            const gBytes = await this.gBytes();
-            return gBytes.toArray().buffer;
-        },
-        async gBytes() {
-            const outputStream = Gio.MemoryOutputStream.new_resizable();
-
-            await outputStream.splice_async(inputStream,
-                Gio.OutputStreamSpliceFlags.CLOSE_TARGET |
-                Gio.OutputStreamSpliceFlags.CLOSE_SOURCE,
-                GLib.PRIORITY_DEFAULT,
-                null);
-
-            return outputStream.steal_as_bytes();
-        },
-    };
+    return new Response(status_code, reason_phrase, ok, inputStream);
 }
