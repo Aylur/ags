@@ -2,7 +2,13 @@ import GLib from 'gi://GLib?version=2.0';
 import { type Urgency } from '../service/notifications.js';
 
 type ClosedReason = ReturnType<typeof _CLOSED_REASON>
-type Notification = NonNullable<Awaited<ReturnType<typeof libnotify>>>['Notification']
+type Notification = InstanceType<NonNullable<Awaited<ReturnType<typeof libnotify>>>['Notification']>
+
+// TODO: libnotify is sync, so it halts the js engine
+// when the notification daemon is in the same process
+export const daemon = {
+    running: false,
+};
 
 const _URGENCY = (urgency: Urgency) => {
     switch (urgency) {
@@ -78,12 +84,19 @@ export async function notify(
     argsOrSummary: NotificationArgs | string,
     body = '',
     iconName = '',
-) {
+): Promise<Notification> {
     const Notify = await libnotify();
     if (!Notify) {
         console.error(Error('missing dependency: libnotify'));
         // assume libnotify as installed, so that end users
         // won't have to check the return type of the promise
+        return null as unknown as Notification;
+    }
+
+    // TODO: use Notifications.Notify wrapper if daemon is running
+    if (daemon.running) {
+        console.error(Error('Notification Deamon is in the same process ' +
+            ' Utils.notify will freeze. This will be fixed in a future version'));
         return null as unknown as Notification;
     }
 
@@ -122,16 +135,14 @@ export async function notify(
     hint('x', 'i', args.x);
     hint('y', 'i', args.y);
 
-    return await new Promise(resolve => {
-        Object.keys(args.actions || {}).forEach((action, i) => {
-            print(`${i}`, action, args.actions![action]);
-            n.add_action(`${i}`, action, args.actions![action]);
-        });
-        n.connect('closed', () => {
-            if (args.onClosed)
-                args.onClosed(_CLOSED_REASON(n.get_closed_reason()));
-        });
-        n.show();
-        resolve(n);
+    Object.keys(args.actions || {}).forEach((action, i) => {
+        n.add_action(`${i}`, action, args.actions![action]);
     });
+    n.connect('closed', () => {
+        if (args.onClosed)
+            args.onClosed(_CLOSED_REASON(n.get_closed_reason()));
+    });
+    n.show();
+
+    return n;
 }

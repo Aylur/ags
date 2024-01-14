@@ -8,6 +8,7 @@ import {
     loadInterfaceXML, readFileAsync,
     timeout, writeFile,
 } from '../utils.js';
+import { daemon } from '../utils/notify.js';
 
 const NOTIFICATIONS_CACHE_PATH = `${CACHE_DIR}/notifications`;
 const CACHE_FILE = NOTIFICATIONS_CACHE_PATH + '/notifications.json';
@@ -441,8 +442,11 @@ export class Notifications extends Service {
 
                 this._dbus.export(connection, '/org/freedesktop/Notifications');
             },
-            null,
             () => {
+                daemon.running = true;
+            },
+            () => {
+                // TODO: get running daemon's name
                 print('Another notification daemon is already running, ' +
                     'make sure you stop Dunst ' +
                     'or any other daemon you have running');

@@ -33,6 +33,7 @@ export const fetch = Fetch.fetch;
 export const notify = Notify.notify;
 
 export default {
+    USER, CACHE_DIR,
     exec, execAsync, subprocess,
     readFile, readFileAsync, writeFile, monitorFile,
     timeout, interval, idle,
