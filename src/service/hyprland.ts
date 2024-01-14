@@ -225,8 +225,6 @@ export class Hyprland extends Service {
         const [e, params] = event.split('>>');
         const argv = params.split(',');
 
-        this.emit('event', e, params);
-
         try {
             switch (e) {
                 case 'workspace':
@@ -323,7 +321,8 @@ export class Hyprland extends Service {
             if (error instanceof Error)
                 console.error(error.message);
         }
-
+        
+        this.emit('event', e, params);
         this.emit('changed');
     }
 }
