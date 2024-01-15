@@ -195,20 +195,7 @@ export class Sway extends Service {
     getWorkspace(name: string) { return this._workspaces.get(name); }
     getClient(id: number) { return this._clients.get(id); }
 
-    msg(payload: string) { this.send(PAYLOAD_TYPE.MESSAGE_RUN_COMMAND, payload); }
-
-    send(payloadType: PAYLOAD_TYPE, payload: string) {
-        const pb = this._encoder.encode(payload);
-        const type = new Uint32Array([payloadType]);
-        const pl = new Uint32Array([pb.length]);
-        const magic_string = this._encoder.encode('i3-ipc');
-        const data = new Uint8Array([
-            ...magic_string,
-            ...(new Uint8Array(pl.buffer)),
-            ...(new Uint8Array(type.buffer)),
-            ...pb]);
-        this._output_stream.write(data, null);
-    }
+    msg(payload: string) { this._send(PAYLOAD_TYPE.MESSAGE_RUN_COMMAND, payload); }
 
     constructor() {
         if (!SIS)
@@ -227,12 +214,25 @@ export class Sway extends Service {
         this._watchSocket(socket.get_input_stream());
 
         this._output_stream = socket.get_output_stream();
-        this.send(PAYLOAD_TYPE.MESSAGE_GET_TREE, '');
-        this.send(PAYLOAD_TYPE.MESSAGE_SUBSCRIBE, JSON.stringify(['window', 'workspace']));
+        this._send(PAYLOAD_TYPE.MESSAGE_GET_TREE, '');
+        this._send(PAYLOAD_TYPE.MESSAGE_SUBSCRIBE, JSON.stringify(['window', 'workspace']));
 
         this._active.connect('changed', () => this.emit('changed'));
         ['monitor', 'workspace', 'client'].forEach(active =>
             this._active.connect(`notify::${active}`, () => this.notify('active')));
+    }
+
+    private _send(payloadType: PAYLOAD_TYPE, payload: string) {
+        const pb = this._encoder.encode(payload);
+        const type = new Uint32Array([payloadType]);
+        const pl = new Uint32Array([pb.length]);
+        const magic_string = this._encoder.encode('i3-ipc');
+        const data = new Uint8Array([
+            ...magic_string,
+            ...(new Uint8Array(pl.buffer)),
+            ...(new Uint8Array(type.buffer)),
+            ...pb]);
+        this._output_stream.write(data, null);
     }
 
     private _watchSocket(stream: Gio.InputStream) {
