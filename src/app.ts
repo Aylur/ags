@@ -9,8 +9,8 @@ import { loadInterfaceXML } from './utils.js';
 const AgsIFace = (bus: string) =>
     loadInterfaceXML('com.github.Aylur.ags')?.replace('@BUS@', bus);
 
-interface Config {
-    windows?: Gtk.Window[]
+export interface Config<W extends Gtk.Window> {
+    windows?: W[]
     style?: string
     notificationPopupTimeout: number
     notificationForceTimeout: boolean
@@ -178,7 +178,7 @@ export class App extends Gtk.Application {
 
     private async _load() {
         try {
-            const mod = await import(`file://${this._configPath}`);
+            const mod = await import(`file://${this.configPath}`);
             const config = mod.default as Config;
             config.closeWindowDelay ??= {};
             config.notificationPopupTimeout ??= 3000;
@@ -196,8 +196,11 @@ export class App extends Gtk.Application {
 
             this._closeDelay = config.closeWindowDelay;
 
-            if (config.style)
-                this.applyCss(config.style);
+            if (config.style) {
+                this.applyCss(config.style.startsWith('.')
+                    ? `${this.configDir}${config.style.slice(1)}`
+                    : config.style);
+            }
 
             if (config.windows && !Array.isArray(config.windows)) {
                 console.error('windows attribute has to be an array, ' +
