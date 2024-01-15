@@ -5,7 +5,7 @@ import Gdk from 'gi://Gdk?version=3.0';
 import Cairo from 'gi://cairo?version=1.0';
 import Service, { kebabify, Props, BindableProps, Binding } from '../service.js';
 import { registerGObject } from '../gobject.js';
-import { interval } from '../utils.js';
+import { interval, idle } from '../utils.js';
 import { Variable } from '../variable.js';
 import { App } from '../app.js';
 
@@ -261,6 +261,11 @@ export default function AgsWidget<
             this.connect('enter-notify-event', this._updateCursor.bind(this));
             this.connect('leave-notify-event', this._updateCursor.bind(this));
             this.connect('destroy', () => this._set('is-destroyed', true));
+
+            idle(() => {
+                if (this.click_through)
+                    this.input_shape_combine_region(new Cairo.Region);
+            });
 
             if (setup)
                 // @ts-expect-error
