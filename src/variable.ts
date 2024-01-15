@@ -5,14 +5,14 @@ import Service, { Binding, Props } from './service.js';
 import { execAsync, interval, subprocess } from './utils.js';
 
 type Listen<T> =
-    | [string[] | string, (out: string) => T]
+    | [string[] | string, (out: string, self: Variable<T>) => T]
     | [string[] | string]
     | string[]
     | string;
 
 type Poll<T> =
-    | [number, string[] | string | (() => T)]
-    | [number, string[] | string | (() => T), (out: string) => T];
+    | [number, string[] | string | ((self: Variable<T>) => T)]
+    | [number, string[] | string, (out: string, self: Variable<T>) => T];
 
 interface Options<T> {
     poll?: Poll<T>
@@ -59,11 +59,11 @@ export class Variable<T> extends GObject.Object {
         const [time, cmd, transform = out => out as T] = this._poll;
         if (Array.isArray(cmd) || typeof cmd === 'string') {
             this._interval = interval(time, () => execAsync(cmd)
-                .then(out => this.setValue(transform(out)))
+                .then(out => this.setValue(transform(out, this)))
                 .catch(err => console.error(err)));
         }
         if (typeof cmd === 'function')
-            this._interval = interval(time, () => this.setValue(cmd()));
+            this._interval = interval(time, () => this.setValue(cmd(this)));
     }
 
     stopPoll() {
@@ -102,7 +102,7 @@ export class Variable<T> extends GObject.Object {
         else
             return console.error(Error(`${this._listen} is not a valid type for Variable.listen`));
 
-        this._subprocess = subprocess(cmd, out => this.setValue(transform(out)));
+        this._subprocess = subprocess(cmd, out => this.setValue(transform(out, this)));
     }
 
     stopListen() {
