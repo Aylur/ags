@@ -4,8 +4,8 @@ import Service from '../service.js';
 
 const SIS = GLib.getenv('SWAYSOCK');
 
-const enum PAYLOAD_TYPE {
-    MESSAGE_RUM_COMMAND = 0,
+export const enum PAYLOAD_TYPE {
+    MESSAGE_RUN_COMMAND = 0,
     MESSAGE_GET_WORKSPACES = 1,
     MESSAGE_SUBSCRIBE = 2,
     MESSAGE_GET_OUTPUTS = 3,
@@ -125,7 +125,7 @@ export class SwayActiveID extends Service {
         });
     }
 
-    private _id = 1;
+    private _id = 0;
     private _name = '';
 
     get id() { return this._id; }
@@ -284,11 +284,9 @@ export class Sway extends Service {
         switch (workspaceEvent.change) {
             case 'init':
                 this._workspaces.set(workspace.name, workspace);
-                this.notify('workspaces');
                 break;
             case 'empty':
                 this._workspaces.delete(workspace.name);
-                this.notify('workspaces');
                 break;
             case 'focus':
                 this._active.workspace.update(workspace.id, workspace.name);
@@ -296,13 +294,11 @@ export class Sway extends Service {
 
                 this._workspaces.set(workspace.name, workspace);
                 this._workspaces.set(workspaceEvent.old.name, workspaceEvent.old);
-                this.notify('workspaces');
                 break;
             case 'rename':
                 if (this._active.workspace.id === workspace.id)
                     this._active.workspace.updateProperty('name', workspace.name);
                 this._workspaces.set(workspace.name, workspace);
-                this.notify('workspaces');
                 break;
             case 'reload':
                 break;
@@ -310,8 +306,8 @@ export class Sway extends Service {
             case 'urgent':
             default:
                 this._workspaces.set(workspace.name, workspace);
-                this.notify('workspaces');
         }
+        this.notify('workspaces');
     }
 
     private _handleWindowEvent(clientEvent: Client_Event) {
@@ -320,11 +316,9 @@ export class Sway extends Service {
         switch (clientEvent.change) {
             case 'new':
                 this._clients.set(id, client);
-                this.notify('clients');
                 break;
             case 'close':
                 this._clients.delete(id);
-                this.notify('clients');
                 break;
             case 'focus':
                 if (this._active.client.id === id)
@@ -344,7 +338,6 @@ export class Sway extends Service {
                 if (client.focused)
                     this._active.client.updateProperty('name', client.name);
                 this._clients.set(id, client);
-                this.notify('clients');
                 break;
             case 'fullscreen_mode':
             case 'move':
@@ -353,8 +346,8 @@ export class Sway extends Service {
             case 'mark':
             default:
                 this._clients.set(id, client);
-                this.notify('clients');
         }
+        this.notify('clients');
     }
 
     private _handleTreeMessage(node: Node) {
@@ -364,14 +357,11 @@ export class Sway extends Service {
                 this._clients.clear();
                 this._monitors.clear();
                 node.nodes.map(n => this._handleTreeMessage(n));
-                ['workspaces', 'clients', 'monitors'].forEach(t => {
-                    this.notify(t);
-                });
                 break;
             case 'output':
                 this._monitors.set(node.id, node);
                 if (node.active)
-                    this._active.monitor.updateProperty('name', node.name);
+                    this._active.monitor.update(node.id, node.name);
                 node.nodes.map(n => this._handleTreeMessage(n));
                 this.notify('monitors');
                 break;
