@@ -9,7 +9,7 @@ import { loadInterfaceXML } from './utils.js';
 const AgsIFace = (bus: string) =>
     loadInterfaceXML('com.github.Aylur.ags')?.replace('@BUS@', bus);
 
-export interface Config<W extends Gtk.Window> {
+export interface Config<W extends Gtk.Window = Gtk.Window> {
     windows?: W[]
     style?: string
     notificationPopupTimeout: number
