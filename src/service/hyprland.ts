@@ -132,7 +132,7 @@ export class Hyprland extends Service {
                 .get_input_stream(),
         }));
 
-        this._active.connect('changed', () => this.emit('active'));
+        this._active.connect('changed', () => this.changed('active'));
     }
 
     private _watchSocket(stream: Gio.DataInputStream) {
