@@ -24,11 +24,6 @@ export class ActiveClient extends Service {
     get address() { return this._address; }
     get title() { return this._title; }
     get class() { return this._class; }
-
-    updateProperty(prop: 'address' | 'title' | 'class', value: unknown) {
-        super.updateProperty(prop, value);
-        this.emit('changed');
-    }
 }
 
 export class ActiveID extends Service {
@@ -48,7 +43,6 @@ export class ActiveID extends Service {
     update(id: number, name: string) {
         super.updateProperty('id', id);
         super.updateProperty('name', name);
-        this.emit('changed');
     }
 }
 
@@ -138,9 +132,7 @@ export class Hyprland extends Service {
                 .get_input_stream(),
         }));
 
-        this._active.connect('changed', () => this.emit('changed'));
-        ['monitor', 'workspace', 'client'].forEach(active =>
-            this._active.connect(`notify::${active}`, () => this.changed('active')));
+        this._active.connect('changed', () => this.emit('active'));
     }
 
     private _watchSocket(stream: Gio.DataInputStream) {
@@ -175,7 +167,7 @@ export class Hyprland extends Service {
         }
     }
 
-    private async _syncMonitors() {
+    private async _syncMonitors(notify = true) {
         try {
             const msg = await this.sendMessage('j/monitors');
             this._monitors = new Map();
@@ -185,35 +177,40 @@ export class Hyprland extends Service {
                 if (monitor.focused) {
                     this._active.monitor.update(monitor.id, monitor.name);
                     this._active.workspace.update(activeWorkspace.id, activeWorkspace.name);
+                    this._active.monitor.emit('changed');
+                    this._active.workspace.emit('changed');
                 }
             });
-            this.notify('monitors');
+            if (notify)
+                this.notify('monitors');
         } catch (error) {
             logError(error);
         }
     }
 
-    private async _syncWorkspaces() {
+    private async _syncWorkspaces(notify = true) {
         try {
             const msg = await this.sendMessage('j/workspaces');
             this._workspaces = new Map();
             (JSON.parse(msg) as Array<Workspace>).forEach(ws => {
                 this._workspaces.set(ws.id, ws);
             });
-            this.notify('workspaces');
+            if (notify)
+                this.notify('workspaces');
         } catch (error) {
             logError(error);
         }
     }
 
-    private async _syncClients() {
+    private async _syncClients(notify = true) {
         try {
             const msg = await this.sendMessage('j/clients');
             this._clients = new Map();
             (JSON.parse(msg) as Array<Client>).forEach(client => {
                 this._clients.set(client.address, client);
             });
-            this.notify('clients');
+            if (notify)
+                this.notify('clients');
         } catch (error) {
             logError(error);
         }
@@ -254,46 +251,53 @@ export class Hyprland extends Service {
                     break;
 
                 case 'openwindow':
-                    await this._syncClients();
-                    await this._syncWorkspaces();
+                    await this._syncClients(false);
+                    await this._syncWorkspaces(false);
+                    ['clients', 'workspaces'].forEach(e => this.notify(e));
                     this.emit('client-added', '0x' + argv[0]);
                     break;
 
                 case 'movewindow':
                 case 'windowtitle':
-                    await this._syncClients();
-                    await this._syncWorkspaces();
+                    await this._syncClients(false);
+                    await this._syncWorkspaces(false);
+                    ['clients', 'workspaces'].forEach(e => this.notify(e));
                     break;
 
                 case 'moveworkspace':
-                    await this._syncClients();
-                    await this._syncWorkspaces();
-                    await this._syncMonitors();
+                    await this._syncClients(false);
+                    await this._syncWorkspaces(false);
+                    await this._syncMonitors(false);
+                    ['clients', 'workspaces', 'monitors'].forEach(e => this.notify(e));
                     break;
 
                 case 'fullscreen':
-                    await this._syncClients();
-                    await this._syncWorkspaces();
+                    await this._syncClients(false);
+                    await this._syncWorkspaces(false);
+                    ['clients', 'workspaces'].forEach(e => this.notify(e));
                     this.emit('fullscreen', argv[0] === '1');
                     break;
 
                 case 'activewindow':
                     this._active.client.updateProperty('class', argv[0]);
                     this._active.client.updateProperty('title', argv.slice(1).join(','));
+                    this._active.client.emit('changed');
                     break;
 
                 case 'activewindowv2':
                     this._active.client.updateProperty('address', '0x' + argv[0]);
+                    this._active.client.emit('changed');
                     break;
 
                 case 'closewindow':
+                    await this._syncWorkspaces(false);
+                    await this._syncClients(false);
                     this._active.client.updateProperty('class', '');
                     this._active.client.updateProperty('title', '');
                     this._active.client.updateProperty('address', '');
-                    await this._syncWorkspaces();
-                    await this._syncClients();
+                    this._active.client.emit('changed');
+                    ['clients', 'workspaces'].forEach(e => this.notify(e));
                     this.emit('client-removed', '0x' + argv[0]);
-                    this.notify('clients');
                     break;
 
                 case 'urgent':
@@ -305,9 +309,7 @@ export class Hyprland extends Service {
                     break;
 
                 case 'changefloatingmode': {
-                    const client = this._clients.get('0x' + argv[0]);
-                    if (client)
-                        client.floating = argv[1] === '1';
+                    await this._syncClients();
                     break;
                 }
                 case 'submap':
