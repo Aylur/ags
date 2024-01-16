@@ -217,11 +217,13 @@ export class App extends Gtk.Application {
 
             this.emit('config-parsed');
         } catch (err) {
-            if ((err as { name: string })?.name === 'ImportError') {
+            logError(err);
+
+            const error = err as { name?: string, message: string };
+            const msg = `Unable to load file from: file://${this._configPath}`;
+            if (error?.name === 'ImportError' && error.message.includes(msg)) {
                 print(`config file not found: "${this._configPath}"`);
                 this.quit();
-            } else {
-                logError(err);
             }
         }
     }
