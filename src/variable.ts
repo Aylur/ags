@@ -60,7 +60,7 @@ export class Variable<T> extends GObject.Object {
         if (Array.isArray(cmd) || typeof cmd === 'string') {
             this._interval = interval(time, () => execAsync(cmd)
                 .then(out => this.setValue(transform(out, this)))
-                .catch(err => console.error(err)));
+                .catch(err => logError(err)));
         }
         if (typeof cmd === 'function')
             this._interval = interval(time, () => this.setValue(cmd(this)));
