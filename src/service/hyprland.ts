@@ -267,7 +267,7 @@ export class Hyprland extends Service {
                 case 'moveworkspace':
                     await this._syncClients(false);
                     await this._syncWorkspaces(false);
-                    await this._syncMonitors(false);
+                    await this._syncMonitors(false); // has to be called last because of active signals
                     ['clients', 'workspaces', 'monitors'].forEach(e => this.notify(e));
                     break;
 
