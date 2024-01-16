@@ -177,10 +177,10 @@ export class Hyprland extends Service {
                 if (monitor.focused) {
                     this._active.monitor.update(monitor.id, monitor.name);
                     this._active.workspace.update(activeWorkspace.id, activeWorkspace.name);
-                    this._active.monitor.emit('changed');
-                    this._active.workspace.emit('changed');
                 }
             });
+            this._active.monitor.emit('changed');
+            this._active.workspace.emit('changed');
             if (notify)
                 this.notify('monitors');
         } catch (error) {
