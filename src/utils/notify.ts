@@ -1,11 +1,14 @@
+import App from '../app.js';
 import GLib from 'gi://GLib?version=2.0';
-import { type Urgency } from '../service/notifications.js';
+import { type Urgency, type Hints } from '../service/notifications.js';
 
 type ClosedReason = ReturnType<typeof _CLOSED_REASON>
-type Notification = InstanceType<NonNullable<Awaited<ReturnType<typeof libnotify>>>['Notification']>
 
-// TODO: libnotify is sync, so it halts the js engine
+// libnotify is not async, so it halts the js engine
 // when the notification daemon is in the same process
+// so when the daemon acquires the dbus name
+// it will switch this to true, so we know to
+// use the builtin daemon instead of libnotify
 export const daemon = {
     running: false,
 };
@@ -34,19 +37,17 @@ const _CLOSED_REASON = (reason: number) => {
  */
 async function libnotify() {
     try {
-        import('gi://Notify');
+        const Notify = (await import('gi://Notify')).default;
+
+        if (Notify.is_initted())
+            return Notify;
+
+        Notify.init(null);
+        return Notify;
     } catch (error) {
         console.error(Error('Missing dependency: libnotify'));
         return null;
     }
-
-    const Notify = (await import('gi://Notify')).default;
-
-    if (Notify.is_initted())
-        return Notify;
-
-    Notify.init(null);
-    return Notify;
 }
 
 export interface NotificationArgs {
@@ -76,30 +77,15 @@ export interface NotificationArgs {
     y?: number;
 }
 
-export async function notify(args: NotificationArgs): Promise<Notification>
+export async function notify(args: NotificationArgs): Promise<number>
 export async function notify(
-    summary: string, body?: string, iconName?: string): Promise<Notification>
+    summary: string, body?: string, iconName?: string): Promise<number>
 
 export async function notify(
     argsOrSummary: NotificationArgs | string,
     body = '',
     iconName = '',
-): Promise<Notification> {
-    const Notify = await libnotify();
-    if (!Notify) {
-        console.error(Error('missing dependency: libnotify'));
-        // assume libnotify as installed, so that end users
-        // won't have to check the return type of the promise
-        return null as unknown as Notification;
-    }
-
-    // TODO: use Notifications.Notify wrapper if daemon is running
-    if (daemon.running) {
-        console.error(Error('Notification Deamon is in the same process ' +
-            ' Utils.notify will freeze. This will be fixed in a future version'));
-        return null as unknown as Notification;
-    }
-
+): Promise<number> {
     const args = typeof argsOrSummary === 'object'
         ? argsOrSummary
         : {
@@ -107,6 +93,58 @@ export async function notify(
             body,
             iconName,
         };
+
+    if (daemon.running) {
+        const { default: Daemon } = await import('../service/notifications.js');
+
+        const actions = Object.entries(args.actions || {}).map(([label, callback], i) => ({
+            id: `${i}`, label, callback,
+        }));
+
+        const hints: Hints = {
+            'action-icons': new GLib.Variant('b', args.actionIcons ?? false),
+            'category': new GLib.Variant('s', args.category ?? ''),
+            'desktop-entry': new GLib.Variant('s', args.desktopEntry ?? ''),
+            'image-path': new GLib.Variant('s', args.image ?? ''),
+            'resident': new GLib.Variant('b', args.resident ?? false),
+            'sound-file': new GLib.Variant('s', args.soundFile ?? ''),
+            'sound-name': new GLib.Variant('s', args.soundName ?? ''),
+            'suppress-sound': new GLib.Variant('b', args.suppressSound ?? false),
+            'transient': new GLib.Variant('b', args.transient ?? false),
+            'urgency': new GLib.Variant('i', args.urgency ?? 1),
+        };
+
+        if (args.x !== undefined)
+            hints['x'] = new GLib.Variant('i', args.x);
+
+        if (args.y !== undefined)
+            hints['y'] = new GLib.Variant('i', args.y);
+
+        const id = Daemon.Notify(
+            args.appName || App.applicationId!,
+            args.id || 0,
+            args.iconName || '',
+            args.summary || '',
+            args.body || '',
+            actions.flatMap(({ id, label }) => [id, label]),
+            hints,
+            args.timeout || 0,
+        );
+
+        Daemon.getNotification(id)?.connect('invoked', (_, actionId: string) => {
+            const action = actions.find(({ id }) => id === actionId);
+            if (action)
+                action.callback();
+        });
+
+        return id;
+    }
+
+    const Notify = await libnotify();
+    if (!Notify) {
+        console.error(Error('missing dependency: libnotify'));
+        return -1;
+    }
 
     const n = new Notify.Notification({
         summary: args.summary ?? '',
@@ -138,11 +176,12 @@ export async function notify(
     Object.keys(args.actions || {}).forEach((action, i) => {
         n.add_action(`${i}`, action, args.actions![action]);
     });
+
     n.connect('closed', () => {
         if (args.onClosed)
             args.onClosed(_CLOSED_REASON(n.get_closed_reason()));
     });
-    n.show();
 
-    return n;
+    n.show();
+    return n.id;
 }
