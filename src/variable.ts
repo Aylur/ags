@@ -11,7 +11,7 @@ type Listen<T> =
     | string;
 
 type Poll<T> =
-    | [number, string[] | string | ((self: Variable<T>) => T)]
+    | [number, string[] | string | ((self: Variable<T>) => T) | ((self: Variable<T>) => Promise<T>)]
     | [number, string[] | string, (out: string, self: Variable<T>) => T];
 
 interface Options<T> {
@@ -62,8 +62,15 @@ export class Variable<T> extends GObject.Object {
                 .then(out => this.setValue(transform(out, this)))
                 .catch(err => logError(err)));
         }
-        if (typeof cmd === 'function')
-            this._interval = interval(time, () => this.setValue(cmd(this)));
+        if (typeof cmd === 'function') {
+            this._interval = interval(time, () => {
+                const value = cmd(this);
+                if (value instanceof Promise)
+                    value.then(v => this.setValue(v)).catch(logError);
+                else
+                    this.setValue(value);
+            });
+        }
     }
 
     stopPoll() {
