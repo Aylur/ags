@@ -13,7 +13,7 @@ type MenuEventHandler = {
 }
 
 export type MenuProps = BaseProps<AgsMenu, Gtk.Menu.ConstructorProperties & {
-    children?: Gtk.Widget[]
+    children?: Gtk.MenuItem[]
 } & MenuEventHandler>
 
 export class AgsMenu extends AgsWidget(Gtk.Menu) {
@@ -27,8 +27,9 @@ export class AgsMenu extends AgsWidget(Gtk.Menu) {
         });
     }
 
-    constructor(props: MenuProps = {}) {
-        super(props as Gtk.Menu.ConstructorProperties);
+    constructor(props: MenuProps = {}, ...children: Gtk.MenuItem[]) {
+        // @ts-expect-error
+        super(props as Gtk.Menu.ConstructorProperties, ...children);
 
         this.connect('popped-up', (_, ...args) => this.on_popup?.(this, ...args));
         this.connect('move-scroll', (_, ...args) => this.on_move_scroll?.(this, ...args));
@@ -77,8 +78,9 @@ export class AgsMenuItem extends AgsWidget(Gtk.MenuItem) {
         });
     }
 
-    constructor(props: MenuItemProps = {}) {
-        super(props as Gtk.MenuItem.ConstructorProperties);
+    constructor(props: MenuItemProps = {}, child?: Gtk.Widget) {
+        // @ts-expect-error super._init
+        super(props as Gtk.MenuItem.ConstructorProperties, child);
 
         this.connect('activate', () => this.on_activate?.(this));
         this.connect('select', () => this.on_select?.(this));

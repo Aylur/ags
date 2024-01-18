@@ -42,8 +42,9 @@ export default class AgsEventBox extends AgsWidget(Gtk.EventBox) {
         });
     }
 
-    constructor(props: EventBoxProps = {}) {
-        super(props as Gtk.EventBox.ConstructorProperties);
+    constructor(props: EventBoxProps = {}, child?: Gtk.Widget) {
+        // @ts-expect-error super._init
+        super(props as Gtk.EventBox.ConstructorProperties, child);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
 

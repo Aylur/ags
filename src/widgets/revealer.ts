@@ -23,8 +23,9 @@ export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
         });
     }
 
-    constructor(props: RevealerProps = {}) {
-        super(props as Gtk.Revealer.ConstructorProperties);
+    constructor(props: RevealerProps = {}, child?: Gtk.Widget) {
+        // @ts-expect-error super._init
+        super(props as Gtk.Revealer.ConstructorProperties, child);
     }
 
     get transition() {

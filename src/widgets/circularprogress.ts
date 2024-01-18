@@ -34,8 +34,9 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         });
     }
 
-    constructor(props: CircularProgressProps = {}) {
-        super(props as Gtk.Bin.ConstructorProperties);
+    constructor(props: CircularProgressProps = {}, child?: Gtk.Widget) {
+        // @ts-expect-error super._init
+        super(props as Gtk.Bin.ConstructorProperties, child);
     }
 
     get rounded() { return this._get('rounded') || false; }

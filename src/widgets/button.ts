@@ -45,8 +45,9 @@ export default class AgsButton extends AgsWidget(Gtk.Button) {
         });
     }
 
-    constructor(props: ButtonProps = {}) {
-        super(props as Gtk.Button.ConstructorProperties);
+    constructor(props: ButtonProps = {}, child?: Gtk.Widget) {
+        // @ts-expect-error super._init
+        super(props as Gtk.Button.ConstructorProperties, child);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
 

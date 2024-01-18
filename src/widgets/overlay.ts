@@ -18,8 +18,9 @@ export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
         });
     }
 
-    constructor(props: OverlayProps = {}) {
-        super(props as Gtk.Overlay.ConstructorProperties);
+    constructor(props: OverlayProps = {}, ...overlays: Gtk.Widget[]) {
+        // @ts-expect-error
+        super(props as Gtk.Overlay.ConstructorProperties, ...overlays);
     }
 
     private _updatePassThrough() {

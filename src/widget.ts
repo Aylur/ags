@@ -86,9 +86,9 @@ Widget.Window = Window;
 Widget.subclass = subclass;
 export function subclass<T extends typeof Gtk.Widget, Props>(W: T, typename = W.name) {
     const Widget = AgsWidget(W, typename);
-    return (props: BaseProps<InstanceType<typeof Widget>, Props>) => {
-        return new Widget(props as Gtk.Widget.ConstructorProperties) as
-            InstanceType<typeof Widget> & Connectable<InstanceType<typeof Widget>>;
+    return (props: BaseProps<InstanceType<typeof Widget>, Props>, child?: Gtk.Widget) => {
+        // @ts-expect-error child arg in _init
+        return new Widget(props, child) as InstanceType<Widget> & Connectable<InstanceType<Widget>>;
     };
 }
 

@@ -229,10 +229,11 @@ export default function AgsWidget<
             });
         }
 
-        _init(config: Gtk.Widget.ConstructorProperties = {}) {
-            // this type casting is here becaus _init's signature can't be altered
-            const params = config as BaseProps<AgsWidget, Gtk.Widget.ConstructorProperties>;
-            const { setup, attribute, ...props } = params;
+        _init(
+            config: BaseProps<AgsWidget, Gtk.Widget.ConstructorProperties> = {},
+            ...children: Gtk.Widget[]
+        ) {
+            const { setup, attribute, ...props } = config;
 
             const binds = (Object.keys(props) as Array<keyof typeof props>)
                 .map(prop => {
@@ -243,6 +244,14 @@ export default function AgsWidget<
                     }
                 })
                 .filter(pair => pair);
+
+            if (children.length > 0)
+                // @ts-expect-error children is not a prop on every widget
+                props.children = children;
+
+            if (children.length === 1)
+                // @ts-expect-error child is not a prop on every widget
+                props.child = children[0];
 
             super._init(props as Gtk.Widget.ConstructorProperties);
 

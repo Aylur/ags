@@ -67,8 +67,9 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         popup = false,
         visible = true,
         ...params
-    }: WindowProps = {}) {
-        super(params as Gtk.Window.ConstructorProperties);
+    }: WindowProps = {}, child?: Gtk.Widget) {
+        // @ts-expect-error super._init
+        super(params as Gtk.Window.ConstructorProperties, child);
         LayerShell.init_for_window(this);
         LayerShell.set_namespace(this, this.name);
 
