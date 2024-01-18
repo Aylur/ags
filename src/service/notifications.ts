@@ -348,7 +348,7 @@ export class Notifications extends Service {
         const id = replacesId || this._idCount++;
         const n = new Notification(appName, id, appIcon, summary, body, acts, hints, !this.dnd);
 
-        if (App.config.notificationForceTimeout) {
+        if (App.config.notificationForceTimeout || expiration === -1) {
             n.timeout = App.config.notificationPopupTimeout;
             timeout(App.config.notificationPopupTimeout, () => this.DismissNotification(id));
         } else {
