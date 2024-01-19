@@ -373,7 +373,7 @@ export class Sway extends Service {
                 // eslint-disable-next-line no-case-declarations
                 const hasFocusedChild: (n: Node) => boolean =
                     (n: Node) => n.nodes.some(c => c.focused || hasFocusedChild(c));
-                if (hasFocusedChild(node))
+                if (node.focused || hasFocusedChild(node))
                     this._active.workspace.update(node.id, node.name);
 
                 node.nodes.map(n => this._handleTreeMessage(n));
