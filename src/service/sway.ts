@@ -339,6 +339,10 @@ export class Sway extends Service {
                 break;
             case 'fullscreen_mode':
             case 'move':
+                // Refresh tree since the event doesn't contain the relevant
+                // information to modify the workspaces property
+                this._send(PAYLOAD_TYPE.MESSAGE_GET_TREE, '');
+                break;
             case 'floating':
             case 'urgent':
             case 'mark':
