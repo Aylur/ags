@@ -179,7 +179,7 @@ export class Sway extends Service {
 
     private _decoder = new TextDecoder();
     private _encoder = new TextEncoder();
-    private _output_stream: Gio.OutputStream;
+    private _socket: Gio.SocketConnection;
 
     private _active: SwayActives;
     private _monitors: Map<number, object>;
@@ -207,13 +207,11 @@ export class Sway extends Service {
         this._workspaces = new Map();
         this._clients = new Map();
 
-        const socket = new Gio.SocketClient().connect(new Gio.UnixSocketAddress({
+        this._socket = new Gio.SocketClient().connect(new Gio.UnixSocketAddress({
             path: `${SIS}`,
         }), null);
 
-        this._watchSocket(socket.get_input_stream());
-
-        this._output_stream = socket.get_output_stream();
+        this._watchSocket(this._socket.get_input_stream());
         this._send(PAYLOAD_TYPE.MESSAGE_GET_TREE, '');
         this._send(PAYLOAD_TYPE.MESSAGE_SUBSCRIBE, JSON.stringify(['window', 'workspace']));
 
@@ -232,7 +230,7 @@ export class Sway extends Service {
             ...(new Uint8Array(pl.buffer)),
             ...(new Uint8Array(type.buffer)),
             ...pb]);
-        this._output_stream.write(data, null);
+        this._socket.get_output_stream().write(data, null);
     }
 
     private _watchSocket(stream: Gio.InputStream) {
