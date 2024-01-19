@@ -115,38 +115,32 @@ const Player = player => {
         child: Widget.Icon(NEXT_ICON),
     });
 
-    return Widget.Box({
-        class_name: 'player',
-        children: [
-            img,
-            Widget.Box({
+    return Widget.Box(
+        { class_name: 'player' },
+        img,
+        Widget.Box(
+            {
                 vertical: true,
                 hexpand: true,
-                children: [
-                    Widget.Box({
-                        children: [
-                            title,
-                            icon,
-                        ],
-                    }),
-                    artist,
-                    Widget.Box({ vexpand: true }),
-                    positionSlider,
-                    Widget.CenterBox({
-                        start_widget: positionLabel,
-                        center_widget: Widget.Box({
-                            children: [
-                                prev,
-                                playPause,
-                                next,
-                            ],
-                        }),
-                        end_widget: lengthLabel,
-                    }),
-                ],
+            },
+            Widget.Box({},
+                title,
+                icon,
+            ),
+            artist,
+            Widget.Box({ vexpand: true }),
+            positionSlider,
+            Widget.CenterBox({
+                start_widget: positionLabel,
+                center_widget: Widget.Box({},
+                    prev,
+                    playPause,
+                    next,
+                ),
+                end_widget: lengthLabel,
             }),
-        ],
-    });
+        ),
+    );
 }
 
 export default () => Widget.Box({

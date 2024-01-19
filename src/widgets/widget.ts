@@ -231,7 +231,7 @@ export default function AgsWidget<
 
         _init(
             config: BaseProps<AgsWidget, Gtk.Widget.ConstructorProperties> = {},
-            ...children: Gtk.Widget[]
+            child?: Gtk.Widget,
         ) {
             const { setup, attribute, ...props } = config;
 
@@ -245,13 +245,9 @@ export default function AgsWidget<
                 })
                 .filter(pair => pair);
 
-            if (children.length > 0)
+            if (child)
                 // @ts-expect-error children is not a prop on every widget
-                props.children = children;
-
-            if (children.length === 1)
-                // @ts-expect-error child is not a prop on every widget
-                props.child = children[0];
+                props.child = child;
 
             super._init(props as Gtk.Widget.ConstructorProperties);
 

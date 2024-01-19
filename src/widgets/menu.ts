@@ -28,8 +28,10 @@ export class AgsMenu extends AgsWidget(Gtk.Menu) {
     }
 
     constructor(props: MenuProps = {}, ...children: Gtk.MenuItem[]) {
-        // @ts-expect-error
-        super(props as Gtk.Menu.ConstructorProperties, ...children);
+        if (children.length > 0)
+            props.children = children;
+
+        super(props as Gtk.Menu.ConstructorProperties);
 
         this.connect('popped-up', (_, ...args) => this.on_popup?.(this, ...args));
         this.connect('move-scroll', (_, ...args) => this.on_move_scroll?.(this, ...args));
