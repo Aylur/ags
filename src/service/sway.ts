@@ -337,13 +337,13 @@ export class Sway extends Service {
                     this._active.client.updateProperty('name', client.name);
                 this._clients.set(id, client);
                 break;
-            case 'fullscreen_mode':
+            case 'floating':
             case 'move':
-                // Refresh tree since the event doesn't contain the relevant
-                // information to modify the workspaces property
+                // Refresh tree since the event doesn't contain the relevant information
+                // to be able to modify `workspace.nodes` or `workspace.floating_nodes`
                 this._send(PAYLOAD_TYPE.MESSAGE_GET_TREE, '');
                 break;
-            case 'floating':
+            case 'fullscreen_mode':
             case 'urgent':
             case 'mark':
             default:
