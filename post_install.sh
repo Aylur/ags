@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-DATA_DIR=$1
-PKGDATA_DIR=$2
+DATA_DIR="$DESTDIR/$1"
+PKGDATA_DIR="$DESTDIR/$2"
 BIN_DIR="$DESTDIR/$3"
 APP_ID=$4
 

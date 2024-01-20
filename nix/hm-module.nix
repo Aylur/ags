@@ -52,6 +52,7 @@ in {
     {
       home.packages = optional (cfg.package != null) (cfg.package.override {
         extraPackages = cfg.extraPackages;
+        buildTypes = true;
       });
     }
   ]);

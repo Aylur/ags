@@ -22,7 +22,7 @@
 , libnotify
 , extraPackages ? [ ]
 , version ? "git"
-, build-types ? false
+, buildTypes ? false
 }:
 
 let
@@ -53,7 +53,7 @@ stdenv.mkDerivation rec {
   };
 
   mesonFlags = builtins.concatLists [
-    (lib.optional build-types "-Dbuild_types=true")
+    (lib.optional buildTypes "-Dbuild_types=true")
   ];
 
   prePatch = ''
