@@ -88,13 +88,13 @@ export class App extends Gtk.Application {
         this._cssProviders.push(cssProvider);
     }
 
-    setup(bus: string, path: string, configPath: string) {
+    setup(bus: string, path: string, configDir: string, entry: string) {
         this.application_id = bus;
         this.flags = Gio.ApplicationFlags.DEFAULT_FLAGS;
         this._objectPath = path;
 
-        this._configDir = configPath.split('/').slice(0, -1).join('/');
-        this._configPath = configPath;
+        this._configDir = configDir;
+        this._configPath = entry;
     }
 
     vfunc_activate() {

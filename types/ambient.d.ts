@@ -3,6 +3,7 @@ declare function print(...args: any[]): void;
 declare const pkg: {
     version: string;
     name: string;
+    pkgdatadir: string;
 };
 
 declare const imports: {

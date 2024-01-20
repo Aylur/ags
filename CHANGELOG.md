@@ -8,6 +8,7 @@
 - feat(Utils.notify)
 - feat(notifications): support every hint
 - add: Widget.click-through (#245)
+- feat: --init cli flag
 
 ## Fixes
 

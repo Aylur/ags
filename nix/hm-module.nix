@@ -6,7 +6,6 @@ self: {
 }: let
   inherit (lib) mkMerge types;
   inherit (lib.modules) mkIf;
-  inherit (lib.lists) optional;
   inherit (lib.options) mkOption mkEnableOption literalExpression;
 
   defaultAgsPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
@@ -49,11 +48,15 @@ in {
     (mkIf (cfg.configDir != null) {
       xdg.configFile."ags".source = cfg.configDir;
     })
-    {
-      home.packages = optional (cfg.package != null) (cfg.package.override {
+    (mkIf (cfg.package != null) (let
+      path = "/share/com.github.Aylur.ags/types";
+      pkg = cfg.package.override {
         extraPackages = cfg.extraPackages;
         buildTypes = true;
-      });
-    }
+      };
+    in {
+      home.packages = [pkg];
+      home.file.".local/${path}".source = "${pkg}/${path}";
+    }))
   ]);
 }
