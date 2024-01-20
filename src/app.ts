@@ -198,7 +198,7 @@ export class App extends Gtk.Application {
 
             if (config.style) {
                 this.applyCss(config.style.startsWith('.')
-                    ? `${this.configDir}${config.style}`
+                    ? `${this.configDir}${config.style.slice(1)}`
                     : config.style);
             }
 
