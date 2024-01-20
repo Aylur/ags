@@ -88,7 +88,6 @@ stdenv.mkDerivation rec {
     gvfs
     libsoup_3
     libnotify
-    nodePackages.npm
   ] ++ extraPackages;
 
   meta = with lib; {
