@@ -1,5 +1,5 @@
 project('ags', 'c',
-          version: run_command('cat', join_paths(meson.source_root(), 'version')).stdout().strip(),
+          version: run_command('cat', join_paths(meson.project_source_root(), 'version')).stdout().strip(),
     meson_version: '>= 0.62.0',
     	  license: ['GPL-3.0-or-later'],
   default_options: [ 'warning_level=2', 'werror=false', ],
@@ -33,9 +33,11 @@ subproject('gvc',
 subdir('src')
 
 meson.add_install_script(
-  'meson_post_install.py',
+  'post_install.sh',
   datadir,
   pkgdatadir,
   bindir,
-  app_id
+  app_id,
+  get_option('build_types').to_string(),
+  meson.project_source_root()
 )

@@ -10,7 +10,6 @@
 , gtk3
 , libpulseaudio
 , gjs
-, python3
 , wrapGAppsHook
 , upower
 , gnome
@@ -23,6 +22,7 @@
 , libnotify
 , extraPackages ? [ ]
 , version ? "git"
+, build-types ? false
 }:
 
 let
@@ -52,14 +52,18 @@ stdenv.mkDerivation rec {
     '';
   };
 
+  mesonFlags = builtins.concatLists [
+    (lib.optional build-types "-Dbuild_types=true")
+  ];
+
   prePatch = ''
     mkdir -p ./subprojects/gvc
     cp -r ${gvc-src}/* ./subprojects/gvc
   '';
 
   postPatch = ''
-    chmod +x meson_post_install.py
-    patchShebangs meson_post_install.py
+    chmod +x post_install.sh
+    patchShebangs post_install.sh
   '';
 
   nativeBuildInputs = [
@@ -67,7 +71,6 @@ stdenv.mkDerivation rec {
     meson
     ninja
     nodePackages.typescript
-    python3
     wrapGAppsHook
     gobject-introspection
   ];
@@ -85,6 +88,7 @@ stdenv.mkDerivation rec {
     gvfs
     libsoup_3
     libnotify
+    nodePackages.npm
   ] ++ extraPackages;
 
   meta = with lib; {

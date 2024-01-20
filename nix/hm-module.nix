@@ -12,11 +12,6 @@ self: {
   defaultAgsPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
   cfg = config.programs.ags;
 in {
-  meta.maintainers = with lib.maintainers; [
-    Jappie3
-    Aylur
-  ];
-
   options.programs.ags = {
     enable = mkEnableOption "ags";
 
