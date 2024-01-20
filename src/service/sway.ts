@@ -313,10 +313,13 @@ export class Sway extends Service {
         const id = client.id;
         switch (clientEvent.change) {
             case 'new':
-                this._clients.set(id, client);
-                break;
             case 'close':
-                this._clients.delete(id);
+            case 'floating':
+            case 'move':
+                // Refresh tree since client events don't contain the relevant information
+                // to be able to modify `workspace.nodes` or `workspace.floating_nodes`.
+                // There has to be a better way than this though :/
+                this._send(PAYLOAD_TYPE.MESSAGE_GET_TREE, '');
                 break;
             case 'focus':
                 if (this._active.client.id === id)
@@ -336,12 +339,6 @@ export class Sway extends Service {
                 if (client.focused)
                     this._active.client.updateProperty('name', client.name);
                 this._clients.set(id, client);
-                break;
-            case 'floating':
-            case 'move':
-                // Refresh tree since the event doesn't contain the relevant information
-                // to be able to modify `workspace.nodes` or `workspace.floating_nodes`
-                this._send(PAYLOAD_TYPE.MESSAGE_GET_TREE, '');
                 break;
             case 'fullscreen_mode':
             case 'urgent':
