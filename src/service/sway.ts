@@ -339,14 +339,15 @@ export class Sway extends Service {
                 if (client.focused)
                     this._active.client.updateProperty('name', client.name);
                 this._clients.set(id, client);
+                this.notify('clients');
                 break;
             case 'fullscreen_mode':
             case 'urgent':
             case 'mark':
             default:
                 this._clients.set(id, client);
+                this.notify('clients');
         }
-        this.notify('clients');
     }
 
     private _handleTreeMessage(node: Node) {
