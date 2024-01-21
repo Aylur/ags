@@ -102,6 +102,9 @@ that the types directory got symlinked correctly
 and there is no guarante the symlink won't break on updates
 if it was symlinked to /nix/store you need to run --init on updates`;
 
+const tsconfigWarning = `existing tsconfig detected
+make sure it has "typeRoots": ["./types"]`;
+
 export async function init(configDir: string, entry: string) {
     ensureDirectory(configDir);
     const tsconfig = configDir + '/' + 'tsconfig.json';
@@ -113,12 +116,16 @@ export async function init(configDir: string, entry: string) {
     if (!GLib.file_test(tsconfig, GLib.FileTest.EXISTS)) {
         await writeFile(JSON.stringify(defaultTsConfig, null, 2), tsconfig);
     } else {
-        const conf = JSON.parse(readFile(tsconfig));
-        const list = conf.compilerOptions.typeRoots;
-        if (list.includes('./types'))
-            conf.compilerOptions.typeRoots = [...list, './types'];
+        try {
+            const conf = JSON.parse(readFile(tsconfig));
+            const list = conf.compilerOptions.typeRoots;
+            if (!list.includes('./types'))
+                conf.compilerOptions.typeRoots = [...list, './types'];
 
-        await writeFile(JSON.stringify(conf, null, 2), tsconfig);
+            await writeFile(JSON.stringify(conf, null, 2), tsconfig);
+        } finally {
+            console.warn(tsconfigWarning);
+        }
     }
 
     const nixPath = nixPaths.find(path => {
