@@ -61,7 +61,7 @@ export function subprocess(
                         read(stdout);
                     }
                 } catch (e) {
-                    logError(e);
+                    onError(e);
                 }
             });
         };
@@ -71,7 +71,8 @@ export function subprocess(
                 const [, argv] = GLib.shell_parse_argv(cmd);
                 cmd = argv;
             } catch (error) {
-                return onError(error);
+                onError(error);
+                return null;
             }
         }
 
