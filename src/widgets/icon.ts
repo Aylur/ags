@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
@@ -7,20 +7,21 @@ import { Binding } from '../service.js';
 import cairo from '@girs/cairo-1.0';
 import { lookUpIcon } from '../utils.js';
 
-export type Props = BaseProps<AgsIcon, Gtk.Image.ConstructorProperties & {
+export type Props<Attr = unknown> = BaseProps<Icon<Attr>, Gtk.Image.ConstructorProperties & {
     size?: number
     icon?: // Binding is here because unions mess up BaseProps
     | string
     | GdkPixbuf.Pixbuf
     | Binding<any, any, string>
     | Binding<any, any, GdkPixbuf.Pixbuf>;
-}>
+}, Attr>
 
-export type IconProps = Props | string | GdkPixbuf.Pixbuf | undefined
+export type IconProps<Attr> = Props<Attr> | string | GdkPixbuf.Pixbuf | undefined
 
-export default class AgsIcon extends AgsWidget(Gtk.Image) {
+export interface Icon<Attr> extends Widget<Attr> { }
+export class Icon<Attr> extends Gtk.Image {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'size': ['double', 'rw'],
                 'icon': ['jsobject', 'rw'],
@@ -29,8 +30,8 @@ export default class AgsIcon extends AgsWidget(Gtk.Image) {
         });
     }
 
-    constructor(props: IconProps = {}) {
-        const { icon = '', ...rest } = props as Props;
+    constructor(props: IconProps<Attr> = {}) {
+        const { icon = '', ...rest } = props as Props<Attr>;
         super(typeof props === 'string' || props instanceof GdkPixbuf.Pixbuf
             ? {}
             : rest as Gtk.Image.ConstructorProperties);
@@ -118,3 +119,5 @@ export default class AgsIcon extends AgsWidget(Gtk.Image) {
         return super.vfunc_draw(cr);
     }
 }
+
+export default Icon;

@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 const POLICY = {
@@ -8,17 +8,18 @@ const POLICY = {
     'external': Gtk.PolicyType.EXTERNAL,
 } as const;
 
-export type Policy = keyof typeof POLICY;
+type Policy = keyof typeof POLICY;
 
-export type ScrollableProps = BaseProps<AgsScrollable, Gtk.ScrolledWindow.ConstructorProperties &
-{
-    hscroll?: Policy,
-    vscroll?: Policy,
-}>
+export type ScrollableProps<Attr = unknown> =
+    BaseProps<Scrollable<Attr>, Gtk.ScrolledWindow.ConstructorProperties & {
+        hscroll?: Policy,
+        vscroll?: Policy,
+    }, Attr>
 
-export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
+export interface Scrollable<Attr> extends Widget<Attr> { }
+export class Scrollable<Attr> extends Gtk.ScrolledWindow {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'hscroll': ['string', 'rw'],
                 'vscroll': ['string', 'rw'],
@@ -26,7 +27,7 @@ export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
         });
     }
 
-    constructor(props: ScrollableProps = {}) {
+    constructor(props: ScrollableProps<Attr> = {}) {
         super({
             ...props as Gtk.ScrolledWindow.ConstructorProperties,
             hadjustment: new Gtk.Adjustment(),
@@ -63,3 +64,5 @@ export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
         );
     }
 }
+
+export default Scrollable;

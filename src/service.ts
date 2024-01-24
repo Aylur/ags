@@ -1,10 +1,5 @@
 import GObject from 'gi://GObject';
-import { pspec, registerGObject, PspecFlag, PspecType } from './gobject.js';
-
-export const kebabify = (str: string) => str
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replaceAll('_', '-')
-    .toLowerCase();
+import { pspec, registerGObject, PspecFlag, PspecType } from './utils/gobject.js';
 
 export type OnlyString<S extends string | unknown> = S extends string ? S : never;
 

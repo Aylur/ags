@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 interface Context {
@@ -11,18 +11,19 @@ interface Context {
     $dispose: () => void
 }
 
-export type CircularProgressProps = BaseProps<AgsCircularProgress, Gtk.Bin.ConstructorProperties &
-{
-    rounded?: boolean
-    value?: number
-    inverted?: boolean
-    start_at?: number
-    end_at?: number
-}>
+export type CircularProgressProps<Attr = unknown> =
+    BaseProps<CircularProgress<Attr>, Gtk.Bin.ConstructorProperties & {
+        rounded?: boolean
+        value?: number
+        inverted?: boolean
+        start_at?: number
+        end_at?: number
+    }, Attr>
 
-export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
+export interface CircularProgress<Attr> extends Widget<Attr> { }
+export class CircularProgress<Attr> extends Gtk.Bin {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             cssName: 'circular-progress',
             properties: {
                 'start-at': ['float', 'rw'],
@@ -34,7 +35,7 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         });
     }
 
-    constructor(props: CircularProgressProps = {}) {
+    constructor(props: CircularProgressProps<Attr> = {}) {
         super(props as Gtk.Bin.ConstructorProperties);
     }
 
@@ -236,3 +237,5 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         return true;
     }
 }
+
+export default CircularProgress;

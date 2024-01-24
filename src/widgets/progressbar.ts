@@ -1,14 +1,16 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
-export type ProgressBarProps = BaseProps<AgsProgressBar, Gtk.ProgressBar.ConstructorProperties & {
-    vertical?: boolean
-    value?: number
-}>
+export type ProgressBarProps<Attr> =
+    BaseProps<ProgressBar<Attr>, Gtk.ProgressBar.ConstructorProperties & {
+        vertical?: boolean
+        value?: number
+    }, Attr>
 
-export default class AgsProgressBar extends AgsWidget(Gtk.ProgressBar) {
+export interface ProgressBar<Attr> extends Widget<Attr> { }
+export class ProgressBar<Attr> extends Gtk.ProgressBar {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'vertical': ['boolean', 'rw'],
                 'value': ['float', 'rw'],
@@ -16,7 +18,7 @@ export default class AgsProgressBar extends AgsWidget(Gtk.ProgressBar) {
         });
     }
 
-    constructor(props: ProgressBarProps = {}) {
+    constructor(props: ProgressBarProps<Attr> = {}) {
         super(props as Gtk.ProgressBar.ConstructorProperties);
     }
 
@@ -40,3 +42,5 @@ export default class AgsProgressBar extends AgsWidget(Gtk.ProgressBar) {
         this.notify('vertical');
     }
 }
+
+export default ProgressBar;

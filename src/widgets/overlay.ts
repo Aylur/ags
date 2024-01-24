@@ -1,15 +1,16 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
-export type OverlayProps = BaseProps<AgsOverlay, Gtk.Overlay.ConstructorProperties & {
+export type OverlayProps<Attr> = BaseProps<Overlay<Attr>, Gtk.Overlay.ConstructorProperties & {
     pass_through?: boolean
     overlays?: Gtk.Widget[]
     overlay?: Gtk.Widget
-}>
+}, Attr>
 
-export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
+export interface Overlay<Attr> extends Widget<Attr> { }
+export class Overlay<Attr> extends Gtk.Overlay {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'pass-through': ['boolean', 'rw'],
                 'overlays': ['jsobject', 'rw'],
@@ -18,7 +19,7 @@ export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
         });
     }
 
-    constructor(props: OverlayProps = {}) {
+    constructor(props: OverlayProps<Attr> = {}) {
         super(props as Gtk.Overlay.ConstructorProperties);
     }
 
@@ -61,3 +62,5 @@ export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
         this.notify('overlays');
     }
 }
+
+export default Overlay;

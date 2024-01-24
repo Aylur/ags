@@ -1,24 +1,26 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
-type MenuEventHandler = {
+type MenuEventHandler<Self> = {
     on_popup?: (
-        self: AgsMenu,
+        self: Self,
         flipped_rect: any | null,
         final_rect: any | null,
         flipped_x: boolean,
         flipped_y: boolean,
     ) => void | unknown
-    on_move_scroll?: (self: AgsMenu, scroll_type: Gtk.ScrollType) => void | unknown
+    on_move_scroll?: (self: Self, scroll_type: Gtk.ScrollType) => void | unknown
 }
 
-export type MenuProps = BaseProps<AgsMenu, Gtk.Menu.ConstructorProperties & {
-    children?: Gtk.Widget[]
-} & MenuEventHandler>
+export type MenuProps<Attr = unknown, Self = Menu<Attr>> =
+    BaseProps<Self, Gtk.Menu.ConstructorProperties & {
+        children?: Gtk.Widget[]
+    } & MenuEventHandler<Self>, Attr>
 
-export class AgsMenu extends AgsWidget(Gtk.Menu) {
+export interface Menu<Attr> extends Widget<Attr> { }
+export class Menu<Attr> extends Gtk.Menu {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'children': ['jsobject', 'rw'],
                 'on-popup': ['jsobject', 'rw'],
@@ -27,7 +29,7 @@ export class AgsMenu extends AgsWidget(Gtk.Menu) {
         });
     }
 
-    constructor(props: MenuProps = {}) {
+    constructor(props: MenuProps<Attr> = {}) {
         super(props as Gtk.Menu.ConstructorProperties);
 
         this.connect('popped-up', (_, ...args) => this.on_popup?.(this, ...args));
@@ -35,12 +37,12 @@ export class AgsMenu extends AgsWidget(Gtk.Menu) {
     }
 
     get on_popup() { return this._get('on-popup'); }
-    set on_popup(callback: MenuEventHandler['on_popup']) {
+    set on_popup(callback: MenuEventHandler<this>['on_popup']) {
         this._set('on-popup', callback);
     }
 
     get on_move_scroll() { return this._get('on-move-scroll'); }
-    set on_move_scroll(callback: MenuEventHandler['on_move_scroll']) {
+    set on_move_scroll(callback: MenuEventHandler<this>['on_move_scroll']) {
         this._set('on-move-scroll', callback);
     }
 
@@ -59,16 +61,18 @@ export class AgsMenu extends AgsWidget(Gtk.Menu) {
     }
 }
 
-type EventHandler = (self: AgsMenuItem) => boolean | unknown;
-export type MenuItemProps = BaseProps<AgsMenuItem, Gtk.MenuItem.ConstructorProperties & {
-    on_activate?: EventHandler
-    on_select?: EventHandler
-    on_deselct?: EventHandler
-}>
+type EventHandler<Self> = (self: Self) => boolean | unknown;
+export type MenuItemProps<Attr = unknown, Self = MenuItem<Attr>> =
+    BaseProps<MenuItem<Attr>, Gtk.MenuItem.ConstructorProperties & {
+        on_activate?: EventHandler<Self>
+        on_select?: EventHandler<Self>
+        on_deselct?: EventHandler<Self>
+    }, Attr>
 
-export class AgsMenuItem extends AgsWidget(Gtk.MenuItem) {
+export interface MenuItem<Attr> extends Widget<Attr> { }
+export class MenuItem<Attr> extends Gtk.MenuItem {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'on-activate': ['jsobject', 'rw'],
                 'on-select': ['jsobject', 'rw'],
@@ -77,7 +81,7 @@ export class AgsMenuItem extends AgsWidget(Gtk.MenuItem) {
         });
     }
 
-    constructor(props: MenuItemProps = {}) {
+    constructor(props: MenuItemProps<Attr> = {}) {
         super(props as Gtk.MenuItem.ConstructorProperties);
 
         this.connect('activate', () => this.on_activate?.(this));
@@ -86,17 +90,19 @@ export class AgsMenuItem extends AgsWidget(Gtk.MenuItem) {
     }
 
     get on_activate() { return this._get('on-activate'); }
-    set on_activate(callback: EventHandler) {
+    set on_activate(callback: EventHandler<this>) {
         this._set('on-activate', callback);
     }
 
     get on_select() { return this._get('on-select'); }
-    set on_select(callback: EventHandler) {
+    set on_select(callback: EventHandler<this>) {
         this._set('on-select', callback);
     }
 
     get on_deselect() { return this._get('on-deselect'); }
-    set on_deselect(callback: EventHandler) {
+    set on_deselect(callback: EventHandler<this>) {
         this._set('on-deselect', callback);
     }
 }
+
+export default Menu;

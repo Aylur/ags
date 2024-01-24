@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 const TRANSITION = {
@@ -24,17 +24,18 @@ const TRANSITION = {
     'over_right_left': Gtk.StackTransitionType.OVER_RIGHT_LEFT,
 } as const;
 
-export type Transition = keyof typeof TRANSITION;
+type Transition = keyof typeof TRANSITION;
 
-export type StackProps = BaseProps<AgsStack, Gtk.Stack.ConstructorProperties & {
+export type StackProps<Attr = unknown> = BaseProps<Stack<Attr>, Gtk.Stack.ConstructorProperties & {
     shown?: string
     items?: [string, Gtk.Widget][]
     transition?: Transition
-}>
+}, Attr>
 
-export default class AgsStack extends AgsWidget(Gtk.Stack) {
+export interface Stack<Attr> extends Widget<Attr> { }
+export class Stack<Attr> extends Gtk.Stack {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'transition': ['string', 'rw'],
                 'shown': ['string', 'rw'],
@@ -43,7 +44,7 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
         });
     }
 
-    constructor(props: StackProps = {}) {
+    constructor(props: StackProps<Attr> = {}) {
         super(props as Gtk.Stack.ConstructorProperties);
     }
 
@@ -114,3 +115,5 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
         this.notify('shown');
     }
 }
+
+export default Stack;

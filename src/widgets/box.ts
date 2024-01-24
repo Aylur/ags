@@ -1,14 +1,15 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
-export type BoxProps = BaseProps<AgsBox, Gtk.Box.ConstructorProperties & {
+export type BoxProps<Attr = unknown> = BaseProps<Box<Attr>, Gtk.Box.ConstructorProperties & {
     children?: Gtk.Widget[]
     vertical?: boolean
-}>;
+}, Attr>;
 
-export default class AgsBox extends AgsWidget(Gtk.Box) {
+export interface Box<Attr> extends Widget<Attr> { }
+export class Box<Attr> extends Gtk.Box {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'vertical': ['boolean', 'rw'],
                 'children': ['jsobject', 'rw'],
@@ -16,7 +17,7 @@ export default class AgsBox extends AgsWidget(Gtk.Box) {
         });
     }
 
-    constructor(props: BoxProps = {}) {
+    constructor(props: BoxProps<Attr> = {}) {
         super(props as Gtk.Box.ConstructorProperties);
     }
 
@@ -57,3 +58,5 @@ export default class AgsBox extends AgsWidget(Gtk.Box) {
         this.notify('vertical');
     }
 }
+
+export default Box;

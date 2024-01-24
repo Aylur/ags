@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import { Binding } from '../service.js';
@@ -20,27 +20,29 @@ const LAYER = {
     'overlay': LayerShell.Layer.OVERLAY,
 } as const;
 
-export type Layer = keyof typeof LAYER;
-export type Anchor = keyof typeof ANCHOR;
-export type Exclusivity = 'normal' | 'ignore' | 'exclusive';
+type Layer = keyof typeof LAYER;
+type Anchor = keyof typeof ANCHOR;
+type Exclusivity = 'normal' | 'ignore' | 'exclusive';
 
-export type WindowProps = BaseProps<AgsWindow, Gtk.Window.ConstructorProperties & {
-    anchor?: Anchor[]
-    exclusivity?: Exclusivity
-    focusable?: boolean
-    layer?: Layer
-    margins?: number[]
-    monitor?: number
-    popup?: boolean
-    visible?: boolean
+export type WindowProps<Attr = unknown> =
+    BaseProps<Window<Attr>, Gtk.Window.ConstructorProperties & {
+        anchor?: Anchor[]
+        exclusivity?: Exclusivity
+        focusable?: boolean
+        layer?: Layer
+        margins?: number[]
+        monitor?: number
+        popup?: boolean
+        visible?: boolean
 
-    // FIXME: deprecated
-    exclusive?: boolean
-}>
+        // FIXME: deprecated
+        exclusive?: boolean
+    }, Attr>
 
-export default class AgsWindow extends AgsWidget(Gtk.Window) {
+export interface Window<Attr> extends Widget<Attr> { }
+export class Window<Attr> extends Gtk.Window {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'anchor': ['jsobject', 'rw'],
                 'exclusive': ['boolean', 'rw'],
@@ -67,7 +69,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         popup = false,
         visible = true,
         ...params
-    }: WindowProps = {}) {
+    }: WindowProps<Attr> = {}) {
         super(params as Gtk.Window.ConstructorProperties);
         LayerShell.init_for_window(this);
         LayerShell.set_namespace(this, this.name);
@@ -276,3 +278,5 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         this.notify('focusable');
     }
 }
+
+export default Window;

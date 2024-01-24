@@ -9,9 +9,9 @@
     <file>utils.js</file>
     <file>variable.js</file>
     <file>widget.js</file>
-    <file>gobject.js</file>
 
     <file>widgets/widget.js</file>
+    <file>widgets/etc.js</file>
     <file>widgets/box.js</file>
     <file>widgets/button.js</file>
     <file>widgets/centerbox.js</file>
@@ -56,6 +56,7 @@
     <file>utils/exec.js</file>
     <file>utils/fetch.js</file>
     <file>utils/file.js</file>
+    <file>utils/gobject.js</file>
     <file>utils/init.js</file>
     <file>utils/notify.js</file>
     <file>utils/timeout.js</file>

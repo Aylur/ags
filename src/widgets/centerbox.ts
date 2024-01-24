@@ -1,17 +1,19 @@
 import Gtk from 'gi://Gtk?version=3.0';
-import AgsWidget, { type BaseProps } from './widget.js';
-import AgsBox, { type BoxProps } from './box.js';
+import { register, type BaseProps, type Widget } from './widget.js';
+import { Box, type BoxProps } from './box.js';
 
-export type CenterBoxProps = BaseProps<AgsCenterBox, Gtk.Box.ConstructorProperties & {
-    vertical?: boolean
-    start_widget?: Gtk.Widget
-    center_widget?: Gtk.Widget
-    end_widget?: Gtk.Widget
-}>;
+export type CenterBoxProps<Attr = unknown> =
+    BaseProps<CenterBox<Attr>, Gtk.Box.ConstructorProperties & {
+        vertical?: boolean
+        start_widget?: Gtk.Widget
+        center_widget?: Gtk.Widget
+        end_widget?: Gtk.Widget
+    }, Attr>;
 
-export default class AgsCenterBox extends AgsBox {
+export interface CenterBox<Attr> extends Widget<Attr> { }
+export class CenterBox<Attr> extends Box<Attr> {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'start-widget': ['widget', 'rw'],
                 'center-widget': ['widget', 'rw'],
@@ -20,8 +22,8 @@ export default class AgsCenterBox extends AgsBox {
         });
     }
 
-    constructor(props: CenterBoxProps = {}) {
-        super(props as BoxProps);
+    constructor(props: CenterBoxProps<Attr> = {}) {
+        super(props as BoxProps<Attr>);
     }
 
     set children(children: Gtk.Widget[]) {
@@ -80,3 +82,5 @@ export default class AgsCenterBox extends AgsBox {
         this.notify('center-widget');
     }
 }
+
+export default CenterBox;

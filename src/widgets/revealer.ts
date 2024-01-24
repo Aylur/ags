@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 const TRANSITION = {
@@ -10,20 +10,22 @@ const TRANSITION = {
     'slide_down': Gtk.RevealerTransitionType.SLIDE_DOWN,
 } as const;
 
-export type Transition = keyof typeof TRANSITION;
+type Transition = keyof typeof TRANSITION;
 
-export type RevealerProps = BaseProps<AgsRevealer, Gtk.Revealer.ConstructorProperties & {
-    transition?: Transition
-}>
+export type RevealerProps<Attr = unknown> =
+    BaseProps<Revealer<Attr>, Gtk.Revealer.ConstructorProperties & {
+        transition?: Transition
+    }, Attr>
 
-export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
+export interface Revealer<Attr> extends Widget<Attr> { }
+export class Revealer<Attr> extends Gtk.Revealer {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: { 'transition': ['string', 'rw'] },
         });
     }
 
-    constructor(props: RevealerProps = {}) {
+    constructor(props: RevealerProps<Attr> = {}) {
         super(props as Gtk.Revealer.ConstructorProperties);
     }
 
@@ -49,3 +51,5 @@ export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
         this.notify('transition');
     }
 }
+
+export default Revealer;
