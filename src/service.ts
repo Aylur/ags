@@ -8,9 +8,9 @@ export const kebabify = (str: string) => str
 
 export type OnlyString<S extends string | unknown> = S extends string ? S : never;
 
-export type Props<T> = Pick<T, {
+export type Props<T> = Omit<Pick<T, {
     [K in keyof T]: T[K] extends (...args: any[]) => any ? never : OnlyString<K>
-}[keyof T]>;
+}[keyof T]>, 'g_type_instance'>;
 
 export type BindableProps<T> = {
     [K in keyof T]: Binding<any, any, NonNullable<T[K]>> | T[K];
