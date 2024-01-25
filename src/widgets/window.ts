@@ -1,4 +1,4 @@
-import { register, type BaseProps, type Widget } from './widget.js';
+import { register, type BinBaseProps, type BinWidget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import { Binding } from '../service.js';
@@ -27,8 +27,7 @@ type Exclusivity = 'normal' | 'ignore' | 'exclusive';
 export type WindowProps<
     Child extends Gtk.Widget,
     Attr = unknown,
-> = BaseProps<Window<Child, Attr>, Gtk.Window.ConstructorProperties & {
-    child?: Child
+> = BinBaseProps<Window<Child, Attr>, Gtk.Window.ConstructorProperties & {
     anchor?: Anchor[]
     exclusivity?: Exclusivity
     focusable?: boolean
@@ -43,7 +42,7 @@ export type WindowProps<
 }, Attr>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface Window<Child, Attr> extends Widget<Attr> { }
+export interface Window<Child, Attr> extends BinWidget<Child, Attr> { }
 export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
     static {
         register(this, {

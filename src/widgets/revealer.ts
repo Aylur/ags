@@ -1,4 +1,4 @@
-import { register, type BaseProps, type Widget } from './widget.js';
+import { register, type BinBaseProps, type BinWidget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 const TRANSITION = {
@@ -16,13 +16,12 @@ export type RevealerProps<
     Child extends Gtk.Widget,
     Attr = unknown,
     Self = Revealer<Child, Attr>,
-> = BaseProps<Self, Gtk.Revealer.ConstructorProperties & {
-    child?: Child
+> = BinBaseProps<Self, Gtk.Revealer.ConstructorProperties & {
     transition?: Transition
 }, Attr>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface Revealer<Child, Attr> extends Widget<Attr> { }
+export interface Revealer<Child, Attr> extends BinWidget<Child, Attr> { }
 export class Revealer<Child extends Gtk.Widget, Attr> extends Gtk.Revealer {
     static {
         register(this, {
@@ -33,8 +32,6 @@ export class Revealer<Child extends Gtk.Widget, Attr> extends Gtk.Revealer {
     constructor(props: RevealerProps<Child, Attr> = {}) {
         super(props as Gtk.Revealer.ConstructorProperties);
     }
-
-    get child() { return this.get_child() as Child; }
 
     get transition() {
         return Object.keys(TRANSITION).find(key => {

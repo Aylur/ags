@@ -1,4 +1,4 @@
-import { register, type BaseProps, type Widget } from './widget.js';
+import { register, type BinBaseProps, type BinWidget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 interface Context {
@@ -15,8 +15,7 @@ export type CircularProgressProps<
     Child extends Gtk.Widget,
     Attr = unknown,
     Self = CircularProgress<Child, Attr>
-> = BaseProps<Self, Gtk.Bin.ConstructorProperties & {
-    child?: Child
+> = BinBaseProps<Self, Gtk.Bin.ConstructorProperties & {
     rounded?: boolean
     value?: number
     inverted?: boolean
@@ -25,7 +24,7 @@ export type CircularProgressProps<
 }, Attr>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface CircularProgress<Child, Attr> extends Widget<Attr> { }
+export interface CircularProgress<Child, Attr> extends BinWidget<Child, Attr> { }
 export class CircularProgress<
     Child extends Gtk.Widget,
     Attr = unknown,
@@ -46,8 +45,6 @@ export class CircularProgress<
     constructor(props: CircularProgressProps<Child, Attr> = {}) {
         super(props as Gtk.Bin.ConstructorProperties);
     }
-
-    get child() { return this.get_child() as Child; }
 
     get rounded() { return this._get('rounded') || false; }
     set rounded(r: boolean) {

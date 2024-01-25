@@ -1,4 +1,4 @@
-import { register, type BaseProps, type Widget } from './widget.js';
+import { register, type BinBaseProps, type BinWidget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 
@@ -8,9 +8,7 @@ export type ButtonProps<
     Child extends Gtk.Widget,
     Attr = unknown,
     Self = Button<Child, Attr>,
-> = BaseProps<Self, Gtk.Button.ConstructorProperties & {
-    child?: Child,
-
+> = BinBaseProps<Self, Gtk.Button.ConstructorProperties & {
     on_clicked?: (self: Self) => void
 
     on_hover?: EventHandler<Self>
@@ -29,7 +27,7 @@ export type ButtonProps<
 }, Attr>;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface Button<Child, Attr> extends Widget<Attr> { }
+export interface Button<Child, Attr> extends BinWidget<Child, Attr> { }
 export class Button<Child extends Gtk.Widget, Attr> extends Gtk.Button {
     static {
         register(this, {
@@ -100,8 +98,6 @@ export class Button<Child extends Gtk.Widget, Attr> extends Gtk.Button {
                 return this.on_scroll_down?.(this, event);
         });
     }
-
-    get child() { return this.get_child() as Child; }
 
     get on_clicked() { return this._get('on-clicked'); }
     set on_clicked(callback: (self: this) => void) {

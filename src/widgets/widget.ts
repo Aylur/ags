@@ -94,6 +94,15 @@ export type BaseProps<Self, Props, Attr = unknown> = {
     setup?: (self: Self) => void
 } & BindableProps<Props & CommonProps<Attr>>
 
+export type BinBaseProps<Child, Self extends Gtk.Widget, Props, Attr> = {
+    setup?: (self: Self) => void
+    child?: Child
+} & BindableProps<Props & CommonProps<Attr>>
+
+export interface BinWidget<Child extends Gtk.Widget, Attr> extends Widget<Attr> {
+    child: Child
+}
+
 export interface Widget<Attr> extends CommonProps<Attr> {
     hook<
         Gobject extends GObject.Object,
