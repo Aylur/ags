@@ -7,12 +7,10 @@ cc = meson.get_compiler('c')
 
 libsources = ['pam.c', 'pam.h']
 
-gnome = import('gnome')
 deps = [
   dependency('gobject-2.0'),
-  cc.find_library('pam'),
-  cc.find_library('pam_misc')
-  ]
+  dependency('pam')
+]
 
 girlib = shared_library(
   'pam',
@@ -21,6 +19,7 @@ girlib = shared_library(
   install: true
 )
 
+gnome = import('gnome')
 gnome.generate_gir(
   girlib,
   sources: libsources,

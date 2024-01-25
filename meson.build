@@ -36,6 +36,7 @@ subproject('pam',
     'pkglibdir=' + libdir,
   ]
 )
+
 subdir('src')
 
 meson.add_install_script(
