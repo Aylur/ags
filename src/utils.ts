@@ -5,10 +5,21 @@ import * as Etc from './utils/etc.js';
 import * as Timeout from './utils/timeout.js';
 import * as Fetch from './utils/fetch.js';
 import * as Notify from './utils/notify.js';
+//@ts-ignore
+import Pam from 'gi://Pam';
 
 export const USER = GLib.get_user_name();
 export const HOME = GLib.get_home_dir();
 export const CACHE_DIR = `${GLib.get_user_cache_dir()}/${pkg.name.split('.').pop()}`;
+
+export function authenticate(password: string): boolean {
+    return Pam.authenticate(password);
+}
+
+export function authenticate_user(username: string, password: string): boolean {
+    return Pam.authenticate(username, password);
+}
+
 
 export const {
     exec,
@@ -66,4 +77,7 @@ export default {
 
     fetch,
     notify,
+
+    authenticate,
+    authenticate_user,
 };

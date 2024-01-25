@@ -2,15 +2,6 @@
 #include <security/pam_appl.h>
 #include <pwd.h>
 
-struct _Pam {
-    GObject parent_instance;
-};
-
-G_DEFINE_TYPE (Pam, ags_pam, G_TYPE_OBJECT);
-
-static void ags_pam_init(Pam *self){}
-static void ags_pam_class_init(PamClass *klass){}
-
 int handle_conversation(int num_msg, const struct pam_message **msg, struct pam_response **resp, void *appdata_ptr) {
     struct pam_response *replies = NULL;
     if (num_msg <= 0 || num_msg > PAM_MAX_NUM_MSG) {
