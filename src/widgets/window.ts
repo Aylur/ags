@@ -20,22 +20,30 @@ const LAYER = {
     'overlay': LayerShell.Layer.OVERLAY,
 } as const;
 
+const KEYMODE = {
+    'on-demand': LayerShell.KeyboardMode.ON_DEMAND,
+    'exclusive': LayerShell.KeyboardMode.EXCLUSIVE,
+    'none': LayerShell.KeyboardMode.NONE,
+} as const;
+
 export type Layer = keyof typeof LAYER;
 export type Anchor = keyof typeof ANCHOR;
 export type Exclusivity = 'normal' | 'ignore' | 'exclusive';
+export type Keymode = keyof typeof KEYMODE;
 
 export type WindowProps = BaseProps<AgsWindow, Gtk.Window.ConstructorProperties & {
     anchor?: Anchor[]
     exclusivity?: Exclusivity
-    focusable?: boolean
     layer?: Layer
     margins?: number[]
     monitor?: number
     popup?: boolean
     visible?: boolean
+    keymode?: Keymode
 
     // FIXME: deprecated
     exclusive?: boolean
+    focusable?: boolean
 }>
 
 export default class AgsWindow extends AgsWidget(Gtk.Window) {
@@ -50,6 +58,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
                 'margins': ['jsobject', 'rw'],
                 'monitor': ['int', 'rw'],
                 'popup': ['boolean', 'rw'],
+                'keymode': ['string', 'rw'],
             },
         });
     }
@@ -61,6 +70,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         exclusive,
         exclusivity = 'normal',
         focusable = false,
+        keymode = 'none',
         layer = 'top',
         margins = [],
         monitor = -1,
@@ -79,6 +89,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         this._handleParamProp('layer', layer);
         this._handleParamProp('margins', margins);
         this._handleParamProp('monitor', monitor);
+        this._handleParamProp('keymode', keymode);
 
         this.show_all();
         this._handleParamProp('popup', popup);
@@ -110,7 +121,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         if (exclusive === undefined)
             return;
 
-        console.error('Window.exclusive is DEPRECATED, use Window.exclusivity');
+        console.warn('Window.exclusive is DEPRECATED, use Window.exclusivity');
         if (this.exclusive === exclusive)
             return;
 
@@ -262,6 +273,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         }
     }
 
+    // FIXME: deprecated
     get focusable() {
         return LayerShell.get_keyboard_mode(this) === LayerShell.KeyboardMode.ON_DEMAND;
     }
@@ -270,9 +282,24 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         if (this.focusable === focusable)
             return;
 
+        console.warn('Window.focusable is DEPRECATED, use Window.keymode');
         LayerShell.set_keyboard_mode(
             this, LayerShell.KeyboardMode[focusable ? 'ON_DEMAND' : 'NONE']);
 
         this.notify('focusable');
+    }
+
+    get keymode() {
+        return Object.keys(KEYMODE).find(layer => {
+            return KEYMODE[layer as Keymode] === LayerShell.get_keyboard_mode(this);
+        }) as Keymode;
+    }
+
+    set keymode(mode: Keymode) {
+        if (this.keymode === mode)
+            return;
+
+        LayerShell.set_keyboard_mode(this, KEYMODE[mode]);
+        this.notify('keymode');
     }
 }
