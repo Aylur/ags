@@ -1,4 +1,4 @@
-import { register, type BinBaseProps, type BinWidget } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 
@@ -8,7 +8,8 @@ export type EventBoxProps<
     Child extends Gtk.Widget,
     Attr = unknown,
     Self = EventBox<Child, Attr>,
-> = BinBaseProps<Self, Gtk.EventBox.ConstructorProperties & {
+> = BaseProps<Self, Gtk.EventBox.ConstructorProperties & {
+    child?: Child
     on_hover?: EventHandler<Self>
     on_hover_lost?: EventHandler<Self>
 
@@ -25,7 +26,7 @@ export type EventBoxProps<
 }, Attr>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface EventBox<Child, Attr> extends BinWidget<Child, Attr> { }
+export interface EventBox<Child, Attr> extends Widget<Attr> { }
 export class EventBox<Child extends Gtk.Widget, Attr> extends Gtk.EventBox {
     static {
         register(this, {
@@ -100,6 +101,10 @@ export class EventBox<Child extends Gtk.Widget, Attr> extends Gtk.EventBox {
                 return this.on_scroll_down?.(this, event);
         });
     }
+
+    get child() { return super.child as Child; }
+    set child(child: Child) { super.child = child; }
+
 
     get on_hover() { return this._get('on-hover'); }
     set on_hover(callback: EventHandler<this>) {

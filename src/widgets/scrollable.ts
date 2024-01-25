@@ -1,4 +1,4 @@
-import { register, type BinBaseProps, type BinWidget } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 const POLICY = {
@@ -14,13 +14,14 @@ export type ScrollableProps<
     Child extends Gtk.Widget,
     Attr = unknown,
     Self = Scrollable<Child, Attr>,
-> = BinBaseProps<Self, Gtk.ScrolledWindow.ConstructorProperties & {
+> = BaseProps<Self, Gtk.ScrolledWindow.ConstructorProperties & {
+    child?: Child
     hscroll?: Policy,
     vscroll?: Policy,
 }, Attr>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface Scrollable<Child, Attr> extends BinWidget<Child, Attr> { }
+export interface Scrollable<Child, Attr> extends Widget<Attr> { }
 export class Scrollable<Child extends Gtk.Widget, Attr> extends Gtk.ScrolledWindow {
     static {
         register(this, {
@@ -38,6 +39,9 @@ export class Scrollable<Child extends Gtk.Widget, Attr> extends Gtk.ScrolledWind
             vadjustment: new Gtk.Adjustment(),
         });
     }
+
+    get child() { return super.child as Child; }
+    set child(child: Child) { super.child = child; }
 
     setScroll(orientation: 'h' | 'v', scroll: Policy) {
         if (!scroll || this[`${orientation}scroll`] === scroll)

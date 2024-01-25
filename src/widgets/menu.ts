@@ -1,4 +1,4 @@
-import { register, BaseProps, BinBaseProps, Widget, BinWidget } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 type MenuEventHandler<Self> = {
@@ -71,14 +71,15 @@ export type MenuItemProps<
     Child extends Gtk.Widget,
     Attr = unknown,
     Self = MenuItem<Child, Attr>,
-> = BinBaseProps<Self, Gtk.MenuItem.ConstructorProperties & {
+> = BaseProps<Self, Gtk.MenuItem.ConstructorProperties & {
+    child?: Child
     on_activate?: EventHandler<Self>
     on_select?: EventHandler<Self>
     on_deselct?: EventHandler<Self>
 }, Attr>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface MenuItem<Child, Attr> extends BinWidget<Child, Attr> { }
+export interface MenuItem<Child, Attr> extends Widget<Attr> { }
 export class MenuItem<Child extends Gtk.Widget, Attr> extends Gtk.MenuItem {
     static {
         register(this, {
@@ -97,6 +98,10 @@ export class MenuItem<Child extends Gtk.Widget, Attr> extends Gtk.MenuItem {
         this.connect('select', () => this.on_select?.(this));
         this.connect('deselect', () => this.on_deselect?.(this));
     }
+
+    get child() { return super.child as Child; }
+    set child(child: Child) { super.child = child; }
+
 
     get on_activate() { return this._get('on-activate'); }
     set on_activate(callback: EventHandler<this>) {
