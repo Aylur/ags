@@ -8,7 +8,8 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (Pam, ags_pam, Pam, Pam, GObject)
 
-gboolean ags_pam_authenticate(const gchar *username, const gchar *password);
+gboolean ags_pam_authenticate(const gchar *password);
+gboolean ags_pam_authenticate_user(const gchar *username, const gchar *password);
 
 G_END_DECLS
 

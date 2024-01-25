@@ -1,4 +1,5 @@
 #include "pam.h"
+#include <pwd.h>
 #include <security/pam_appl.h>
 #include <security/pam_misc.h>
 
@@ -47,7 +48,7 @@ int handle_conversation(int num_msg, const struct pam_message **msg, struct pam_
     return PAM_SUCCESS;
 }
 
-gboolean ags_pam_authenticate(const char *username, const char *password) {
+gboolean ags_pam_authenticate_user(const char *username, const char *password) {
 
     pam_handle_t *pamh = NULL;
     // struct pam_conv conv = { handle_conversation, (void *)password };
@@ -69,4 +70,12 @@ gboolean ags_pam_authenticate(const char *username, const char *password) {
 
     return success;
 }
+
+gboolean ags_pam_authenticate(const char *password) {
+    struct passwd *passwd = getpwuid(getuid());
+    char *username = passwd->pw_name;
+
+    return ags_pam_authenticate_user(username, password);
+}
+
 
