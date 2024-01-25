@@ -4,25 +4,31 @@ import Gdk from 'gi://Gdk?version=3.0';
 
 type EventHandler<Self> = (self: Self, event: Gdk.Event) => boolean | unknown;
 
-export type EventBoxProps<Attr = unknown, Self = EventBox<Attr>> =
-    BaseProps<Self, Gtk.EventBox.ConstructorProperties & {
-        on_hover?: EventHandler<Self>
-        on_hover_lost?: EventHandler<Self>
+export type EventBoxProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = EventBox<Child, Attr>,
+> = BaseProps<Self, Gtk.EventBox.ConstructorProperties & {
+    child?: Child,
 
-        on_scroll_up?: EventHandler<Self>
-        on_scroll_down?: EventHandler<Self>
+    on_hover?: EventHandler<Self>
+    on_hover_lost?: EventHandler<Self>
 
-        on_primary_click?: EventHandler<Self>
-        on_middle_click?: EventHandler<Self>
-        on_secondary_click?: EventHandler<Self>
+    on_scroll_up?: EventHandler<Self>
+    on_scroll_down?: EventHandler<Self>
 
-        on_primary_click_release?: EventHandler<Self>
-        on_middle_click_release?: EventHandler<Self>
-        on_secondary_click_release?: EventHandler<Self>
-    }, Attr>
+    on_primary_click?: EventHandler<Self>
+    on_middle_click?: EventHandler<Self>
+    on_secondary_click?: EventHandler<Self>
 
-export interface EventBox<Attr> extends Widget<Attr> { }
-export class EventBox<Attr> extends Gtk.EventBox {
+    on_primary_click_release?: EventHandler<Self>
+    on_middle_click_release?: EventHandler<Self>
+    on_secondary_click_release?: EventHandler<Self>
+}, Attr>
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface EventBox<Child, Attr> extends Widget<Attr> { }
+export class EventBox<Child extends Gtk.Widget, Attr> extends Gtk.EventBox {
     static {
         register(this, {
             properties: {
@@ -45,7 +51,7 @@ export class EventBox<Attr> extends Gtk.EventBox {
         });
     }
 
-    constructor(props: EventBoxProps<Attr> = {}) {
+    constructor(props: EventBoxProps<Child, Attr> = {}) {
         super(props as Gtk.EventBox.ConstructorProperties);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
@@ -96,6 +102,8 @@ export class EventBox<Attr> extends Gtk.EventBox {
                 return this.on_scroll_down?.(this, event);
         });
     }
+
+    get child() { return this.get_child() as Child; }
 
     get on_hover() { return this._get('on-hover'); }
     set on_hover(callback: EventHandler<this>) {

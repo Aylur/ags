@@ -4,27 +4,33 @@ import Gdk from 'gi://Gdk?version=3.0';
 
 type EventHandler<Self> = (self: Self, event: Gdk.Event) => boolean | unknown;
 
-export type ButtonProps<Attr = unknown, Self = Button<Attr>> =
-    BaseProps<Self, Gtk.Button.ConstructorProperties & {
-        on_clicked?: (self: Self) => void
+export type ButtonProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = Button<Child, Attr>,
+> = BaseProps<Self, Gtk.Button.ConstructorProperties & {
+    child?: Child,
 
-        on_hover?: EventHandler<Self>
-        on_hover_lost?: EventHandler<Self>
+    on_clicked?: (self: Self) => void
 
-        on_scroll_up?: EventHandler<Self>
-        on_scroll_down?: EventHandler<Self>
+    on_hover?: EventHandler<Self>
+    on_hover_lost?: EventHandler<Self>
 
-        on_primary_click?: EventHandler<Self>
-        on_middle_click?: EventHandler<Self>
-        on_secondary_click?: EventHandler<Self>
+    on_scroll_up?: EventHandler<Self>
+    on_scroll_down?: EventHandler<Self>
 
-        on_primary_click_release?: EventHandler<Self>
-        on_middle_click_release?: EventHandler<Self>
-        on_secondary_click_release?: EventHandler<Self>
-    }, Attr>;
+    on_primary_click?: EventHandler<Self>
+    on_middle_click?: EventHandler<Self>
+    on_secondary_click?: EventHandler<Self>
 
-export interface Button<Attr> extends Widget<Attr> { }
-export class Button<Attr> extends Gtk.Button {
+    on_primary_click_release?: EventHandler<Self>
+    on_middle_click_release?: EventHandler<Self>
+    on_secondary_click_release?: EventHandler<Self>
+}, Attr>;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Button<Child, Attr> extends Widget<Attr> { }
+export class Button<Child extends Gtk.Widget, Attr> extends Gtk.Button {
     static {
         register(this, {
             properties: {
@@ -47,7 +53,7 @@ export class Button<Attr> extends Gtk.Button {
         });
     }
 
-    constructor(props: ButtonProps<Attr> = {}) {
+    constructor(props: ButtonProps<Child, Attr> = {}) {
         super(props as Gtk.Button.ConstructorProperties);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
@@ -94,6 +100,8 @@ export class Button<Attr> extends Gtk.Button {
                 return this.on_scroll_down?.(this, event);
         });
     }
+
+    get child() { return this.get_child() as Child; }
 
     get on_clicked() { return this._get('on-clicked'); }
     set on_clicked(callback: (self: this) => void) {

@@ -3,11 +3,13 @@ import Gtk from 'gi://Gtk?version=3.0';
 
 type EventHandler<Self> = (self: Self) => void | unknown;
 
-export type EntryProps<Attr = unknown, Self = Entry<Attr>> =
-    BaseProps<Self, Gtk.Entry.ConstructorProperties & {
-        on_accept?: EventHandler<Self>
-        on_change?: EventHandler<Self>
-    }, Attr>
+export type EntryProps<
+    Attr = unknown,
+    Self = Entry<Attr>,
+> = BaseProps<Self, Gtk.Entry.ConstructorProperties & {
+    on_accept?: EventHandler<Self>
+    on_change?: EventHandler<Self>
+}, Attr>
 
 export interface Entry<Attr> extends Widget<Attr> { }
 export class Entry<Attr> extends Gtk.Entry {

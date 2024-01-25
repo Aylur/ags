@@ -10,14 +10,19 @@ const POLICY = {
 
 type Policy = keyof typeof POLICY;
 
-export type ScrollableProps<Attr = unknown> =
-    BaseProps<Scrollable<Attr>, Gtk.ScrolledWindow.ConstructorProperties & {
-        hscroll?: Policy,
-        vscroll?: Policy,
-    }, Attr>
+export type ScrollableProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = Scrollable<Child, Attr>,
+> = BaseProps<Self, Gtk.ScrolledWindow.ConstructorProperties & {
+    child?: Child
+    hscroll?: Policy,
+    vscroll?: Policy,
+}, Attr>
 
-export interface Scrollable<Attr> extends Widget<Attr> { }
-export class Scrollable<Attr> extends Gtk.ScrolledWindow {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Scrollable<Child, Attr> extends Widget<Attr> { }
+export class Scrollable<Child extends Gtk.Widget, Attr> extends Gtk.ScrolledWindow {
     static {
         register(this, {
             properties: {
@@ -27,13 +32,15 @@ export class Scrollable<Attr> extends Gtk.ScrolledWindow {
         });
     }
 
-    constructor(props: ScrollableProps<Attr> = {}) {
+    constructor(props: ScrollableProps<Child, Attr> = {}) {
         super({
             ...props as Gtk.ScrolledWindow.ConstructorProperties,
             hadjustment: new Gtk.Adjustment(),
             vadjustment: new Gtk.Adjustment(),
         });
     }
+
+    get child() { return this.get_child() as Child; }
 
     setScroll(orientation: 'h' | 'v', scroll: Policy) {
         if (!scroll || this[`${orientation}scroll`] === scroll)

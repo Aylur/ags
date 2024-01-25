@@ -11,17 +11,25 @@ interface Context {
     $dispose: () => void
 }
 
-export type CircularProgressProps<Attr = unknown> =
-    BaseProps<CircularProgress<Attr>, Gtk.Bin.ConstructorProperties & {
-        rounded?: boolean
-        value?: number
-        inverted?: boolean
-        start_at?: number
-        end_at?: number
-    }, Attr>
+export type CircularProgressProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = CircularProgress<Child, Attr>
+> = BaseProps<Self, Gtk.Bin.ConstructorProperties & {
+    child?: Child
+    rounded?: boolean
+    value?: number
+    inverted?: boolean
+    start_at?: number
+    end_at?: number
+}, Attr>
 
-export interface CircularProgress<Attr> extends Widget<Attr> { }
-export class CircularProgress<Attr> extends Gtk.Bin {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface CircularProgress<Child, Attr> extends Widget<Attr> { }
+export class CircularProgress<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+> extends Gtk.Bin {
     static {
         register(this, {
             cssName: 'circular-progress',
@@ -35,9 +43,11 @@ export class CircularProgress<Attr> extends Gtk.Bin {
         });
     }
 
-    constructor(props: CircularProgressProps<Attr> = {}) {
+    constructor(props: CircularProgressProps<Child, Attr> = {}) {
         super(props as Gtk.Bin.ConstructorProperties);
     }
+
+    get child() { return this.get_child() as Child; }
 
     get rounded() { return this._get('rounded') || false; }
     set rounded(r: boolean) {

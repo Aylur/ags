@@ -1,14 +1,19 @@
 import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
-export type OverlayProps<Attr> = BaseProps<Overlay<Attr>, Gtk.Overlay.ConstructorProperties & {
+export type OverlayProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = Overlay<Child, Attr>,
+> = BaseProps<Self, Gtk.Overlay.ConstructorProperties & {
     pass_through?: boolean
-    overlays?: Gtk.Widget[]
-    overlay?: Gtk.Widget
+    overlays?: Child[]
+    overlay?: Child
 }, Attr>
 
-export interface Overlay<Attr> extends Widget<Attr> { }
-export class Overlay<Attr> extends Gtk.Overlay {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Overlay<Child, Attr> extends Widget<Attr> { }
+export class Overlay<Child extends Gtk.Widget, Attr> extends Gtk.Overlay {
     static {
         register(this, {
             properties: {
@@ -19,7 +24,7 @@ export class Overlay<Attr> extends Gtk.Overlay {
         });
     }
 
-    constructor(props: OverlayProps<Attr> = {}) {
+    constructor(props: OverlayProps<Child, Attr> = {}) {
         super(props as Gtk.Overlay.ConstructorProperties);
     }
 
@@ -38,19 +43,19 @@ export class Overlay<Attr> extends Gtk.Overlay {
         this.notify('pass-through');
     }
 
-    get overlay() { return this.overlays[0]; }
-    set overlay(overlay: Gtk.Widget) {
+    get overlay() { return this.overlays[0] as Child; }
+    set overlay(overlay: Child) {
         this.overlays = [overlay];
         this.notify('overlay');
     }
 
     get overlays() {
-        return this.get_children().filter(ch => ch !== this.child);
+        return this.get_children().filter(ch => ch !== this.child) as Child[];
     }
 
-    set overlays(overlays: Gtk.Widget[]) {
+    set overlays(overlays: Child[]) {
         this.get_children()
-            .filter(ch => ch !== this.child && !overlays.includes(ch))
+            .filter(ch => ch !== this.child && !overlays.includes(ch as Child))
             .forEach(ch => ch.destroy());
 
         this.get_children()

@@ -24,23 +24,27 @@ type Layer = keyof typeof LAYER;
 type Anchor = keyof typeof ANCHOR;
 type Exclusivity = 'normal' | 'ignore' | 'exclusive';
 
-export type WindowProps<Attr = unknown> =
-    BaseProps<Window<Attr>, Gtk.Window.ConstructorProperties & {
-        anchor?: Anchor[]
-        exclusivity?: Exclusivity
-        focusable?: boolean
-        layer?: Layer
-        margins?: number[]
-        monitor?: number
-        popup?: boolean
-        visible?: boolean
+export type WindowProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+> = BaseProps<Window<Child, Attr>, Gtk.Window.ConstructorProperties & {
+    child?: Child
+    anchor?: Anchor[]
+    exclusivity?: Exclusivity
+    focusable?: boolean
+    layer?: Layer
+    margins?: number[]
+    monitor?: number
+    popup?: boolean
+    visible?: boolean
 
-        // FIXME: deprecated
-        exclusive?: boolean
-    }, Attr>
+    // FIXME: deprecated
+    exclusive?: boolean
+}, Attr>
 
-export interface Window<Attr> extends Widget<Attr> { }
-export class Window<Attr> extends Gtk.Window {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Window<Child, Attr> extends Widget<Attr> { }
+export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
     static {
         register(this, {
             properties: {
@@ -69,7 +73,7 @@ export class Window<Attr> extends Gtk.Window {
         popup = false,
         visible = true,
         ...params
-    }: WindowProps<Attr> = {}) {
+    }: WindowProps<Child, Attr> = {}) {
         super(params as Gtk.Window.ConstructorProperties);
         LayerShell.init_for_window(this);
         LayerShell.set_namespace(this, this.name);
@@ -90,6 +94,8 @@ export class Window<Attr> extends Gtk.Window {
         else
             this.visible = visible === true || visible === null && !popup;
     }
+
+    get child() { return this.get_child() as Child; }
 
     get monitor(): Gdk.Monitor { return this._get('monitor'); }
     set monitor(monitor: number) {

@@ -26,14 +26,19 @@ const TRANSITION = {
 
 type Transition = keyof typeof TRANSITION;
 
-export type StackProps<Attr = unknown> = BaseProps<Stack<Attr>, Gtk.Stack.ConstructorProperties & {
+export type StackProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = Stack<Child, Attr>,
+> = BaseProps<Self, Gtk.Stack.ConstructorProperties & {
     shown?: string
-    items?: [string, Gtk.Widget][]
+    items?: [string, Child][]
     transition?: Transition
 }, Attr>
 
-export interface Stack<Attr> extends Widget<Attr> { }
-export class Stack<Attr> extends Gtk.Stack {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Stack<Child, Attr> extends Widget<Attr> { }
+export class Stack<Child extends Gtk.Widget, Attr> extends Gtk.Stack {
     static {
         register(this, {
             properties: {
@@ -44,11 +49,11 @@ export class Stack<Attr> extends Gtk.Stack {
         });
     }
 
-    constructor(props: StackProps<Attr> = {}) {
+    constructor(props: StackProps<Child, Attr> = {}) {
         super(props as Gtk.Stack.ConstructorProperties);
     }
 
-    add_named(child: Gtk.Widget, name: string): void {
+    add_named(child: Child, name: string): void {
         this.items.push([name, child]);
         super.add_named(child, name);
         this.notify('items');
@@ -61,7 +66,7 @@ export class Stack<Attr> extends Gtk.Stack {
         return this._get('items');
     }
 
-    set items(items: [string, Gtk.Widget][]) {
+    set items(items: Array<[string, Child]>) {
         this.items
             .filter(([name]) => !items.find(([n]) => n === name))
             .forEach(([, ch]) => ch.destroy());
