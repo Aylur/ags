@@ -25,6 +25,8 @@ export class Variable<T> extends GObject.Object {
             'changed': [],
         }, {
             'value': ['jsobject', 'rw'],
+            'is-listening': ['boolean', 'r'],
+            'is-polling': ['boolean', 'r'],
         });
     }
 
@@ -71,6 +73,7 @@ export class Variable<T> extends GObject.Object {
                     this.setValue(value);
             });
         }
+        this.notify('is-polling');
     }
 
     stopPoll() {
@@ -80,6 +83,7 @@ export class Variable<T> extends GObject.Object {
         } else {
             console.error(Error(`${this} has no poll running`));
         }
+        this.notify('is-polling');
     }
 
     startListen() {
@@ -94,15 +98,19 @@ export class Variable<T> extends GObject.Object {
             ? this._listen[1]
             : (out: string) => out as T;
 
-        // listen: string
+        // string
         if (typeof this._listen === 'string')
             cmd = this._listen;
 
-        // listen: [string, fn]
+        // string[]
+        else if (Array.isArray(this._listen) && this._listen.every(s => typeof s === 'string'))
+            cmd = this._listen as string[];
+
+        // [string, fn]
         else if (Array.isArray(this._listen) && typeof this._listen[0] === 'string')
             cmd = this._listen[0];
 
-        // listen: [string[], fn]
+        // [string[], fn]
         else if (Array.isArray(this._listen) && Array.isArray(this._listen[0]))
             cmd = this._listen[0];
 
@@ -110,6 +118,7 @@ export class Variable<T> extends GObject.Object {
             return console.error(Error(`${this._listen} is not a valid type for Variable.listen`));
 
         this._subprocess = subprocess(cmd, out => this.setValue(transform(out, this)));
+        this.notify('is-listening');
     }
 
     stopListen() {
@@ -119,10 +128,11 @@ export class Variable<T> extends GObject.Object {
         } else {
             console.error(Error(`${this} has no listen running`));
         }
+        this.notify('is-listening');
     }
 
-    get isListening() { return !!this._subprocess; }
-    get isPolling() { return !!this._listen; }
+    get is_listening() { return !!this._subprocess; }
+    get is_polling() { return !!this._listen; }
 
     dispose() {
         if (this._interval)
@@ -148,7 +158,9 @@ export class Variable<T> extends GObject.Object {
         return super.connect(signal, callback);
     }
 
-    bind<Prop extends keyof Props<this>>(prop: Prop = 'value' as Prop) {
+    bind<P extends keyof Props<this>>(): Binding<this, P, T>
+    bind<P extends keyof Props<this>>(prop?: P): Binding<this, P, this[P]>
+    bind<P extends keyof Props<this>>(prop: P = 'value' as P) {
         return new Binding(this, prop);
     }
 }

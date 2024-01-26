@@ -20,9 +20,16 @@ const LAYER = {
     'overlay': LayerShell.Layer.OVERLAY,
 } as const;
 
+const KEYMODE = {
+    'on-demand': LayerShell.KeyboardMode.ON_DEMAND,
+    'exclusive': LayerShell.KeyboardMode.EXCLUSIVE,
+    'none': LayerShell.KeyboardMode.NONE,
+} as const;
+
 type Layer = keyof typeof LAYER;
 type Anchor = keyof typeof ANCHOR;
 type Exclusivity = 'normal' | 'ignore' | 'exclusive';
+type Keymode = keyof typeof KEYMODE;
 
 export type WindowProps<
     Child extends Gtk.Widget,
@@ -31,15 +38,16 @@ export type WindowProps<
     child?: Child
     anchor?: Anchor[]
     exclusivity?: Exclusivity
-    focusable?: boolean
     layer?: Layer
     margins?: number[]
     monitor?: number
     popup?: boolean
     visible?: boolean
+    keymode?: Keymode
 
     // FIXME: deprecated
     exclusive?: boolean
+    focusable?: boolean
 }, Attr>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -56,6 +64,7 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
                 'margins': ['jsobject', 'rw'],
                 'monitor': ['int', 'rw'],
                 'popup': ['boolean', 'rw'],
+                'keymode': ['string', 'rw'],
             },
         });
     }
@@ -67,6 +76,7 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         exclusive,
         exclusivity = 'normal',
         focusable = false,
+        keymode = 'none',
         layer = 'top',
         margins = [],
         monitor = -1,
@@ -85,6 +95,7 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         this._handleParamProp('layer', layer);
         this._handleParamProp('margins', margins);
         this._handleParamProp('monitor', monitor);
+        this._handleParamProp('keymode', keymode);
 
         this.show_all();
         this._handleParamProp('popup', popup);
@@ -119,7 +130,7 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         if (exclusive === undefined)
             return;
 
-        console.error('Window.exclusive is DEPRECATED, use Window.exclusivity');
+        console.warn('Window.exclusive is DEPRECATED, use Window.exclusivity');
         if (this.exclusive === exclusive)
             return;
 
@@ -271,6 +282,7 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         }
     }
 
+    // FIXME: deprecated
     get focusable() {
         return LayerShell.get_keyboard_mode(this) === LayerShell.KeyboardMode.ON_DEMAND;
     }
@@ -279,10 +291,25 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         if (this.focusable === focusable)
             return;
 
+        console.warn('Window.focusable is DEPRECATED, use Window.keymode');
         LayerShell.set_keyboard_mode(
             this, LayerShell.KeyboardMode[focusable ? 'ON_DEMAND' : 'NONE']);
 
         this.notify('focusable');
+    }
+
+    get keymode() {
+        return Object.keys(KEYMODE).find(layer => {
+            return KEYMODE[layer as Keymode] === LayerShell.get_keyboard_mode(this);
+        }) as Keymode;
+    }
+
+    set keymode(mode: Keymode) {
+        if (this.keymode === mode)
+            return;
+
+        LayerShell.set_keyboard_mode(this, KEYMODE[mode]);
+        this.notify('keymode');
     }
 }
 

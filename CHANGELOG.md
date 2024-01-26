@@ -9,6 +9,7 @@
 - feat(notifications): support every hint
 - add: Widget.click-through (#245)
 - feat: --init cli flag
+- add: Widget.keymode
 
 ## Fixes
 
