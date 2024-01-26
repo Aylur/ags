@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import Gtk from 'gi://Gtk?version=3.0';
-import { register as registerClass, type BaseProps, type Widget } from './widgets/widget.js';
+import { register as registerClass, type BaseProps, type Widget as TWidget } from './widgets/widget.js';
 import { Box as BoxClass, type BoxProps } from './widgets/box.js';
 import { CenterBox as CenterBoxClass, type CenterBoxProps } from './widgets/centerbox.js';
 import { EventBox as EventBoxClass, type EventBoxProps } from './widgets/eventbox.js';
@@ -53,57 +53,56 @@ export const Spinner = <Attr>(props?: Etc.SpinnerProps<Attr>) => new Etc.Spinner
 export const Switch = <Attr>(props?: Etc.SwitchProps<Attr>) => new Etc.Switch(props ?? {});
 export const ToggleButton = <Attr>(props?: Etc.ToggleButtonProps<Attr>) => new Etc.ToggleButton(props ?? {});
 
-// I would prefer this to be Widget.subclass, but if I do
-// export default { subclass, Box, Button ... } ts can't compile it
-// and I don't know any other solution, so I'll stick to using a function
+// ts can't compile export default { subclass, Box, Button ... }
+// so we use a function and add members to it instead
 // to bundle everything in a default export
-export default function Widget<T extends { new(...args: any[]): Gtk.Widget }, Props>(Base: T, typename = Base.name) {
+export default function W<T extends { new(...args: any[]): Gtk.Widget }, Props>(Base: T, typename = Base.name) {
     class Subclassed extends Base {
         static { registerClass(this, { typename }); }
         constructor(...params: any[]) { super(...params); }
     }
-    type Instance<Attr> = InstanceType<typeof Subclassed> & Widget<Attr>;
+    type Instance<Attr> = InstanceType<typeof Subclassed> & TWidget<Attr>;
     return <Attr>(props: BaseProps<Instance<Attr>, Props, Attr>) => {
         return new Subclassed(props) as Instance<Attr>;
     };
 }
 
+export const Widget = W;
 export const register = registerClass;
+W.register = register;
+export const subclass = W;
+W.subclass = W;
 
-Widget.Widget = Widget; // for compatibility
-Widget.subclass = Widget; // for compatibility
-Widget.register = register;
+W.Box = Box;
+W.Button = Button;
+W.CenterBox = CenterBox;
+W.CircularProgress = CircularProgress;
+W.Entry = Entry;
+W.EventBox = EventBox;
+W.Icon = Icon;
+W.Label = Label;
+W.Menu = Menu;
+W.MenuItem = MenuItem;
+W.Overlay = Overlay;
+W.ProgressBar = ProgressBar;
+W.Revealer = Revealer;
+W.Scrollable = Scrollable;
+W.Slider = Slider;
+W.Stack = Stack;
+W.Window = Window;
 
-Widget.Box = Box;
-Widget.Button = Button;
-Widget.CenterBox = CenterBox;
-Widget.CircularProgress = CircularProgress;
-Widget.Entry = Entry;
-Widget.EventBox = EventBox;
-Widget.Icon = Icon;
-Widget.Label = Label;
-Widget.Menu = Menu;
-Widget.MenuItem = MenuItem;
-Widget.Overlay = Overlay;
-Widget.ProgressBar = ProgressBar;
-Widget.Revealer = Revealer;
-Widget.Scrollable = Scrollable;
-Widget.Slider = Slider;
-Widget.Stack = Stack;
-Widget.Window = Window;
-
-Widget.Calendar = Calendar;
-Widget.ColorButton = ColorButton;
-Widget.DrawingArea = DrawingArea;
-Widget.FileChooserButton = FileChooserButton;
-Widget.Fixed = Fixed;
-Widget.FlowBox = FlowBox;
-Widget.FontButton = FontButton;
-Widget.LevelBar = LevelBar;
-Widget.ListBox = ListBox;
-Widget.MenuBar = MenuBar;
-Widget.Separator = Separator;
-Widget.SpinButton = SpinButton;
-Widget.Spinner = Spinner;
-Widget.Switch = Switch;
-Widget.ToggleButton = ToggleButton;
+W.Calendar = Calendar;
+W.ColorButton = ColorButton;
+W.DrawingArea = DrawingArea;
+W.FileChooserButton = FileChooserButton;
+W.Fixed = Fixed;
+W.FlowBox = FlowBox;
+W.FontButton = FontButton;
+W.LevelBar = LevelBar;
+W.ListBox = ListBox;
+W.MenuBar = MenuBar;
+W.Separator = Separator;
+W.SpinButton = SpinButton;
+W.Spinner = Spinner;
+W.Switch = Switch;
+W.ToggleButton = ToggleButton;
