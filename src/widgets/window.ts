@@ -41,6 +41,7 @@ export type WindowProps<
     layer?: Layer
     margins?: number[]
     monitor?: number
+    gdkmonitor?: Gdk.Monitor
     popup?: boolean
     visible?: boolean
     keymode?: Keymode
@@ -63,6 +64,7 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
                 'layer': ['string', 'rw'],
                 'margins': ['jsobject', 'rw'],
                 'monitor': ['int', 'rw'],
+                'gdkmonitor': ['jsobject', 'rw'],
                 'popup': ['boolean', 'rw'],
                 'keymode': ['string', 'rw'],
             },
@@ -80,6 +82,7 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         layer = 'top',
         margins = [],
         monitor = -1,
+        gdkmonitor,
         popup = false,
         visible = true,
         ...params
@@ -88,6 +91,7 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         LayerShell.init_for_window(this);
         LayerShell.set_namespace(this, this.name);
 
+
         this._handleParamProp('anchor', anchor);
         this._handleParamProp('exclusive', exclusive);
         this._handleParamProp('exclusivity', exclusivity);
@@ -95,6 +99,7 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         this._handleParamProp('layer', layer);
         this._handleParamProp('margins', margins);
         this._handleParamProp('monitor', monitor);
+        this._handleParamProp('gdkmonitor', gdkmonitor);
         this._handleParamProp('keymode', keymode);
 
         this.show_all();
@@ -108,6 +113,13 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
 
     get child() { return super.child as Child; }
     set child(child: Child) { super.child = child; }
+
+    get gdkmonitor(): Gdk.Monitor | null { return this._get('gdkmonitor') || null; }
+    set gdkmonitor(monitor: Gdk.Monitor) {
+        this._set('gdkmonitor', monitor);
+        LayerShell.set_monitor(this, monitor);
+        this.notify('gdkmonitor');
+    }
 
     get monitor(): Gdk.Monitor { return this._get('monitor'); }
     set monitor(monitor: number) {
