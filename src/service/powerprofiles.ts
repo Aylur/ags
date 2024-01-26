@@ -3,7 +3,7 @@ import Gio from 'gi://Gio';
 import Service from '../service.js';
 import { loadInterfaceXML } from '../utils.js';
 import { PowerProfilesProxy } from '../dbus/types.js';
-import { kebabify } from '../service.js';
+import { kebabify } from '../utils/gobject.js';
 
 const PowerProfilesIFace = loadInterfaceXML('net.hadess.PowerProfiles')!;
 const PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(

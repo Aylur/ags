@@ -128,7 +128,8 @@ export async function init(configDir: string, entry: string) {
         }
     }
 
-    const nixPath = nixPaths.find(path => {
+    const linkStore = GLib.getenv('AGS_LINK_NIX_STORE');
+    const nixPath = linkStore ? '' : nixPaths.find(path => {
         if (GLib.file_test(path, GLib.FileTest.EXISTS))
             return true;
     });

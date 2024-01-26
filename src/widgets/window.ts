@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import { Binding } from '../service.js';
@@ -26,12 +26,16 @@ const KEYMODE = {
     'none': LayerShell.KeyboardMode.NONE,
 } as const;
 
-export type Layer = keyof typeof LAYER;
-export type Anchor = keyof typeof ANCHOR;
-export type Exclusivity = 'normal' | 'ignore' | 'exclusive';
-export type Keymode = keyof typeof KEYMODE;
+type Layer = keyof typeof LAYER;
+type Anchor = keyof typeof ANCHOR;
+type Exclusivity = 'normal' | 'ignore' | 'exclusive';
+type Keymode = keyof typeof KEYMODE;
 
-export type WindowProps = BaseProps<AgsWindow, Gtk.Window.ConstructorProperties & {
+export type WindowProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+> = BaseProps<Window<Child, Attr>, Gtk.Window.ConstructorProperties & {
+    child?: Child
     anchor?: Anchor[]
     exclusivity?: Exclusivity
     layer?: Layer
@@ -44,11 +48,13 @@ export type WindowProps = BaseProps<AgsWindow, Gtk.Window.ConstructorProperties 
     // FIXME: deprecated
     exclusive?: boolean
     focusable?: boolean
-}>
+}, Attr>
 
-export default class AgsWindow extends AgsWidget(Gtk.Window) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Window<Child, Attr> extends Widget<Attr> { }
+export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'anchor': ['jsobject', 'rw'],
                 'exclusive': ['boolean', 'rw'],
@@ -77,7 +83,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         popup = false,
         visible = true,
         ...params
-    }: WindowProps = {}) {
+    }: WindowProps<Child, Attr> = {}) {
         super(params as Gtk.Window.ConstructorProperties);
         LayerShell.init_for_window(this);
         LayerShell.set_namespace(this, this.name);
@@ -99,6 +105,9 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         else
             this.visible = visible === true || visible === null && !popup;
     }
+
+    get child() { return super.child as Child; }
+    set child(child: Child) { super.child = child; }
 
     get monitor(): Gdk.Monitor { return this._get('monitor'); }
     set monitor(monitor: number) {
@@ -303,3 +312,5 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         this.notify('keymode');
     }
 }
+
+export default Window;

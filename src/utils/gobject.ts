@@ -1,6 +1,11 @@
 import Gtk from 'gi://Gtk?version=3.0';
 import GObject from 'gi://GObject';
 
+export const kebabify = (str: string) => str
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replaceAll('_', '-')
+    .toLowerCase();
+
 export type PspecFlag = 'rw' | 'r' | 'w';
 export type PspecType =
     | 'jsobject'
@@ -83,7 +88,7 @@ export function registerGObject<
         );
     }
 
-    GObject.registerClass(Object.assign({
+    return GObject.registerClass(Object.assign({
         GTypeName: config?.typename || `Ags_${object.name}`,
         Signals,
         Properties,
