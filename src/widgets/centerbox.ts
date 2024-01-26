@@ -25,6 +25,7 @@ export class CenterBox<
     static {
         register(this, {
             properties: {
+                'vertical': ['boolean', 'rw'],
                 'start-widget': ['widget', 'rw'],
                 'center-widget': ['widget', 'rw'],
                 'end-widget': ['widget', 'rw'],
