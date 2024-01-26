@@ -1,70 +1,76 @@
-import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
-const policy = ['automatic', 'always', 'never', 'external'] as const;
-type Policy = typeof policy[number]
+const POLICY = {
+    'automatic': Gtk.PolicyType.AUTOMATIC,
+    'always': Gtk.PolicyType.ALWAYS,
+    'never': Gtk.PolicyType.NEVER,
+    'external': Gtk.PolicyType.EXTERNAL,
+} as const;
 
-export interface ScrollableProps extends
-    BaseProps<AgsScrollable>, Gtk.ScrolledWindow.ConstructorProperties {
+type Policy = keyof typeof POLICY;
+
+export type ScrollableProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = Scrollable<Child, Attr>,
+> = BaseProps<Self, Gtk.ScrolledWindow.ConstructorProperties & {
+    child?: Child
     hscroll?: Policy,
     vscroll?: Policy,
-}
+}, Attr>
 
-export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Scrollable<Child, Attr> extends Widget<Attr> { }
+export class Scrollable<Child extends Gtk.Widget, Attr> extends Gtk.ScrolledWindow {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsScrollable',
-            Properties: {
-                'hscroll': Service.pspec('hscroll', 'string', 'rw'),
-                'vscroll': Service.pspec('vscroll', 'string', 'rw'),
+        register(this, {
+            properties: {
+                'hscroll': ['string', 'rw'],
+                'vscroll': ['string', 'rw'],
             },
-        }, this);
+        });
     }
 
-    constructor(props: ScrollableProps = {}) {
+    constructor(props: ScrollableProps<Child, Attr> = {}) {
         super({
-            ...props,
+            ...props as Gtk.ScrolledWindow.ConstructorProperties,
             hadjustment: new Gtk.Adjustment(),
             vadjustment: new Gtk.Adjustment(),
         });
     }
 
-    get hscroll() { return this._get('hscroll'); }
-    set hscroll(hscroll: Policy) {
-        if (!hscroll || this.hscroll === hscroll)
+    get child() { return super.child as Child; }
+    set child(child: Child) { super.child = child; }
+
+    setScroll(orientation: 'h' | 'v', scroll: Policy) {
+        if (!scroll || this[`${orientation}scroll`] === scroll)
             return;
 
-        if (!policy.includes(hscroll)) {
-            console.error('wrong hscroll value for Scrollable');
-            return;
+        if (!Object.keys(POLICY).includes(scroll)) {
+            return console.error(Error(
+                `${orientation}scroll has to be one of ${Object.keys(POLICY)}, but it is ${scroll}`,
+            ));
         }
 
-        this._set('hscroll', hscroll);
+        this._set(`${orientation}scroll`, scroll);
         this._policy();
     }
+
+    get hscroll() { return this._get('hscroll'); }
+    set hscroll(hscroll: Policy) { this.setScroll('h', hscroll); }
 
     get vscroll() { return this._get('vscroll'); }
-    set vscroll(vscroll: Policy) {
-        if (!vscroll || this.vscroll === vscroll)
-            return;
-
-        if (!policy.includes(vscroll)) {
-            console.error('wrong vscroll value for Scrollable');
-            return;
-        }
-
-        this._set('vscroll', vscroll);
-        this._policy();
-    }
+    set vscroll(vscroll: Policy) { this.setScroll('v', vscroll); }
 
     private _policy() {
-        const hscroll = policy.findIndex(p => p === this.hscroll);
-        const vscroll = policy.findIndex(p => p === this.vscroll);
+        const hscroll = POLICY[this.hscroll];
+        const vscroll = POLICY[this.vscroll];
         this.set_policy(
             hscroll === -1 ? Gtk.PolicyType.AUTOMATIC : hscroll,
             vscroll === -1 ? Gtk.PolicyType.AUTOMATIC : vscroll,
         );
     }
 }
+
+export default Scrollable;

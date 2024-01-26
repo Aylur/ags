@@ -10,7 +10,6 @@
 , gtk3
 , libpulseaudio
 , gjs
-, python3
 , wrapGAppsHook
 , upower
 , gnome
@@ -19,7 +18,11 @@
 , networkmanager
 , libdbusmenu-gtk3
 , gvfs
-, extraPackages ? []
+, libsoup_3
+, libnotify
+, extraPackages ? [ ]
+, version ? "git"
+, buildTypes ? false
 }:
 
 let
@@ -31,17 +34,17 @@ let
     sha256 = "sha256-FosJwgTCp6/EI6WVbJhPisokRBA6oT0eo7d+Ya7fFX8=";
   };
 in
-stdenv.mkDerivation {
+stdenv.mkDerivation rec {
   pname = "ags";
-  version = "1.5.1";
+  inherit version;
 
   src = buildNpmPackage {
-    name = "ags";
+    name = pname;
     src = ../.;
 
     dontBuild = true;
 
-    npmDepsHash = "sha256-LSx7cvtQffAMA4jHGUmuvhnUOY2PAu0VGW8OHHd67WY=";
+    npmDepsHash = "sha256-ucWdADdMqAdLXQYKGOXHNRNM9bhjKX4vkMcQ8q/GZ20=";
 
     installPhase = ''
       mkdir $out
@@ -49,14 +52,18 @@ stdenv.mkDerivation {
     '';
   };
 
+  mesonFlags = builtins.concatLists [
+    (lib.optional buildTypes "-Dbuild_types=true")
+  ];
+
   prePatch = ''
     mkdir -p ./subprojects/gvc
     cp -r ${gvc-src}/* ./subprojects/gvc
   '';
 
   postPatch = ''
-    chmod +x meson_post_install.py
-    patchShebangs meson_post_install.py
+    chmod +x post_install.sh
+    patchShebangs post_install.sh
   '';
 
   nativeBuildInputs = [
@@ -64,7 +71,6 @@ stdenv.mkDerivation {
     meson
     ninja
     nodePackages.typescript
-    python3
     wrapGAppsHook
     gobject-introspection
   ];
@@ -80,6 +86,8 @@ stdenv.mkDerivation {
     networkmanager
     libdbusmenu-gtk3
     gvfs
+    libsoup_3
+    libnotify
   ] ++ extraPackages;
 
   meta = with lib; {
@@ -87,6 +95,6 @@ stdenv.mkDerivation {
     homepage = "https://github.com/Aylur/ags";
     platforms = [ "x86_64-linux" "aarch64-linux" ];
     license = licenses.gpl3;
-    meta.maintainers = [lib.maintainers.Aylur];
+    meta.maintainers = [ lib.maintainers.Aylur ];
   };
 }

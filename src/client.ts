@@ -17,9 +17,12 @@ interface Flags {
     busName: string
     inspector: boolean
     runJs: string
-    runPromise: string
+    runFile: string
     toggleWindow: string
     quit: boolean
+
+    // FIXME: deprecated
+    runPromise: string
 }
 
 class Client extends Gtk.Application {
@@ -28,9 +31,9 @@ class Client extends Gtk.Application {
     private _objectPath: string;
     private _dbus!: Gio.DBusExportedObject;
     private _proxy: AgsProxy;
-    private _promiseJs: string;
+    private _callback!: () => void;
 
-    constructor(bus: string, path: string, proxy: AgsProxy, js: string) {
+    constructor(bus: string, path: string, proxy: AgsProxy) {
         super({
             application_id: bus + '.client' + TIME,
             flags: Gio.ApplicationFlags.DEFAULT_FLAGS,
@@ -38,13 +41,12 @@ class Client extends Gtk.Application {
 
         this._objectPath = path + '/client' + TIME;
         this._proxy = proxy;
-        this._promiseJs = js;
     }
 
     private _register() {
         Gio.bus_own_name(
             Gio.BusType.SESSION,
-            this.application_id,
+            this.application_id!,
             Gio.BusNameOwnerFlags.NONE,
             (connection: Gio.DBusConnection) => {
                 this._dbus = Gio.DBusExportedObject
@@ -57,32 +59,50 @@ class Client extends Gtk.Application {
         );
     }
 
-    Print(str: string) {
+    Return(str: string) {
         print(str);
         this.quit();
-        return str;
+    }
+
+    Print(str: string) {
+        print(str);
+    }
+
+    // FIXME: promise deprecated
+    remote(method: 'Js' | 'Promise' | 'File', body: string) {
+        if (method === 'Promise') {
+            console.warn('--run-promise is DEPRECATED, ' +
+                ' use --run-js instead, which now supports await syntax');
+        }
+
+        this._callback = () => this._proxy[`Run${method}Remote`](
+            body,
+            this.application_id!,
+            this._objectPath,
+        );
+        this.run(null);
     }
 
     vfunc_activate(): void {
         this.hold();
         this._register();
-        this._proxy.RunPromiseRemote(
-            this._promiseJs,
-            this.application_id!,
-            this._objectPath,
-        );
+        this._callback();
     }
 }
 
 export default function(bus: string, path: string, flags: Flags) {
     const AgsProxy = Gio.DBusProxy.makeProxyWrapper(AgsIFace(bus));
     const proxy = AgsProxy(Gio.DBus.session, bus, path) as AgsProxy;
+    const client = new Client(bus, path, proxy);
 
     if (flags.toggleWindow)
         print(proxy.ToggleWindowSync(flags.toggleWindow));
 
     else if (flags.runJs)
-        print(proxy.RunJsSync(flags.runJs));
+        client.remote('Js', flags.runJs);
+
+    else if (flags.runFile)
+        client.remote('File', flags.runFile);
 
     else if (flags.inspector)
         proxy.InspectorRemote();
@@ -90,8 +110,9 @@ export default function(bus: string, path: string, flags: Flags) {
     else if (flags.quit)
         proxy.QuitRemote();
 
+    // FIXME: deprecated
     else if (flags.runPromise)
-        return new Client(bus, path, proxy, flags.runPromise).run(null);
+        client.remote('Promise', flags.runPromise);
 
     else
         print(`Ags with busname "${flags.busName}" is already running`);

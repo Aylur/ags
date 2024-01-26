@@ -1,40 +1,59 @@
-import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
-const transitions = [
-    'none', 'crossfade',
-    'slide_right', 'slide_left', 'slide_up', 'slide_down',
-    'slide_left_right', 'slide_up_down',
-    'over_up', 'over_down', 'over_left', 'over_right',
-    'under_up', 'under_down', 'under_left', 'under_right',
-    'over_up_down', 'over_down_up', 'over_left_right', 'over_right_left',
-] as const;
+const TRANSITION = {
+    'none': Gtk.StackTransitionType.NONE,
+    'crossfade': Gtk.StackTransitionType.CROSSFADE,
+    'slide_right': Gtk.StackTransitionType.SLIDE_RIGHT,
+    'slide_left': Gtk.StackTransitionType.SLIDE_LEFT,
+    'slide_up': Gtk.StackTransitionType.SLIDE_UP,
+    'slide_down': Gtk.StackTransitionType.SLIDE_DOWN,
+    'slide_left_right': Gtk.StackTransitionType.SLIDE_LEFT_RIGHT,
+    'slide_up_down': Gtk.StackTransitionType.SLIDE_UP_DOWN,
+    'over_up': Gtk.StackTransitionType.OVER_UP,
+    'over_down': Gtk.StackTransitionType.OVER_DOWN,
+    'over_left': Gtk.StackTransitionType.OVER_LEFT,
+    'over_right': Gtk.StackTransitionType.OVER_RIGHT,
+    'under_up': Gtk.StackTransitionType.UNDER_UP,
+    'under_down': Gtk.StackTransitionType.UNDER_DOWN,
+    'under_left': Gtk.StackTransitionType.UNDER_LEFT,
+    'under_right': Gtk.StackTransitionType.UNDER_RIGHT,
+    'over_up_down': Gtk.StackTransitionType.OVER_UP_DOWN,
+    'over_down_up': Gtk.StackTransitionType.OVER_DOWN_UP,
+    'over_left_right': Gtk.StackTransitionType.OVER_LEFT_RIGHT,
+    'over_right_left': Gtk.StackTransitionType.OVER_RIGHT_LEFT,
+} as const;
 
-type Transition = typeof transitions[number]
+type Transition = keyof typeof TRANSITION;
 
-export interface StackProps extends BaseProps<AgsStack>, Gtk.Stack.ConstructorProperties {
+export type StackProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = Stack<Child, Attr>,
+> = BaseProps<Self, Gtk.Stack.ConstructorProperties & {
     shown?: string
-    items?: [string, Gtk.Widget][]
+    items?: [string, Child][]
     transition?: Transition
-}
+}, Attr>
 
-export default class AgsStack extends AgsWidget(Gtk.Stack) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Stack<Child, Attr> extends Widget<Attr> { }
+export class Stack<Child extends Gtk.Widget, Attr> extends Gtk.Stack {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsStack',
-            Properties: {
-                'transition': Service.pspec('transition', 'string', 'rw'),
-                'shown': Service.pspec('shown', 'string', 'rw'),
-                'items': Service.pspec('items', 'jsobject', 'rw'),
+        register(this, {
+            properties: {
+                'transition': ['string', 'rw'],
+                'shown': ['string', 'rw'],
+                'items': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
-    constructor(props: StackProps = {}) { super(props); }
+    constructor(props: StackProps<Child, Attr> = {}) {
+        super(props as Gtk.Stack.ConstructorProperties);
+    }
 
-    add_named(child: Gtk.Widget, name: string): void {
+    add_named(child: Child, name: string): void {
         this.items.push([name, child]);
         super.add_named(child, name);
         this.notify('items');
@@ -47,7 +66,7 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
         return this._get('items');
     }
 
-    set items(items: [string, Gtk.Widget][]) {
+    set items(items: Array<[string, Child]>) {
         this.items
             .filter(([name]) => !items.find(([n]) => n === name))
             .forEach(([, ch]) => ch.destroy());
@@ -67,23 +86,31 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
         this.show_all();
     }
 
-    get transition() { return transitions[this.transition_type]; }
+    get transition() {
+        return Object.keys(TRANSITION).find(key => {
+            return TRANSITION[key as Transition] === this.transition_type;
+        }) as Transition;
+    }
+
     set transition(transition: Transition) {
         if (this.transition === transition)
             return;
 
-        if (!transitions.includes(transition)) {
-            console.error('wrong transition value for Stack');
+        if (!Object.keys(TRANSITION).includes(transition)) {
+            console.error(Error(
+                `transition on Stack has to be one of ${Object.keys(TRANSITION)}, ` +
+                `but it is ${transition}`,
+            ));
             return;
         }
 
-        this.transition_type = transitions.findIndex(t => t === transition);
+        this.transition_type = TRANSITION[transition];
         this.notify('transition');
     }
 
     get shown() { return this.visible_child_name; }
     set shown(name: string | null) {
-        if (!this.get_child_by_name(name)) {
+        if (!name || !this.get_child_by_name(name)) {
             this.visible = false;
             return;
         }
@@ -93,3 +120,5 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
         this.notify('shown');
     }
 }
+
+export default Stack;

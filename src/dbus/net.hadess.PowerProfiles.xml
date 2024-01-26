@@ -1,0 +1,22 @@
+<node>
+  <interface name="net.hadess.PowerProfiles">
+    <method name="HoldProfile">
+      <arg name="profile" type="s" direction="in"/>
+      <arg name="reason" type="s" direction="in"/>
+      <arg name="application_id" type="s" direction="in" />
+      <arg name="cookie" type="u" direction="out"/>
+    </method>
+    <method name="ReleaseProfile">
+      <arg name="cookie" type="u" direction="in"/>
+    </method>
+    <signal name="ProfileReleased">
+      <arg name="cookie" type="u" direction="out"/>
+    </signal>
+    <property name="ActiveProfile" type="s" access="readwrite"/>
+    <property name="PerformanceInhibited" type="s" access="read"/>
+    <property name="PerformanceDegraded" type="s" access="read"/>
+    <property name="Profiles" type="aa{sv}" access="read"/>
+    <property name="Actions" type="as" access="read"/>
+    <property name="ActiveProfileHolds" type="aa{sv}" access="read"/>
+  </interface>
+</node>

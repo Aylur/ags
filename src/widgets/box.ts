@@ -1,32 +1,40 @@
-import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
-export interface BoxProps<T> extends BaseProps<T>, Gtk.Box.ConstructorProperties {
-    children?: Gtk.Widget[]
+export type BoxProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+> = BaseProps<Box<Child, Attr>, Gtk.Box.ConstructorProperties & {
+    child?: Child
+    children?: Child[]
     vertical?: boolean
-}
+}, Attr>;
 
-export default class AgsBox extends AgsWidget(Gtk.Box) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Box<Child, Attr> extends Widget<Attr> { }
+export class Box<Child extends Gtk.Widget, Attr> extends Gtk.Box {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsBox',
-            Properties: {
-                'vertical': Service.pspec('vertical', 'boolean', 'rw'),
-                'children': Service.pspec('children', 'jsobject', 'rw'),
+        register(this, {
+            properties: {
+                'vertical': ['boolean', 'rw'],
+                'children': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
-    constructor(props: BoxProps<AgsBox> = {}) { super(props); }
+    constructor(props: BoxProps<Child, Attr> = {}) {
+        super(props as Gtk.Box.ConstructorProperties);
+    }
 
-    get children() { return this.get_children(); }
-    set children(children: Gtk.Widget[]) {
+    get child() { return this.children[0] as Child; }
+    set child(child: Child) { this.children = [child]; }
+
+    get children() { return this.get_children() as Child[]; }
+    set children(children: Child[]) {
         const newChildren = children || [];
 
         this.get_children()
-            .filter(ch => !newChildren?.includes(ch))
+            .filter(ch => !newChildren?.includes(ch as Child))
             .forEach(ch => ch.destroy());
 
         // remove any children that weren't destroyed so
@@ -53,3 +61,5 @@ export default class AgsBox extends AgsWidget(Gtk.Box) {
         this.notify('vertical');
     }
 }
+
+export default Box;

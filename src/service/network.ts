@@ -53,7 +53,7 @@ const DEVICE = (device: string) => {
     switch (device) {
         case '802-11-wireless': return 'wifi';
         case '802-3-ethernet': return 'wired';
-        default: return '';
+        default: return null;
     }
 };
 
@@ -227,7 +227,7 @@ export class Network extends Service {
 
     wifi!: Wifi;
     wired!: Wired;
-    primary?: string;
+    primary: null | 'wifi' | 'wired' = null;
     connectivity!: string;
 
     constructor() {
@@ -238,7 +238,7 @@ export class Network extends Service {
             this._clientReady();
         }
         catch (e) {
-            console.error(e as Error);
+            logError(e);
         }
     }
 

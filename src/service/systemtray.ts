@@ -7,14 +7,14 @@ import DbusmenuGtk3 from 'gi://DbusmenuGtk3';
 import Service from '../service.js';
 import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
-import { subclass } from '../widget.js';
+import Widget from '../widget.js';
 
 const StatusNotifierWatcherIFace = loadInterfaceXML('org.kde.StatusNotifierWatcher')!;
 const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem')!;
 const StatusNotifierItemProxy =
     Gio.DBusProxy.makeProxyWrapper(StatusNotifierItemIFace) as unknown as StatusNotifierItemProxy;
 
-const DbusmenuGtk3Menu = subclass<
+const DbusmenuGtk3Menu = Widget<
     typeof DbusmenuGtk3.Menu,
     DbusmenuGtk3.Menu.ConstructorProperties
 >(DbusmenuGtk3.Menu);
@@ -122,7 +122,7 @@ export class TrayItem extends Service {
     private _itemProxyAcquired(proxy: StatusNotifierItemProxy) {
         if (proxy.Menu) {
             const menu = DbusmenuGtk3Menu({
-                dbus_name: proxy.g_name_owner,
+                dbus_name: proxy.g_name_owner!,
                 dbus_object: proxy.Menu,
             });
             this.menu = (menu as unknown) as DbusmenuGtk3.Menu;
@@ -161,7 +161,7 @@ export class TrayItem extends Service {
     private _refreshAllProperties() {
         this._proxy.g_connection.call(
             this._proxy.g_name,
-            this._proxy.g_object_path,
+            this._proxy.g_object_path!,
             'org.freedesktop.DBus.Properties',
             'GetAll',
             new GLib.Variant('(s)', [this._proxy.g_interface_name]),
@@ -176,6 +176,14 @@ export class TrayItem extends Service {
                 Object.entries(properties).map(([propertyName, value]) => {
                     this._proxy.set_cached_property(propertyName, value);
                 });
+
+                if (this._proxy.IconThemePath) {
+                    if (!this._iconTheme)
+                        this._iconTheme = Gtk.IconTheme.new();
+
+                    this._iconTheme.set_search_path([this._proxy.IconThemePath]);
+                }
+
                 this._notify();
             },
         );

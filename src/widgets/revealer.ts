@@ -1,43 +1,64 @@
-import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
-const transitions = [
-    'none', 'crossfade',
-    'slide_right', 'slide_left',
-    'slide_up', 'slide_down',
-] as const;
+const TRANSITION = {
+    'none': Gtk.RevealerTransitionType.NONE,
+    'crossfade': Gtk.RevealerTransitionType.CROSSFADE,
+    'slide_right': Gtk.RevealerTransitionType.SLIDE_RIGHT,
+    'slide_left': Gtk.RevealerTransitionType.SLIDE_LEFT,
+    'slide_up': Gtk.RevealerTransitionType.SLIDE_UP,
+    'slide_down': Gtk.RevealerTransitionType.SLIDE_DOWN,
+} as const;
 
-type Transition = typeof transitions[number];
+type Transition = keyof typeof TRANSITION;
 
-export interface RevealerProps extends BaseProps<AgsRevealer>, Gtk.Revealer.ConstructorProperties {
+export type RevealerProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = Revealer<Child, Attr>,
+> = BaseProps<Self, Gtk.Revealer.ConstructorProperties & {
+    child?: Child
     transition?: Transition
-}
+}, Attr>
 
-export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Revealer<Child, Attr> extends Widget<Attr> { }
+export class Revealer<Child extends Gtk.Widget, Attr> extends Gtk.Revealer {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsRevealer',
-            Properties: {
-                'transition': Service.pspec('transition', 'string', 'rw'),
-            },
-        }, this);
+        register(this, {
+            properties: { 'transition': ['string', 'rw'] },
+        });
     }
 
-    constructor(props: RevealerProps = {}) { super(props); }
+    constructor(props: RevealerProps<Child, Attr> = {}) {
+        super(props as Gtk.Revealer.ConstructorProperties);
+    }
 
-    get transition() { return transitions[this.transition_type]; }
+    get child() { return super.child as Child; }
+    set child(child: Child) { super.child = child; }
+
+
+    get transition() {
+        return Object.keys(TRANSITION).find(key => {
+            return TRANSITION[key as Transition] === this.transition_type;
+        }) as Transition;
+    }
+
     set transition(transition: Transition) {
-        if (!transition || this.transition === transition)
+        if (this.transition === transition)
             return;
 
-        if (!transitions.includes(transition)) {
-            console.error('wrong transition value for Revealer');
+        if (!Object.keys(TRANSITION).includes(transition)) {
+            console.error(Error(
+                `transition on Revealer has to be one of ${Object.keys(TRANSITION)}, ` +
+                `but it is ${transition}`,
+            ));
             return;
         }
 
-        this.transition_type = transitions.findIndex(t => t === transition);
+        this.transition_type = TRANSITION[transition];
         this.notify('transition');
     }
 }
+
+export default Revealer;

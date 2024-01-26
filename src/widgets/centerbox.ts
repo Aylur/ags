@@ -1,40 +1,43 @@
-import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=3.0';
-import AgsBox, { type BoxProps } from './box.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 
-export interface CenterBoxProps extends BoxProps<AgsCenterBox> {
-    start_widget?: Gtk.Widget
-    center_widget?: Gtk.Widget
-    end_widget?: Gtk.Widget
-}
+export type CenterBoxProps<
+    StartWidget extends Gtk.Widget,
+    CenterWidget extends Gtk.Widget,
+    EndWidget extends Gtk.Widget,
+    Attr = unknown,
+    Self = CenterBox<StartWidget, CenterWidget, EndWidget, Attr>,
+> = BaseProps<Self, Gtk.Box.ConstructorProperties & {
+    vertical?: boolean
+    start_widget?: StartWidget
+    center_widget?: CenterWidget
+    end_widget?: EndWidget
+}, Attr>;
 
-export default class AgsCenterBox extends AgsBox {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface CenterBox<StartWidget, CenterWidget, EndWidget, Attr> extends Widget<Attr> { }
+export class CenterBox<
+    StartWidget extends Gtk.Widget,
+    CenterWidget extends Gtk.Widget,
+    EndWidget extends Gtk.Widget,
+    Attr
+> extends Gtk.Box {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsCenterBox',
-            Properties: {
-                'start-widget': GObject.ParamSpec.object(
-                    'start-widget', 'Start Widget', 'Start Widget',
-                    GObject.ParamFlags.READWRITE,
-                    Gtk.Widget.$gtype,
-                ),
-                'center-widget': GObject.ParamSpec.object(
-                    'center-widget', 'Center Widget', 'Center Widget',
-                    GObject.ParamFlags.READWRITE,
-                    Gtk.Widget.$gtype,
-                ),
-                'end-widget': GObject.ParamSpec.object(
-                    'end-widget', 'End Widget', 'End Widget',
-                    GObject.ParamFlags.READWRITE,
-                    Gtk.Widget.$gtype,
-                ),
+        register(this, {
+            properties: {
+                'vertical': ['boolean', 'rw'],
+                'start-widget': ['widget', 'rw'],
+                'center-widget': ['widget', 'rw'],
+                'end-widget': ['widget', 'rw'],
             },
-        }, this);
+        });
     }
 
-    constructor(props: CenterBoxProps = {}) { super(props as BoxProps<AgsBox>); }
+    constructor(props: CenterBoxProps<StartWidget, CenterWidget, EndWidget, Attr> = {}) {
+        super(props as Gtk.Widget.ConstructorProperties);
+    }
 
-    set children(children: Gtk.Widget[]) {
+    set children(children: [StartWidget, CenterWidget, EndWidget]) {
         const newChildren = children || [];
 
         newChildren.filter(ch => !newChildren?.includes(ch))
@@ -50,8 +53,8 @@ export default class AgsCenterBox extends AgsBox {
             this.end_widget = children[2];
     }
 
-    get start_widget() { return this._get('start-widget') || null; }
-    set start_widget(child: Gtk.Widget | null) {
+    get start_widget() { return this._get('start-widget') || null as StartWidget | null; }
+    set start_widget(child: StartWidget | null) {
         if (this.start_widget)
             this.start_widget.destroy();
 
@@ -64,8 +67,8 @@ export default class AgsCenterBox extends AgsBox {
         this.show_all();
     }
 
-    get end_widget() { return this._get('end-widget') || null; }
-    set end_widget(child: Gtk.Widget | null) {
+    get end_widget() { return this._get('end-widget') || null as EndWidget | null; }
+    set end_widget(child: EndWidget | null) {
         if (this.end_widget)
             this.end_widget.destroy();
 
@@ -78,8 +81,8 @@ export default class AgsCenterBox extends AgsBox {
         this.show_all();
     }
 
-    get center_widget() { return this.get_center_widget(); }
-    set center_widget(child: Gtk.Widget | null) {
+    get center_widget() { return this.get_center_widget() as CenterWidget | null; }
+    set center_widget(child: CenterWidget | null) {
         const center_widget = this.get_center_widget();
         if (!child && center_widget) {
             center_widget.destroy();
@@ -89,4 +92,17 @@ export default class AgsCenterBox extends AgsBox {
         this.set_center_widget(child);
         this.notify('center-widget');
     }
+
+    get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
+    set vertical(vertical: boolean) {
+        if (this.vertical === vertical)
+            return;
+
+        this.orientation = vertical
+            ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
+
+        this.notify('vertical');
+    }
 }
+
+export default CenterBox;

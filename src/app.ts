@@ -2,32 +2,32 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
-import { timeout } from './utils.js';
+import Service from './service.js';
+import { timeout, readFileAsync } from './utils.js';
 import { loadInterfaceXML } from './utils.js';
 
 const AgsIFace = (bus: string) =>
     loadInterfaceXML('com.github.Aylur.ags')?.replace('@BUS@', bus);
 
-interface Config {
-    windows?: Gtk.Window[]
+export interface Config<W extends Gtk.Window = Gtk.Window> {
+    windows?: W[]
     style?: string
     notificationPopupTimeout: number
+    notificationForceTimeout: boolean
     cacheNotificationActions: boolean
+    cacheCoverArt: boolean
     closeWindowDelay: { [key: string]: number }
     maxStreamVolume: number
+    onWindowToggled?: (windowName: string, visible: boolean) => void,
+    onConfigParsed?: (app: App) => void,
 }
 
 export class App extends Gtk.Application {
     static {
-        GObject.registerClass({
-            Signals: {
-                'window-toggled': {
-                    param_types: [GObject.TYPE_STRING, GObject.TYPE_BOOLEAN],
-                },
-                'config-parsed': {},
-            },
-        }, this);
+        Service.register(this, {
+            'window-toggled': ['string', 'boolean'],
+            'config-parsed': [],
+        });
     }
 
     private _dbus!: Gio.DBusExportedObject;
@@ -88,13 +88,13 @@ export class App extends Gtk.Application {
         this._cssProviders.push(cssProvider);
     }
 
-    setup(bus: string, path: string, configPath: string) {
+    setup(bus: string, path: string, configDir: string, entry: string) {
         this.application_id = bus;
         this.flags = Gio.ApplicationFlags.DEFAULT_FLAGS;
         this._objectPath = path;
 
-        this._configDir = configPath.split('/').slice(0, -1).join('/');
-        this._configPath = configPath;
+        this._configDir = configDir;
+        this._configPath = entry;
     }
 
     vfunc_activate() {
@@ -103,7 +103,6 @@ export class App extends Gtk.Application {
         this._load();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     connect(signal = 'window-toggled', callback: (_: this, ...args: any[]) => void): number {
         return super.connect(signal, callback);
     }
@@ -179,12 +178,14 @@ export class App extends Gtk.Application {
 
     private async _load() {
         try {
-            const mod = await import(`file://${this._configPath}`);
+            const mod = await import(`file://${this.configPath}`);
             const config = mod.default as Config;
-            config.closeWindowDelay ||= {};
-            config.notificationPopupTimeout ||= 3000;
-            config.maxStreamVolume ||= 1.5;
-            config.cacheNotificationActions ||= false;
+            config.closeWindowDelay ??= {};
+            config.notificationPopupTimeout ??= 3000;
+            config.notificationForceTimeout ??= false;
+            config.maxStreamVolume ??= 1.5;
+            config.cacheNotificationActions ??= false;
+            config.cacheCoverArt ??= true;
             this._config = config;
 
             if (!config) {
@@ -195,8 +196,11 @@ export class App extends Gtk.Application {
 
             this._closeDelay = config.closeWindowDelay;
 
-            if (config.style)
-                this.applyCss(config.style);
+            if (config.style) {
+                this.applyCss(config.style.startsWith('.')
+                    ? `${this.configDir}${config.style.slice(1)}`
+                    : config.style);
+            }
 
             if (config.windows && !Array.isArray(config.windows)) {
                 console.error('windows attribute has to be an array, ' +
@@ -205,18 +209,29 @@ export class App extends Gtk.Application {
                 return;
             }
 
+            if (typeof config.onWindowToggled === 'function')
+                this.connect('window-toggled', (_, n, v) => config.onWindowToggled!(n, v));
+
             config.windows?.forEach(this.addWindow.bind(this));
+            config.onConfigParsed?.(this);
 
             this.emit('config-parsed');
         } catch (err) {
-            console.error(err as Error);
+            logError(err);
+
+            const error = err as { name?: string, message: string };
+            const msg = `Unable to load file from: file://${this._configPath}`;
+            if (error?.name === 'ImportError' && error.message.includes(msg)) {
+                print(`config file not found: "${this._configPath}"`);
+                this.quit();
+            }
         }
     }
 
     private _register() {
         Gio.bus_own_name(
             Gio.BusType.SESSION,
-            this.application_id,
+            this.application_id!,
             Gio.BusNameOwnerFlags.NONE,
             (connection: Gio.DBusConnection) => {
                 this._dbus = Gio.DBusExportedObject
@@ -229,25 +244,75 @@ export class App extends Gtk.Application {
         );
     }
 
-    RunJs(js: string): string {
-        return js.includes(';')
-            ? `${Function(js)()}`
-            : `${Function('return ' + js)()}`;
+    toJSON() {
+        return {
+            bus: this.application_id,
+            configDir: this.configDir,
+            windows: Object.fromEntries(this.windows.entries()),
+        };
     }
 
+    RunJs(js: string, clientBusName?: string, clientObjPath?: string) {
+        let fn;
+
+        const dbus = (method: 'Return' | 'Print') => (out: unknown) => Gio.DBus.session.call(
+            clientBusName!, clientObjPath!, clientBusName!, method,
+            new GLib.Variant('(s)', [`${out}`]),
+            null, Gio.DBusCallFlags.NONE, -1, null, null,
+        );
+
+        const response = dbus('Return');
+        const print = dbus('Print');
+        const client = clientBusName && clientObjPath;
+
+        try {
+            fn = Function(`return (async function(print) {
+                ${js.includes(';') ? js : `return ${js}`}
+            })`);
+        } catch (error) {
+            client ? response(error) : logError(error);
+            return;
+        }
+
+        fn()(print)
+            .then((out: unknown) => {
+                client ? response(`${out}`) : print(`${out}`);
+            })
+            .catch((err: Error) => {
+                client ? response(`${err}`) : logError(err);
+            });
+    }
+
+    RunFile(file: string, bus?: string, path?: string) {
+        readFileAsync(file)
+            .then(content => {
+                if (content.startsWith('#!'))
+                    content = content.split('\n').slice(1).join('\n');
+
+                this.RunJs(content, bus, path);
+            })
+            .catch(logError);
+    }
+
+    // FIXME: deprecated
     RunPromise(js: string, busName?: string, objPath?: string) {
+        console.warn('--run-promise is DEPRECATED, ' +
+            ' use --run-js instead, which now supports await syntax');
+
+        const client = busName && objPath;
+        const response = (out: unknown) => Gio.DBus.session.call(
+            busName!, objPath!, busName!, 'Return',
+            new GLib.Variant('(s)', [`${out}`]),
+            null, Gio.DBusCallFlags.NONE, -1, null, null,
+        );
+
         new Promise((res, rej) => Function('resolve', 'reject', js)(res, rej))
             .then(out => {
-                if (busName && objPath) {
-                    Gio.DBus.session.call(
-                        busName, objPath, busName, 'Print',
-                        new GLib.Variant('(s)', [`${out}`]),
-                        null, Gio.DBusCallFlags.NONE, -1, null, null,
-                    );
-                }
-                else { print(`${out}`); }
+                client ? response(`${out}`) : print(`${out}`);
             })
-            .catch(err => console.error(err));
+            .catch(err => {
+                client ? response(`${err}`) : console.error(`${err}`);
+            });
     }
 
     ToggleWindow(name: string) {
@@ -260,4 +325,5 @@ export class App extends Gtk.Application {
     Quit() { this.quit(); }
 }
 
-export default new App();
+export const app = new App;
+export default app;

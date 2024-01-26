@@ -1,72 +1,72 @@
-import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
-import Service from '../service.js';
 
-type EventHandler = (self: AgsEventBox, event: Gdk.Event) => boolean | unknown;
+type EventHandler<Self> = (self: Self, event: Gdk.Event) => boolean | unknown;
 
-export interface EventBoxProps extends BaseProps<AgsEventBox>, Gtk.EventBox.ConstructorProperties {
-    on_hover?: EventHandler
-    on_hover_lost?: EventHandler
+export type EventBoxProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = EventBox<Child, Attr>,
+> = BaseProps<Self, Gtk.EventBox.ConstructorProperties & {
+    child?: Child
+    on_hover?: EventHandler<Self>
+    on_hover_lost?: EventHandler<Self>
 
-    on_scroll_up?: EventHandler
-    on_scroll_down?: EventHandler
+    on_scroll_up?: EventHandler<Self>
+    on_scroll_down?: EventHandler<Self>
 
-    on_primary_click?: EventHandler
-    on_middle_click?: EventHandler
-    on_secondary_click?: EventHandler
+    on_primary_click?: EventHandler<Self>
+    on_middle_click?: EventHandler<Self>
+    on_secondary_click?: EventHandler<Self>
 
-    on_primary_click_release?: EventHandler
-    on_middle_click_release?: EventHandler
-    on_secondary_click_release?: EventHandler
-}
+    on_primary_click_release?: EventHandler<Self>
+    on_middle_click_release?: EventHandler<Self>
+    on_secondary_click_release?: EventHandler<Self>
+}, Attr>
 
-export default class AgsEventBox extends AgsWidget(Gtk.EventBox) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface EventBox<Child, Attr> extends Widget<Attr> { }
+export class EventBox<Child extends Gtk.Widget, Attr> extends Gtk.EventBox {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsEventBox',
-            Properties: {
-                'on-hover':
-                    Service.pspec('on-hover', 'jsobject', 'rw'),
-                'on-hover-lost':
-                    Service.pspec('on-hover-lost', 'jsobject', 'rw'),
+        register(this, {
+            properties: {
+                'on-clicked': ['jsobject', 'rw'],
 
-                'on-scroll-up':
-                    Service.pspec('on-scroll-up', 'jsobject', 'rw'),
-                'on-scroll-down':
-                    Service.pspec('on-scroll-down', 'jsobject', 'rw'),
+                'on-hover': ['jsobject', 'rw'],
+                'on-hover-lost': ['jsobject', 'rw'],
 
-                'on-primary-click':
-                    Service.pspec('on-primary-click', 'jsobject', 'rw'),
-                'on-secondary-click':
-                    Service.pspec('on-secondary-click', 'jsobject', 'rw'),
-                'on-middle-click':
-                    Service.pspec('on-middle-click', 'jsobject', 'rw'),
+                'on-scroll-up': ['jsobject', 'rw'],
+                'on-scroll-down': ['jsobject', 'rw'],
 
-                'on-primary-click-release':
-                    Service.pspec('on-primary-click-release', 'jsobject', 'rw'),
-                'on-secondary-click-release':
-                    Service.pspec('on-secondary-click-release', 'jsobject', 'rw'),
-                'on-middle-click-release':
-                    Service.pspec('on-middle-click-release', 'jsobject', 'rw'),
+                'on-primary-click': ['jsobject', 'rw'],
+                'on-secondary-click': ['jsobject', 'rw'],
+                'on-middle-click': ['jsobject', 'rw'],
+
+                'on-primary-click-release': ['jsobject', 'rw'],
+                'on-secondary-click-release': ['jsobject', 'rw'],
+                'on-middle-click-release': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
-    constructor(props: EventBoxProps = {}) {
-        super(props);
+    constructor(props: EventBoxProps<Child, Attr> = {}) {
+        super(props as Gtk.EventBox.ConstructorProperties);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
 
         this.connect('enter-notify-event', (_, event: Gdk.Event) => {
-            this.set_state_flags(Gtk.StateFlags.PRELIGHT, false);
-            return this.on_hover?.(this, event);
+            if (this.isHovered(event)) {
+                this.set_state_flags(Gtk.StateFlags.PRELIGHT, false);
+                return this.on_hover?.(this, event);
+            }
         });
 
         this.connect('leave-notify-event', (_, event: Gdk.Event) => {
-            this.unset_state_flags(Gtk.StateFlags.PRELIGHT);
-            return this.on_hover_lost?.(this, event);
+            if (!this.isHovered(event)) {
+                this.unset_state_flags(Gtk.StateFlags.PRELIGHT);
+                return this.on_hover_lost?.(this, event);
+            }
         });
 
         this.connect('button-press-event', (_, event: Gdk.Event) => {
@@ -102,53 +102,59 @@ export default class AgsEventBox extends AgsWidget(Gtk.EventBox) {
         });
     }
 
+    get child() { return super.child as Child; }
+    set child(child: Child) { super.child = child; }
+
+
     get on_hover() { return this._get('on-hover'); }
-    set on_hover(callback: EventHandler) {
+    set on_hover(callback: EventHandler<this>) {
         this._set('on-hover', callback);
     }
 
     get on_hover_lost() { return this._get('on-hover-lost'); }
-    set on_hover_lost(callback: EventHandler) {
+    set on_hover_lost(callback: EventHandler<this>) {
         this._set('on-hover-lost', callback);
     }
 
     get on_scroll_up() { return this._get('on-scroll-up'); }
-    set on_scroll_up(callback: EventHandler) {
+    set on_scroll_up(callback: EventHandler<this>) {
         this._set('on-scroll-up', callback);
     }
 
     get on_scroll_down() { return this._get('on-scroll-down'); }
-    set on_scroll_down(callback: EventHandler) {
+    set on_scroll_down(callback: EventHandler<this>) {
         this._set('on-scroll-down', callback);
     }
 
     get on_primary_click() { return this._get('on-primary-click'); }
-    set on_primary_click(callback: EventHandler) {
+    set on_primary_click(callback: EventHandler<this>) {
         this._set('on-primary-click', callback);
     }
 
     get on_middle_click() { return this._get('on-middle-click'); }
-    set on_middle_click(callback: EventHandler) {
+    set on_middle_click(callback: EventHandler<this>) {
         this._set('on-middle-click', callback);
     }
 
     get on_secondary_click() { return this._get('on-secondary-click'); }
-    set on_secondary_click(callback: EventHandler) {
+    set on_secondary_click(callback: EventHandler<this>) {
         this._set('on-secondary-click', callback);
     }
 
     get on_primary_click_release() { return this._get('on-primary-click-release'); }
-    set on_primary_click_release(callback: EventHandler) {
+    set on_primary_click_release(callback: EventHandler<this>) {
         this._set('on-primary-click-release', callback);
     }
 
     get on_middle_click_release() { return this._get('on-middle-click-release'); }
-    set on_middle_click_release(callback: EventHandler) {
+    set on_middle_click_release(callback: EventHandler<this>) {
         this._set('on-middle-click-release', callback);
     }
 
     get on_secondary_click_release() { return this._get('on-secondary-click-release'); }
-    set on_secondary_click_release(callback: EventHandler) {
+    set on_secondary_click_release(callback: EventHandler<this>) {
         this._set('on-secondary-click-release', callback);
     }
 }
+
+export default EventBox;

@@ -1,8 +1,10 @@
 <node>
     <interface name="@BUS@">
+        <method name="Return">
+            <arg direction="in" type="s" name="string"/>
+        </method>
         <method name="Print">
             <arg direction="in" type="s" name="string"/>
-            <arg direction="out" type="s" name="string"/>
         </method>
     </interface>
 </node>

@@ -1,7 +1,36 @@
 import GObject from 'gi://GObject';
+import { pspec, registerGObject, PspecFlag, PspecType } from './utils/gobject.js';
 
-type PspecType = 'jsobject' | 'string' | 'int' | 'float' | 'double' | 'boolean' | 'gobject';
-type PspecFlag = 'rw' | 'r' | 'w';
+export type OnlyString<S extends string | unknown> = S extends string ? S : never;
+
+export type Props<T> = Omit<Pick<T, {
+    [K in keyof T]: T[K] extends (...args: any[]) => any ? never : OnlyString<K>
+}[keyof T]>, 'g_type_instance'>;
+
+export type BindableProps<T> = {
+    [K in keyof T]: Binding<any, any, NonNullable<T[K]>> | T[K];
+}
+
+export class Binding<
+    Emitter extends GObject.Object,
+    Prop extends keyof Props<Emitter>,
+    Return = Emitter[Prop],
+> {
+    emitter: Emitter;
+    prop: Prop;
+    transformFn = (v: any) => v; // see #262
+    constructor(emitter: Emitter, prop: Prop) {
+        this.emitter = emitter;
+        this.prop = prop;
+    }
+
+    transform<T>(fn: (v: Return) => T) {
+        const bind = new Binding<Emitter, Prop, T>(this.emitter, this.prop);
+        const prev = this.transformFn;
+        bind.transformFn = (v: Return) => fn(prev(v));
+        return bind;
+    }
+}
 
 export default class Service extends GObject.Object {
     static {
@@ -12,80 +41,24 @@ export default class Service extends GObject.Object {
     }
 
     static pspec(name: string, type: PspecType = 'jsobject', handle: PspecFlag = 'r') {
-        const flags = (() => {
-            switch (handle) {
-                case 'w': return GObject.ParamFlags.WRITABLE;
-                case 'r': return GObject.ParamFlags.READABLE;
-                case 'rw':
-                default: return GObject.ParamFlags.READWRITE;
-            }
-        })();
-
-        switch (type) {
-            case 'string': return GObject.ParamSpec.string(
-                name, name, name, flags, '');
-
-            case 'int': return GObject.ParamSpec.int64(
-                name, name, name, flags,
-                Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, 0);
-
-            case 'float': return GObject.ParamSpec.float(
-                name, name, name, flags,
-                -1, 1, 0);
-
-            case 'double': return GObject.ParamSpec.double(
-                name, name, name, flags,
-                Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, 0);
-
-            case 'boolean': return GObject.ParamSpec.boolean(
-                name, name, name, flags, false);
-
-            case 'gobject': return GObject.ParamSpec.object(
-                name, name, name, flags, GObject.Object.$gtype);
-
-            default: return GObject.ParamSpec.jsobject(
-                name, name, name, flags);
-        }
+        return pspec(name, type, handle);
     }
 
     static register(
         service: new (...args: any[]) => GObject.Object,
-        signals?: { [signal: string]: string[] },
+        signals?: { [signal: string]: PspecType[] },
         properties?: { [prop: string]: [type?: PspecType, handle?: PspecFlag] },
     ) {
-        const Signals: {
-            [signal: string]: { param_types: GObject.GType<unknown>[] }
-        } = {};
-
-        const Properties: {
-            [prop: string]: GObject.ParamSpec,
-        } = {};
-
-        if (signals) {
-            Object.keys(signals).forEach(signal => Signals[signal] = {
-                param_types: signals[signal].map(t =>
-                    // @ts-expect-error
-                    GObject[`TYPE_${t.toUpperCase()}`]),
-            });
-        }
-
-        if (properties) {
-            Object.keys(properties).forEach(prop =>
-                Properties[prop] = Service.pspec(prop, ...properties[prop]),
-            );
-        }
-
-        GObject.registerClass({ Signals, Properties }, service);
+        registerGObject(service, { signals, properties });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     connect(signal = 'changed', callback: (_: this, ...args: any[]) => void): number {
         return super.connect(signal, callback);
     }
 
     updateProperty(prop: string, value: unknown) {
-        // @ts-expect-error
-        if (this[`_${prop}`] === value)
+        if (this[prop as keyof typeof this] === value ||
+            JSON.stringify(this[prop as keyof typeof this]) === JSON.stringify(value))
             return;
 
         const privateProp = prop
@@ -102,5 +75,8 @@ export default class Service extends GObject.Object {
         this.notify(property);
         this.emit('changed');
     }
-}
 
+    bind<Prop extends keyof Props<this>>(prop: Prop) {
+        return new Binding(this, prop);
+    }
+}

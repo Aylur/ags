@@ -4,23 +4,24 @@ self: {
   lib,
   ...
 }: let
-  cfg = config.programs.ags;
-  defaultAgsPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
-in {
-  meta.maintainers = [
-    lib.maintainers.Jappie3
-    lib.maintainers.Aylur
-  ];
+  inherit (lib) mkMerge types;
+  inherit (lib.modules) mkIf;
+  inherit (lib.options) mkOption mkEnableOption literalExpression;
 
-  options.programs.ags = with lib; {
+  defaultAgsPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  cfg = config.programs.ags;
+in {
+  options.programs.ags = {
     enable = mkEnableOption "ags";
 
     package = mkOption {
       type = with types; nullOr package;
       default = defaultAgsPackage;
-      defaultText = literalExpression "ags.packages.${pkgs.stdenv.hostPlatform.system}.default";
-      description = mkDoc ''
-        The Ags package to use. Defaults to the one provided by the flake.
+      defaultText = literalExpression "inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.default";
+      description = ''
+        The Ags package to use.
+
+        By default, this option will use the `packages.default` as exposed by this flake.
       '';
     };
 
@@ -28,7 +29,7 @@ in {
       type = with types; nullOr path;
       default = null;
       example = literalExpression "./ags-config";
-      description = mkDoc ''
+      description = ''
         The directory to symlink to {file}`$XDG_CONFIG_HOME/ags`.
       '';
     };
@@ -36,21 +37,26 @@ in {
     extraPackages = mkOption {
       type = with types; listOf package;
       default = [];
-      description = mkDoc ''
+      description = ''
         Additional packages to add to gjs's runtime.
       '';
-      example = lib.literalExpression "[ pkgs.libsoup_3 ]";
+      example = literalExpression "[ pkgs.libsoup_3 ]";
     };
   };
 
-  config = with lib; mkIf cfg.enable (mkMerge [
+  config = mkIf cfg.enable (mkMerge [
     (mkIf (cfg.configDir != null) {
       xdg.configFile."ags".source = cfg.configDir;
     })
-    {
-      home.packages = lib.optional (cfg.package != null) (cfg.package.override {
+    (mkIf (cfg.package != null) (let
+      path = "/share/com.github.Aylur.ags/types";
+      pkg = cfg.package.override {
         extraPackages = cfg.extraPackages;
-      });
-    }
+        buildTypes = true;
+      };
+    in {
+      home.packages = [pkg];
+      home.file.".local/${path}".source = "${pkg}/${path}";
+    }))
   ]);
 }

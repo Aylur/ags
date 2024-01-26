@@ -1,38 +1,43 @@
-import AgsWidget, { type BaseProps } from './widget.js';
-import GObject from 'gi://GObject';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
-import Service from '../service.js';
 
-export interface EntryProps extends BaseProps<AgsEntry>, Gtk.Entry.ConstructorProperties {
-    on_accept?: (self: AgsEntry) => void | unknown
-    on_change?: (self: AgsEntry) => void | unknown
-}
+type EventHandler<Self> = (self: Self) => void | unknown;
 
-export default class AgsEntry extends AgsWidget(Gtk.Entry) {
+export type EntryProps<
+    Attr = unknown,
+    Self = Entry<Attr>,
+> = BaseProps<Self, Gtk.Entry.ConstructorProperties & {
+    on_accept?: EventHandler<Self>
+    on_change?: EventHandler<Self>
+}, Attr>
+
+export interface Entry<Attr> extends Widget<Attr> { }
+export class Entry<Attr> extends Gtk.Entry {
     static {
-        GObject.registerClass({
-            GTypeName: 'AgsEntry',
-            Properties: {
-                'on-accept': Service.pspec('on-accept', 'jsobject', 'rw'),
-                'on-change': Service.pspec('on-change', 'jsobject', 'rw'),
+        register(this, {
+            properties: {
+                'on-accept': ['jsobject', 'rw'],
+                'on-change': ['jsobject', 'rw'],
             },
-        }, this);
+        });
     }
 
-    constructor(props: EntryProps = {}) {
-        super(props);
+    constructor(props: EntryProps<Attr> = {}) {
+        super(props as Gtk.Entry.ConstructorProperties);
 
         this.connect('activate', () => this.on_accept?.(this));
         this.connect('notify::text', () => this.on_change?.(this));
     }
 
     get on_accept() { return this._get('on-accept'); }
-    set on_accept(callback: EntryProps['on_accept']) {
+    set on_accept(callback: EventHandler<this>) {
         this._set('on-accept', callback);
     }
 
     get on_change() { return this._get('on-change'); }
-    set on_change(callback: EntryProps['on_change']) {
+    set on_change(callback: EventHandler<this>) {
         this._set('on-change', callback);
     }
 }
+
+export default Entry;
