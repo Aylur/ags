@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import Gtk from 'gi://Gtk?version=3.0';
-import { register, type BaseProps, type Widget } from './widgets/widget.js';
+import { register as registerClass, type BaseProps, type Widget } from './widgets/widget.js';
 import { Box as BoxClass, type BoxProps } from './widgets/box.js';
 import { CenterBox as CenterBoxClass, type CenterBoxProps } from './widgets/centerbox.js';
 import { EventBox as EventBoxClass, type EventBoxProps } from './widgets/eventbox.js';
@@ -59,7 +59,7 @@ export const ToggleButton = <Attr>(props?: Etc.ToggleButtonProps<Attr>) => new E
 // to bundle everything in a default export
 export default function Widget<T extends { new(...args: any[]): Gtk.Widget }, Props>(Base: T, typename = Base.name) {
     class Subclassed extends Base {
-        static { register(this, { typename }); }
+        static { registerClass(this, { typename }); }
         constructor(...params: any[]) { super(...params); }
     }
     type Instance<Attr> = InstanceType<typeof Subclassed> & Widget<Attr>;
@@ -68,8 +68,11 @@ export default function Widget<T extends { new(...args: any[]): Gtk.Widget }, Pr
     };
 }
 
+export const register = registerClass;
+
 Widget.Widget = Widget; // for compatibility
-Widget.subclass = Widget;
+Widget.subclass = Widget; // for compatibility
+Widget.register = register;
 
 Widget.Box = Box;
 Widget.Button = Button;
