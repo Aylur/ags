@@ -527,3 +527,9 @@ export function register<T extends { new(...args: any[]): Gtk.Widget }>(
         },
     });
 }
+
+// FIXME: backwards compatibility
+export default function W(klass: any) {
+    return klass;
+}
+W.register = register;
