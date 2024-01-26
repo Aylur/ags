@@ -98,15 +98,19 @@ export class Variable<T> extends GObject.Object {
             ? this._listen[1]
             : (out: string) => out as T;
 
-        // listen: string
+        // string
         if (typeof this._listen === 'string')
             cmd = this._listen;
 
-        // listen: [string, fn]
+        // string[]
+        else if (Array.isArray(this._listen) && this._listen.every(s => typeof s === 'string'))
+            cmd = this._listen as string[];
+
+        // [string, fn]
         else if (Array.isArray(this._listen) && typeof this._listen[0] === 'string')
             cmd = this._listen[0];
 
-        // listen: [string[], fn]
+        // [string[], fn]
         else if (Array.isArray(this._listen) && Array.isArray(this._listen[0]))
             cmd = this._listen[0];
 
