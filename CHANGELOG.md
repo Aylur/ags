@@ -10,6 +10,11 @@
 - add: Widget.click-through (#245)
 - feat: --init cli flag
 - add: Widget.keymode
+- improved types
+
+## Breaking change
+
+- subclassing of widgets
 
 ## Fixes
 
