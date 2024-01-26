@@ -11,6 +11,7 @@
 - feat: --init cli flag
 - add: Widget.keymode
 - improved types
+- add: Window.gdkmonitor
 
 ## Breaking change
 
