@@ -1,24 +1,30 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
-type MenuEventHandler = {
+type MenuEventHandler<Self> = {
     on_popup?: (
-        self: AgsMenu,
+        self: Self,
         flipped_rect: any | null,
         final_rect: any | null,
         flipped_x: boolean,
         flipped_y: boolean,
     ) => void | unknown
-    on_move_scroll?: (self: AgsMenu, scroll_type: Gtk.ScrollType) => void | unknown
+    on_move_scroll?: (self: Self, scroll_type: Gtk.ScrollType) => void | unknown
 }
 
-export type MenuProps = BaseProps<AgsMenu, Gtk.Menu.ConstructorProperties & {
-    children?: Gtk.MenuItem[]
-} & MenuEventHandler>
+export type MenuProps<
+    MenuItem extends Gtk.MenuItem,
+    Attr = unknown,
+    Self = Menu<MenuItem, Attr>,
+> = BaseProps<Self, Gtk.Menu.ConstructorProperties & {
+    children?: MenuItem[]
+} & MenuEventHandler<Self>, Attr>
 
-export class AgsMenu extends AgsWidget(Gtk.Menu) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Menu<MenuItem, Attr> extends Widget<Attr> { }
+export class Menu<MenuItem extends Gtk.MenuItem, Attr> extends Gtk.Menu {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'children': ['jsobject', 'rw'],
                 'on-popup': ['jsobject', 'rw'],
@@ -27,9 +33,9 @@ export class AgsMenu extends AgsWidget(Gtk.Menu) {
         });
     }
 
-    constructor(props: MenuProps = {}, ...children: Gtk.MenuItem[]) {
+    constructor(props: MenuProps<MenuItem, Attr> = {}, ...children: MenuItem[]) {
         if (children.length > 0)
-            props.children = children;
+            props.children;
 
         super(props as Gtk.Menu.ConstructorProperties);
 
@@ -38,17 +44,17 @@ export class AgsMenu extends AgsWidget(Gtk.Menu) {
     }
 
     get on_popup() { return this._get('on-popup'); }
-    set on_popup(callback: MenuEventHandler['on_popup']) {
+    set on_popup(callback: MenuEventHandler<this>['on_popup']) {
         this._set('on-popup', callback);
     }
 
     get on_move_scroll() { return this._get('on-move-scroll'); }
-    set on_move_scroll(callback: MenuEventHandler['on_move_scroll']) {
+    set on_move_scroll(callback: MenuEventHandler<this>['on_move_scroll']) {
         this._set('on-move-scroll', callback);
     }
 
-    get children() { return this.get_children(); }
-    set children(children: Gtk.Widget[]) {
+    get children() { return this.get_children() as MenuItem[]; }
+    set children(children: MenuItem[]) {
         this.get_children().forEach(ch => ch.destroy());
 
         if (!children)
@@ -62,16 +68,24 @@ export class AgsMenu extends AgsWidget(Gtk.Menu) {
     }
 }
 
-type EventHandler = (self: AgsMenuItem) => boolean | unknown;
-export type MenuItemProps = BaseProps<AgsMenuItem, Gtk.MenuItem.ConstructorProperties & {
-    on_activate?: EventHandler
-    on_select?: EventHandler
-    on_deselct?: EventHandler
-}>
+type EventHandler<Self> = (self: Self) => boolean | unknown;
 
-export class AgsMenuItem extends AgsWidget(Gtk.MenuItem) {
+export type MenuItemProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = MenuItem<Child, Attr>,
+> = BaseProps<Self, Gtk.MenuItem.ConstructorProperties & {
+    child?: Child
+    on_activate?: EventHandler<Self>
+    on_select?: EventHandler<Self>
+    on_deselct?: EventHandler<Self>
+}, Attr>
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface MenuItem<Child, Attr> extends Widget<Attr> { }
+export class MenuItem<Child extends Gtk.Widget, Attr> extends Gtk.MenuItem {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'on-activate': ['jsobject', 'rw'],
                 'on-select': ['jsobject', 'rw'],
@@ -80,27 +94,35 @@ export class AgsMenuItem extends AgsWidget(Gtk.MenuItem) {
         });
     }
 
-    constructor(props: MenuItemProps = {}, child?: Gtk.Widget) {
-        // @ts-expect-error super._init
-        super(props as Gtk.MenuItem.ConstructorProperties, child);
+    constructor(props: MenuItemProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
+
+        super(props as Gtk.MenuItem.ConstructorProperties);
 
         this.connect('activate', () => this.on_activate?.(this));
         this.connect('select', () => this.on_select?.(this));
         this.connect('deselect', () => this.on_deselect?.(this));
     }
 
+    get child() { return super.child as Child; }
+    set child(child: Child) { super.child = child; }
+
+
     get on_activate() { return this._get('on-activate'); }
-    set on_activate(callback: EventHandler) {
+    set on_activate(callback: EventHandler<this>) {
         this._set('on-activate', callback);
     }
 
     get on_select() { return this._get('on-select'); }
-    set on_select(callback: EventHandler) {
+    set on_select(callback: EventHandler<this>) {
         this._set('on-select', callback);
     }
 
     get on_deselect() { return this._get('on-deselect'); }
-    set on_deselect(callback: EventHandler) {
+    set on_deselect(callback: EventHandler<this>) {
         this._set('on-deselect', callback);
     }
 }
+
+export default Menu;

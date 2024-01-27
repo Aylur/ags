@@ -1,15 +1,20 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
-export type EventHandler = (self: AgsEntry) => void | unknown;
-export type EntryProps = BaseProps<AgsEntry, Gtk.Entry.ConstructorProperties & {
-    on_accept?: EventHandler
-    on_change?: EventHandler
-}>
+type EventHandler<Self> = (self: Self) => void | unknown;
 
-export default class AgsEntry extends AgsWidget(Gtk.Entry) {
+export type EntryProps<
+    Attr = unknown,
+    Self = Entry<Attr>,
+> = BaseProps<Self, Gtk.Entry.ConstructorProperties & {
+    on_accept?: EventHandler<Self>
+    on_change?: EventHandler<Self>
+}, Attr>
+
+export interface Entry<Attr> extends Widget<Attr> { }
+export class Entry<Attr> extends Gtk.Entry {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'on-accept': ['jsobject', 'rw'],
                 'on-change': ['jsobject', 'rw'],
@@ -17,7 +22,7 @@ export default class AgsEntry extends AgsWidget(Gtk.Entry) {
         });
     }
 
-    constructor(props: EntryProps = {}) {
+    constructor(props: EntryProps<Attr> = {}) {
         super(props as Gtk.Entry.ConstructorProperties);
 
         this.connect('activate', () => this.on_accept?.(this));
@@ -25,12 +30,14 @@ export default class AgsEntry extends AgsWidget(Gtk.Entry) {
     }
 
     get on_accept() { return this._get('on-accept'); }
-    set on_accept(callback: EventHandler) {
+    set on_accept(callback: EventHandler<this>) {
         this._set('on-accept', callback);
     }
 
     get on_change() { return this._get('on-change'); }
-    set on_change(callback: EventHandler) {
+    set on_change(callback: EventHandler<this>) {
         this._set('on-change', callback);
     }
 }
+
+export default Entry;

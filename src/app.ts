@@ -3,6 +3,9 @@ import Gdk from 'gi://Gdk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Service from './service.js';
+import Variable from './variable.js';
+import Widget from './widget.js';
+import Utils from './utils.js';
 import { timeout, readFileAsync } from './utils.js';
 import { loadInterfaceXML } from './utils.js';
 
@@ -75,7 +78,7 @@ export class App extends Gtk.Application {
 
         try {
             cssProvider.load_from_path(path);
-        } catch (_) {
+        } finally {
             // log on parsing-error
         }
 
@@ -88,17 +91,26 @@ export class App extends Gtk.Application {
         this._cssProviders.push(cssProvider);
     }
 
-    setup(bus: string, path: string, configPath: string) {
+    setup(bus: string, path: string, configDir: string, entry: string) {
         this.application_id = bus;
         this.flags = Gio.ApplicationFlags.DEFAULT_FLAGS;
         this._objectPath = path;
 
-        this._configDir = configPath.split('/').slice(0, -1).join('/');
-        this._configPath = configPath;
+        this._configDir = configDir;
+        this._configPath = entry;
     }
 
     vfunc_activate() {
         this.hold();
+
+        Object.assign(globalThis, {
+            Widget,
+            Service,
+            Variable,
+            Utils,
+            App: this,
+        });
+
         this._register();
         this._load();
     }

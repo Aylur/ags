@@ -8,6 +8,16 @@
 - feat(Utils.notify)
 - feat(notifications): support every hint
 - add: Widget.click-through (#245)
+- feat: --init cli flag
+- add: Widget.keymode
+- improved types
+- add: Window.gdkmonitor
+- export modules globally
+- make Audio.microphone and Audio.speaker always
+
+## Breaking change
+
+- subclassing of widgets
 
 ## Fixes
 

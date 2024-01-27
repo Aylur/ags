@@ -22,8 +22,8 @@
   - [ ] NixOS module
   - [x] binary cache [#212](https://github.com/Aylur/ags/pull/212)
 
-- [ ] github action to package types 
-  - [ ] maybe? install them at /etc/ags with meson
+- [ ] ~~github action to package types~~
+  - [x] install them at ~~/etc/ags~~ pkgdatadir/share with meson
 
 - Wiki
   - [x] update to use `bind` `hook` `on` `poll`

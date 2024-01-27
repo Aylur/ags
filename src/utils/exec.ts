@@ -61,13 +61,23 @@ export function subprocess(
                         read(stdout);
                     }
                 } catch (e) {
-                    logError(e);
+                    onError(e);
                 }
             });
         };
 
+        if (typeof cmd === 'string') {
+            try {
+                const [, argv] = GLib.shell_parse_argv(cmd);
+                cmd = argv;
+            } catch (error) {
+                onError(error);
+                return null;
+            }
+        }
+
         const proc = Gio.Subprocess.new(
-            typeof cmd === 'string' ? cmd.split(/\s+/) : cmd,
+            cmd,
             Gio.SubprocessFlags.STDOUT_PIPE |
             Gio.SubprocessFlags.STDERR_PIPE,
         );

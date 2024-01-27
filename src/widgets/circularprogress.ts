@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 interface Context {
@@ -11,18 +11,27 @@ interface Context {
     $dispose: () => void
 }
 
-export type CircularProgressProps = BaseProps<AgsCircularProgress, Gtk.Bin.ConstructorProperties &
-{
+export type CircularProgressProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = CircularProgress<Child, Attr>
+> = BaseProps<Self, Gtk.Bin.ConstructorProperties & {
+    child?: Child
     rounded?: boolean
     value?: number
     inverted?: boolean
     start_at?: number
     end_at?: number
-}>
+}, Attr>
 
-export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface CircularProgress<Child, Attr> extends Widget<Attr> { }
+export class CircularProgress<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+> extends Gtk.Bin {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             cssName: 'circular-progress',
             properties: {
                 'start-at': ['float', 'rw'],
@@ -34,10 +43,16 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         });
     }
 
-    constructor(props: CircularProgressProps = {}, child?: Gtk.Widget) {
-        // @ts-expect-error super._init
-        super(props as Gtk.Bin.ConstructorProperties, child);
+    constructor(props: CircularProgressProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
+
+        super(props as Gtk.Bin.ConstructorProperties);
     }
+
+    get child() { return super.child as Child; }
+    set child(child: Child) { super.child = child; }
+
 
     get rounded() { return this._get('rounded') || false; }
     set rounded(r: boolean) {
@@ -237,3 +252,5 @@ export default class AgsCircularProgress extends AgsWidget(Gtk.Bin) {
         return true;
     }
 }
+
+export default CircularProgress;
