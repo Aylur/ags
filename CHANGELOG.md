@@ -13,6 +13,7 @@
 - improved types
 - add: Window.gdkmonitor
 - export modules globally
+- make Audio.microphone and Audio.speaker always
 
 ## Breaking change
 
