@@ -9,6 +9,7 @@ export type CenterBoxProps<
     Self = CenterBox<StartWidget, CenterWidget, EndWidget, Attr>,
 > = BaseProps<Self, Gtk.Box.ConstructorProperties & {
     vertical?: boolean
+    children?: [StartWidget?, CenterWidget?, EndWidget?],
     start_widget?: StartWidget
     center_widget?: CenterWidget
     end_widget?: EndWidget
@@ -26,6 +27,7 @@ export class CenterBox<
         register(this, {
             properties: {
                 'vertical': ['boolean', 'rw'],
+                'children': ['boolean', 'rw'],
                 'start-widget': ['widget', 'rw'],
                 'center-widget': ['widget', 'rw'],
                 'end-widget': ['widget', 'rw'],
@@ -37,11 +39,12 @@ export class CenterBox<
         super(props as Gtk.Widget.ConstructorProperties);
     }
 
-    set children(children: [StartWidget, CenterWidget, EndWidget]) {
+    get children() { return [this.start_widget, this.center_widget, this.end_widget]; }
+    set children(children: [StartWidget | null, CenterWidget | null, EndWidget | null]) {
         const newChildren = children || [];
 
         newChildren.filter(ch => !newChildren?.includes(ch))
-            .forEach(ch => ch.destroy());
+            .forEach(ch => ch && ch.destroy());
 
         if (children[0])
             this.start_widget = children[0];
