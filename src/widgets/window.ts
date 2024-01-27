@@ -128,7 +128,7 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
 
         const m = Gdk.Display.get_default()?.get_monitor(monitor);
         if (m) {
-            LayerShell.set_monitor(this, m);
+            this.gdkmonitor = m;
             this._set('monitor', monitor);
             return;
         }
