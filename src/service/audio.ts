@@ -23,6 +23,7 @@ export class Stream extends Service {
             'icon-name': ['string'],
             'id': ['int'],
             'state': ['string'],
+            'stream': ['jsobject'],
         });
     }
 
@@ -53,7 +54,7 @@ export class Stream extends Service {
             });
         });
 
-        this.emit('changed');
+        this.changed('stream');
     }
 
     constructor(stream?: Gvc.MixerStream) {
