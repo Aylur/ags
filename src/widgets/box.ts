@@ -4,7 +4,8 @@ import Gtk from 'gi://Gtk?version=3.0';
 export type BoxProps<
     Child extends Gtk.Widget,
     Attr = unknown,
-> = BaseProps<Box<Child, Attr>, Gtk.Box.ConstructorProperties & {
+    Self = Box<Child, Attr>
+> = BaseProps<Self, Gtk.Box.ConstructorProperties & {
     child?: Child
     children?: Child[]
     vertical?: boolean
