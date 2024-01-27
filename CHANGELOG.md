@@ -12,6 +12,7 @@
 - add: Widget.keymode
 - improved types
 - add: Window.gdkmonitor
+- export modules globally
 
 ## Breaking change
 

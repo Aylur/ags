@@ -14,7 +14,7 @@ type Poll<T> =
     | [number, string[] | string | ((self: Variable<T>) => T) | ((self: Variable<T>) => Promise<T>)]
     | [number, string[] | string, (out: string, self: Variable<T>) => T];
 
-interface Options<T> {
+export interface Options<T> {
     poll?: Poll<T>
     listen?: Listen<T>
 }

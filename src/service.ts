@@ -32,12 +32,29 @@ export class Binding<
     }
 }
 
+interface Services {
+    applications: typeof import('./service/applications.js').default
+    audio: typeof import('./service/audio.js').default
+    battery: typeof import('./service/battery.js').default
+    bluetooth: typeof import('./service/bluetooth.js').default
+    hyprland: typeof import('./service/hyprland.js').default
+    mpris: typeof import('./service/mpris.js').default
+    network: typeof import('./service/network.js').default
+    notifications: typeof import('./service/notifications.js').default
+    powerprofiles: typeof import('./service/powerprofiles.js').default
+    systemtray: typeof import('./service/systemtray.js').default
+}
+
 export default class Service extends GObject.Object {
     static {
         GObject.registerClass({
             GTypeName: 'AgsService',
             Signals: { 'changed': {} },
         }, this);
+    }
+
+    static async import<S extends keyof Services>(service: S): Promise<Services[S]> {
+        return (await import(`./service/${service}.js`)).default;
     }
 
     static pspec(name: string, type: PspecType = 'jsobject', handle: PspecFlag = 'r') {

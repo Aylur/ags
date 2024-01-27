@@ -45,7 +45,13 @@ function resource {
 
 dts="$TYPES/ags.d.ts"
 
-echo "declare function print(...args: any[]): void;" >$dts
+echo "declare function print(...args: any[]): void;
+declare const Widget: typeof import('./widget').default
+declare const Service: typeof import('./service').default
+declare const Variable: typeof import('./variable').default
+declare const Utils: typeof import('./utils').default
+declare const App: typeof import('./app').default
+" >$dts
 
 for file in $SRC/src/*.ts; do
 	f=$(basename -s .ts $file)

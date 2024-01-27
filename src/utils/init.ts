@@ -26,9 +26,6 @@ export function parsePath(path: string) {
 }
 
 const defaultConfig = `
-import Variable from 'resource:///com/github/Aylur/ags/variable.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-
 const time = Variable('', {
     poll: [1000, function() {
         return Date().toString();
