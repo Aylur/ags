@@ -79,7 +79,7 @@ type Bind = [
     transform?: (value: any) => any,
 ];
 
-export interface CommonProps<Attr> {
+interface CommonProps<Attr> {
     class_name?: string
     class_names?: Array<string>
     click_through?: boolean
@@ -94,7 +94,8 @@ export type BaseProps<Self, Props, Attr = unknown> = {
     setup?: (self: Self) => void
 } & BindableProps<Props & CommonProps<Attr>>
 
-export interface Widget<Attr> extends CommonProps<Attr> {
+type Requierd<T> = { [K in keyof T]-?: T[K] };
+export interface Widget<Attr> extends Requierd<CommonProps<Attr>> {
     hook<
         Gobject extends GObject.Object,
     >(
