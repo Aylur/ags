@@ -9,6 +9,7 @@ libsources = ['pam.c', 'pam.h']
 
 deps = [
   dependency('gobject-2.0'),
+  dependency('gio-2.0'),
   dependency('pam')
 ]
 
@@ -27,7 +28,7 @@ gnome.generate_gir(
   namespace: 'Pam',
   symbol_prefix: 'ags_pam',
   identifier_prefix: 'Pam',
-  includes: ['GObject-2.0'],
+  includes: ['GObject-2.0', 'Gio-2.0'],
   install_dir_gir: pkgdatadir,
   install_dir_typelib: pkglibdir,
   install: true

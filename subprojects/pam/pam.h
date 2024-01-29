@@ -2,11 +2,33 @@
 #define PAM_H
 
 #include <glib-object.h>
+#include <gio/gio.h>
 
 G_BEGIN_DECLS
 
-gboolean ags_pam_authenticate(const gchar *password);
-gboolean ags_pam_authenticate_user(const gchar *username, const gchar *password);
+// void ags_pam_authenticate_user(const char *username, const char *password, void (*callback)(int, const char*));
+// void ags_pam_authenticate(const char *password, void (*callback)(int, const char*));
+
+void ags_pam_authenticate_user (const char* username,
+                                const char* password,
+                                int                  io_priority,
+                                GCancellable        *cancellable,
+                                GAsyncReadyCallback  callback,
+                                gpointer             user_data);
+
+int ags_pam_authenticate_user_finish (GAsyncResult  *res,
+                                     GError **error);
+
+
+void ags_pam_authenticate (const char* password,
+                           int                  io_priority,
+                           GCancellable        *cancellable,
+                           GAsyncReadyCallback  callback,
+                           gpointer             user_data);
+
+int ags_pam_authenticate_finish (GAsyncResult  *res,
+                                 GError **error);
+
 
 G_END_DECLS
 
