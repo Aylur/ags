@@ -1,8 +1,7 @@
 #include "pam.h"
-#include "_pam_types.h"
-#include <security/pam_appl.h>
-#include <pwd.h>
 #include <gio/gio.h>
+#include <pwd.h>
+#include <security/pam_appl.h>
 #include <string.h>
 
 typedef struct {
