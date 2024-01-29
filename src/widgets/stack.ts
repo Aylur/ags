@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 const TRANSITION = {
@@ -24,17 +24,23 @@ const TRANSITION = {
     'over_right_left': Gtk.StackTransitionType.OVER_RIGHT_LEFT,
 } as const;
 
-export type Transition = keyof typeof TRANSITION;
+type Transition = keyof typeof TRANSITION;
 
-export type StackProps = BaseProps<AgsStack, Gtk.Stack.ConstructorProperties & {
+export type StackProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = Stack<Child, Attr>,
+> = BaseProps<Self, Gtk.Stack.ConstructorProperties & {
     shown?: string
-    items?: [string, Gtk.Widget][]
+    items?: [string, Child][]
     transition?: Transition
-}>
+}, Attr>
 
-export default class AgsStack extends AgsWidget(Gtk.Stack) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Stack<Child, Attr> extends Widget<Attr> { }
+export class Stack<Child extends Gtk.Widget, Attr> extends Gtk.Stack {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'transition': ['string', 'rw'],
                 'shown': ['string', 'rw'],
@@ -43,11 +49,11 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
         });
     }
 
-    constructor(props: StackProps = {}) {
+    constructor(props: StackProps<Child, Attr> = {}) {
         super(props as Gtk.Stack.ConstructorProperties);
     }
 
-    add_named(child: Gtk.Widget, name: string): void {
+    add_named(child: Child, name: string): void {
         this.items.push([name, child]);
         super.add_named(child, name);
         this.notify('items');
@@ -60,7 +66,7 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
         return this._get('items');
     }
 
-    set items(items: [string, Gtk.Widget][]) {
+    set items(items: Array<[string, Child]>) {
         this.items
             .filter(([name]) => !items.find(([n]) => n === name))
             .forEach(([, ch]) => ch.destroy());
@@ -114,3 +120,5 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
         this.notify('shown');
     }
 }
+
+export default Stack;

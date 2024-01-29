@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 const TRANSITION = {
@@ -10,22 +10,33 @@ const TRANSITION = {
     'slide_down': Gtk.RevealerTransitionType.SLIDE_DOWN,
 } as const;
 
-export type Transition = keyof typeof TRANSITION;
+type Transition = keyof typeof TRANSITION;
 
-export type RevealerProps = BaseProps<AgsRevealer, Gtk.Revealer.ConstructorProperties & {
+export type RevealerProps<
+    Child extends Gtk.Widget,
+    Attr = unknown,
+    Self = Revealer<Child, Attr>,
+> = BaseProps<Self, Gtk.Revealer.ConstructorProperties & {
+    child?: Child
     transition?: Transition
-}>
+}, Attr>
 
-export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Revealer<Child, Attr> extends Widget<Attr> { }
+export class Revealer<Child extends Gtk.Widget, Attr> extends Gtk.Revealer {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: { 'transition': ['string', 'rw'] },
         });
     }
 
-    constructor(props: RevealerProps = {}) {
+    constructor(props: RevealerProps<Child, Attr> = {}) {
         super(props as Gtk.Revealer.ConstructorProperties);
     }
+
+    get child() { return super.child as Child; }
+    set child(child: Child) { super.child = child; }
+
 
     get transition() {
         return Object.keys(TRANSITION).find(key => {
@@ -49,3 +60,5 @@ export default class AgsRevealer extends AgsWidget(Gtk.Revealer) {
         this.notify('transition');
     }
 }
+
+export default Revealer;

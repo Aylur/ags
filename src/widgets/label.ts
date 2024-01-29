@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
@@ -17,19 +17,20 @@ const TRUNCATE = {
     'end': Pango.EllipsizeMode.END,
 } as const;
 
-export type Justification = keyof typeof JUSTIFICATION;
-export type Truncate = keyof typeof TRUNCATE;
+type Justification = keyof typeof JUSTIFICATION;
+type Truncate = keyof typeof TRUNCATE;
 
-export type Props = BaseProps<AgsLabel, Gtk.Label.ConstructorProperties & {
+export type Props<Attr> = BaseProps<Label<Attr>, Gtk.Label.ConstructorProperties & {
     justification?: Justification
     truncate?: Truncate
-}>
+}, Attr>
 
-export type LabelProps = Props | string | undefined
+export type LabelProps<Attr> = Props<Attr> | string | undefined
 
-export default class AgsLabel extends AgsWidget(Gtk.Label) {
+export interface Label<Attr> extends Widget<Attr> { }
+export class Label<Attr> extends Gtk.Label {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'justification': ['string', 'rw'],
                 'truncate': ['string', 'rw'],
@@ -37,7 +38,7 @@ export default class AgsLabel extends AgsWidget(Gtk.Label) {
         });
     }
 
-    constructor(props: LabelProps = {}) {
+    constructor(props: LabelProps<Attr> = {}) {
         const { label, ...config } = props as Gtk.Label.ConstructorProperties;
         const text = typeof props === 'string' ? props : label;
         super(typeof props === 'string' ? {} : config);
@@ -104,3 +105,5 @@ export default class AgsLabel extends AgsWidget(Gtk.Label) {
         this.notify('justification');
     }
 }
+
+export default Label;

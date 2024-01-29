@@ -7,14 +7,14 @@ import DbusmenuGtk3 from 'gi://DbusmenuGtk3';
 import Service from '../service.js';
 import { StatusNotifierItemProxy } from '../dbus/types.js';
 import { bulkConnect, loadInterfaceXML } from '../utils.js';
-import { subclass } from '../widget.js';
+import Widget from '../widget.js';
 
 const StatusNotifierWatcherIFace = loadInterfaceXML('org.kde.StatusNotifierWatcher')!;
 const StatusNotifierItemIFace = loadInterfaceXML('org.kde.StatusNotifierItem')!;
 const StatusNotifierItemProxy =
     Gio.DBusProxy.makeProxyWrapper(StatusNotifierItemIFace) as unknown as StatusNotifierItemProxy;
 
-const DbusmenuGtk3Menu = subclass<
+const DbusmenuGtk3Menu = Widget<
     typeof DbusmenuGtk3.Menu,
     DbusmenuGtk3.Menu.ConstructorProperties
 >(DbusmenuGtk3.Menu);

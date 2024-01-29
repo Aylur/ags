@@ -26,9 +26,6 @@ export function parsePath(path: string) {
 }
 
 const defaultConfig = `
-import Variable from 'resource:///com/github/Aylur/ags/variable.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-
 const time = Variable('', {
     poll: [1000, function() {
         return Date().toString();
@@ -128,7 +125,8 @@ export async function init(configDir: string, entry: string) {
         }
     }
 
-    const nixPath = nixPaths.find(path => {
+    const linkStore = GLib.getenv('AGS_LINK_NIX_STORE');
+    const nixPath = linkStore ? '' : nixPaths.find(path => {
         if (GLib.file_test(path, GLib.FileTest.EXISTS))
             return true;
     });

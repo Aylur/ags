@@ -1,10 +1,5 @@
 import GObject from 'gi://GObject';
-import { pspec, registerGObject, PspecFlag, PspecType } from './gobject.js';
-
-export const kebabify = (str: string) => str
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replaceAll('_', '-')
-    .toLowerCase();
+import { pspec, registerGObject, PspecFlag, PspecType } from './utils/gobject.js';
 
 export type OnlyString<S extends string | unknown> = S extends string ? S : never;
 
@@ -23,7 +18,7 @@ export class Binding<
 > {
     emitter: Emitter;
     prop: Prop;
-    transformFn = (v: Return) => v;
+    transformFn = (v: any) => v; // see #262
     constructor(emitter: Emitter, prop: Prop) {
         this.emitter = emitter;
         this.prop = prop;
@@ -32,10 +27,22 @@ export class Binding<
     transform<T>(fn: (v: Return) => T) {
         const bind = new Binding<Emitter, Prop, T>(this.emitter, this.prop);
         const prev = this.transformFn;
-        // @ts-expect-error
         bind.transformFn = (v: Return) => fn(prev(v));
         return bind;
     }
+}
+
+interface Services {
+    applications: typeof import('./service/applications.js').default
+    audio: typeof import('./service/audio.js').default
+    battery: typeof import('./service/battery.js').default
+    bluetooth: typeof import('./service/bluetooth.js').default
+    hyprland: typeof import('./service/hyprland.js').default
+    mpris: typeof import('./service/mpris.js').default
+    network: typeof import('./service/network.js').default
+    notifications: typeof import('./service/notifications.js').default
+    powerprofiles: typeof import('./service/powerprofiles.js').default
+    systemtray: typeof import('./service/systemtray.js').default
 }
 
 export default class Service extends GObject.Object {
@@ -44,6 +51,10 @@ export default class Service extends GObject.Object {
             GTypeName: 'AgsService',
             Signals: { 'changed': {} },
         }, this);
+    }
+
+    static async import<S extends keyof Services>(service: S): Promise<Services[S]> {
+        return (await import(`./service/${service}.js`)).default;
     }
 
     static pspec(name: string, type: PspecType = 'jsobject', handle: PspecFlag = 'r') {

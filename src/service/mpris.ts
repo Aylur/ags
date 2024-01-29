@@ -172,6 +172,7 @@ export class MprisPlayer extends Service {
         this.updateProperty('track-title', trackTitle);
         this.updateProperty('track-cover-url', trackCoverUrl);
         this.updateProperty('length', length);
+        this.updateProperty('identity', this._mprisProxy.Identity);
         this._cacheCoverArt();
         this.emit('changed');
     }

@@ -23,15 +23,20 @@ export class Stream extends Service {
             'icon-name': ['string'],
             'id': ['int'],
             'state': ['string'],
+            'stream': ['jsobject'],
         });
     }
 
-    private _stream: Gvc.MixerStream;
-    private _ids: number[];
+    private _stream?: Gvc.MixerStream;
+    private _ids?: number[];
     private _oldVolume = 0;
 
-    constructor(stream: Gvc.MixerStream) {
-        super();
+    setStream(stream: Gvc.MixerStream | null) {
+        if (this._ids)
+            bulkDisconnect((this._stream as unknown) as GObject.Object, this._ids);
+
+        if (!stream)
+            return;
 
         this._stream = stream;
         this._ids = [
@@ -42,18 +47,30 @@ export class Stream extends Service {
             'icon-name',
             'id',
             'state',
-        ].map(prop => stream.connect(`notify::${prop}`, () => {
-            this.changed(prop);
-        }));
+        ].map(prop => {
+            this.notify(prop);
+            return stream.connect(`notify::${prop}`, () => {
+                this.changed(prop);
+            });
+        });
+
+        this.changed('stream');
     }
 
-    get application_id() { return this._stream.application_id; }
-    get stream() { return this._stream; }
-    get description() { return this._stream.description; }
-    get icon_name() { return this._stream.icon_name; }
-    get id() { return this._stream.id; }
-    get name() { return this._stream.name; }
-    get state() { return _MIXER_CONTROL_STATE[this._stream.state]; }
+    constructor(stream?: Gvc.MixerStream) {
+        super();
+        this.setStream(stream || null);
+    }
+
+    get application_id() { return this._stream?.application_id || null; }
+    get stream() { return this._stream || null; }
+    get description() { return this._stream?.description || null; }
+    get icon_name() { return this._stream?.icon_name || null; }
+    get id() { return this._stream?.id || null; }
+    get name() { return this._stream?.name || null; }
+    get state() {
+        return _MIXER_CONTROL_STATE[this._stream?.state || Gvc.MixerControlState.CLOSED];
+    }
 
     get is_muted() { return this.volume === 0; }
     set is_muted(mute: boolean) {
@@ -68,7 +85,7 @@ export class Stream extends Service {
 
     get volume() {
         const max = audio.control.get_vol_max_norm();
-        return this._stream.volume / max;
+        return this._stream ? this._stream.volume / max : 0;
     }
 
     set volume(value) { // 0..100
@@ -79,12 +96,12 @@ export class Stream extends Service {
             value = 0;
 
         const max = audio.control.get_vol_max_norm();
-        this._stream.set_volume(value * max);
-        this._stream.push_volume();
+        this._stream?.set_volume(value * max);
+        this._stream?.push_volume();
     }
 
     close() {
-        bulkDisconnect((this._stream as unknown) as GObject.Object, this._ids);
+        this.setStream(null);
         this.emit('closed');
     }
 }
@@ -111,8 +128,6 @@ export class Audio extends Service {
     private _streamBindings: Map<number, number>;
     private _speaker!: Stream;
     private _microphone!: Stream;
-    private _speakerBinding!: number;
-    private _microphoneBinding!: number;
 
     constructor() {
         super();
@@ -123,6 +138,13 @@ export class Audio extends Service {
 
         this._streams = new Map();
         this._streamBindings = new Map();
+        for (const s of ['speaker', 'microphone'] as const) {
+            this[`_${s}`] = new Stream();
+            this[`_${s}`].connect('changed', () => {
+                this.emit(`${s}-changed`);
+                this.emit('changed');
+            });
+        }
 
         bulkConnect(this._control as unknown as GObject.Object, [
             ['default-sink-changed', (_c, id: number) => this._defaultChanged(id, 'speaker')],
@@ -136,14 +158,14 @@ export class Audio extends Service {
 
     get control() { return this._control; }
 
-    get speaker(): Stream | undefined { return this._speaker; }
+    get speaker() { return this._speaker; }
     set speaker(stream: Stream) {
-        this._control.set_default_sink(stream.stream);
+        this._control.set_default_sink(stream.stream!);
     }
 
-    get microphone(): Stream | undefined { return this._microphone; }
+    get microphone() { return this._microphone; }
     set microphone(stream: Stream) {
-        this._control.set_default_source(stream.stream);
+        this._control.set_default_source(stream.stream!);
     }
 
     get microphones() { return this._getStreams(Gvc.MixerSource); }
@@ -156,15 +178,11 @@ export class Audio extends Service {
     }
 
     private _defaultChanged(id: number, type: 'speaker' | 'microphone') {
-        if (this[`_${type}`])
-            this[`_${type}`].disconnect(this[`_${type}Binding`]);
-
         const stream = this._streams.get(id);
         if (!stream)
             return;
 
-        this[`_${type}Binding`] = stream.connect('changed', () => this.emit(`${type}-changed`));
-        this[`_${type}`] = stream;
+        this[`_${type}`].setStream(stream.stream);
         this.changed(type);
         this.emit(`${type}-changed`);
     }
