@@ -39,8 +39,8 @@ export const {
 } = Etc;
 
 export const {
-  authenticate,
-  authenticate_user
+    authenticate,
+    authenticate_user,
 } = Pam;
 
 export const { fetch } = Fetch;
