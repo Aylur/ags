@@ -40,7 +40,7 @@ export const {
 
 export const {
     authenticate,
-    authenticate_user,
+    authenticateUser,
 } = Pam;
 
 export const { fetch } = Fetch;
@@ -74,5 +74,5 @@ export default {
     notify,
 
     authenticate,
-    authenticate_user,
+    authenticateUser,
 };
