@@ -14,7 +14,7 @@ deps = [
 ]
 
 girlib = shared_library(
-  'pam',
+  'gutils',
   sources: libsources,
   dependencies: deps,
   install: true
@@ -25,9 +25,9 @@ gnome.generate_gir(
   girlib,
   sources: libsources,
   nsversion: '1.0',
-  namespace: 'Pam',
-  symbol_prefix: 'ags_pam',
-  identifier_prefix: 'Pam',
+  namespace: 'GUtils',
+  symbol_prefix: 'gutils',
+  identifier_prefix: 'GUtils',
   includes: ['GObject-2.0', 'Gio-2.0'],
   install_dir_gir: pkgdatadir,
   install_dir_typelib: pkglibdir,

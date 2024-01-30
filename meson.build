@@ -30,7 +30,7 @@ subproject('gvc',
   ]
 )
 
-subproject('pam',
+subproject('gutils',
   default_options: [
     'pkgdatadir=' + pkgdatadir,
     'pkglibdir=' + libdir,

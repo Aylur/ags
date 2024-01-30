@@ -72,7 +72,7 @@ void auth_thread (GTask         *task,
 }
 
 /**
- * ags_pam_authenticate_user:
+ * gutils_authenticate_user:
  * @username: the username for which the password to be authenticated
  * @password: the password to be authenticated
  * @io_priority: the [I/O priority][io-priority] of the request
@@ -84,12 +84,12 @@ void auth_thread (GTask         *task,
  *
  * Requests authentication of the provided password for the specified username using the PAM (Pluggable Authentication Modules) system.
  */
-void ags_pam_authenticate_user (const gchar*         username,
-                                const gchar*         password,
-                                int                  io_priority,
-                                GCancellable        *cancellable,
-                                GAsyncReadyCallback  callback,
-                                gpointer             user_data) {
+void gutils_authenticate_user (const gchar*         username,
+                               const gchar*         password,
+                               int                  io_priority,
+                               GCancellable        *cancellable,
+                               GAsyncReadyCallback  callback,
+                               gpointer             user_data) {
     auth_info *info = (auth_info *) malloc(sizeof(auth_info));
     if (info == NULL) return;
     info->username = strdup(username);
@@ -103,13 +103,13 @@ void ags_pam_authenticate_user (const gchar*         username,
     g_object_unref (task);
 }
 
-int ags_pam_authenticate_user_finish(GAsyncResult  *res,
-                                     GError       **error) {
+int gutils_authenticate_user_finish(GAsyncResult  *res,
+                                    GError       **error) {
     return g_task_propagate_int(G_TASK(res), error) ;
 }
 
 /**
- * ags_pam_authenticate:
+ * gutils_authenticate:
  * @password: the password to be authenticated
  * @io_priority: the [I/O priority][io-priority] of the request
  * @cancellable: (nullable): optional #GCancellable object,
@@ -120,18 +120,18 @@ int ags_pam_authenticate_user_finish(GAsyncResult  *res,
  *
  * Requests authentication of the provided password using the PAM (Pluggable Authentication Modules) system.
  */
-void ags_pam_authenticate (const gchar*         password,
-                           int                  io_priority,
-                           GCancellable        *cancellable,
-                           GAsyncReadyCallback  callback,
-                           gpointer             user_data) {
+void gutils_authenticate (const gchar*         password,
+                          int                  io_priority,
+                          GCancellable        *cancellable,
+                          GAsyncReadyCallback  callback,
+                          gpointer             user_data) {
     struct passwd *passwd = getpwuid(getuid());
     char *username = passwd->pw_name;
 
-    return ags_pam_authenticate_user(username, password, io_priority, cancellable, callback, user_data);
+    return gutils_authenticate_user(username, password, io_priority, cancellable, callback, user_data);
 }
 
-int ags_pam_authenticate_finish(GAsyncResult  *res,
-                                GError       **error){
+int gutils_authenticate_finish(GAsyncResult  *res,
+                               GError       **error){
     return g_task_propagate_int(G_TASK(res), error) ;
 }
