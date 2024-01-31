@@ -118,11 +118,15 @@ export class Switch<Attr> extends Gtk.Switch {
         super(props as Gtk.Widget.ConstructorProperties);
     }
 }
-export type ToggleButtonProps<Attr> = BaseProps<ToggleButton<Attr>, Gtk.ToggleButton.ConstructorProperties, Attr>;
-export interface ToggleButton<Attr> extends Widget<Attr> { }
-export class ToggleButton<Attr> extends Gtk.ToggleButton {
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface ToggleButton<Child, Attr> extends Widget<Attr> { }
+export type ToggleButtonProps<Child extends Gtk.Widget, Attr> = BaseProps<ToggleButton<Child, Attr>, Gtk.ToggleButton.ConstructorProperties & { child?: Child }, Attr>;
+export class ToggleButton<Child extends Gtk.Widget, Attr> extends Gtk.ToggleButton {
     static { register(this); }
-    constructor(props: BaseProps<ToggleButton<Attr>, Gtk.ToggleButton.ConstructorProperties, Attr> = {}) {
+    constructor(props: BaseProps<ToggleButton<Child, Attr>, Gtk.ToggleButton.ConstructorProperties, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
         super(props as Gtk.Widget.ConstructorProperties);
     }
 }
