@@ -14,6 +14,8 @@
 - add: Window.gdkmonitor
 - export modules globally
 - make Audio.microphone and Audio.speaker always
+- feat: greetd service (#282)
+- feat(pam): Utils.authenticate (#273)
 
 ## Breaking change
 
