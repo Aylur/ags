@@ -34,7 +34,8 @@ type Keymode = keyof typeof KEYMODE;
 export type WindowProps<
     Child extends Gtk.Widget,
     Attr = unknown,
-> = BaseProps<Window<Child, Attr>, Gtk.Window.ConstructorProperties & {
+    Self = Window<Child, Attr>,
+> = BaseProps<Self, Gtk.Window.ConstructorProperties & {
     child?: Child
     anchor?: Anchor[]
     exclusivity?: Exclusivity
@@ -86,7 +87,10 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         popup = false,
         visible = true,
         ...params
-    }: WindowProps<Child, Attr> = {}) {
+    }: WindowProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            params.child = child;
+
         super(params as Gtk.Window.ConstructorProperties);
         LayerShell.init_for_window(this);
         LayerShell.set_namespace(this, this.name);

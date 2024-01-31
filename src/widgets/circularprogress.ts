@@ -43,7 +43,10 @@ export class CircularProgress<
         });
     }
 
-    constructor(props: CircularProgressProps<Child, Attr> = {}) {
+    constructor(props: CircularProgressProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
+
         super(props as Gtk.Bin.ConstructorProperties);
     }
 

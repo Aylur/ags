@@ -52,7 +52,10 @@ export class Button<Child extends Gtk.Widget, Attr> extends Gtk.Button {
         });
     }
 
-    constructor(props: ButtonProps<Child, Attr> = {}) {
+    constructor(props: ButtonProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
+
         super(props as Gtk.Button.ConstructorProperties);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);

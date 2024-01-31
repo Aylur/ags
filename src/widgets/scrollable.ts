@@ -32,7 +32,10 @@ export class Scrollable<Child extends Gtk.Widget, Attr> extends Gtk.ScrolledWind
         });
     }
 
-    constructor(props: ScrollableProps<Child, Attr> = {}) {
+    constructor(props: ScrollableProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
+
         super({
             ...props as Gtk.ScrolledWindow.ConstructorProperties,
             hadjustment: new Gtk.Adjustment(),

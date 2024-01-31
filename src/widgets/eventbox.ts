@@ -50,7 +50,10 @@ export class EventBox<Child extends Gtk.Widget, Attr> extends Gtk.EventBox {
         });
     }
 
-    constructor(props: EventBoxProps<Child, Attr> = {}) {
+    constructor(props: EventBoxProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
+
         super(props as Gtk.EventBox.ConstructorProperties);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);

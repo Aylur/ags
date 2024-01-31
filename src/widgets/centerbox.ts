@@ -35,7 +35,21 @@ export class CenterBox<
         });
     }
 
-    constructor(props: CenterBoxProps<StartWidget, CenterWidget, EndWidget, Attr> = {}) {
+    constructor(
+        props: CenterBoxProps<StartWidget, CenterWidget, EndWidget, Attr> = {},
+        startWidget?: StartWidget,
+        centerWidget?: CenterWidget,
+        endWidget?: EndWidget,
+    ) {
+        if (startWidget)
+            props.start_widget = startWidget;
+
+        if (centerWidget)
+            props.center_widget = centerWidget;
+
+        if (endWidget)
+            props.end_widget = endWidget;
+
         super(props as Gtk.Widget.ConstructorProperties);
     }
 

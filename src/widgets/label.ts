@@ -20,7 +20,10 @@ const TRUNCATE = {
 type Justification = keyof typeof JUSTIFICATION;
 type Truncate = keyof typeof TRUNCATE;
 
-export type Props<Attr> = BaseProps<Label<Attr>, Gtk.Label.ConstructorProperties & {
+export type Props<
+    Attr = unknown,
+    Self = Label<Attr>,
+> = BaseProps<Self, Gtk.Label.ConstructorProperties & {
     justification?: Justification
     truncate?: Truncate
 }, Attr>

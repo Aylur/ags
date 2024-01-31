@@ -30,7 +30,10 @@ export class Revealer<Child extends Gtk.Widget, Attr> extends Gtk.Revealer {
         });
     }
 
-    constructor(props: RevealerProps<Child, Attr> = {}) {
+    constructor(props: RevealerProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
+
         super(props as Gtk.Revealer.ConstructorProperties);
     }
 

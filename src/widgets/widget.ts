@@ -220,7 +220,12 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
         return this;
     }
 
-    _init(config: BaseProps<this, Gtk.Widget.ConstructorProperties, Attr> = {}) {
+    _init(
+        config: BaseProps<this,
+            Gtk.Widget.ConstructorProperties & { child?: Gtk.Widget },
+            Attr> = {},
+        child?: Gtk.Widget,
+    ) {
         const { setup, attribute, ...props } = config;
 
         const binds = (Object.keys(props) as Array<keyof typeof props>)
@@ -232,6 +237,9 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
                 }
             })
             .filter(pair => pair);
+
+        if (child)
+            props.child = child;
 
         super._init(props as Gtk.Widget.ConstructorProperties);
 

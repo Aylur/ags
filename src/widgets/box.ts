@@ -4,7 +4,8 @@ import Gtk from 'gi://Gtk?version=3.0';
 export type BoxProps<
     Child extends Gtk.Widget,
     Attr = unknown,
-> = BaseProps<Box<Child, Attr>, Gtk.Box.ConstructorProperties & {
+    Self = Box<Child, Attr>
+> = BaseProps<Self, Gtk.Box.ConstructorProperties & {
     child?: Child
     children?: Child[]
     vertical?: boolean
@@ -22,7 +23,15 @@ export class Box<Child extends Gtk.Widget, Attr> extends Gtk.Box {
         });
     }
 
-    constructor(props: BoxProps<Child, Attr> = {}) {
+    constructor(propsOrChildren: BoxProps<Child, Attr> | Child[] = {}, ...children: Child[]) {
+        const props = Array.isArray(propsOrChildren) ? {} : propsOrChildren;
+
+        if (Array.isArray(propsOrChildren))
+            props.children = propsOrChildren;
+
+        else if (children.length > 0)
+            props.children = children;
+
         super(props as Gtk.Box.ConstructorProperties);
     }
 

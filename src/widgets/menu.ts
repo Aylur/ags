@@ -33,7 +33,10 @@ export class Menu<MenuItem extends Gtk.MenuItem, Attr> extends Gtk.Menu {
         });
     }
 
-    constructor(props: MenuProps<MenuItem, Attr> = {}) {
+    constructor(props: MenuProps<MenuItem, Attr> = {}, ...children: MenuItem[]) {
+        if (children.length > 0)
+            props.children;
+
         super(props as Gtk.Menu.ConstructorProperties);
 
         this.connect('popped-up', (_, ...args) => this.on_popup?.(this, ...args));
@@ -91,7 +94,10 @@ export class MenuItem<Child extends Gtk.Widget, Attr> extends Gtk.MenuItem {
         });
     }
 
-    constructor(props: MenuItemProps<Child, Attr> = {}) {
+    constructor(props: MenuItemProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
+
         super(props as Gtk.MenuItem.ConstructorProperties);
 
         this.connect('activate', () => this.on_activate?.(this));
