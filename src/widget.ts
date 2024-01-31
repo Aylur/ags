@@ -51,7 +51,7 @@ export const Separator = <Attr>(props?: Etc.SeparatorProps<Attr>) => new Etc.Sep
 export const SpinButton = <Attr>(props?: Etc.SpinButtonProps<Attr>) => new Etc.SpinButton(props);
 export const Spinner = <Attr>(props?: Etc.SpinnerProps<Attr>) => new Etc.Spinner(props);
 export const Switch = <Attr>(props?: Etc.SwitchProps<Attr>) => new Etc.Switch(props);
-export const ToggleButton = <Attr>(props?: Etc.ToggleButtonProps<Attr>) => new Etc.ToggleButton(props);
+export const ToggleButton = <Child extends Gtk.Widget, Attr>(props?: Etc.ToggleButtonProps<Child, Attr>) => new Etc.ToggleButton(props);
 
 // ts can't compile export default { subclass, Box, Button ... }
 // so we use a function and add members to it instead
