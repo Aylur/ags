@@ -59,6 +59,7 @@
     <file>utils/gobject.js</file>
     <file>utils/init.js</file>
     <file>utils/notify.js</file>
+    <file>utils/pam.js</file>
     <file>utils/timeout.js</file>
   </gresource>
 </gresources>
