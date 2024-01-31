@@ -228,9 +228,12 @@ export class App extends Gtk.Application {
                     : config.style);
             }
 
-            if (config.icons)
-                Gtk.IconTheme.get_default().append_search_path(config.icons);
-
+            if (config.icons) {
+                Gtk.IconTheme.get_default().append_search_path(
+                    config.icons.startsWith('.')
+                        ? `${this.configDir}${config.icons.slice(1)}`
+                        : config.icons);
+            }
             if (typeof config.onWindowToggled === 'function')
                 this.connect('window-toggled', (_, n, v) => config.onWindowToggled!(n, v));
 
