@@ -4,7 +4,7 @@ import GLib from 'gi://GLib?version=2.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import Cairo from 'gi://cairo?version=1.0';
 import Service, { Props, BindableProps, Binding } from '../service.js';
-import { registerGObject, kebabify } from '../utils/gobject.js';
+import { registerGObject, kebabify, type CtorProps } from '../utils/gobject.js';
 import { interval, idle } from '../utils.js';
 import { Variable } from '../variable.js';
 import { App } from '../app.js';
@@ -92,7 +92,7 @@ interface CommonProps<Attr> {
 
 export type BaseProps<Self, Props, Attr = unknown> = {
     setup?: (self: Self) => void
-} & BindableProps<Props & CommonProps<Attr>>
+} & BindableProps<CtorProps<Props & CommonProps<Attr>>>
 
 type Requierd<T> = { [K in keyof T]-?: T[K] };
 export interface Widget<Attr> extends Requierd<CommonProps<Attr>> {
