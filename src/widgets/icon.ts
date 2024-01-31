@@ -7,7 +7,10 @@ import { Binding } from '../service.js';
 import cairo from '@girs/cairo-1.0';
 import { lookUpIcon } from '../utils.js';
 
-export type Props<Attr = unknown> = BaseProps<Icon<Attr>, Gtk.Image.ConstructorProperties & {
+export type Props<
+    Attr = unknown,
+    Self = Icon<Attr>,
+> = BaseProps<Self, Gtk.Image.ConstructorProperties & {
     size?: number
     icon?: // Binding is here because unions mess up BaseProps
     | string

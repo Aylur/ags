@@ -34,7 +34,8 @@ type Keymode = keyof typeof KEYMODE;
 export type WindowProps<
     Child extends Gtk.Widget,
     Attr = unknown,
-> = BaseProps<Window<Child, Attr>, Gtk.Window.ConstructorProperties & {
+    Self = Window<Child, Attr>,
+> = BaseProps<Self, Gtk.Window.ConstructorProperties & {
     child?: Child
     anchor?: Anchor[]
     exclusivity?: Exclusivity

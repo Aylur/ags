@@ -1,11 +1,13 @@
 import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
-export type ProgressBarProps<Attr> =
-    BaseProps<ProgressBar<Attr>, Gtk.ProgressBar.ConstructorProperties & {
-        vertical?: boolean
-        value?: number
-    }, Attr>
+export type ProgressBarProps<
+    Attr = unknown,
+    Self = ProgressBar<Attr>,
+> = BaseProps<Self, Gtk.ProgressBar.ConstructorProperties & {
+    vertical?: boolean
+    value?: number
+}, Attr>
 
 export interface ProgressBar<Attr> extends Widget<Attr> { }
 export class ProgressBar<Attr> extends Gtk.ProgressBar {
