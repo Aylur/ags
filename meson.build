@@ -30,6 +30,13 @@ subproject('gvc',
   ]
 )
 
+subproject('gutils',
+  default_options: [
+    'pkgdatadir=' + pkgdatadir,
+    'pkglibdir=' + libdir,
+  ]
+)
+
 subdir('src')
 
 meson.add_install_script(

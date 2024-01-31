@@ -33,6 +33,7 @@
     <file>service/audio.js</file>
     <file>service/battery.js</file>
     <file>service/bluetooth.js</file>
+    <file>service/greetd.js</file>
     <file>service/hyprland.js</file>
     <file>service/mpris.js</file>
     <file>service/network.js</file>
@@ -59,6 +60,7 @@
     <file>utils/gobject.js</file>
     <file>utils/init.js</file>
     <file>utils/notify.js</file>
+    <file>utils/pam.js</file>
     <file>utils/timeout.js</file>
   </gresource>
 </gresources>

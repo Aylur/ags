@@ -5,6 +5,7 @@ import * as Etc from './utils/etc.js';
 import * as Timeout from './utils/timeout.js';
 import * as Fetch from './utils/fetch.js';
 import * as Notify from './utils/notify.js';
+import * as Pam from './utils/pam.js';
 
 export const USER = GLib.get_user_name();
 export const HOME = GLib.get_home_dir();
@@ -37,6 +38,11 @@ export const {
     lookUpIcon,
 } = Etc;
 
+export const {
+    authenticate,
+    authenticateUser,
+} = Pam;
+
 export const { fetch } = Fetch;
 export const { notify } = Notify;
 
@@ -66,4 +72,7 @@ export default {
 
     fetch,
     notify,
+
+    authenticate,
+    authenticateUser,
 };
