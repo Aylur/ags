@@ -2,7 +2,6 @@ import Gio from 'gi://Gio';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import GLib from 'gi://GLib';
 import Service from '../service.js';
-import App from '../app.js';
 import {
     CACHE_DIR, ensureDirectory,
     loadInterfaceXML, readFileAsync,
@@ -209,7 +208,7 @@ export class Notification extends Service {
             this.close();
     }
 
-    toJson(cacheActions = App.config.cacheNotificationActions): NotifcationJson {
+    toJson(cacheActions = notifications.cacheActions): NotifcationJson {
         return {
             actionIcons: this._actionIcons,
             actions: cacheActions ? this._actions : [],
@@ -294,6 +293,10 @@ export class Notifications extends Service {
         });
     }
 
+    popupTimeout = 3000;
+    forceTimeout = false;
+    cacheActions = false;
+
     private _dbus!: Gio.DBusExportedObject;
     private _notifications: Map<number, Notification>;
     private _dnd = false;
@@ -348,9 +351,9 @@ export class Notifications extends Service {
         const id = replacesId || this._idCount++;
         const n = new Notification(appName, id, appIcon, summary, body, acts, hints, !this.dnd);
 
-        if (App.config.notificationForceTimeout || expiration === -1) {
-            n.timeout = App.config.notificationPopupTimeout;
-            timeout(App.config.notificationPopupTimeout, () => this.DismissNotification(id));
+        if (this.forceTimeout || expiration === -1) {
+            n.timeout = this.popupTimeout;
+            timeout(this.popupTimeout, () => this.DismissNotification(id));
         } else {
             n.timeout = expiration;
             if (expiration > 0)

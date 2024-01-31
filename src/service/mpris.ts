@@ -1,6 +1,5 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import App from '../app.js';
 import Service from '../service.js';
 import { ensureDirectory, idle } from '../utils.js';
 import { CACHE_DIR } from '../utils.js';
@@ -178,7 +177,7 @@ export class MprisPlayer extends Service {
     }
 
     private _cacheCoverArt() {
-        if (!App.config.cacheCoverArt || this._trackCoverUrl === '')
+        if (!mpris.cacheCoverArt || this._trackCoverUrl === '')
             return;
 
         this._coverPath = MEDIA_CACHE_PATH + '/' +
@@ -275,6 +274,8 @@ export class Mpris extends Service {
             'players': ['jsobject'],
         });
     }
+
+    cacheCoverArt = true;
 
     private _proxy: DBusProxy;
     private _players: Map<string, MprisPlayer> = new Map;

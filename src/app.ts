@@ -9,20 +9,43 @@ import Utils from './utils.js';
 import { timeout, readFileAsync } from './utils.js';
 import { loadInterfaceXML } from './utils.js';
 
+function deprecated(config: Config) {
+    const warning = (from: string, to: string) => console.warn(
+        `${from} config option has been removed: use ${to} instead`);
+
+    if (config.notificationPopupTimeout !== undefined)
+        warning('notificationPopupTimeout', 'Notifications.popupTimeout');
+
+    if (config.notificationForceTimeout !== undefined)
+        warning('notificationForceTimeout', 'Notifications.forceTimeout');
+
+    if (config.cacheNotificationActions !== undefined)
+        warning('cacheNotificationActions', 'Notifications.cacheActions');
+
+    if (config.cacheCoverArt !== undefined)
+        warning('cacheCoverArt', 'Mpris.cacheCoverArt');
+
+    if (config.maxStreamVolume !== undefined)
+        warning('cacheCoverArt', 'Audio.maxStreamVolume');
+}
+
 const AgsIFace = (bus: string) =>
     loadInterfaceXML('com.github.Aylur.ags')?.replace('@BUS@', bus);
 
 export interface Config<W extends Gtk.Window = Gtk.Window> {
     windows?: W[]
     style?: string
+    icons?: string
+    onWindowToggled?: (windowName: string, visible: boolean) => void
+    onConfigParsed?: (app: App) => void
+    closeWindowDelay: { [key: string]: number }
+
+    // FIXME: deprecated
     notificationPopupTimeout: number
     notificationForceTimeout: boolean
     cacheNotificationActions: boolean
     cacheCoverArt: boolean
-    closeWindowDelay: { [key: string]: number }
     maxStreamVolume: number
-    onWindowToggled?: (windowName: string, visible: boolean) => void,
-    onConfigParsed?: (app: App) => void,
 }
 
 export class App extends Gtk.Application {
@@ -34,19 +57,16 @@ export class App extends Gtk.Application {
     }
 
     private _dbus!: Gio.DBusExportedObject;
-    private _closeDelay!: { [key: string]: number };
+    private _closeDelay!: Config['closeWindowDelay'];
     private _cssProviders: Gtk.CssProvider[] = [];
     private _objectPath!: string;
-
     private _windows: Map<string, Gtk.Window> = new Map();
     private _configPath!: string;
     private _configDir!: string;
-    private _config!: Config;
 
-    get windows() { return this._windows; }
+    get windows() { return [...this._windows.values()]; }
     get configPath() { return this._configPath; }
     get configDir() { return this._configDir; }
-    get config() { return this._config; }
 
     resetCss() {
         const screen = Gdk.Screen.get_default();
@@ -190,23 +210,17 @@ export class App extends Gtk.Application {
 
     private async _load() {
         try {
-            const mod = await import(`file://${this.configPath}`);
-            const config = mod.default as Config;
-            config.closeWindowDelay ??= {};
-            config.notificationPopupTimeout ??= 3000;
-            config.notificationForceTimeout ??= false;
-            config.maxStreamVolume ??= 1.5;
-            config.cacheNotificationActions ??= false;
-            config.cacheCoverArt ??= true;
-            this._config = config;
-
+            const entry = await import(`file://${this.configPath}`);
+            const config = entry.default as Config;
             if (!config) {
                 console.error('Missing default export');
-                this.emit('config-parsed');
-                return;
+                return this.emit('config-parsed');
             }
 
-            this._closeDelay = config.closeWindowDelay;
+            // FIXME:
+            deprecated(config);
+
+            this._closeDelay = config?.closeWindowDelay || {};
 
             if (config.style) {
                 this.applyCss(config.style.startsWith('.')
@@ -214,12 +228,8 @@ export class App extends Gtk.Application {
                     : config.style);
             }
 
-            if (config.windows && !Array.isArray(config.windows)) {
-                console.error('windows attribute has to be an array, ' +
-                    `but it is a ${typeof config.windows}`);
-                this.emit('config-parsed');
-                return;
-            }
+            if (config.icons)
+                Gtk.IconTheme.get_default().append_search_path(config.icons);
 
             if (typeof config.onWindowToggled === 'function')
                 this.connect('window-toggled', (_, n, v) => config.onWindowToggled!(n, v));

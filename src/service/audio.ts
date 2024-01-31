@@ -1,7 +1,6 @@
 import Service from '../service.js';
 import GObject from 'gi://GObject';
 import Gvc from 'gi://Gvc';
-import App from '../app.js';
 import { bulkConnect, bulkDisconnect } from '../utils.js';
 
 const _MIXER_CONTROL_STATE = {
@@ -89,8 +88,8 @@ export class Stream extends Service {
     }
 
     set volume(value) { // 0..100
-        if (value > (App.config.maxStreamVolume))
-            value = (App.config.maxStreamVolume);
+        if (value > (audio.maxStreamVolume))
+            value = (audio.maxStreamVolume);
 
         if (value < 0)
             value = 0;
@@ -122,6 +121,8 @@ export class Audio extends Service {
             'microphone': ['jsobject', 'rw'],
         });
     }
+
+    maxStreamVolume = 1.5;
 
     private _control: Gvc.MixerControl;
     private _streams: Map<number, Stream>;

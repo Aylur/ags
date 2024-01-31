@@ -120,7 +120,8 @@ export async function init(configDir: string, entry: string) {
                 conf.compilerOptions.typeRoots = [...list, './types'];
 
             await writeFile(JSON.stringify(conf, null, 2), tsconfig);
-        } finally {
+        } catch (err) {
+            logError(err);
             console.warn(tsconfigWarning);
         }
     }
