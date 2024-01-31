@@ -14,6 +14,7 @@
 - add: Window.gdkmonitor
 - export modules globally
 - make Audio.microphone and Audio.speaker always
+- feat: child property as second parameter [#265](https://github.com/Aylur/ags/pull/265/)
 
 ## Breaking change
 
