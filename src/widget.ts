@@ -35,7 +35,7 @@ export const ProgressBar = <Attr>(props?: ProgressBarProps<Attr>) => new Progres
 export const Revealer = <Child extends Gtk.Widget, Attr>(props?: RevealerProps<Child, Attr>, child?: Child) => new RevealerClass(props, child);
 export const Scrollable = <Child extends Gtk.Widget, Attr>(props?: ScrollableProps<Child, Attr>, child?: Child) => new ScrollableClass(props, child);
 export const Slider = <Attr>(props?: SliderProps<Attr>) => new SliderClass(props);
-export const Stack = <Child extends Gtk.Widget, Attr>(props?: StackProps<Child, Attr>) => new StackClass(props);
+export const Stack = <Children extends { [name: string]: Gtk.Widget }, Attr>(props?: StackProps<Children, Attr>, children?: Children) => new StackClass(props, children);
 
 export const Calendar = <Attr>(props?: Etc.CalendarProps<Attr>) => new Etc.Calendar(props);
 export const ColorButton = <Attr>(props?: Etc.ColorButtonProps<Attr>) => new Etc.ColorButton(props);

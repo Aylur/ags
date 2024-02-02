@@ -27,36 +27,45 @@ const TRANSITION = {
 type Transition = keyof typeof TRANSITION;
 
 export type StackProps<
-    Child extends Gtk.Widget,
+    Children extends { [name: string]: Gtk.Widget },
     Attr = unknown,
-    Self = Stack<Child, Attr>,
+    Self = Stack<Children, Attr>,
 > = BaseProps<Self, Gtk.Stack.ConstructorProperties & {
-    shown?: string
-    items?: [string, Child][]
+    shown?: keyof Children,
     transition?: Transition
+    children?: Children,
+    // FIXME:
+    items?: [string, Gtk.Widget][]
 }, Attr>
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface Stack<Child, Attr> extends Widget<Attr> { }
-export class Stack<Child extends Gtk.Widget, Attr> extends Gtk.Stack {
+export interface Stack<Children, Attr> extends Widget<Attr> { }
+export class Stack<Children extends { [name: string]: Gtk.Widget }, Attr> extends Gtk.Stack {
     static {
         register(this, {
             properties: {
                 'transition': ['string', 'rw'],
                 'shown': ['string', 'rw'],
+                'children': ['jsobject', 'r'],
+                // FIXME: deprecated
                 'items': ['jsobject', 'rw'],
             },
         });
     }
 
-    constructor(props: StackProps<Child, Attr> = {}) {
+    constructor(props: StackProps<Children, Attr> = {}, children?: Children) {
+        if (children)
+            props.children = children;
+
         super(props as Gtk.Stack.ConstructorProperties);
     }
 
-    add_named(child: Child, name: string): void {
-        this.items.push([name, child]);
-        super.add_named(child, name);
-        this.notify('items');
+    get children() { return this._get('children'); }
+    private set children(children: Children) {
+        this._set('children', children);
+        Object.entries(children).forEach(([name, widget]) => {
+            this.add_named(widget, name);
+        });
     }
 
     get items() {
@@ -66,14 +75,14 @@ export class Stack<Child extends Gtk.Widget, Attr> extends Gtk.Stack {
         return this._get('items');
     }
 
-    set items(items: Array<[string, Child]>) {
+    set items(items: Array<[string, Gtk.Widget]>) {
+        if (items)
+            console.warn(Error('Stack.items is DEPRECATED, use Stack.children'));
+
         this.items
             .filter(([name]) => !items.find(([n]) => n === name))
             .forEach(([, ch]) => ch.destroy());
 
-        // remove any children that weren't destroyed so
-        // we can re-add everything without trying to add
-        // items multiple times
         this.items
             .filter(([, ch]) => this.get_children().includes(ch))
             .forEach(([, ch]) => this.remove(ch));
@@ -108,14 +117,11 @@ export class Stack<Child extends Gtk.Widget, Attr> extends Gtk.Stack {
         this.notify('transition');
     }
 
-    get shown() { return this.visible_child_name; }
-    set shown(name: string | null) {
-        if (!name || !this.get_child_by_name(name)) {
-            this.visible = false;
+    get shown() { return this.visible_child_name as keyof Children; }
+    set shown(name: keyof Children) {
+        if (typeof name !== 'string')
             return;
-        }
 
-        this.visible = true;
         this.set_visible_child_name(name);
         this.notify('shown');
     }
