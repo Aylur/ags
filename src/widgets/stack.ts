@@ -46,7 +46,7 @@ export class Stack<Children extends { [name: string]: Gtk.Widget }, Attr> extend
             properties: {
                 'transition': ['string', 'rw'],
                 'shown': ['string', 'rw'],
-                'children': ['jsobject', 'r'],
+                'children': ['jsobject', 'rw'],
                 // FIXME: deprecated
                 'items': ['jsobject', 'rw'],
             },
@@ -60,12 +60,23 @@ export class Stack<Children extends { [name: string]: Gtk.Widget }, Attr> extend
         super(props as Gtk.Stack.ConstructorProperties);
     }
 
-    get children() { return this._get('children'); }
-    private set children(children: Children) {
+    get children() { return this._get('children') || {}; }
+    set children(children: Children) {
+        if (!children)
+            return;
+
+        const oldCh = Object.values(this.children);
+        const newCh = Object.values(children);
+        for (const widget of oldCh) {
+            if (!newCh.includes(widget))
+                widget.destroy();
+            else
+                this.remove(widget);
+        }
+
         this._set('children', children);
-        Object.entries(children).forEach(([name, widget]) => {
+        for (const [name, widget] of Object.entries(children))
             this.add_named(widget, name);
-        });
     }
 
     get items() {
