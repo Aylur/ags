@@ -20,7 +20,7 @@ TYPES="$PKGDATA_DIR/types"
 
 mkdir -p $TYPES
 
-tsc $SCR -d --declarationDir $TYPES --emitDeclarationOnly
+tsc -p $SRC/tsconfig.json -d --declarationDir $TYPES --emitDeclarationOnly
 
 function fixPaths {
 	sed -i 's/node_modules/types/g' $1
