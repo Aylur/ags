@@ -67,3 +67,7 @@ done
 for file in $SRC/src/widgets/*.ts; do
 	resource "widgets/$(basename -s .ts $file)" >>$dts
 done
+
+for file in $SRC/src/utils/*.ts; do
+	resource "utils/$(basename -s .ts $file)" >>$dts
+done
