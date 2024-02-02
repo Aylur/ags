@@ -6,6 +6,7 @@ import * as Timeout from './utils/timeout.js';
 import * as Fetch from './utils/fetch.js';
 import * as Notify from './utils/notify.js';
 import * as Pam from './utils/pam.js';
+import * as Gobject from './utils/gobject.js';
 
 export const USER = GLib.get_user_name();
 export const HOME = GLib.get_home_dir();
@@ -46,6 +47,12 @@ export const {
 export const { fetch } = Fetch;
 export const { notify } = Notify;
 
+export const {
+    kebabify,
+    pspec,
+    registerGObject,
+} = Gobject;
+
 export default {
     USER,
     HOME,
@@ -75,4 +82,8 @@ export default {
 
     authenticate,
     authenticateUser,
+
+    kebabify,
+    pspec,
+    registerGObject,
 };
