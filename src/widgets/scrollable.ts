@@ -11,7 +11,7 @@ const POLICY = {
 type Policy = keyof typeof POLICY;
 
 export type ScrollableProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = Scrollable<Child, Attr>,
 > = BaseProps<Self, Gtk.ScrolledWindow.ConstructorProperties & {

@@ -32,7 +32,7 @@ type Exclusivity = 'normal' | 'ignore' | 'exclusive';
 type Keymode = keyof typeof KEYMODE;
 
 export type WindowProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = Window<Child, Attr>,
 > = BaseProps<Self, Gtk.Window.ConstructorProperties & {

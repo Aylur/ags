@@ -2,7 +2,7 @@ import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 export type OverlayProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = Overlay<Child, Attr>,
 > = BaseProps<Self, Gtk.Overlay.ConstructorProperties & {

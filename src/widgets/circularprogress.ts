@@ -12,7 +12,7 @@ interface Context {
 }
 
 export type CircularProgressProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = CircularProgress<Child, Attr>
 > = BaseProps<Self, Gtk.Bin.ConstructorProperties & {

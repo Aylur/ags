@@ -27,7 +27,7 @@ const TRANSITION = {
 type Transition = keyof typeof TRANSITION;
 
 export type StackProps<
-    Children extends { [name: string]: Gtk.Widget },
+    Children extends { [name: string]: Gtk.Widget } = { [name: string]: Gtk.Widget },
     Attr = unknown,
     Self = Stack<Children, Attr>,
 > = BaseProps<Self, Gtk.Stack.ConstructorProperties & {
