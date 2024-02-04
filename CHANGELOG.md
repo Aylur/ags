@@ -1,4 +1,20 @@
-# Unreleased
+# 1.7.5
+
+## Features
+
+- generate types for utils subdirectory (#287)
+- export gobject utils in Utils
+
+## Fixes
+
+- button: child second parameter
+
+## Breaking Changes
+
+- add: Stack.children
+- deprecate: Stack.items
+
+# 1.7.4
 
 ## Features
 
@@ -18,7 +34,7 @@
 - feat(pam): Utils.authenticate (#273)
 - feat: child property as second parameter [#265](https://github.com/Aylur/ags/pull/265/)
 
-## Breaking change
+## Breaking Changes
 
 - subclassing of widgets
 
