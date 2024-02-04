@@ -21,7 +21,7 @@ import * as Etc from './widgets/etc.js';
 
 export const Window = <Child extends Gtk.Widget, Attr>(props?: WindowProps<Child, Attr>, child?: Child) => new WindowClass(props, child);
 export const Box = <Child extends Gtk.Widget, Attr>(props?: BoxProps<Child, Attr> | Child[], ...children: Child[]) => new BoxClass(props, ...children);
-export const Button = <Child extends Gtk.Widget, Attr>(props?: ButtonProps<Child, Attr>) => new ButtonClass(props);
+export const Button = <Child extends Gtk.Widget, Attr>(props?: ButtonProps<Child, Attr>, child?: Child) => new ButtonClass(props, child);
 export const CenterBox = <StartWidget extends Gtk.Widget, CenterWidget extends Gtk.Widget, EndWidget extends Gtk.Widget, Attr>(props?: CenterBoxProps<StartWidget, CenterWidget, EndWidget, Attr>, startWidget?: StartWidget, centerWidget?: CenterWidget, endWidget?: EndWidget) => new CenterBoxClass(props, startWidget, centerWidget, endWidget);
 export const CircularProgress = <Child extends Gtk.Widget, Attr>(props?: CircularProgressProps<Child, Attr>, child?: Child) => new CircularProgressClass(props, child);
 export const Entry = <Attr>(props?: EntryProps<Attr>) => new EntryClass(props);
