@@ -109,9 +109,9 @@ export class Hyprland extends Service {
     get workspaces() { return Array.from(this._workspaces.values()); }
     get clients() { return Array.from(this._clients.values()); }
 
-    getMonitor(id: number) { return this._monitors.get(id); }
-    getWorkspace(id: number) { return this._workspaces.get(id); }
-    getClient(address: string) { return this._clients.get(address); }
+    readonly getMonitor = (id: number) => this._monitors.get(id);
+    readonly getWorkspace = (id: number) => this._workspaces.get(id);
+    readonly getClient = (address: string) => this._clients.get(address);
 
     constructor() {
         if (!HIS)
@@ -146,7 +146,8 @@ export class Hyprland extends Service {
         });
     }
 
-    async sendMessage(cmd: string) {
+    // eslint-disable-next-line space-before-function-paren
+    readonly sendMessage = async (cmd: string) => {
         const connection = socket(`/tmp/hypr/${HIS}/.socket.sock`);
 
         connection
@@ -165,7 +166,7 @@ export class Hyprland extends Service {
         } finally {
             connection.close(null);
         }
-    }
+    };
 
     private async _syncMonitors(notify = true) {
         try {

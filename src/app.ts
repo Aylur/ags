@@ -68,7 +68,7 @@ export class App extends Gtk.Application {
     get configPath() { return this._configPath; }
     get configDir() { return this._configDir; }
 
-    resetCss() {
+    readonly resetCss = () => {
         const screen = Gdk.Screen.get_default();
         if (!screen) {
             console.error("couldn't get screen");
@@ -80,9 +80,9 @@ export class App extends Gtk.Application {
         });
 
         this._cssProviders = [];
-    }
+    };
 
-    applyCss(path: string) {
+    readonly applyCss = (path: string) => {
         const screen = Gdk.Screen.get_default();
         if (!screen) {
             console.error("couldn't get screen");
@@ -109,7 +109,7 @@ export class App extends Gtk.Application {
         );
 
         this._cssProviders.push(cssProvider);
-    }
+    };
 
     setup(bus: string, path: string, configDir: string, entry: string) {
         this.application_id = bus;
@@ -135,23 +135,23 @@ export class App extends Gtk.Application {
         this._load();
     }
 
-    connect(signal = 'window-toggled', callback: (_: this, ...args: any[]) => void): number {
+    readonly connect = (signal = 'window-toggled', callback: (_: this, ...args: any[]) => void) => {
         return super.connect(signal, callback);
-    }
+    };
 
-    toggleWindow(name: string) {
+    readonly toggleWindow = (name: string) => {
         const w = this.getWindow(name);
         if (w)
             w.visible ? this.closeWindow(name) : this.openWindow(name);
         else
             return 'There is no window named ' + name;
-    }
+    };
 
-    openWindow(name: string) {
+    readonly openWindow = (name: string) => {
         this.getWindow(name)?.show();
-    }
+    };
 
-    closeWindow(name: string) {
+    readonly closeWindow = (name: string) => {
         const w = this.getWindow(name);
         if (!w || !w.visible)
             return;
@@ -164,17 +164,17 @@ export class App extends Gtk.Application {
         else {
             w.hide();
         }
-    }
+    };
 
-    getWindow(name: string) {
+    readonly getWindow = (name: string) => {
         const w = this._windows.get(name);
         if (!w)
             console.error(Error(`There is no window named ${name}`));
 
         return w;
-    }
+    };
 
-    removeWindow(w: Gtk.Window | string) {
+    readonly removeWindow = (w: Gtk.Window | string) => {
         const name = typeof w === 'string' ? w : w.name || 'gtk-layer-shell';
 
         const win = this._windows.get(name);
@@ -185,9 +185,9 @@ export class App extends Gtk.Application {
 
         win.destroy();
         this._windows.delete(name);
-    }
+    };
 
-    addWindow(w: Gtk.Window) {
+    readonly addWindow = (w: Gtk.Window) => {
         if (!(w instanceof Gtk.Window)) {
             return console.error(Error(`${w} is not an instanceof Gtk.Window, ` +
                 ` but it is of type ${typeof w}`));
@@ -206,7 +206,9 @@ export class App extends Gtk.Application {
         }
 
         this._windows.set(w.name, w);
-    }
+    };
+
+    readonly quit = () => super.quit();
 
     private async _load() {
         try {

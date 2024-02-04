@@ -30,7 +30,7 @@ export class Stream extends Service {
     private _ids?: number[];
     private _oldVolume = 0;
 
-    setStream(stream: Gvc.MixerStream | null) {
+    readonly setStream = (stream: Gvc.MixerStream | null) => {
         if (this._ids)
             bulkDisconnect((this._stream as unknown) as GObject.Object, this._ids);
 
@@ -54,7 +54,7 @@ export class Stream extends Service {
         });
 
         this.changed('stream');
-    }
+    };
 
     constructor(stream?: Gvc.MixerStream) {
         super();
@@ -99,10 +99,10 @@ export class Stream extends Service {
         this._stream?.push_volume();
     }
 
-    close() {
+    readonly close = () => {
         this.setStream(null);
         this.emit('closed');
-    }
+    };
 }
 
 export class Audio extends Service {
@@ -122,7 +122,7 @@ export class Audio extends Service {
         });
     }
 
-    maxStreamVolume = 1.5;
+    public maxStreamVolume = 1.5;
 
     private _control: Gvc.MixerControl;
     private _streams: Map<number, Stream>;
@@ -174,9 +174,9 @@ export class Audio extends Service {
     get apps() { return this._getStreams(Gvc.MixerSinkInput); }
     get recorders() { return this._getStreams(Gvc.MixerSourceOutput); }
 
-    getStream(id: number) {
+    readonly getStream = (id: number) => {
         return this._streams.get(id);
-    }
+    };
 
     private _defaultChanged(id: number, type: 'speaker' | 'microphone') {
         const stream = this._streams.get(id);

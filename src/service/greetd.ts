@@ -37,12 +37,13 @@ export class Greetd extends Service {
 
     private _decoder = new TextDecoder;
 
-    async login(
+    // eslint-disable-next-line space-before-function-paren
+    readonly login = async (
         username: string,
         password: string,
         cmd: string[] | string,
         env: string[] = [],
-    ) {
+    ) => {
         const session = await this.createSession(username);
         if (session.type !== 'auth_message') {
             this.cancelSession();
@@ -62,27 +63,27 @@ export class Greetd extends Service {
         }
 
         App.quit();
-    }
+    };
 
-    createSession(username: string) {
+    readonly createSession = (username: string) => {
         return this._send('create_session', { username });
-    }
+    };
 
-    postAuth(response?: string) {
+    readonly postAuth = (response?: string) => {
         return this._send('post_auth_message_response', { response });
-    }
+    };
 
-    startSession(cmd: string[] | string, env: string[] = []) {
+    readonly startSession = (cmd: string[] | string, env: string[] = []) => {
         const cmdv = Array.isArray(cmd)
             ? cmd
             : GLib.shell_parse_argv(cmd)[1];
 
         return this._send('start_session', { cmd: cmdv, env });
-    }
+    };
 
-    cancelSession() {
+    readonly cancelSession = () => {
         return this._send('cancel_session', {});
-    }
+    };
 
     private async _send<R extends keyof Request>(req: R, payload: Request[R]): Promise<Response> {
         const connection = new Gio.SocketClient()

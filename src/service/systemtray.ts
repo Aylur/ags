@@ -57,15 +57,15 @@ export class TrayItem extends Service {
             Gio.DBusProxyFlags.NONE);
     }
 
-    activate(event: Gdk.Event) {
+    readonly activate = (event: Gdk.Event) => {
         this._proxy.ActivateAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
-    }
+    };
 
-    secondaryActivate(event: Gdk.Event) {
+    readonly secondaryActivate = (event: Gdk.Event) => {
         this._proxy.SecondaryActivateAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
-    }
+    };
 
-    scroll(event: Gdk.EventScroll) {
+    readonly scroll = (event: Gdk.EventScroll) => {
         const direction = (event.direction == 0 || event.direction == 1)
             ? 'vertical' : 'horizontal';
 
@@ -73,13 +73,13 @@ export class TrayItem extends Service {
             ? event.delta_y : event.delta_x;
 
         this._proxy.ScrollAsync(delta, direction);
-    }
+    };
 
-    openMenu(event: Gdk.Event) {
+    readonly openMenu = (event: Gdk.Event) => {
         this.menu
             ? this.menu.popup_at_pointer(event)
             : this._proxy.ContextMenuAsync(event.get_root_coords()[1], event.get_root_coords()[2]);
-    }
+    };
 
     get category() { return this._proxy.Category; }
     get id() { return this._proxy.Id; }
@@ -150,7 +150,7 @@ export class TrayItem extends Service {
         this.emit('ready');
     }
 
-    _notify() {
+    private _notify() {
         [
             'menu', 'category', 'id', 'title', 'status',
             'window-id', 'is-menu', 'tooltip-markup', 'icon',
@@ -235,7 +235,7 @@ export class SystemTray extends Service {
     get RegisteredStatusNotifierItems() { return Array.from(this._items.keys()); }
 
     get items() { return Array.from(this._items.values()); }
-    getItem(name: string) { return this._items.get(name); }
+    readonly getItem = (name: string) => this._items.get(name);
 
     constructor() {
         super();
