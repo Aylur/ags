@@ -5,6 +5,7 @@
 - generate types for utils subdirectory (#287)
 - export gobject utils in Utils
 - bind service methods
+- make App.closeWindowDelay writable
 
 ## Fixes
 

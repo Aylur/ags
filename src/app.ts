@@ -56,13 +56,17 @@ export class App extends Gtk.Application {
         });
     }
 
+
     private _dbus!: Gio.DBusExportedObject;
-    private _closeDelay!: Config['closeWindowDelay'];
     private _cssProviders: Gtk.CssProvider[] = [];
     private _objectPath!: string;
     private _windows: Map<string, Gtk.Window> = new Map();
     private _configPath!: string;
     private _configDir!: string;
+
+    private _closeWindowDelay!: Config['closeWindowDelay'];
+    get closeWindowDelay() { return this._closeWindowDelay || {}; }
+    set closeWindowDelay(v) { this._closeWindowDelay = v; }
 
     get windows() { return [...this._windows.values()]; }
     get configPath() { return this._configPath; }
@@ -156,7 +160,7 @@ export class App extends Gtk.Application {
         if (!w || !w.visible)
             return;
 
-        const delay = this._closeDelay[name];
+        const delay = this.closeWindowDelay[name];
         if (delay && w.visible) {
             timeout(delay, () => w.hide());
             this.emit('window-toggled', name, false);
@@ -222,7 +226,7 @@ export class App extends Gtk.Application {
             // FIXME:
             deprecated(config);
 
-            this._closeDelay = config?.closeWindowDelay || {};
+            this.closeWindowDelay = config?.closeWindowDelay || {};
 
             if (config.style) {
                 this.applyCss(config.style.startsWith('.')
