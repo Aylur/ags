@@ -25,7 +25,7 @@ export const Button = <Child extends Gtk.Widget, Attr>(props?: ButtonProps<Child
 export const CenterBox = <StartWidget extends Gtk.Widget, CenterWidget extends Gtk.Widget, EndWidget extends Gtk.Widget, Attr>(props?: CenterBoxProps<StartWidget, CenterWidget, EndWidget, Attr>, startWidget?: StartWidget, centerWidget?: CenterWidget, endWidget?: EndWidget) => new CenterBoxClass(props, startWidget, centerWidget, endWidget);
 export const CircularProgress = <Child extends Gtk.Widget, Attr>(props?: CircularProgressProps<Child, Attr>, child?: Child) => new CircularProgressClass(props, child);
 export const Entry = <Attr>(props?: EntryProps<Attr>) => new EntryClass(props);
-export const EventBox = <Child extends Gtk.Widget, Attr>(props?: EventBoxProps<Child, Attr>) => new EventBoxClass(props);
+export const EventBox = <Child extends Gtk.Widget, Attr>(props?: EventBoxProps<Child, Attr>, child?: Child) => new EventBoxClass(props, child);
 export const Icon = <Attr>(props?: IconProps<Attr>) => new IconClass(props);
 export const Label = <Attr>(props?: LabelProps<Attr>) => new LabelClass(props);
 export const Menu = <Child extends Gtk.MenuItem, Attr>(props?: MenuProps<Child, Attr>, ...children: Child[]) => new MenuClass(props, ...children);

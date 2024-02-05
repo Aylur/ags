@@ -9,7 +9,7 @@
 
 ## Fixes
 
-- button: child second parameter
+- widget: button, eventbox child second parameter
 
 ## Breaking Changes
 
