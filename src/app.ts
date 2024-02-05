@@ -38,14 +38,14 @@ export interface Config<W extends Gtk.Window = Gtk.Window> {
     icons?: string
     onWindowToggled?: (windowName: string, visible: boolean) => void
     onConfigParsed?: (app: App) => void
-    closeWindowDelay: { [key: string]: number }
+    closeWindowDelay?: { [key: string]: number }
 
     // FIXME: deprecated
-    notificationPopupTimeout: number
-    notificationForceTimeout: boolean
-    cacheNotificationActions: boolean
-    cacheCoverArt: boolean
-    maxStreamVolume: number
+    notificationPopupTimeout?: number
+    notificationForceTimeout?: boolean
+    cacheNotificationActions?: boolean
+    cacheCoverArt?: boolean
+    maxStreamVolume?: number
 }
 
 export class App extends Gtk.Application {
