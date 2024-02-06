@@ -1,3 +1,9 @@
+# 1.7.6
+
+## Features
+
+- Utils.writeFileSync
+
 # 1.7.5
 
 ## Features

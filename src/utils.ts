@@ -22,6 +22,7 @@ export const {
     readFile,
     readFileAsync,
     writeFile,
+    writeFileSync,
     monitorFile,
 } = File;
 
@@ -65,6 +66,7 @@ export default {
     readFile,
     readFileAsync,
     writeFile,
+    writeFileSync,
     monitorFile,
 
     timeout,
