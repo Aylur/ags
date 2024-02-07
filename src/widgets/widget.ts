@@ -215,7 +215,6 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
         timeout: number,
         callback: (self: this) => void,
     ): this {
-        callback(this);
         interval(timeout, () => callback(this), this);
         return this;
     }
