@@ -4,6 +4,10 @@
 
 - Utils.writeFileSync
 
+## Breaking Changes
+
+- hyprland service: workspace and monitor signal emit number
+
 # 1.7.5
 
 ## Features
