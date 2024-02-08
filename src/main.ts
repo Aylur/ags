@@ -25,7 +25,7 @@ OPTIONS:
     -r, --run-js            Execute string as an async function
     -f, --run-file          Execute file as an async function
     -I, --init              Initialize the configuration directory
-    -C, --clear-cache       Remove ${Utils.CACHE_DIR}`;
+    --clear-cache           Remove ${Utils.CACHE_DIR} and exit`;
 
 export async function main(args: string[]) {
     const flags = {
@@ -61,6 +61,7 @@ export async function main(args: string[]) {
                 try {
                     Gio.File.new_for_path(Utils.CACHE_DIR).trash(null);
                 } catch { /**/ }
+                app.quit();
                 break;
 
             case '-b':

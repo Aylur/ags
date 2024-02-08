@@ -53,7 +53,6 @@ export class CircularProgress<
     get child() { return super.child as Child; }
     set child(child: Child) { super.child = child; }
 
-
     get rounded() { return this._get('rounded') || false; }
     set rounded(r: boolean) {
         if (this.rounded === r)

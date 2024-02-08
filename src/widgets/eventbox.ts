@@ -108,7 +108,6 @@ export class EventBox<Child extends Gtk.Widget, Attr> extends Gtk.EventBox {
     get child() { return super.child as Child; }
     set child(child: Child) { super.child = child; }
 
-
     get on_hover() { return this._get('on-hover'); }
     set on_hover(callback: EventHandler<this>) {
         this._set('on-hover', callback);

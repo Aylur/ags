@@ -432,33 +432,6 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
         this.setCss(css);
     }
 
-    get child(): Gtk.Widget | null {
-        // @ts-expect-error
-        if (typeof this.get_child === 'function')
-            // @ts-expect-error
-            return this.get_child();
-
-        return null;
-    }
-
-    set child(child: Gtk.Widget) {
-        if (this.child !== child && this.child)
-            this.child.destroy();
-
-        // @ts-expect-error
-        if (typeof this.set_child === 'function')
-            // @ts-expect-error
-            this.set_child(child);
-
-        // @ts-expect-error
-        else if (typeof this.add === 'function')
-            // @ts-expect-error
-            this.add(child);
-
-        else
-            console.error(Error(`can't set child on ${this}`));
-    }
-
     _updateCursor() {
         if (!this.cursor)
             return;
