@@ -60,6 +60,12 @@ export class Stack<Children extends { [name: string]: Gtk.Widget }, Attr> extend
         super(props as Gtk.Stack.ConstructorProperties);
     }
 
+    add_named(child: Gtk.Widget, name: string): void {
+        // @ts-expect-error
+        this.children[name] = child;
+        this.children = { ...this.children };
+    }
+
     get children() { return this._get('children') || {}; }
     set children(children: Children) {
         if (!children)
@@ -76,7 +82,9 @@ export class Stack<Children extends { [name: string]: Gtk.Widget }, Attr> extend
 
         this._set('children', children);
         for (const [name, widget] of Object.entries(children))
-            this.add_named(widget, name);
+            super.add_named(widget, name);
+
+        this.notify('children');
     }
 
     get items() {

@@ -4,6 +4,10 @@
 
 - Utils.writeFileSync
 
+## Fixes
+
+- Stack.add_named
+
 ## Breaking Changes
 
 - hyprland service: workspace and monitor signal emit number
