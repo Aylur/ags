@@ -12,6 +12,7 @@
 
 - hyprland service: workspace and monitor signal emit number
 - hyprland service: deprecate sendMessage, introduce message and messageAsync
+- Variable: value check on setter, force on setValue
 
 # 1.7.5
 
