@@ -97,10 +97,10 @@ export class Hyprland extends Service {
         });
     }
 
-    private _active: Actives;
-    private _monitors: Map<number, Monitor>;
-    private _workspaces: Map<number, Workspace>;
-    private _clients: Map<string, Client>;
+    private _active: Actives = new Actives();
+    private _monitors: Map<number, Monitor> = new Map();
+    private _workspaces: Map<number, Workspace> = new Map();
+    private _clients: Map<string, Client> = new Map();
     private _decoder = new TextDecoder();
     private _encoder = new TextEncoder();
 
@@ -118,13 +118,27 @@ export class Hyprland extends Service {
             console.error('Hyprland is not running');
 
         super();
-        this._active = new Actives();
-        this._monitors = new Map();
-        this._workspaces = new Map();
-        this._clients = new Map();
-        this._syncMonitors();
-        this._syncWorkspaces();
-        this._syncClients();
+
+        // init monitor
+        for (const m of JSON.parse(this.message('j/monitors')) as Monitor[]) {
+            this._monitors.set(m.id, m);
+            if (m.focused) {
+                this._active.monitor.update(m.id, m.name);
+                this._active.workspace.update(m.activeWorkspace.id, m.activeWorkspace.name);
+            }
+        }
+
+        // init workspaces
+        for (const ws of JSON.parse(this.message('j/workspaces')) as Workspace[])
+            this._workspaces.set(ws.id, ws);
+
+        // init clients
+        for (const c of JSON.parse(this.message('j/clients')) as Client[])
+            this._clients.set(c.address, c);
+
+
+        // this._syncWorkspaces();
+        // this._syncClients();
 
         this._watchSocket(new Gio.DataInputStream({
             close_base_stream: true,
@@ -146,42 +160,69 @@ export class Hyprland extends Service {
         });
     }
 
-    // eslint-disable-next-line space-before-function-paren
-    readonly sendMessage = async (cmd: string) => {
+    // FIXME: deprecated
+    readonly sendMessage = (cmd: string) => {
+        console.warn('hyprland.sendMessage is DEPRECATED, '
+            + ' use hyprland.message or hyprland.messageAsync');
+        return this.messageAsync(cmd);
+    };
+
+    private _socketStream(cmd: string) {
         const connection = socket(`/tmp/hypr/${HIS}/.socket.sock`);
 
         connection
             .get_output_stream()
             .write(this._encoder.encode(cmd), null);
 
-        const inputStream = new Gio.DataInputStream({
+        const stream = new Gio.DataInputStream({
             close_base_stream: true,
             base_stream: connection.get_input_stream(),
         });
 
+        return [connection, stream] as const;
+    }
+
+    readonly message = (cmd: string) => {
+        const [connection, stream] = this._socketStream(cmd);
         try {
-            const result = await inputStream.read_upto_async('\x04', -1, 0, null);
-            const [response] = result as unknown as [string, number];
-            return response;
+            const [response] = stream.read_upto('\x04', -1, null);
+            return response || '';
+        } catch (error) {
+            logError(error);
         } finally {
             connection.close(null);
         }
+        return '';
+    };
+
+    // eslint-disable-next-line space-before-function-paren
+    readonly messageAsync = async (cmd: string) => {
+        const [connection, stream] = this._socketStream(cmd);
+        try {
+            const result = await stream.read_upto_async('\x04', -1, 0, null);
+            const [response] = result as unknown as [string, number];
+            return response;
+        } catch (error) {
+            logError(error);
+        } finally {
+            connection.close(null);
+        }
+        return '';
     };
 
     private async _syncMonitors(notify = true) {
         try {
-            const msg = await this.sendMessage('j/monitors');
-            this._monitors = new Map();
-            (JSON.parse(msg) as Array<Monitor>).forEach(monitor => {
-                const { activeWorkspace } = monitor;
-                this._monitors.set(monitor.id, monitor);
-                if (monitor.focused) {
-                    this._active.monitor.update(monitor.id, monitor.name);
-                    this._active.workspace.update(activeWorkspace.id, activeWorkspace.name);
+            const msg = await this.messageAsync('j/monitors');
+            this._monitors.clear();
+            for (const m of JSON.parse(msg) as Array<Monitor>) {
+                this._monitors.set(m.id, m);
+                if (m.focused) {
+                    this._active.monitor.update(m.id, m.name);
+                    this._active.workspace.update(m.activeWorkspace.id, m.activeWorkspace.name);
                     this._active.monitor.emit('changed');
                     this._active.workspace.emit('changed');
                 }
-            });
+            }
             if (notify)
                 this.notify('monitors');
         } catch (error) {
@@ -191,11 +232,11 @@ export class Hyprland extends Service {
 
     private async _syncWorkspaces(notify = true) {
         try {
-            const msg = await this.sendMessage('j/workspaces');
-            this._workspaces = new Map();
-            (JSON.parse(msg) as Array<Workspace>).forEach(ws => {
+            const msg = await this.messageAsync('j/workspaces');
+            this._workspaces.clear();
+            for (const ws of JSON.parse(msg) as Array<Workspace>)
                 this._workspaces.set(ws.id, ws);
-            });
+
             if (notify)
                 this.notify('workspaces');
         } catch (error) {
@@ -205,11 +246,11 @@ export class Hyprland extends Service {
 
     private async _syncClients(notify = true) {
         try {
-            const msg = await this.sendMessage('j/clients');
-            this._clients = new Map();
-            (JSON.parse(msg) as Array<Client>).forEach(client => {
-                this._clients.set(client.address, client);
-            });
+            const msg = await this.messageAsync('j/clients');
+            this._clients.clear();
+            for (const c of JSON.parse(msg) as Array<Client>)
+                this._clients.set(c.address, c);
+
             if (notify)
                 this.notify('clients');
         } catch (error) {

@@ -7,6 +7,7 @@
 ## Breaking Changes
 
 - hyprland service: workspace and monitor signal emit number
+- hyprland service: deprecate sendMessage, introduce message and messageAsync
 
 # 1.7.5
 
