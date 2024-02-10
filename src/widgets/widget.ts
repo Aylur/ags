@@ -94,8 +94,8 @@ export type BaseProps<Self, Props, Attr = unknown> = {
     setup?: (self: Self) => void
 } & BindableProps<CtorProps<Props & CommonProps<Attr>>>
 
-type Requierd<T> = { [K in keyof T]-?: T[K] };
-export interface Widget<Attr> extends Requierd<CommonProps<Attr>> {
+type Required<T> = { [K in keyof T]-?: T[K] };
+export interface Widget<Attr> extends Required<CommonProps<Attr>> {
     hook<
         Gobject extends GObject.Object,
     >(
