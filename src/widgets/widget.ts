@@ -258,7 +258,7 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
         this.connect('destroy', () => this._set('is-destroyed', true));
 
         idle(() => {
-            if (this.click_through)
+            if (this.click_through && !this.is_destroyed)
                 this.input_shape_combine_region(new Cairo.Region);
         });
 
