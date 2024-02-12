@@ -3,6 +3,8 @@
 ## Features
 
 - Utils.writeFileSync
+- add Utils.merge, Utils.derive
+- add Binding.as alias for Binding.transform
 
 ## Fixes
 

@@ -7,6 +7,7 @@ import * as Fetch from './utils/fetch.js';
 import * as Notify from './utils/notify.js';
 import * as Pam from './utils/pam.js';
 import * as Gobject from './utils/gobject.js';
+import * as Binding from './utils/binding.js';
 
 export const USER = GLib.get_user_name();
 export const HOME = GLib.get_home_dir();
@@ -54,6 +55,11 @@ export const {
     registerGObject,
 } = Gobject;
 
+export const {
+    merge,
+    derive,
+} = Binding;
+
 export default {
     USER,
     HOME,
@@ -88,4 +94,7 @@ export default {
     kebabify,
     pspec,
     registerGObject,
+
+    merge,
+    derive,
 };

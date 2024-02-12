@@ -23,6 +23,7 @@ export class Variable<T> extends GObject.Object {
     static {
         Service.register(this, {
             'changed': [],
+            'disposed': [],
         }, {
             'value': ['jsobject', 'rw'],
             'is-listening': ['boolean', 'r'],
@@ -141,6 +142,7 @@ export class Variable<T> extends GObject.Object {
         if (this._subprocess)
             this._subprocess.force_exit();
 
+        this.emit('dispose');
         this.run_dispose();
     }
 
