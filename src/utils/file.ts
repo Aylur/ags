@@ -76,6 +76,7 @@ export function monitorFile(
     flags = Gio.FileMonitorFlags.NONE,
 ) {
     // FIXME: remove the checking in the next release
+    // @ts-expect-error
     if (flags === 'file' || flags === 'directory') {
         throw Error(
             `${flags}` + ' passed as a parameter in `monitorFile`. ' +
