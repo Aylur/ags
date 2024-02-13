@@ -15,6 +15,7 @@
 - hyprland service: workspace and monitor signal emit number
 - hyprland service: deprecate sendMessage, introduce message and messageAsync
 - Variable: value check on setter, force on setValue
+- `Utils.monitorFile()` no longer takes the `type` (`file` or `directory`) parameter. It will monitor each accordingly without specifying it.
 
 # 1.7.5
 
