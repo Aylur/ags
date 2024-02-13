@@ -79,7 +79,7 @@ export function monitorFile(
     if (flags === 'file' || flags === 'directory') {
         throw Error(
             `${flags}` + ' passed as a parameter in `monitorFile`. ' +
-            'Specifying the type is no longer required.'
+            'Specifying the type is no longer required.',
         );
     }
 
