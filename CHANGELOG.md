@@ -9,6 +9,7 @@
 ## Fixes
 
 - Stack.add_named
+- Scrollable destroy child on destroy event
 
 ## Breaking Changes
 

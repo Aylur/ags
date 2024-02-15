@@ -41,10 +41,20 @@ export class Scrollable<Child extends Gtk.Widget, Attr> extends Gtk.ScrolledWind
             hadjustment: new Gtk.Adjustment(),
             vadjustment: new Gtk.Adjustment(),
         });
+
+        this.connect('destroy', () => {
+            if (this.child instanceof Gtk.Viewport)
+                this.child.child.destroy();
+        });
     }
 
     get child() { return super.child as Child; }
-    set child(child: Child) { super.child = child; }
+    set child(child: Child) {
+        if (this.child instanceof Gtk.Viewport)
+            this.child.child = child;
+        else
+            super.child = child;
+    }
 
     setScroll(orientation: 'h' | 'v', scroll: Policy) {
         if (!scroll || this[`${orientation}scroll`] === scroll)
