@@ -59,14 +59,16 @@ export function writeFile(string: string, path: string): Promise<Gio.File> {
     });
 }
 
-export function writeFileSync(string: string, path: string) {
+export function writeFileSync(string: string, path: string): Gio.File {
     const file = Gio.File.new_for_path(path);
-    return file.replace_contents(
+    file.replace_contents(
         new TextEncoder().encode(string),
         null,
         false,
         Gio.FileCreateFlags.REPLACE_DESTINATION,
-        null);
+        null,
+    );
+    return file;
 }
 
 const fileMonitors: Map<Gio.FileMonitor, boolean> = new Map;
