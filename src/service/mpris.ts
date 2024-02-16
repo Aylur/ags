@@ -21,6 +21,7 @@ type LoopStatus = 'None' | 'Track' | 'Playlist';
 type MprisMetadata = {
     'xesam:artist': string[]
     'xesam:title': string
+    'xesam:album': string
     'mpris:artUrl': string
     'mpris:length': number
     'mpris:trackid': string
@@ -40,6 +41,7 @@ export class MprisPlayer extends Service {
             'trackid': ['string'],
             'track-artists': ['jsobject'],
             'track-title': ['string'],
+            'track-album': ['string'],
             'track-cover-url': ['string'],
             'cover-path': ['string'],
             'play-back-status': ['string'],
@@ -62,6 +64,7 @@ export class MprisPlayer extends Service {
     get trackid() { return this._trackid; }
     get track_artists() { return this._trackArtists; }
     get track_title() { return this._trackTitle; }
+    get track_album() { return this._trackAlbum; }
     get track_cover_url() { return this._trackCoverUrl; }
     get cover_path() { return this._coverPath; }
     get play_back_status() { return this._playBackStatus; }
@@ -80,6 +83,7 @@ export class MprisPlayer extends Service {
     private _trackid!: string;
     private _trackArtists!: string[];
     private _trackTitle!: string;
+    private _trackAlbum!: string;
     private _trackCoverUrl!: string;
     private _coverPath!: string;
     private _playBackStatus!: PlaybackStatus;
@@ -153,6 +157,10 @@ export class MprisPlayer extends Service {
         if (typeof trackTitle !== 'string')
             trackTitle = 'Unknown title';
 
+        let trackAlbum = metadata['xesam:album'];
+        if (typeof trackAlbum !== 'string')
+            trackAlbum = 'Unknown album';
+
         let trackCoverUrl = metadata['mpris:artUrl'];
         if (typeof trackCoverUrl !== 'string')
             trackCoverUrl = '';
@@ -169,6 +177,7 @@ export class MprisPlayer extends Service {
         this.updateProperty('trackid', metadata['mpris:trackid']);
         this.updateProperty('track-artists', trackArtists);
         this.updateProperty('track-title', trackTitle);
+        this.updateProperty('track-album', trackAlbum);
         this.updateProperty('track-cover-url', trackCoverUrl);
         this.updateProperty('length', length);
         this.updateProperty('identity', this._mprisProxy.Identity);
