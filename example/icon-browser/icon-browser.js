@@ -1,7 +1,5 @@
 #!/usr/bin/env -S ags -b icon-browser -c
 
-import App from 'resource:///com/github/Aylur/ags/app.js'
-import Widget from 'resource:///com/github/Aylur/ags/widget.js'
 import Gtk from 'gi://Gtk?version=3.0';
 
 const IconPicker = () => {
@@ -64,13 +62,13 @@ const IconPicker = () => {
 
 const win = new Gtk.Window({
     name: 'icon-browser',
-    child: IconPicker()
-})
+    child: IconPicker(),
+});
 
 win.show_all();
 win.connect('delete-event', () => {
-    App.quit()
+    App.quit();
     return true;
-})
+});
 
-export default { windows: [win] }
+export default { windows: [win] };
