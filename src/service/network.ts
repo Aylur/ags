@@ -80,6 +80,7 @@ export class Wifi extends Service {
         this._client = client;
         this._device = device;
 
+        this._client.connect('notify::wireless-enabled', () => this.changed('enabled'));
         if (this._device) {
             bulkConnect((this._device as unknown) as Service, [
                 ['notify::active-access-point', this._activeAp.bind(this)],
