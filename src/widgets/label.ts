@@ -52,7 +52,7 @@ export class Label<Attr> extends Gtk.Label {
     set label(label: string) {
         if (this.use_markup) {
             try {
-                Pango.parse_markup(label, label.length, '0');
+                Pango.parse_markup(label, -1, '0');
             } catch (e) {
                 // @ts-expect-error
                 if (e instanceof GLib.MarkupError)
