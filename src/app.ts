@@ -66,7 +66,6 @@ export class App extends Gtk.Application {
     private _windows: Map<string, Gtk.Window> = new Map();
     private _configPath!: string;
     private _configDir!: string;
-    private _settings = Gtk.Settings.get_default();
 
     private _closeWindowDelay!: Config['closeWindowDelay'];
     get closeWindowDelay() { return this._closeWindowDelay || {}; }
@@ -76,14 +75,14 @@ export class App extends Gtk.Application {
     get configPath() { return this._configPath; }
     get configDir() { return this._configDir; }
 
-    set iconTheme(name: string) { this._settings!.gtk_icon_theme_name = name; }
-    get iconTheme() { return this._settings!.gtk_icon_theme_name || ''; }
+    set iconTheme(name: string) { Gtk.Settings.get_default()!.gtk_icon_theme_name = name; }
+    get iconTheme() { return Gtk.Settings.get_default()!.gtk_icon_theme_name || ''; }
 
-    set cursorTheme(name: string) { this._settings!.gtk_cursor_theme_name = name; }
-    get cursorTheme() { return this._settings!.gtk_cursor_theme_name || ''; }
+    set cursorTheme(name: string) { Gtk.Settings.get_default()!.gtk_cursor_theme_name = name; }
+    get cursorTheme() { return Gtk.Settings.get_default()!.gtk_cursor_theme_name || ''; }
 
-    set gtkTheme(name: string) { this._settings!.gtk_theme_name = name; }
-    get gtkTheme() { return this._settings!.gtk_theme_name || ''; }
+    set gtkTheme(name: string) { Gtk.Settings.get_default()!.gtk_theme_name = name; }
+    get gtkTheme() { return Gtk.Settings.get_default()!.gtk_theme_name || ''; }
 
     readonly resetCss = () => {
         const screen = Gdk.Screen.get_default();
