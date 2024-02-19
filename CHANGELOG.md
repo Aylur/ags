@@ -1,3 +1,15 @@
+# 1.7.7
+
+## Features
+
+- App.addIcons, App.gtkTheme, App.cursorTheme, App.iconTheme
+
+## Fixes
+
+- prepend icons from config instead of append
+- Network.wifi.enabled signal
+- Utils.merge connect to notify signal
+
 # 1.7.6
 
 ## Features
