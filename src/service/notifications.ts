@@ -294,6 +294,7 @@ export class Notifications extends Service {
     public popupTimeout = 3000;
     public forceTimeout = false;
     public cacheActions = false;
+    public clearDelay = 100;
 
     private _dbus!: Gio.DBusExportedObject;
     private _notifications: Map<number, Notification>;
@@ -398,9 +399,14 @@ export class Notifications extends Service {
         return new GLib.Variant('(ssss)', [pkg.name, 'Aylur', pkg.version, '1.2']);
     }
 
-    readonly clear = () => {
-        for (const [id] of this._notifications)
-            this.CloseNotification(id);
+    // eslint-disable-next-line space-before-function-paren
+    readonly clear = async () => {
+        const close = (n: Notification, delay: number) => new Promise(resolve => {
+            this._notifications.has(n.id)
+                ? timeout(delay, () => resolve(n.close()))
+                : resolve(null);
+        });
+        return Promise.all(this.notifications.map((n, i) => close(n, this.clearDelay * i)));
     };
 
     private _addNotification(n: Notification) {

@@ -3,6 +3,7 @@
 ## Features
 
 - App.addIcons, App.gtkTheme, App.cursorTheme, App.iconTheme
+- add: Notifications.clearDelay
 
 ## Fixes
 
