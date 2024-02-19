@@ -36,6 +36,10 @@ export interface Config<W extends Gtk.Window = Gtk.Window> {
     windows?: W[]
     style?: string
     icons?: string
+    gtkTheme?: string
+    iconTheme?: string
+    cursorTheme?: string
+
     onWindowToggled?: (windowName: string, visible: boolean) => void
     onConfigParsed?: (app: App) => void
     closeWindowDelay?: { [key: string]: number }
@@ -56,13 +60,13 @@ export class App extends Gtk.Application {
         });
     }
 
-
     private _dbus!: Gio.DBusExportedObject;
     private _cssProviders: Gtk.CssProvider[] = [];
     private _objectPath!: string;
     private _windows: Map<string, Gtk.Window> = new Map();
     private _configPath!: string;
     private _configDir!: string;
+    private _settings = Gtk.Settings.get_default();
 
     private _closeWindowDelay!: Config['closeWindowDelay'];
     get closeWindowDelay() { return this._closeWindowDelay || {}; }
@@ -71,6 +75,15 @@ export class App extends Gtk.Application {
     get windows() { return [...this._windows.values()]; }
     get configPath() { return this._configPath; }
     get configDir() { return this._configDir; }
+
+    set iconTheme(name: string) { this._settings!.gtk_icon_theme_name = name; }
+    get iconTheme() { return this._settings!.gtk_icon_theme_name || ''; }
+
+    set cursorTheme(name: string) { this._settings!.gtk_cursor_theme_name = name; }
+    get cursorTheme() { return this._settings!.gtk_cursor_theme_name || ''; }
+
+    set gtkTheme(name: string) { this._settings!.gtk_theme_name = name; }
+    get gtkTheme() { return this._settings!.gtk_theme_name || ''; }
 
     readonly resetCss = () => {
         const screen = Gdk.Screen.get_default();
@@ -113,6 +126,10 @@ export class App extends Gtk.Application {
         );
 
         this._cssProviders.push(cssProvider);
+    };
+
+    readonly addIcons = (path: string) => {
+        Gtk.IconTheme.get_default().prepend_search_path(path);
     };
 
     setup(bus: string, path: string, configDir: string, entry: string) {
@@ -219,32 +236,53 @@ export class App extends Gtk.Application {
             const entry = await import(`file://${this.configPath}`);
             const config = entry.default as Config;
             if (!config) {
-                console.error('Missing default export');
+                console.warn('Missing default export');
                 return this.emit('config-parsed');
             }
 
             // FIXME:
             deprecated(config);
 
-            this.closeWindowDelay = config?.closeWindowDelay || {};
+            const {
+                windows,
+                closeWindowDelay,
+                style,
+                icons,
+                gtkTheme,
+                iconTheme,
+                cursorTheme,
+                onConfigParsed,
+                onWindowToggled,
+            } = config;
 
-            if (config.style) {
-                this.applyCss(config.style.startsWith('.')
-                    ? `${this.configDir}${config.style.slice(1)}`
-                    : config.style);
+            this.closeWindowDelay = closeWindowDelay || {};
+
+            if (gtkTheme)
+                this.gtkTheme = gtkTheme;
+
+            if (iconTheme)
+                this.iconTheme = iconTheme;
+
+            if (cursorTheme)
+                this.cursorTheme = cursorTheme;
+
+            if (style) {
+                this.applyCss(style.startsWith('.')
+                    ? `${this.configDir}${style.slice(1)}`
+                    : style);
             }
 
-            if (config.icons) {
-                Gtk.IconTheme.get_default().append_search_path(
-                    config.icons.startsWith('.')
-                        ? `${this.configDir}${config.icons.slice(1)}`
-                        : config.icons);
+            if (icons) {
+                this.addIcons(icons.startsWith('.')
+                    ? `${this.configDir}${icons.slice(1)}`
+                    : icons);
             }
-            if (typeof config.onWindowToggled === 'function')
-                this.connect('window-toggled', (_, n, v) => config.onWindowToggled!(n, v));
 
-            config.windows?.forEach(this.addWindow.bind(this));
-            config.onConfigParsed?.(this);
+            if (typeof onWindowToggled === 'function')
+                this.connect('window-toggled', (_, n, v) => onWindowToggled!(n, v));
+
+            windows?.forEach(this.addWindow.bind(this));
+            onConfigParsed?.(this);
 
             this.emit('config-parsed');
         } catch (err) {
