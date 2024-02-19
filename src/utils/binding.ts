@@ -1,5 +1,6 @@
 import { Binding } from '../service.js';
 import { Variable } from '../variable.js';
+import { kebabify } from './gobject.js';
 
 // TODO: consider adding a guard for disposed Variables
 
@@ -11,7 +12,7 @@ export function merge<V,
     const update = () => fn(...deps.map(d => d.transformFn(d.emitter[d.prop])) as Args);
     const watcher = new Variable(update());
     for (const dep of deps)
-        dep.emitter.connect(`notify::${dep.prop}`, () => watcher.setValue(update()));
+        dep.emitter.connect(`notify::${kebabify(dep.prop)}`, () => watcher.setValue(update()));
 
     return watcher.bind();
 }
