@@ -138,14 +138,12 @@ export class Notification extends Service {
     get summary() { return this._summary; }
     get suppress_sound() { return this._suppressSound; }
     get time() { return this._time; }
+    get timeout() { return this._timeout; }
     get transient() { return this._transient; }
     get urgency() { return this._urgency; }
     get x() { return this._x; }
     get y() { return this._y; }
     get hints() { return this._hints; }
-
-    set timeout(t: number) { this._timeout = t; }
-    get timeout() { return this._timeout; }
 
     constructor(
         appName: string,
@@ -192,21 +190,21 @@ export class Notification extends Service {
         this._hints = hints;
     }
 
-    dismiss() {
+    readonly dismiss = () => {
         this._popup = false;
         this.changed('popup');
         this.emit('dismissed');
-    }
+    };
 
-    close() {
+    readonly close = () => {
         this.emit('closed');
-    }
+    };
 
-    invoke(id: string) {
+    readonly invoke = (id: string) => {
         this.emit('invoked', id);
         if (!this.resident)
             this.close();
-    }
+    };
 
     toJson(cacheActions = notifications.cacheActions): NotifcationJson {
         return {
@@ -293,9 +291,9 @@ export class Notifications extends Service {
         });
     }
 
-    popupTimeout = 3000;
-    forceTimeout = false;
-    cacheActions = false;
+    public popupTimeout = 3000;
+    public forceTimeout = false;
+    public cacheActions = false;
 
     private _dbus!: Gio.DBusExportedObject;
     private _notifications: Map<number, Notification>;
@@ -329,14 +327,14 @@ export class Notifications extends Service {
         return list;
     }
 
-    getPopup(id: number) {
+    readonly getPopup = (id: number) => {
         const n = this._notifications.get(id);
         return n?.popup ? n : null;
-    }
+    };
 
-    getNotification(id: number) {
+    readonly getNotification = (id: number) => {
         return this._notifications.get(id);
-    }
+    };
 
     Notify(
         appName: string,
@@ -352,10 +350,10 @@ export class Notifications extends Service {
         const n = new Notification(appName, id, appIcon, summary, body, acts, hints, !this.dnd);
 
         if (this.forceTimeout || expiration === -1) {
-            n.timeout = this.popupTimeout;
+            n.updateProperty('timeout', this.popupTimeout);
             timeout(this.popupTimeout, () => this.DismissNotification(id));
         } else {
-            n.timeout = expiration;
+            n.updateProperty('timeout', expiration);
             if (expiration > 0)
                 timeout(expiration, () => this.DismissNotification(id));
         }
@@ -400,10 +398,10 @@ export class Notifications extends Service {
         return new GLib.Variant('(ssss)', [pkg.name, 'Aylur', pkg.version, '1.2']);
     }
 
-    clear() {
+    readonly clear = () => {
         for (const [id] of this._notifications)
             this.CloseNotification(id);
-    }
+    };
 
     private _addNotification(n: Notification) {
         n.connect('dismissed', this._onDismissed.bind(this));

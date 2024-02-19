@@ -13,7 +13,7 @@ type MenuEventHandler<Self> = {
 }
 
 export type MenuProps<
-    MenuItem extends Gtk.MenuItem,
+    MenuItem extends Gtk.MenuItem = Gtk.MenuItem,
     Attr = unknown,
     Self = Menu<MenuItem, Attr>,
 > = BaseProps<Self, Gtk.Menu.ConstructorProperties & {
@@ -71,7 +71,7 @@ export class Menu<MenuItem extends Gtk.MenuItem, Attr> extends Gtk.Menu {
 type EventHandler<Self> = (self: Self) => boolean | unknown;
 
 export type MenuItemProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = MenuItem<Child, Attr>,
 > = BaseProps<Self, Gtk.MenuItem.ConstructorProperties & {

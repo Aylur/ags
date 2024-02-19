@@ -13,7 +13,7 @@ const TRANSITION = {
 type Transition = keyof typeof TRANSITION;
 
 export type RevealerProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = Revealer<Child, Attr>,
 > = BaseProps<Self, Gtk.Revealer.ConstructorProperties & {

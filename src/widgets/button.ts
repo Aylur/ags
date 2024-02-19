@@ -5,7 +5,7 @@ import Gdk from 'gi://Gdk?version=3.0';
 type EventHandler<Self> = (self: Self, event: Gdk.Event) => boolean | unknown;
 
 export type ButtonProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = Button<Child, Attr>,
 > = BaseProps<Self, Gtk.Button.ConstructorProperties & {

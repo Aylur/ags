@@ -2,7 +2,7 @@ import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 export type BoxProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = Box<Child, Attr>
 > = BaseProps<Self, Gtk.Box.ConstructorProperties & {

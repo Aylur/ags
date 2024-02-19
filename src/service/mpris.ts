@@ -239,15 +239,15 @@ export class MprisPlayer extends Service {
         this.emit('position', time);
     }
 
-    playPause() { this._playerProxy.PlayPauseAsync().catch(console.error); }
-    play() { this._playerProxy.PlayAsync().catch(console.error); }
-    stop() { this._playerProxy.StopAsync().catch(console.error); }
+    readonly playPause = () => this._playerProxy.PlayPauseAsync().catch(console.error);
+    readonly play = () => this._playerProxy.PlayAsync().catch(console.error);
+    readonly stop = () => this._playerProxy.StopAsync().catch(console.error);
 
-    next() { this._playerProxy.NextAsync().catch(console.error); }
-    previous() { this._playerProxy.PreviousAsync().catch(console.error); }
+    readonly next = () => this._playerProxy.NextAsync().catch(console.error);
+    readonly previous = () => this._playerProxy.PreviousAsync().catch(console.error);
 
-    shuffle() { this._playerProxy.Shuffle = !this._playerProxy.Shuffle; }
-    loop() {
+    readonly shuffle = () => this._playerProxy.Shuffle = !this._playerProxy.Shuffle;
+    readonly loop = () => {
         switch (this._playerProxy.LoopStatus) {
             case 'None':
                 this._playerProxy.LoopStatus = 'Track';
@@ -261,7 +261,7 @@ export class MprisPlayer extends Service {
             default:
                 break;
         }
-    }
+    };
 }
 
 export class Mpris extends Service {
@@ -275,7 +275,7 @@ export class Mpris extends Service {
         });
     }
 
-    cacheCoverArt = true;
+    public cacheCoverArt = true;
 
     private _proxy: DBusProxy;
     private _players: Map<string, MprisPlayer> = new Map;
@@ -342,13 +342,13 @@ export class Mpris extends Service {
             this._addPlayer(name);
     }
 
-    getPlayer(name = '') {
+    readonly getPlayer = (name = '') => {
         for (const [busName, player] of this._players) {
             if (busName.includes(name))
                 return player;
         }
         return null;
-    }
+    };
 }
 
 export const mpris = new Mpris;

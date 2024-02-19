@@ -53,6 +53,7 @@
     <file>dbus/org.kde.StatusNotifierWatcher.xml</file>
     <file>dbus/org.kde.StatusNotifierItem.xml</file>
 
+    <file>utils/binding.js</file>
     <file>utils/etc.js</file>
     <file>utils/exec.js</file>
     <file>utils/fetch.js</file>

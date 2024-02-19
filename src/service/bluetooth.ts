@@ -73,14 +73,14 @@ export class BluetoothDevice extends Service {
     get type() { return GnomeBluetooth.type_to_string(this._device.type); }
     get connecting() { return this._connecting || false; }
 
-    setConnection(connect: boolean) {
+    readonly setConnection = (connect: boolean) => {
         this._connecting = true;
         bluetooth.connectDevice(this, connect, () => {
             this._connecting = false;
             this.changed('connecting');
         });
         this.changed('connecting');
-    }
+    };
 }
 
 export class Bluetooth extends Service {
@@ -114,9 +114,9 @@ export class Bluetooth extends Service {
         this._getDevices().forEach(device => this._deviceAdded(this, device));
     }
 
-    toggle() {
+    readonly toggle = () => {
         this._client.default_adapter_powered = !this._client.default_adapter_powered;
-    }
+    };
 
     private _getDevices() {
         const devices = [];
@@ -156,11 +156,11 @@ export class Bluetooth extends Service {
         this.emit('device-removed', device.address);
     }
 
-    connectDevice(
+    readonly connectDevice = (
         device: BluetoothDevice,
         connect: boolean,
         callback: (s: boolean) => void,
-    ) {
+    ) => {
         this._client.connect_service(
             device.device.get_object_path(),
             connect,
@@ -177,9 +177,9 @@ export class Bluetooth extends Service {
                 }
             },
         );
-    }
+    };
 
-    getDevice(address: string) { return this._devices.get(address); }
+    readonly getDevice = (address: string) => this._devices.get(address);
 
     set enabled(v) { this._client.default_adapter_powered = v; }
     get enabled() { return this.state === 'on' || this.state === 'turning-on'; }

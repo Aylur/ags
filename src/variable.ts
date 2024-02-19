@@ -23,6 +23,7 @@ export class Variable<T> extends GObject.Object {
     static {
         Service.register(this, {
             'changed': [],
+            'disposed': [],
         }, {
             'value': ['jsobject', 'rw'],
             'is-listening': ['boolean', 'r'],
@@ -61,16 +62,16 @@ export class Variable<T> extends GObject.Object {
         const [time, cmd, transform = out => out as T] = this._poll;
         if (Array.isArray(cmd) || typeof cmd === 'string') {
             this._interval = interval(time, () => execAsync(cmd)
-                .then(out => this.setValue(transform(out, this)))
+                .then(out => this.value = transform(out, this))
                 .catch(err => logError(err)));
         }
         if (typeof cmd === 'function') {
             this._interval = interval(time, () => {
                 const value = cmd(this);
                 if (value instanceof Promise)
-                    value.then(v => this.setValue(v)).catch(logError);
+                    value.then(v => this.value = v).catch(logError);
                 else
-                    this.setValue(value);
+                    this.value = value;
             });
         }
         this.notify('is-polling');
@@ -117,7 +118,7 @@ export class Variable<T> extends GObject.Object {
         else
             return console.error(Error(`${this._listen} is not a valid type for Variable.listen`));
 
-        this._subprocess = subprocess(cmd, out => this.setValue(transform(out, this)));
+        this._subprocess = subprocess(cmd, out => this.value = transform(out, this));
         this.notify('is-listening');
     }
 
@@ -141,6 +142,7 @@ export class Variable<T> extends GObject.Object {
         if (this._subprocess)
             this._subprocess.force_exit();
 
+        this.emit('dispose');
         this.run_dispose();
     }
 
@@ -152,7 +154,12 @@ export class Variable<T> extends GObject.Object {
     }
 
     get value() { return this._value; }
-    set value(value: T) { this.setValue(value); }
+    set value(value: T) {
+        if (value === this.value)
+            return;
+
+        this.setValue(value);
+    }
 
     connect(signal = 'notify::value', callback: (self: this, ...args: any[]) => void): number {
         return super.connect(signal, callback);

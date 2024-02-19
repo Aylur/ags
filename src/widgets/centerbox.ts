@@ -2,9 +2,9 @@ import Gtk from 'gi://Gtk?version=3.0';
 import { register, type BaseProps, type Widget } from './widget.js';
 
 export type CenterBoxProps<
-    StartWidget extends Gtk.Widget,
-    CenterWidget extends Gtk.Widget,
-    EndWidget extends Gtk.Widget,
+    StartWidget extends Gtk.Widget = Gtk.Widget,
+    CenterWidget extends Gtk.Widget = Gtk.Widget,
+    EndWidget extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = CenterBox<StartWidget, CenterWidget, EndWidget, Attr>,
 > = BaseProps<Self, Gtk.Box.ConstructorProperties & {

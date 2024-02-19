@@ -24,6 +24,9 @@ export class Binding<
         this.prop = prop;
     }
 
+    /** alias for transform */
+    as<T>(fn: (v: Return) => T) { return this.transform(fn); }
+
     transform<T>(fn: (v: Return) => T) {
         const bind = new Binding<Emitter, Prop, T>(this.emitter, this.prop);
         const prev = this.transformFn;

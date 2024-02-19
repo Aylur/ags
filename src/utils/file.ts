@@ -59,18 +59,36 @@ export function writeFile(string: string, path: string): Promise<Gio.File> {
     });
 }
 
+export function writeFileSync(string: string, path: string): Gio.File {
+    const file = Gio.File.new_for_path(path);
+    file.replace_contents(
+        new TextEncoder().encode(string),
+        null,
+        false,
+        Gio.FileCreateFlags.REPLACE_DESTINATION,
+        null,
+    );
+    return file;
+}
+
 const fileMonitors: Map<Gio.FileMonitor, boolean> = new Map;
 export function monitorFile(
     path: string,
     callback?: (file: Gio.File, event: Gio.FileMonitorEvent) => void,
-    type: 'file' | 'directory' = 'file',
     flags = Gio.FileMonitorFlags.NONE,
 ) {
+    // FIXME: remove the checking in the next release
+    // @ts-expect-error
+    if (flags === 'file' || flags === 'directory') {
+        throw Error(
+            `${flags}` + ' passed as a parameter in `monitorFile`. ' +
+            'Specifying the type is no longer required.',
+        );
+    }
+
     try {
         const file = Gio.File.new_for_path(path);
-        const mon = type === 'directory'
-            ? file.monitor_directory(flags, null)
-            : file.monitor_file(flags, null);
+        const mon = file.monitor(flags, null);
 
         if (callback)
             mon.connect('changed', (_, file, _f, event) => callback(file, event));

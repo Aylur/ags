@@ -1,4 +1,42 @@
-# Unreleased
+# 1.7.6
+
+## Features
+
+- Utils.writeFileSync
+- add Utils.merge, Utils.derive
+- add Binding.as alias for Binding.transform
+
+## Fixes
+
+- Stack.add_named
+- Scrollable destroy child on destroy event
+
+## Breaking Changes
+
+- hyprland service: workspace and monitor signal emit number
+- hyprland service: deprecate sendMessage, introduce message and messageAsync
+- Variable: value check on setter, force on setValue
+- `Utils.monitorFile()` no longer takes the `type` (`file` or `directory`) parameter. It will monitor each accordingly without specifying it.
+
+# 1.7.5
+
+## Features
+
+- generate types for utils subdirectory (#287)
+- export gobject utils in Utils
+- bind service methods
+- make App.closeWindowDelay writable
+
+## Fixes
+
+- widget: button, eventbox child second parameter
+
+## Breaking Changes
+
+- add: Stack.children
+- deprecate: Stack.items
+
+# 1.7.4
 
 ## Features
 
@@ -18,7 +56,7 @@
 - feat(pam): Utils.authenticate (#273)
 - feat: child property as second parameter [#265](https://github.com/Aylur/ags/pull/265/)
 
-## Breaking change
+## Breaking Changes
 
 - subclassing of widgets
 

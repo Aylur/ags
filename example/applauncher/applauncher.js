@@ -1,7 +1,4 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-import App from 'resource:///com/github/Aylur/ags/app.js';
-import Applications from 'resource:///com/github/Aylur/ags/service/applications.js';
-
+const { query } = await Service.import('applications');
 const WINDOW_NAME = 'applauncher';
 
 /** @param {import('resource:///com/github/Aylur/ags/service/applications.js').Application} app */
@@ -30,7 +27,7 @@ const AppItem = app => Widget.Button({
 
 const Applauncher = ({ width = 500, height = 500, spacing = 12 }) => {
     // list of application buttons
-    let applications = Applications.query('').map(AppItem);
+    let applications = query('').map(AppItem);
 
     // container holding the buttons
     const list = Widget.Box({
@@ -41,7 +38,7 @@ const Applauncher = ({ width = 500, height = 500, spacing = 12 }) => {
 
     // repopulate the box, so the most frequent apps are on top of the list
     function repopulate() {
-        applications = Applications.query('').map(AppItem);
+        applications = query('').map(AppItem);
         list.children = applications;
     }
 
@@ -60,7 +57,7 @@ const Applauncher = ({ width = 500, height = 500, spacing = 12 }) => {
 
         // filter out the list
         on_change: ({ text }) => applications.forEach(item => {
-            item.visible = item.attribute.app.match(text);
+            item.visible = item.attribute.app.match(text ?? '');
         }),
     });
 
@@ -99,7 +96,7 @@ export const applauncher = Widget.Window({
     name: WINDOW_NAME,
     popup: true,
     visible: false,
-    focusable: true,
+    keymode: 'exclusive',
     child: Applauncher({
         width: 500,
         height: 500,

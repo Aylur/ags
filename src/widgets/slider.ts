@@ -15,15 +15,17 @@ type Position = keyof typeof POSITION;
 
 type Mark = [number, string?, Position?] | number;
 
-export type SliderProps<Attr = unknown, Self = Slider<Attr>> =
-    BaseProps<Slider<Attr>, Gtk.Scale.ConstructorProperties & {
-        on_change?: EventHandler<Self>,
-        value?: number
-        min?: number
-        max?: number
-        step?: number
-        marks?: Mark[]
-    }, Attr>
+export type SliderProps<
+    Attr = unknown,
+    Self = Slider<Attr>,
+> = BaseProps<Slider<Attr>, Gtk.Scale.ConstructorProperties & {
+    on_change?: EventHandler<Self>,
+    value?: number
+    min?: number
+    max?: number
+    step?: number
+    marks?: Mark[]
+}, Attr>
 
 export interface Slider<Attr> extends Widget<Attr> { }
 export class Slider<Attr> extends Gtk.Scale {

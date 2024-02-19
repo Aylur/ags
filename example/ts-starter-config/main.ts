@@ -1,13 +1,10 @@
-import Variable from 'resource:///com/github/Aylur/ags/variable.js';
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-
 const time = Variable('', {
     poll: [1000, function() {
         return Date().toString();
     }],
 });
 
-const Bar = (/** @type {number} */ monitor) => Widget.Window({
+const Bar = (monitor: number) => Widget.Window({
     monitor,
     name: `bar${monitor}`,
     anchor: ['top', 'left', 'right'],
@@ -19,11 +16,11 @@ const Bar = (/** @type {number} */ monitor) => Widget.Window({
         }),
         end_widget: Widget.Label({
             hpack: 'center',
-            label: time.bind()
+            label: time.bind(),
         }),
-    })
-})
+    }),
+});
 
 export default {
-    windows: [Bar(0)]
-}
+    windows: [Bar(0)],
+};

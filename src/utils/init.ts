@@ -28,9 +28,9 @@ export function parsePath(path: string) {
 const defaultConfig = `
 const time = Variable('', {
     poll: [1000, function() {
-        return Date().toString();
+        return Date().toString()
     }],
-});
+})
 
 const Bar = (/** @type {number} */ monitor) => Widget.Window({
     monitor,
@@ -44,13 +44,13 @@ const Bar = (/** @type {number} */ monitor) => Widget.Window({
         }),
         end_widget: Widget.Label({
             hpack: 'center',
-            label: time.bind()
+            label: time.bind(),
         }),
-    })
+    }),
 })
 
 export default {
-    windows: [Bar(0)]
+    windows: [Bar(0)],
 }
 `;
 
