@@ -11,7 +11,7 @@ export function merge<V,
     const update = () => fn(...deps.map(d => d.transformFn(d.emitter[d.prop])) as Args);
     const watcher = new Variable(update());
     for (const dep of deps)
-        dep.emitter.connect('changed', () => watcher.setValue(update()));
+        dep.emitter.connect(`notify::${dep.prop}`, () => watcher.setValue(update()));
 
     return watcher.bind();
 }
