@@ -14,6 +14,10 @@
 - Network.wifi.enabled signal
 - Utils.merge connect to notify signal
 
+## Breaking Changes
+
+- deprecate: Window.popup
+
 # 1.7.6
 
 ## Features

@@ -43,11 +43,11 @@ export type WindowProps<
     margins?: number[]
     monitor?: number
     gdkmonitor?: Gdk.Monitor
-    popup?: boolean
     visible?: boolean
     keymode?: Keymode
 
     // FIXME: deprecated
+    popup?: boolean
     exclusive?: boolean
     focusable?: boolean
 }, Attr>
@@ -268,10 +268,17 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         this.notify('margins');
     }
 
+    // FIXME: deprecated
     get popup() { return !!this._get('popup'); }
     set popup(popup: boolean) {
         if (this.popup === popup)
             return;
+
+        console.warn('Window.popup is DEPRECATED. '
+            + 'the click away functionality depends on a bug which was patched in Hyprland '
+            + 'and it never worked on Sway anyway. '
+            + 'to close on the esc key '
+            + 'use self.keybind("Escape", () => App.closeWindow("window-name"))');
 
         if (this.popup) {
             const [esc, click] = this._get<[number, number]>('popup');
