@@ -19,12 +19,28 @@ const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
 type PlaybackStatus = 'Playing' | 'Paused' | 'Stopped';
 type LoopStatus = 'None' | 'Track' | 'Playlist';
 type MprisMetadata = {
-    'xesam:artist': string[]
-    'xesam:title': string
-    'xesam:album': string
-    'mpris:artUrl': string
-    'mpris:length': number
-    'mpris:trackid': string
+    'mpris:trackid'?: string
+    'mpris:length'?: number
+    'mpris:artUrl'?: string
+    'xesam:album'?: string
+    'xesam:albumArtist'?: string
+    'xesam:artist'?: string[]
+    'xesam:asText'?: string
+    'xesam:audioBPM'?: number
+    'xesam:autoRating'?: number
+    'xesam:comment'?: string[]
+    'xesam:composer'?: string[]
+    'xesam:contentCreated'?: string
+    'xesam:discNumber'?: number
+    'xesam:firstUsed'?: string
+    'xesam:genre'?: string[]
+    'xesam:lastUsed'?: string
+    'xesam:lyricist'?: string[]
+    'xesam:title'?: string
+    'xesam:trackNumber'?: number
+    'xesam:url'?: string
+    'xesam:useCount'?: number
+    'xesam:userRating'?: number
     [key: string]: unknown
 }
 
@@ -38,6 +54,7 @@ export class MprisPlayer extends Service {
             'name': ['string'],
             'entry': ['string'],
             'identity': ['string'],
+            'metadata': ['string'],
             'trackid': ['string'],
             'track-artists': ['jsobject'],
             'track-title': ['string'],
@@ -60,6 +77,7 @@ export class MprisPlayer extends Service {
     get name() { return this._name; }
     get entry() { return this._entry; }
     get identity() { return this._identity; }
+    get metadata() { return this._metadata; }
 
     get trackid() { return this._trackid; }
     get track_artists() { return this._trackArtists; }
@@ -79,6 +97,7 @@ export class MprisPlayer extends Service {
     private _name: string;
     private _entry!: string;
     private _identity!: string;
+    private _metadata: MprisMetadata = {};
 
     private _trackid!: string;
     private _trackArtists!: string[];
@@ -168,6 +187,7 @@ export class MprisPlayer extends Service {
         let length = metadata['mpris:length'];
         length = typeof length === 'number' ? length / 1_000_000 : -1;
 
+        this.updateProperty('metadata', metadata);
         this.updateProperty('shuffle-status', this._playerProxy.Shuffle);
         this.updateProperty('loop-status', this._playerProxy.LoopStatus);
         this.updateProperty('can-go-next', this._playerProxy.CanGoNext);

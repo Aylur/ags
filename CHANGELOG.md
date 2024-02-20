@@ -4,6 +4,8 @@
 
 - App.addIcons, App.gtkTheme, App.cursorTheme, App.iconTheme
 - add: Notifications.clearDelay
+- add MprisPlayer.track_album
+- add MprisPlayer.metadata
 
 ## Fixes
 
@@ -18,7 +20,6 @@
 - Utils.writeFileSync
 - add Utils.merge, Utils.derive
 - add Binding.as alias for Binding.transform
-- add MprisPlayer.track_album
 
 ## Fixes
 
