@@ -27,9 +27,13 @@ const ALIGN = {
     'baseline': Gtk.Align.BASELINE,
 } as const;
 
-export type Align = keyof typeof ALIGN;
+type Align = keyof typeof ALIGN;
 
-export type Cursor =
+type Keys = {
+    [K in keyof typeof Gdk as K extends `KEY_${infer U}` ? U : never]: number;
+};
+
+type Cursor =
     | 'default'
     | 'help'
     | 'pointer'
@@ -139,9 +143,7 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
     set attribute(attr: Attr) { this._set('attribute', attr); }
     get attribute(): Attr { return this._get('attribute'); }
 
-    hook<
-        Gobject extends GObject.Object,
-    >(
+    hook<Gobject extends GObject.Object>(
         gobject: Gobject | App,
         callback: (self: this, ...args: any[]) => void,
         signal?: string,
@@ -203,19 +205,21 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
         return this;
     }
 
-    on(
-        signal: string,
-        callback: (self: this, ...args: any[]) => void,
-    ): this {
+    on(signal: string, callback: (self: this, ...args: any[]) => void): this {
         this.connect(signal, callback);
         return this;
     }
 
-    poll(
-        timeout: number,
-        callback: (self: this) => void,
-    ): this {
+    poll(timeout: number, callback: (self: this) => void): this {
         interval(timeout, () => callback(this), this);
+        return this;
+    }
+
+    keybind(key: keyof Keys, callback: (self: this, event: Gdk.Event) => void): this {
+        this.connect('key-press-event', (_, event: Gdk.Event) => {
+            if (event.get_keyval()[1] === Gdk[`KEY_${key}`])
+                callback(this, event);
+        });
         return this;
     }
 

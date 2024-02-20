@@ -6,6 +6,7 @@
 - add: Notifications.clearDelay
 - add MprisPlayer.track_album
 - add MprisPlayer.metadata
+- add Widget.keybind
 
 ## Fixes
 
