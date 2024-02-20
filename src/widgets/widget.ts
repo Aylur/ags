@@ -33,6 +33,10 @@ type Keys = {
     [K in keyof typeof Gdk as K extends `KEY_${infer U}` ? U : never]: number;
 };
 
+type ModifierKey = {
+    [K in keyof typeof Gdk.ModifierType as K extends `${infer M}_MASK` ? M : never]: number
+}
+
 type Cursor =
     | 'default'
     | 'help'
@@ -129,6 +133,26 @@ export interface Widget<Attr> extends Required<CommonProps<Attr>> {
         callback: (self: this) => void,
     ): this
 
+    keybind<
+        // eslint-disable-next-line space-before-function-paren
+        Fn extends (self: this, event: Gdk.Event) => void,
+        Key extends keyof Keys,
+    >(
+        key: Key,
+        callback: Fn,
+    ): this
+
+    keybind<
+        // eslint-disable-next-line space-before-function-paren
+        Fn extends (self: this, event: Gdk.Event) => void,
+        Key extends keyof Keys,
+        Mod extends Array<keyof ModifierKey>,
+    >(
+        mods: Mod,
+        key: Key,
+        callback: Fn,
+    ): this,
+
     readonly is_destroyed: boolean
     _handleParamProp(prop: keyof this, value: any): void
     _get<T>(field: string): T;
@@ -215,11 +239,31 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
         return this;
     }
 
-    keybind(key: keyof Keys, callback: (self: this, event: Gdk.Event) => void): this {
+    keybind<
+        // eslint-disable-next-line space-before-function-paren
+        Fn extends (self: this, event: Gdk.Event) => void,
+        Key extends keyof Keys,
+        Mod extends Array<keyof ModifierKey>,
+    >(
+        modsOrKey: Key | Mod,
+        keyOrCallback: Key | Fn,
+        callback?: Fn,
+    ): this {
+        const mods = callback ? modsOrKey as Mod : [];
+        const key = callback ? keyOrCallback as Key : modsOrKey as Key;
+        const fn = callback ? callback : keyOrCallback as Fn;
+
         this.connect('key-press-event', (_, event: Gdk.Event) => {
-            if (event.get_keyval()[1] === Gdk[`KEY_${key}`])
-                callback(this, event);
+            const k = event.get_keyval()[1];
+            const m = event.get_state()[1];
+            const ms = mods.reduce((ms, m) => ms | Gdk.ModifierType[`${m}_MASK`], 0);
+            if (mods.length > 0 && k === Gdk[`KEY_${key}`] && m === ms)
+                return fn(this, event);
+
+            if (mods.length === 0 && k === Gdk[`KEY_${key}`])
+                return fn(this, event);
         });
+
         return this;
     }
 
