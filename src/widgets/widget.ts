@@ -3,11 +3,9 @@ import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib?version=2.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import Cairo from 'gi://cairo?version=1.0';
-import Service, { Props, BindableProps, Binding } from '../service.js';
+import { Props, BindableProps, Binding, Connectable } from '../service.js';
 import { registerGObject, kebabify, type CtorProps } from '../utils/gobject.js';
 import { interval, idle } from '../utils.js';
-import { Variable } from '../variable.js';
-import { App } from '../app.js';
 
 let warned = false;
 function deprecated() {
@@ -104,23 +102,21 @@ export type BaseProps<Self, Props, Attr = unknown> = {
 
 type Required<T> = { [K in keyof T]-?: T[K] };
 export interface Widget<Attr> extends Required<CommonProps<Attr>> {
-    hook<
-        Gobject extends GObject.Object,
-    >(
-        gobject: Gobject | App,
+    hook(
+        gobject: Connectable,
         callback: (self: this, ...args: any[]) => void,
         signal?: string,
     ): this
 
     bind<
         Prop extends keyof Props<this>,
-        Gobject extends GObject.Object,
-        ObjProp extends keyof Props<Gobject>,
+        GObj extends Connectable,
+        ObjProp extends keyof Props<GObj>,
     >(
         prop: Prop,
-        gobject: Gobject,
+        gobject: GObj,
         objProp?: ObjProp,
-        transform?: (value: Gobject[ObjProp]) => this[Prop],
+        transform?: (value: GObj[ObjProp]) => this[Prop],
     ): this
 
     on(
@@ -167,22 +163,16 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
     set attribute(attr: Attr) { this._set('attribute', attr); }
     get attribute(): Attr { return this._get('attribute'); }
 
-    hook<Gobject extends GObject.Object>(
-        gobject: Gobject | App,
+    hook(
+        gobject: Connectable,
         callback: (self: this, ...args: any[]) => void,
         signal?: string,
     ): this {
-        if (!(gobject instanceof GObject.Object)) {
-            console.error(Error(`${gobject} is not a GObject`));
-            return this;
-        }
-
-        if (!(gobject instanceof Service ||
-            gobject instanceof App ||
-            gobject instanceof Variable) &&
-            !signal) {
-            console.error(Error('you are trying to connect to a regular GObject ' +
-                'without specifying the signal'));
+        const con = typeof gobject?.connect !== 'function';
+        const discon = typeof gobject?.disconnect !== 'function';
+        if (con || discon) {
+            console.error(Error(`${gobject} is not a Connectable, missing ` +
+                ` ${[con ? 'connect' : '', discon ? 'disconnect' : ''].join(', ')} function`));
             return this;
         }
 
@@ -206,13 +196,13 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
 
     bind<
         Prop extends keyof Props<this>,
-        Gobject extends GObject.Object,
-        ObjProp extends keyof Props<Gobject>,
+        GObj extends Connectable,
+        ObjProp extends keyof Props<GObj>,
     >(
         prop: Prop,
-        gobject: Gobject,
+        gobject: GObj,
         objProp?: ObjProp,
-        transform?: (value: Gobject[ObjProp]) => this[Prop],
+        transform?: (value: GObj[ObjProp]) => this[Prop],
     ): this {
         const targetProp = objProp || 'value';
         const callback = transform

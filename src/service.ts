@@ -1,6 +1,11 @@
 import GObject from 'gi://GObject';
 import { pspec, registerGObject, PspecFlag, PspecType } from './utils/gobject.js';
 
+export type Connectable = {
+    connect: (sig: string, callback: (...args: unknown[]) => unknown) => number
+    disconnect: (id: number) => void
+}
+
 export type OnlyString<S extends string | unknown> = S extends string ? S : never;
 
 export type Props<T> = Omit<Pick<T, {

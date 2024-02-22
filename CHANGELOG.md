@@ -1,3 +1,10 @@
+# 1.7.8
+
+## Features
+
+- add: Utils.watch
+- custom hookable objects
+
 # 1.7.7
 
 ## Features

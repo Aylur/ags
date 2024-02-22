@@ -1,4 +1,4 @@
-import { Binding } from '../service.js';
+import { Binding, Connectable } from '../service.js';
 import { Variable } from '../variable.js';
 import { kebabify } from './gobject.js';
 
@@ -27,4 +27,41 @@ export function derive<V,
         dep.connect('changed', () => watcher.setValue(update()));
 
     return watcher;
+}
+
+type B<T> = Binding<Variable<T>, any, T>
+
+// eslint-disable-next-line max-len
+export function watch<T>(init: T, objs: Array<Connectable | [Connectable, signal?: string]>, callback: () => T): B<T>
+export function watch<T>(init: T, obj: Connectable, signal: string, callback: () => T): B<T>
+export function watch<T>(init: T, obj: Connectable, callback: () => T): B<T>
+export function watch<T>(
+    init: T,
+    objs: Connectable | Array<Connectable | [Connectable, signal?: string]>,
+    sigOrFn: string | (() => T),
+    callback?: () => T,
+) {
+    const v = new Variable(init);
+    const f = typeof sigOrFn === 'function' ? sigOrFn : callback ?? (() => v.value);
+    const set = () => v.value = f();
+
+    if (Array.isArray(objs)) {
+        // multiple objects
+        for (const obj of objs) {
+            if (Array.isArray(obj)) {
+                // obj signal pair
+                const [o, s = 'changed'] = obj;
+                o.connect(s, set);
+            } else {
+                // obj on changed
+                obj.connect('changed', set);
+            }
+        }
+    } else {
+        // watch single object
+        const signal = typeof sigOrFn === 'string' ? sigOrFn : 'changed';
+        objs.connect(signal, set);
+    }
+
+    return v.bind();
 }

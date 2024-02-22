@@ -58,6 +58,7 @@ export const {
 export const {
     merge,
     derive,
+    watch,
 } = Binding;
 
 export default {
@@ -97,4 +98,5 @@ export default {
 
     merge,
     derive,
+    watch,
 };
