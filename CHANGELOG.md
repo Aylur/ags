@@ -7,6 +7,7 @@
 - add MprisPlayer.track_album
 - add MprisPlayer.metadata
 - add Widget.keybind
+- App.applyCss takes stylesheets, and an optional reset parameter
 
 ## Fixes
 

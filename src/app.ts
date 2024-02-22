@@ -98,12 +98,15 @@ export class App extends Gtk.Application {
         this._cssProviders = [];
     };
 
-    readonly applyCss = (path: string) => {
+    readonly applyCss = (pathOrStyle: string, reset = false) => {
         const screen = Gdk.Screen.get_default();
         if (!screen) {
             console.error("couldn't get screen");
             return;
         }
+
+        if (reset)
+            this.resetCss();
 
         const cssProvider = new Gtk.CssProvider();
         cssProvider.connect('parsing-error', (_, section, err) => {
@@ -113,7 +116,10 @@ export class App extends Gtk.Application {
         });
 
         try {
-            cssProvider.load_from_path(path);
+            if (GLib.file_test(pathOrStyle, GLib.FileTest.EXISTS))
+                cssProvider.load_from_path(pathOrStyle);
+            else
+                cssProvider.load_from_data(new TextEncoder().encode(pathOrStyle));
         } finally {
             // log on parsing-error
         }
