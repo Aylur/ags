@@ -23,14 +23,14 @@ export class Box<Child extends Gtk.Widget, Attr> extends Gtk.Box {
         });
     }
 
-    constructor(propsOrChildren: BoxProps<Child, Attr> | Child[] = {}, ...children: Child[]) {
+    constructor(propsOrChildren: BoxProps<Child, Attr> | Child[] = {}, ...children: Gtk.Widget[]) {
         const props = Array.isArray(propsOrChildren) ? {} : propsOrChildren;
 
         if (Array.isArray(propsOrChildren))
             props.children = propsOrChildren;
 
         else if (children.length > 0)
-            props.children = children;
+            props.children = children as Child[];
 
         super(props as Gtk.Box.ConstructorProperties);
     }

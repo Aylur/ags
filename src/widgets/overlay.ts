@@ -24,9 +24,9 @@ export class Overlay<Child extends Gtk.Widget, Attr> extends Gtk.Overlay {
         });
     }
 
-    constructor(props: OverlayProps<Child, Attr> = {}, ...overlays: Child[]) {
+    constructor(props: OverlayProps<Child, Attr> = {}, ...overlays: Gtk.Widget[]) {
         if (overlays.length > 0)
-            props.overlays = overlays;
+            props.overlays = overlays as Child[];
 
         super(props as Gtk.Overlay.ConstructorProperties);
     }

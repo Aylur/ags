@@ -33,9 +33,9 @@ export class Menu<MenuItem extends Gtk.MenuItem, Attr> extends Gtk.Menu {
         });
     }
 
-    constructor(props: MenuProps<MenuItem, Attr> = {}, ...children: MenuItem[]) {
+    constructor(props: MenuProps<MenuItem, Attr> = {}, ...children: Gtk.MenuItem[]) {
         if (children.length > 0)
-            props.children;
+            props.children = children as MenuItem[];
 
         super(props as Gtk.Menu.ConstructorProperties);
 

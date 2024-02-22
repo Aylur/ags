@@ -20,7 +20,7 @@ import { CircularProgress as CircularProgressClass, type CircularProgressProps }
 import * as Etc from './widgets/etc.js';
 
 export const Window = <Child extends Gtk.Widget, Attr = unknown>(props?: WindowProps<Child, Attr>, child?: Child) => new WindowClass(props, child);
-export const Box = <Child extends Gtk.Widget, Attr = unknown>(props?: BoxProps<Child, Attr> | Child[], ...children: Child[]) => new BoxClass(props, ...children);
+export const Box = <Child extends Gtk.Widget, Attr = unknown>(props?: BoxProps<Child, Attr> | Child[], ...children: Gtk.Widget[]) => new BoxClass(props, ...children);
 export const Button = <Child extends Gtk.Widget, Attr = unknown>(props?: ButtonProps<Child, Attr>, child?: Child) => new ButtonClass(props, child);
 export const CenterBox = <StartWidget extends Gtk.Widget, CenterWidget extends Gtk.Widget, EndWidget extends Gtk.Widget, Attr = unknown>(props?: CenterBoxProps<StartWidget, CenterWidget, EndWidget, Attr>, startWidget?: StartWidget, centerWidget?: CenterWidget, endWidget?: EndWidget) => new CenterBoxClass(props, startWidget, centerWidget, endWidget);
 export const CircularProgress = <Child extends Gtk.Widget, Attr = unknown>(props?: CircularProgressProps<Child, Attr>, child?: Child) => new CircularProgressClass(props, child);
@@ -28,9 +28,9 @@ export const Entry = <Attr>(props?: EntryProps<Attr>) => new EntryClass(props);
 export const EventBox = <Child extends Gtk.Widget, Attr = unknown>(props?: EventBoxProps<Child, Attr>, child?: Child) => new EventBoxClass(props, child);
 export const Icon = <Attr>(props?: IconProps<Attr>) => new IconClass(props);
 export const Label = <Attr>(props?: LabelProps<Attr>) => new LabelClass(props);
-export const Menu = <Child extends Gtk.MenuItem, Attr = unknown>(props?: MenuProps<Child, Attr>, ...children: Child[]) => new MenuClass(props, ...children);
+export const Menu = <Child extends Gtk.MenuItem, Attr = unknown>(props?: MenuProps<Child, Attr>, ...children: Gtk.MenuItem[]) => new MenuClass(props, ...children);
 export const MenuItem = <Child extends Gtk.Widget, Attr = unknown>(props?: MenuItemProps<Child, Attr>, child?: Child) => new MenuItemClass(props, child);
-export const Overlay = <Child extends Gtk.Widget, Attr = unknown>(props?: OverlayProps<Child, Attr>, ...children: Child[]) => new OverlayClass(props, ...children);
+export const Overlay = <Child extends Gtk.Widget, Attr = unknown>(props?: OverlayProps<Child, Attr>, ...children: Gtk.Widget[]) => new OverlayClass(props, ...children);
 export const ProgressBar = <Attr>(props?: ProgressBarProps<Attr>) => new ProgressBarClass(props);
 export const Revealer = <Child extends Gtk.Widget, Attr = unknown>(props?: RevealerProps<Child, Attr>, child?: Child) => new RevealerClass(props, child);
 export const Scrollable = <Child extends Gtk.Widget, Attr = unknown>(props?: ScrollableProps<Child, Attr>, child?: Child) => new ScrollableClass(props, child);
