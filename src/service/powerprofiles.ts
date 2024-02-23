@@ -26,9 +26,9 @@ class PowerProfiles extends Service {
 
     private _proxy = PowerProfilesProxy;
     private _unpackDict(dict: { [prop: string]: GLib.Variant }) {
-        const data = {};
-        for (const prop in dict)
-            data[prop as keyof typeof data] = dict[prop].unpack();
+        const data: { [key: string]: string } = {};
+        for (const [key, variant] of Object.entries(dict))
+            data[key] = variant.unpack();
 
         return data;
     }
