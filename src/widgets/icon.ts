@@ -61,7 +61,7 @@ export class Icon<Attr> extends Gtk.Image {
                 this._set('type', 'file');
             }
             else if (icon !== '') {
-                console.error(Error(`can't assign "${icon}" as icon, ` +
+                console.warn(Error(`can't assign "${icon}" as icon, ` +
                     'it is not a file nor a named icon'));
             }
         }
@@ -69,7 +69,7 @@ export class Icon<Attr> extends Gtk.Image {
             this._set('type', 'pixbuf');
         }
         else {
-            console.error(Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));
+            console.warn(Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));
         }
 
         this._size();

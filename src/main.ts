@@ -130,7 +130,9 @@ export async function main(args: string[]) {
     if (flags.init)
         return await init(configDir, flags.config);
 
-    if (!isRunning(bus)) {
+    if (isRunning(bus)) {
+        return client(bus, path, flags);
+    } else {
         if (flags.quit)
             return;
 
@@ -155,8 +157,5 @@ export async function main(args: string[]) {
 
         // @ts-expect-error missing type declaration
         return app.runAsync(null);
-    }
-    else {
-        return client(bus, path, flags);
     }
 }
