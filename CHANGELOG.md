@@ -5,6 +5,10 @@
 - add: Utils.watch
 - custom hookable objects
 
+## Fixes
+
+- Widget.attribute assign falsy values
+
 # 1.7.7
 
 ## Features

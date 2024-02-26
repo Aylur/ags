@@ -280,7 +280,7 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
 
         super._init(props as Gtk.Widget.ConstructorProperties);
 
-        if (attribute)
+        if (attribute !== undefined)
             this._set('attribute', attribute);
 
         (binds as unknown as Array<[keyof Props<this>, Binding<any, any, any>]>)
