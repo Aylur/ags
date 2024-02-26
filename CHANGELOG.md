@@ -9,6 +9,10 @@
 
 - Widget.attribute assign falsy values
 
+## Breaking Changes
+
+- revert: hyprland service: workspace and monitor signal emit number
+
 # 1.7.7
 
 ## Features

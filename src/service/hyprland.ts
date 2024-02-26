@@ -82,10 +82,10 @@ export class Hyprland extends Service {
             'urgent-window': ['string'],
             'submap': ['string'],
             'keyboard-layout': ['string', 'string'],
-            'monitor-added': ['int'],
-            'monitor-removed': ['int'],
-            'workspace-added': ['int'],
-            'workspace-removed': ['int'],
+            'monitor-added': ['string'],
+            'monitor-removed': ['string'],
+            'workspace-added': ['string'],
+            'workspace-removed': ['string'],
             'client-added': ['string'],
             'client-removed': ['string'],
             'fullscreen': ['boolean'],
@@ -274,22 +274,22 @@ export class Hyprland extends Service {
 
                 case 'monitorremoved':
                     await this._syncMonitors();
-                    this.emit('monitor-removed', Number(argv[0]));
+                    this.emit('monitor-removed', argv[0]);
                     break;
 
                 case 'monitoradded':
                     await this._syncMonitors();
-                    this.emit('monitor-added', Number(argv[0]));
+                    this.emit('monitor-added', argv[0]);
                     break;
 
                 case 'createworkspace':
                     await this._syncWorkspaces();
-                    this.emit('workspace-added', Number(argv[0]));
+                    this.emit('workspace-added', argv[0]);
                     break;
 
                 case 'destroyworkspace':
                     await this._syncWorkspaces();
-                    this.emit('workspace-removed', Number(argv[0]));
+                    this.emit('workspace-removed', argv[0]);
                     break;
 
                 case 'openwindow':
