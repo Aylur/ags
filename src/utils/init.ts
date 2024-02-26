@@ -5,8 +5,8 @@ import { readFile, writeFile } from './file.js';
 import { exec } from './exec.js';
 import { HOME } from '../utils.js';
 
-export function isRunning(dbusName: string) {
-    return Gio.DBus.session.call_sync(
+export function isRunning(dbusName: string, bus: 'session' | 'system') {
+    return Gio.DBus[bus].call_sync(
         'org.freedesktop.DBus',
         '/org/freedesktop/DBus',
         'org.freedesktop.DBus',

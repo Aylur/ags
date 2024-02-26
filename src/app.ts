@@ -32,17 +32,17 @@ function deprecated(config: Config) {
 const AgsIFace = (bus: string) =>
     loadInterfaceXML('com.github.Aylur.ags')?.replace('@BUS@', bus);
 
-export interface Config<W extends Gtk.Window = Gtk.Window> {
-    windows?: W[]
+export interface Config {
+    windows?: Gtk.Window[] | (() => Gtk.Window[])
     style?: string
     icons?: string
     gtkTheme?: string
     iconTheme?: string
     cursorTheme?: string
+    closeWindowDelay?: { [key: string]: number }
 
     onWindowToggled?: (windowName: string, visible: boolean) => void
     onConfigParsed?: (app: App) => void
-    closeWindowDelay?: { [key: string]: number }
 
     // FIXME: deprecated
     notificationPopupTimeout?: number
@@ -236,68 +236,76 @@ export class App extends Gtk.Application {
 
     readonly quit = () => super.quit();
 
+    readonly config = (config: Config) => {
+        const {
+            windows,
+            closeWindowDelay,
+            style,
+            icons,
+            gtkTheme,
+            iconTheme,
+            cursorTheme,
+            onConfigParsed,
+            onWindowToggled,
+        } = config;
+
+        if (closeWindowDelay)
+            this.closeWindowDelay = closeWindowDelay;
+
+        if (gtkTheme)
+            this.gtkTheme = gtkTheme;
+
+        if (iconTheme)
+            this.iconTheme = iconTheme;
+
+        if (cursorTheme)
+            this.cursorTheme = cursorTheme;
+
+        if (style) {
+            this.applyCss(style.startsWith('.')
+                ? `${this.configDir}${style.slice(1)}`
+                : style);
+        }
+
+        if (icons) {
+            this.addIcons(icons.startsWith('.')
+                ? `${this.configDir}${icons.slice(1)}`
+                : icons);
+        }
+
+        if (typeof onWindowToggled === 'function')
+            this.connect('window-toggled', (_, n, v) => onWindowToggled!(n, v));
+
+        if (typeof onConfigParsed === 'function')
+            this.connect('config-parsed', onConfigParsed);
+
+        if (typeof windows === 'function')
+            windows().forEach(this.addWindow);
+
+        if (Array.isArray(windows))
+            windows.forEach(this.addWindow);
+    };
+
     private async _load() {
         try {
             const entry = await import(`file://${this.configPath}`);
             const config = entry.default as Config;
-            if (!config) {
-                console.warn('Missing default export');
+            if (!config)
                 return this.emit('config-parsed');
-            }
 
             // FIXME:
             deprecated(config);
-
-            const {
-                windows,
-                closeWindowDelay,
-                style,
-                icons,
-                gtkTheme,
-                iconTheme,
-                cursorTheme,
-                onConfigParsed,
-                onWindowToggled,
-            } = config;
-
-            this.closeWindowDelay = closeWindowDelay || {};
-
-            if (gtkTheme)
-                this.gtkTheme = gtkTheme;
-
-            if (iconTheme)
-                this.iconTheme = iconTheme;
-
-            if (cursorTheme)
-                this.cursorTheme = cursorTheme;
-
-            if (style) {
-                this.applyCss(style.startsWith('.')
-                    ? `${this.configDir}${style.slice(1)}`
-                    : style);
-            }
-
-            if (icons) {
-                this.addIcons(icons.startsWith('.')
-                    ? `${this.configDir}${icons.slice(1)}`
-                    : icons);
-            }
-
-            if (typeof onWindowToggled === 'function')
-                this.connect('window-toggled', (_, n, v) => onWindowToggled!(n, v));
-
-            windows?.forEach(this.addWindow.bind(this));
-            onConfigParsed?.(this);
+            this.config(config);
 
             this.emit('config-parsed');
         } catch (err) {
-            logError(err);
-
             const error = err as { name?: string, message: string };
             const msg = `Unable to load file from: file://${this._configPath}`;
             if (error?.name === 'ImportError' && error.message.includes(msg)) {
                 print(`config file not found: "${this._configPath}"`);
                 this.quit();
+            } else {
+                logError(err);
             }
         }
     }

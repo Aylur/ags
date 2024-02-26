@@ -4,7 +4,7 @@ import Service from '../service.js';
 import { loadInterfaceXML } from '../utils.js';
 import { PowerProfilesProxy } from '../dbus/types.js';
 import { kebabify } from '../utils/gobject.js';
-import { isRunning } from 'src/utils/init.js';
+import { isRunning } from '../utils/init.js';
 
 const BUSNAME = 'net.hadess.PowerProfiles';
 const PowerProfilesIFace = loadInterfaceXML(BUSNAME)!;
@@ -49,7 +49,7 @@ class PowerProfiles extends Service {
     constructor() {
         super();
 
-        if (isRunning(BUSNAME)) {
+        if (isRunning(BUSNAME, 'system')) {
             this._proxy = new PowerProfilesProxy(
                 Gio.DBus.system,
                 'net.hadess.PowerProfiles',

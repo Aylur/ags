@@ -130,7 +130,7 @@ export async function main(args: string[]) {
     if (flags.init)
         return await init(configDir, flags.config);
 
-    if (isRunning(bus)) {
+    if (isRunning(bus, 'session')) {
         return client(bus, path, flags);
     } else {
         if (flags.quit)

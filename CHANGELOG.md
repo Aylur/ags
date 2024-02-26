@@ -4,6 +4,7 @@
 
 - add: Utils.watch
 - custom hookable objects
+- add: App.config
 
 ## Fixes
 
