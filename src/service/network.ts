@@ -131,6 +131,7 @@ export class Wifi extends Service {
     get enabled() { return this._client.wireless_enabled; }
     set enabled(v) { this._client.wireless_enabled = v; }
     get ipv4Address() { return this._device.ip4_config.get_addresses(); }
+    get ipv6Address() { return this._device.ip6_config.get_addresses(); }
 
     get strength() { return this._ap?.strength || -1; }
     get internet() { return _INTERNET(this._device); }
@@ -198,6 +199,7 @@ export class Wired extends Service {
     }
 
     get ipv4Address() { return this._device.ip4_config.get_addresses(); }
+    get ipv6Address() { return this._device.ip6_config.get_addresses(); }
     get speed() { return this._device.get_speed(); }
     get internet() { return _INTERNET(this._device); }
     get state() { return _DEVICE_STATE(this._device); }
