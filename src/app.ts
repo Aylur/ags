@@ -67,8 +67,8 @@ export class App extends Gtk.Application {
     private _configPath!: string;
     private _configDir!: string;
 
-    private _closeWindowDelay!: Config['closeWindowDelay'];
-    get closeWindowDelay() { return this._closeWindowDelay || {}; }
+    private _closeWindowDelay: Config['closeWindowDelay'] = {};
+    get closeWindowDelay() { return this._closeWindowDelay!; }
     set closeWindowDelay(v) { this._closeWindowDelay = v; }
 
     get windows() { return [...this._windows.values()]; }
