@@ -11,10 +11,10 @@ type Listen<T> =
     | string;
 
 type Poll<T> =
-    | [number, string[] | string | ((self: Variable<T>) => T)]
+    | [number, string[] | string | ((self: Variable<T>) => T) | ((self: Variable<T>) => Promise<T>)]
     | [number, string[] | string, (out: string, self: Variable<T>) => T];
 
-interface Options<T> {
+export interface Options<T> {
     poll?: Poll<T>
     listen?: Listen<T>
 }
@@ -23,8 +23,11 @@ export class Variable<T> extends GObject.Object {
     static {
         Service.register(this, {
             'changed': [],
+            'disposed': [],
         }, {
             'value': ['jsobject', 'rw'],
+            'is-listening': ['boolean', 'r'],
+            'is-polling': ['boolean', 'r'],
         });
     }
 
@@ -59,11 +62,19 @@ export class Variable<T> extends GObject.Object {
         const [time, cmd, transform = out => out as T] = this._poll;
         if (Array.isArray(cmd) || typeof cmd === 'string') {
             this._interval = interval(time, () => execAsync(cmd)
-                .then(out => this.setValue(transform(out, this)))
+                .then(out => this.value = transform(out, this))
                 .catch(err => logError(err)));
         }
-        if (typeof cmd === 'function')
-            this._interval = interval(time, () => this.setValue(cmd(this)));
+        if (typeof cmd === 'function') {
+            this._interval = interval(time, () => {
+                const value = cmd(this);
+                if (value instanceof Promise)
+                    value.then(v => this.value = v).catch(logError);
+                else
+                    this.value = value;
+            });
+        }
+        this.notify('is-polling');
     }
 
     stopPoll() {
@@ -73,6 +84,7 @@ export class Variable<T> extends GObject.Object {
         } else {
             console.error(Error(`${this} has no poll running`));
         }
+        this.notify('is-polling');
     }
 
     startListen() {
@@ -87,22 +99,27 @@ export class Variable<T> extends GObject.Object {
             ? this._listen[1]
             : (out: string) => out as T;
 
-        // listen: string
+        // string
         if (typeof this._listen === 'string')
             cmd = this._listen;
 
-        // listen: [string, fn]
+        // string[]
+        else if (Array.isArray(this._listen) && this._listen.every(s => typeof s === 'string'))
+            cmd = this._listen as string[];
+
+        // [string, fn]
         else if (Array.isArray(this._listen) && typeof this._listen[0] === 'string')
             cmd = this._listen[0];
 
-        // listen: [string[], fn]
+        // [string[], fn]
         else if (Array.isArray(this._listen) && Array.isArray(this._listen[0]))
             cmd = this._listen[0];
 
         else
             return console.error(Error(`${this._listen} is not a valid type for Variable.listen`));
 
-        this._subprocess = subprocess(cmd, out => this.setValue(transform(out, this)));
+        this._subprocess = subprocess(cmd, out => this.value = transform(out, this));
+        this.notify('is-listening');
     }
 
     stopListen() {
@@ -112,10 +129,11 @@ export class Variable<T> extends GObject.Object {
         } else {
             console.error(Error(`${this} has no listen running`));
         }
+        this.notify('is-listening');
     }
 
-    get isListening() { return !!this._subprocess; }
-    get isPolling() { return !!this._listen; }
+    get is_listening() { return !!this._subprocess; }
+    get is_polling() { return !!this._listen; }
 
     dispose() {
         if (this._interval)
@@ -124,6 +142,7 @@ export class Variable<T> extends GObject.Object {
         if (this._subprocess)
             this._subprocess.force_exit();
 
+        this.emit('dispose');
         this.run_dispose();
     }
 
@@ -135,13 +154,20 @@ export class Variable<T> extends GObject.Object {
     }
 
     get value() { return this._value; }
-    set value(value: T) { this.setValue(value); }
+    set value(value: T) {
+        if (value === this.value)
+            return;
+
+        this.setValue(value);
+    }
 
     connect(signal = 'notify::value', callback: (self: this, ...args: any[]) => void): number {
         return super.connect(signal, callback);
     }
 
-    bind<Prop extends keyof Props<this>>(prop: Prop = 'value' as Prop) {
+    bind<P extends keyof Props<this>>(): Binding<this, P, T>
+    bind<P extends keyof Props<this>>(prop?: P): Binding<this, P, this[P]>
+    bind<P extends keyof Props<this>>(prop: P = 'value' as P) {
         return new Binding(this, prop);
     }
 }

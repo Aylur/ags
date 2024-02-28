@@ -2,7 +2,6 @@ import Gio from 'gi://Gio';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import GLib from 'gi://GLib';
 import Service from '../service.js';
-import App from '../app.js';
 import {
     CACHE_DIR, ensureDirectory,
     loadInterfaceXML, readFileAsync,
@@ -139,14 +138,12 @@ export class Notification extends Service {
     get summary() { return this._summary; }
     get suppress_sound() { return this._suppressSound; }
     get time() { return this._time; }
+    get timeout() { return this._timeout; }
     get transient() { return this._transient; }
     get urgency() { return this._urgency; }
     get x() { return this._x; }
     get y() { return this._y; }
     get hints() { return this._hints; }
-
-    set timeout(t: number) { this._timeout = t; }
-    get timeout() { return this._timeout; }
 
     constructor(
         appName: string,
@@ -193,23 +190,23 @@ export class Notification extends Service {
         this._hints = hints;
     }
 
-    dismiss() {
+    readonly dismiss = () => {
         this._popup = false;
         this.changed('popup');
         this.emit('dismissed');
-    }
+    };
 
-    close() {
+    readonly close = () => {
         this.emit('closed');
-    }
+    };
 
-    invoke(id: string) {
+    readonly invoke = (id: string) => {
         this.emit('invoked', id);
         if (!this.resident)
             this.close();
-    }
+    };
 
-    toJson(cacheActions = App.config.cacheNotificationActions): NotifcationJson {
+    toJson(cacheActions = notifications.cacheActions): NotifcationJson {
         return {
             actionIcons: this._actionIcons,
             actions: cacheActions ? this._actions : [],
@@ -294,6 +291,11 @@ export class Notifications extends Service {
         });
     }
 
+    public popupTimeout = 3000;
+    public forceTimeout = false;
+    public cacheActions = false;
+    public clearDelay = 100;
+
     private _dbus!: Gio.DBusExportedObject;
     private _notifications: Map<number, Notification>;
     private _dnd = false;
@@ -326,14 +328,14 @@ export class Notifications extends Service {
         return list;
     }
 
-    getPopup(id: number) {
+    readonly getPopup = (id: number) => {
         const n = this._notifications.get(id);
         return n?.popup ? n : null;
-    }
+    };
 
-    getNotification(id: number) {
+    readonly getNotification = (id: number) => {
         return this._notifications.get(id);
-    }
+    };
 
     Notify(
         appName: string,
@@ -348,11 +350,11 @@ export class Notifications extends Service {
         const id = replacesId || this._idCount++;
         const n = new Notification(appName, id, appIcon, summary, body, acts, hints, !this.dnd);
 
-        if (App.config.notificationForceTimeout) {
-            n.timeout = App.config.notificationPopupTimeout;
-            timeout(App.config.notificationPopupTimeout, () => this.DismissNotification(id));
+        if (this.forceTimeout || expiration === -1) {
+            n.updateProperty('timeout', this.popupTimeout);
+            timeout(this.popupTimeout, () => this.DismissNotification(id));
         } else {
-            n.timeout = expiration;
+            n.updateProperty('timeout', expiration);
             if (expiration > 0)
                 timeout(expiration, () => this.DismissNotification(id));
         }
@@ -397,10 +399,15 @@ export class Notifications extends Service {
         return new GLib.Variant('(ssss)', [pkg.name, 'Aylur', pkg.version, '1.2']);
     }
 
-    clear() {
-        for (const [id] of this._notifications)
-            this.CloseNotification(id);
-    }
+    // eslint-disable-next-line space-before-function-paren
+    readonly clear = async () => {
+        const close = (n: Notification, delay: number) => new Promise(resolve => {
+            this._notifications.has(n.id)
+                ? timeout(delay, () => resolve(n.close()))
+                : resolve(null);
+        });
+        return Promise.all(this.notifications.map((n, i) => close(n, this.clearDelay * i)));
+    };
 
     private _addNotification(n: Notification) {
         n.connect('dismissed', this._onDismissed.bind(this));

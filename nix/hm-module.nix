@@ -6,17 +6,11 @@ self: {
 }: let
   inherit (lib) mkMerge types;
   inherit (lib.modules) mkIf;
-  inherit (lib.lists) optional;
   inherit (lib.options) mkOption mkEnableOption literalExpression;
 
   defaultAgsPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
   cfg = config.programs.ags;
 in {
-  meta.maintainers = with lib.maintainers; [
-    Jappie3
-    Aylur
-  ];
-
   options.programs.ags = {
     enable = mkEnableOption "ags";
 
@@ -28,6 +22,15 @@ in {
         The Ags package to use.
 
         By default, this option will use the `packages.default` as exposed by this flake.
+      '';
+    };
+
+    finalPackage = mkOption {
+      type = types.package;
+      readOnly = true;
+      visible = false;
+      description = ''
+        Resulting ags package.
       '';
     };
 
@@ -54,10 +57,16 @@ in {
     (mkIf (cfg.configDir != null) {
       xdg.configFile."ags".source = cfg.configDir;
     })
-    {
-      home.packages = optional (cfg.package != null) (cfg.package.override {
+    (mkIf (cfg.package != null) (let
+      path = "/share/com.github.Aylur.ags/types";
+      pkg = cfg.package.override {
         extraPackages = cfg.extraPackages;
-      });
-    }
+        buildTypes = true;
+      };
+    in {
+      programs.ags.finalPackage = pkg;
+      home.packages = [pkg];
+      home.file.".local/${path}".source = "${pkg}/${path}";
+    }))
   ]);
 }

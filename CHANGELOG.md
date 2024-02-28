@@ -1,4 +1,79 @@
-# Unreleased
+# 1.7.8
+
+## Features
+
+- add: Utils.watch
+- custom hookable objects
+- add: App.config
+
+## Fixes
+
+- Widget.attribute assign falsy values
+
+## Breaking Changes
+
+- revert: hyprland service: workspace and monitor signal emit number
+
+# 1.7.7
+
+## Features
+
+- App.addIcons, App.gtkTheme, App.cursorTheme, App.iconTheme
+- add: Notifications.clearDelay
+- add MprisPlayer.track_album
+- add MprisPlayer.metadata
+- add Widget.keybind
+- App.applyCss takes stylesheets, and an optional reset parameter
+
+## Fixes
+
+- prepend icons from config instead of append
+- Network.wifi.enabled signal
+- Utils.merge connect to notify signal
+
+## Breaking Changes
+
+- deprecate: Window.popup
+
+# 1.7.6
+
+## Features
+
+- Utils.writeFileSync
+- add Utils.merge, Utils.derive
+- add Binding.as alias for Binding.transform
+
+## Fixes
+
+- Stack.add_named
+- Scrollable destroy child on destroy event
+
+## Breaking Changes
+
+- hyprland service: workspace and monitor signal emit number
+- hyprland service: deprecate sendMessage, introduce message and messageAsync
+- Variable: value check on setter, force on setValue
+- `Utils.monitorFile()` no longer takes the `type` (`file` or `directory`) parameter. It will monitor each accordingly without specifying it.
+
+# 1.7.5
+
+## Features
+
+- generate types for utils subdirectory (#287)
+- export gobject utils in Utils
+- bind service methods
+- make App.closeWindowDelay writable
+
+## Fixes
+
+- widget: button, eventbox child second parameter
+
+## Breaking Changes
+
+- add: Stack.children
+- deprecate: Stack.items
+
+# 1.7.4
 
 ## Features
 
@@ -8,6 +83,19 @@
 - feat(Utils.notify)
 - feat(notifications): support every hint
 - add: Widget.click-through (#245)
+- feat: --init cli flag
+- add: Widget.keymode
+- improved types
+- add: Window.gdkmonitor
+- export modules globally
+- make Audio.microphone and Audio.speaker always
+- feat: greetd service (#282)
+- feat(pam): Utils.authenticate (#273)
+- feat: child property as second parameter [#265](https://github.com/Aylur/ags/pull/265/)
+
+## Breaking Changes
+
+- subclassing of widgets
 
 ## Fixes
 

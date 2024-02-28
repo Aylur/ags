@@ -80,6 +80,7 @@ export class Wifi extends Service {
         this._client = client;
         this._device = device;
 
+        this._client.connect('notify::wireless-enabled', () => this.changed('enabled'));
         if (this._device) {
             bulkConnect((this._device as unknown) as Service, [
                 ['notify::active-access-point', this._activeAp.bind(this)],
@@ -90,12 +91,12 @@ export class Wifi extends Service {
         }
     }
 
-    scan() {
+    readonly scan = () => {
         this._device.request_scan_async(null, (device, res) => {
             device.request_scan_finish(res);
             this.emit('changed');
         });
-    }
+    };
 
     private _activeAp() {
         if (this._ap)
@@ -246,9 +247,9 @@ export class Network extends Service {
         }
     }
 
-    toggleWifi() {
+    readonly toggleWifi = () => {
         this._client.wireless_enabled = !this._client.wireless_enabled;
-    }
+    };
 
     private _getDevice(devType: NM.DeviceType) {
         return this._client

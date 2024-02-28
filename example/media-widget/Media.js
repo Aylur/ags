@@ -1,6 +1,5 @@
-import Mpris from 'resource:///com/github/Aylur/ags/service/mpris.js'
-import Widget from 'resource:///com/github/Aylur/ags/widget.js';
-import Utils from 'resource:///com/github/Aylur/ags/utils.js'
+const mpris = await Service.import('mpris');
+const players = mpris.bind('players');
 
 const FALLBACK_ICON = 'audio-x-generic-symbolic';
 const PLAY_ICON = 'media-playback-start-symbolic';
@@ -60,7 +59,7 @@ const Player = player => {
         hpack: 'start',
         setup: self => {
             const update = (_, time) => {
-                self.label = lengthStr(time || player.position)
+                self.label = lengthStr(time || player.position);
                 self.visible = player.length > 0;
             };
 
@@ -115,43 +114,37 @@ const Player = player => {
         child: Widget.Icon(NEXT_ICON),
     });
 
-    return Widget.Box({
-        class_name: 'player',
-        children: [
-            img,
-            Widget.Box({
+    return Widget.Box(
+        { class_name: 'player' },
+        img,
+        Widget.Box(
+            {
                 vertical: true,
                 hexpand: true,
-                children: [
-                    Widget.Box({
-                        children: [
-                            title,
-                            icon,
-                        ],
-                    }),
-                    artist,
-                    Widget.Box({ vexpand: true }),
-                    positionSlider,
-                    Widget.CenterBox({
-                        start_widget: positionLabel,
-                        center_widget: Widget.Box({
-                            children: [
-                                prev,
-                                playPause,
-                                next,
-                            ],
-                        }),
-                        end_widget: lengthLabel,
-                    }),
-                ],
+            },
+            Widget.Box([
+                title,
+                icon,
+            ]),
+            artist,
+            Widget.Box({ vexpand: true }),
+            positionSlider,
+            Widget.CenterBox({
+                start_widget: positionLabel,
+                center_widget: Widget.Box([
+                    prev,
+                    playPause,
+                    next,
+                ]),
+                end_widget: lengthLabel,
             }),
-        ],
-    });
-}
+        ),
+    );
+};
 
 export default () => Widget.Box({
     vertical: true,
     css: 'padding: 1px', // small hack to make sure it is visible
-    visible: Mpris.bind('players').transform(p => p.length > 0),
-    children: Mpris.bind('players').transform(p => p.map(Player)),
+    visible: players.as(p => p.length > 0),
+    children: players.as(p => p.map(Player)),
 });

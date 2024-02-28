@@ -3,6 +3,7 @@ declare function print(...args: any[]): void;
 declare const pkg: {
     version: string;
     name: string;
+    pkgdatadir: string;
 };
 
 declare const imports: {
@@ -12,12 +13,12 @@ declare const imports: {
 }
 
 declare module console {
-    export function error(obj: object, others?: object[]): void;
-    export function error(msg: string, subsitutions?: any[]): void;
-    export function log(obj: object, others?: object[]): void;
-    export function log(msg: string, subsitutions?: any[]): void;
-    export function warn(obj: object, others?: object[]): void;
-    export function warn(msg: string, subsitutions?: any[]): void;
+    function error(obj: object, others?: object[]): void;
+    function error(msg: string, subsitutions?: any[]): void;
+    function log(obj: object, others?: object[]): void;
+    function log(msg: string, subsitutions?: any[]): void;
+    function warn(obj: object, others?: object[]): void;
+    function warn(msg: string, subsitutions?: any[]): void;
 }
 
 declare interface String {

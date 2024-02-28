@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 import { Binding } from '../service.js';
@@ -20,27 +20,43 @@ const LAYER = {
     'overlay': LayerShell.Layer.OVERLAY,
 } as const;
 
-export type Layer = keyof typeof LAYER;
-export type Anchor = keyof typeof ANCHOR;
-export type Exclusivity = 'normal' | 'ignore' | 'exclusive';
+const KEYMODE = {
+    'on-demand': LayerShell.KeyboardMode.ON_DEMAND,
+    'exclusive': LayerShell.KeyboardMode.EXCLUSIVE,
+    'none': LayerShell.KeyboardMode.NONE,
+} as const;
 
-export type WindowProps = BaseProps<AgsWindow, Gtk.Window.ConstructorProperties & {
+type Layer = keyof typeof LAYER;
+type Anchor = keyof typeof ANCHOR;
+type Exclusivity = 'normal' | 'ignore' | 'exclusive';
+type Keymode = keyof typeof KEYMODE;
+
+export type WindowProps<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+    Self = Window<Child, Attr>,
+> = BaseProps<Self, Gtk.Window.ConstructorProperties & {
+    child?: Child
     anchor?: Anchor[]
     exclusivity?: Exclusivity
-    focusable?: boolean
     layer?: Layer
     margins?: number[]
     monitor?: number
-    popup?: boolean
+    gdkmonitor?: Gdk.Monitor
     visible?: boolean
+    keymode?: Keymode
 
     // FIXME: deprecated
+    popup?: boolean
     exclusive?: boolean
-}>
+    focusable?: boolean
+}, Attr>
 
-export default class AgsWindow extends AgsWidget(Gtk.Window) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Window<Child, Attr> extends Widget<Attr> { }
+export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'anchor': ['jsobject', 'rw'],
                 'exclusive': ['boolean', 'rw'],
@@ -49,7 +65,9 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
                 'layer': ['string', 'rw'],
                 'margins': ['jsobject', 'rw'],
                 'monitor': ['int', 'rw'],
+                'gdkmonitor': ['jsobject', 'rw'],
                 'popup': ['boolean', 'rw'],
+                'keymode': ['string', 'rw'],
             },
         });
     }
@@ -61,16 +79,22 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         exclusive,
         exclusivity = 'normal',
         focusable = false,
+        keymode = 'none',
         layer = 'top',
         margins = [],
         monitor = -1,
+        gdkmonitor,
         popup = false,
         visible = true,
         ...params
-    }: WindowProps = {}) {
+    }: WindowProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            params.child = child;
+
         super(params as Gtk.Window.ConstructorProperties);
         LayerShell.init_for_window(this);
         LayerShell.set_namespace(this, this.name);
+
 
         this._handleParamProp('anchor', anchor);
         this._handleParamProp('exclusive', exclusive);
@@ -79,6 +103,8 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         this._handleParamProp('layer', layer);
         this._handleParamProp('margins', margins);
         this._handleParamProp('monitor', monitor);
+        this._handleParamProp('gdkmonitor', gdkmonitor);
+        this._handleParamProp('keymode', keymode);
 
         this.show_all();
         this._handleParamProp('popup', popup);
@@ -89,6 +115,16 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
             this.visible = visible === true || visible === null && !popup;
     }
 
+    get child() { return super.child as Child; }
+    set child(child: Child) { super.child = child; }
+
+    get gdkmonitor(): Gdk.Monitor | null { return this._get('gdkmonitor') || null; }
+    set gdkmonitor(monitor: Gdk.Monitor) {
+        this._set('gdkmonitor', monitor);
+        LayerShell.set_monitor(this, monitor);
+        this.notify('gdkmonitor');
+    }
+
     get monitor(): Gdk.Monitor { return this._get('monitor'); }
     set monitor(monitor: number) {
         if (monitor < 0)
@@ -96,7 +132,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
 
         const m = Gdk.Display.get_default()?.get_monitor(monitor);
         if (m) {
-            LayerShell.set_monitor(this, m);
+            this.gdkmonitor = m;
             this._set('monitor', monitor);
             return;
         }
@@ -110,7 +146,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         if (exclusive === undefined)
             return;
 
-        console.error('Window.exclusive is DEPRECATED, use Window.exclusivity');
+        console.warn('Window.exclusive is DEPRECATED, use Window.exclusivity');
         if (this.exclusive === exclusive)
             return;
 
@@ -232,10 +268,17 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         this.notify('margins');
     }
 
+    // FIXME: deprecated
     get popup() { return !!this._get('popup'); }
     set popup(popup: boolean) {
         if (this.popup === popup)
             return;
+
+        console.warn('Window.popup is DEPRECATED. '
+            + 'the click away functionality depends on a bug which was patched in Hyprland '
+            + 'and it never worked on Sway anyway. '
+            + 'to close on the esc key '
+            + 'use self.keybind("Escape", () => App.closeWindow("window-name"))');
 
         if (this.popup) {
             const [esc, click] = this._get<[number, number]>('popup');
@@ -262,6 +305,7 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         }
     }
 
+    // FIXME: deprecated
     get focusable() {
         return LayerShell.get_keyboard_mode(this) === LayerShell.KeyboardMode.ON_DEMAND;
     }
@@ -270,9 +314,26 @@ export default class AgsWindow extends AgsWidget(Gtk.Window) {
         if (this.focusable === focusable)
             return;
 
+        console.warn('Window.focusable is DEPRECATED, use Window.keymode');
         LayerShell.set_keyboard_mode(
             this, LayerShell.KeyboardMode[focusable ? 'ON_DEMAND' : 'NONE']);
 
         this.notify('focusable');
     }
+
+    get keymode() {
+        return Object.keys(KEYMODE).find(layer => {
+            return KEYMODE[layer as Keymode] === LayerShell.get_keyboard_mode(this);
+        }) as Keymode;
+    }
+
+    set keymode(mode: Keymode) {
+        if (this.keymode === mode)
+            return;
+
+        LayerShell.set_keyboard_mode(this, KEYMODE[mode]);
+        this.notify('keymode');
+    }
 }
+
+export default Window;
