@@ -96,10 +96,10 @@ export class Wifi extends Service {
         const ip6Config = this._device.ip6_config;
 
         if ((this._device) && (ip4Config))
-            ip4Config.connect('notify::ipv4-address', () => this.changed('ipv4-address'));
+            ip4Config.connect('notify::addresses', () => this.changed('ipv4-address'));
 
         if ((this._device) && (ip6Config))
-            ip6Config.connect('notify::ipv6-address', () => this.changed('ipv6-address'));
+            ip6Config.connect('notify::addresses', () => this.changed('ipv6-address'));
     }
 
     readonly scan = () => {
@@ -215,10 +215,10 @@ export class Wired extends Service {
         const ip6Config = this._device.ip6_config;
 
         if ((this._device) && (ip4Config))
-            ip4Config.connect('notify::ipv4-address', () => this.changed('ipv4-address'));
+            ip4Config.connect('notify::addresses', () => this.changed('ipv4-address'));
 
         if ((this._device) && (ip6Config))
-            ip6Config.connect('notify::ipv6-address', () => this.changed('ipv6-address'));
+            ip6Config.connect('notify::addresses', () => this.changed('ipv6-address'));
     }
 
     get ipv4Address() { return this._device.ip4_config.get_addresses(); }
