@@ -28,7 +28,6 @@
 
 - revert: hyprland service: workspace and monitor signal emit number
 - types: Label's and Icon's Props type renamed to LabelProps, IconProps
-- FileChooser renamed to FileChooserButton
 
 # 1.7.7
 
