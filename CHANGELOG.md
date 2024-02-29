@@ -5,14 +5,30 @@
 - add: Utils.watch
 - custom hookable objects
 - add: App.config
+- impove widget subclasses
+  - Calendar.on_day_selected
+  - ColorButton.on_color_set
+  - DrawingArea.draw_fn
+  - FileChooserButton.on_file_set
+  - FontButton.on_font_set
+  - LevelBar.vertical
+  - LevelBar.bar_mode
+  - Separator.vertical
+  - SpinButton.on_value_changed
+  - Spinner starts based on visibility
+  - Switch.on_activate
+  - ToggleButton.on_toggled
 
 ## Fixes
 
 - Widget.attribute assign falsy values
+- Overlay child type
 
 ## Breaking Changes
 
 - revert: hyprland service: workspace and monitor signal emit number
+- types: Label's and Icon's Props type renamed to LabelProps, IconProps
+- FileChooser renamed to FileChooserButton
 
 # 1.7.7
 

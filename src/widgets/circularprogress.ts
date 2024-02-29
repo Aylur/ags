@@ -24,6 +24,13 @@ export type CircularProgressProps<
     end_at?: number
 }, Attr>
 
+export function newCircularProgress<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof CircularProgress<Child, Attr>>) {
+    return new CircularProgress(...props);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface CircularProgress<Child, Attr> extends Widget<Attr> { }
 export class CircularProgress<

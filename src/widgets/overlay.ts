@@ -3,17 +3,31 @@ import Gtk from 'gi://Gtk?version=3.0';
 
 export type OverlayProps<
     Child extends Gtk.Widget = Gtk.Widget,
+    OverlayChild extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
-    Self = Overlay<Child, Attr>,
+    Self = Overlay<Child, OverlayChild, Attr>,
 > = BaseProps<Self, Gtk.Overlay.ConstructorProperties & {
     pass_through?: boolean
-    overlays?: Child[]
-    overlay?: Child
+    overlays?: OverlayChild[]
+    overlay?: OverlayChild
+    child?: Child
 }, Attr>
 
+export function newOverlay<
+    Child extends Gtk.Widget = Gtk.Widget,
+    OverlayChild extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof Overlay<Child, OverlayChild, Attr>>) {
+    return new Overlay(...props);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export interface Overlay<Child, Attr> extends Widget<Attr> { }
-export class Overlay<Child extends Gtk.Widget, Attr> extends Gtk.Overlay {
+export interface Overlay<Child, OverlayChild, Attr> extends Widget<Attr> { }
+export class Overlay<
+    Child extends Gtk.Widget,
+    OverlayChild extends Gtk.Widget,
+    Attr
+> extends Gtk.Overlay {
     static {
         register(this, {
             properties: {
@@ -24,9 +38,16 @@ export class Overlay<Child extends Gtk.Widget, Attr> extends Gtk.Overlay {
         });
     }
 
-    constructor(props: OverlayProps<Child, Attr> = {}, ...overlays: Gtk.Widget[]) {
+    constructor(
+        props: OverlayProps<Child, OverlayChild, Attr> = {},
+        child?: Child,
+        ...overlays: Gtk.Widget[]
+    ) {
+        if (child)
+            props.child = child;
+
         if (overlays.length > 0)
-            props.overlays = overlays as Child[];
+            props.overlays = overlays as OverlayChild[];
 
         super(props as Gtk.Overlay.ConstructorProperties);
     }

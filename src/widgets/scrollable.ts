@@ -20,6 +20,13 @@ export type ScrollableProps<
     vscroll?: Policy,
 }, Attr>
 
+export function newScrollable<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof Scrollable<Child, Attr>>) {
+    return new Scrollable(...props);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Scrollable<Child, Attr> extends Widget<Attr> { }
 export class Scrollable<Child extends Gtk.Widget, Attr> extends Gtk.ScrolledWindow {

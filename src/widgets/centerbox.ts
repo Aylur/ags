@@ -15,6 +15,15 @@ export type CenterBoxProps<
     end_widget?: EndWidget
 }, Attr>;
 
+export function newCenterBox<
+    StartWidget extends Gtk.Widget = Gtk.Widget,
+    CenterWidget extends Gtk.Widget = Gtk.Widget,
+    EndWidget extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof CenterBox<StartWidget, CenterWidget, EndWidget, Attr>>) {
+    return new CenterBox(...props);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface CenterBox<StartWidget, CenterWidget, EndWidget, Attr> extends Widget<Attr> { }
 export class CenterBox<

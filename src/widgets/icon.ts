@@ -3,23 +3,24 @@ import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import Gdk from 'gi://Gdk?version=3.0';
-import { Binding } from '../service.js';
 import cairo from '@girs/cairo-1.0';
 import { lookUpIcon } from '../utils.js';
 
-export type Props<
+type Ico = string | GdkPixbuf.Pixbuf
+
+export type IconProps<
     Attr = unknown,
     Self = Icon<Attr>,
 > = BaseProps<Self, Gtk.Image.ConstructorProperties & {
     size?: number
-    icon?: // Binding is here because unions mess up BaseProps
-    | string
-    | GdkPixbuf.Pixbuf
-    | Binding<any, any, string>
-    | Binding<any, any, GdkPixbuf.Pixbuf>;
+    icon?: Ico;
 }, Attr>
 
-export type IconProps<Attr> = Props<Attr> | string | GdkPixbuf.Pixbuf | undefined
+export function newIcon<
+    Attr = unknown
+>(...props: ConstructorParameters<typeof Icon<Attr>>) {
+    return new Icon(...props);
+}
 
 export interface Icon<Attr> extends Widget<Attr> { }
 export class Icon<Attr> extends Gtk.Image {
@@ -33,8 +34,8 @@ export class Icon<Attr> extends Gtk.Image {
         });
     }
 
-    constructor(props: IconProps<Attr> = {}) {
-        const { icon = '', ...rest } = props as Props<Attr>;
+    constructor(props: IconProps<Attr> | Ico = {}) {
+        const { icon = '', ...rest } = props as IconProps<Attr>;
         super(typeof props === 'string' || props instanceof GdkPixbuf.Pixbuf
             ? {}
             : rest as Gtk.Image.ConstructorProperties);
