@@ -67,6 +67,9 @@ export class Wifi extends Service {
             'ssid': ['string'],
             'state': ['string'],
             'icon-name': ['string'],
+            'ipv4-address': ['string'],
+            'ipv6-address': ['string'],
+
         });
     }
 
@@ -89,6 +92,14 @@ export class Wifi extends Service {
             ]);
             this._activeAp();
         }
+        const ip4Config = this._device.ip4_config;
+        const ip6Config = this._device.ip6_config;
+
+        if ((this._device) && (ip4Config))
+            ip4Config.connect('notify::ipv4-address', () => this.changed('ipv4-address'));
+
+        if ((this._device) && (ip6Config))
+            ip6Config.connect('notify::ipv6-address', () => this.changed('ipv6-address'));
     }
 
     readonly scan = () => {
@@ -182,6 +193,8 @@ export class Wired extends Service {
             'internet': ['string'],
             'state': ['string'],
             'icon-name': ['string'],
+            'ipv4-address': ['string'],
+            'ipv6-address': ['string'],
         });
     }
 
@@ -197,6 +210,15 @@ export class Wired extends Service {
             ['speed', 'internet', 'state', 'icon-name']
                 .map(prop => this.notify(prop));
         });
+
+        const ip4Config = this._device.ip4_config;
+        const ip6Config = this._device.ip6_config;
+
+        if ((this._device) && (ip4Config))
+            ip4Config.connect('notify::ipv4-address', () => this.changed('ipv4-address'));
+
+        if ((this._device) && (ip6Config))
+            ip6Config.connect('notify::ipv6-address', () => this.changed('ipv6-address'));
     }
 
     get ipv4Address() { return this._device.ip4_config.get_addresses(); }
@@ -225,6 +247,8 @@ export class Network extends Service {
             'wired': ['jsobject'],
             'primary': ['string'],
             'connectivity': ['string'],
+            'ipv4-address': ['string'],
+            'ipv6-address': ['string'],
         });
     }
 
