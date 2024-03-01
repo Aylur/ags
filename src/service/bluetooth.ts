@@ -144,8 +144,9 @@ export class Bluetooth extends Service {
         this.emit('device-added', device.address);
     }
 
-    private _deviceRemoved(_: GnomeBluetooth.Client, device: GnomeBluetooth.Device) {
-        if (!this._devices.has(device.address))
+    private _deviceRemoved(_: GnomeBluetooth.Client, path: string) {
+        const device = this.devices.find(d => d.device.get_object_path() === path);
+        if (!device || !this._devices.has(device.address))
             return;
 
         this._devices.get(device.address)?.close();
