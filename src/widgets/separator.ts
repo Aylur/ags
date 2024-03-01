@@ -30,10 +30,7 @@ export class Separator<Attr> extends Gtk.Separator {
         this.connect('notify::orientation', () => this.notify('vertical'));
     }
 
-    get vertical() {
-        return this.orientation === Gtk.Orientation.VERTICAL;
-    }
-
+    get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
     set vertical(v: boolean) {
         this.orientation = Gtk.Orientation[v ? 'VERTICAL' : 'HORIZONTAL'];
     }

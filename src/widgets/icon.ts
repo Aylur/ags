@@ -29,7 +29,6 @@ export class Icon<Attr> extends Gtk.Image {
             properties: {
                 'size': ['double', 'rw'],
                 'icon': ['jsobject', 'rw'],
-                'type': ['string', 'rw'],
             },
         });
     }
@@ -52,14 +51,14 @@ export class Icon<Attr> extends Gtk.Image {
     get icon() { return this._get('icon'); }
     set icon(icon: string | GdkPixbuf.Pixbuf) {
         this._set('icon', icon);
-        this._set('type', 'named');
+        this._set('type', 'named', false);
 
         if (typeof icon === 'string') {
             if (lookUpIcon(icon)) {
-                this._set('type', 'named');
+                this._set('type', 'named', false);
             }
             else if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
-                this._set('type', 'file');
+                this._set('type', 'file', false);
             }
             else if (icon !== '') {
                 console.warn(Error(`can't assign "${icon}" as icon, ` +
@@ -67,7 +66,7 @@ export class Icon<Attr> extends Gtk.Image {
             }
         }
         else if (icon instanceof GdkPixbuf.Pixbuf) {
-            this._set('type', 'pixbuf');
+            this._set('type', 'pixbuf', false);
         }
         else {
             console.warn(Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));

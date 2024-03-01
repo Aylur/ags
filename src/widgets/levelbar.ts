@@ -43,10 +43,7 @@ export class LevelBar<Attr> extends Gtk.LevelBar {
         this.mode = Gtk.LevelBarMode[mode === 'continuous' ? 'CONTINUOUS' : 'DISCRETE'];
     }
 
-    get vertical() {
-        return this.orientation === Gtk.Orientation.VERTICAL;
-    }
-
+    get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
     set vertical(v: boolean) {
         this.orientation = Gtk.Orientation[v ? 'VERTICAL' : 'HORIZONTAL'];
     }

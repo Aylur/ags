@@ -136,14 +136,8 @@ export class Slider<Attr> extends Gtk.Scale {
     set dragging(dragging: boolean) { this._set('dragging', dragging); }
 
     get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
-    set vertical(vertical) {
-        if (this.vertical === vertical)
-            return;
-
-        this.orientation = vertical
-            ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
-
-        this.notify('vertical');
+    set vertical(v: boolean) {
+        this.orientation = Gtk.Orientation[v ? 'VERTICAL' : 'HORIZONTAL'];
     }
 
     vfunc_button_release_event(event: Gdk.EventButton): boolean {
