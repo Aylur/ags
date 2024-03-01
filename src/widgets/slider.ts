@@ -27,6 +27,12 @@ export type SliderProps<
     marks?: Mark[]
 }, Attr>
 
+export function newSlider<
+    Attr = unknown
+>(...props: ConstructorParameters<typeof Slider<Attr>>) {
+    return new Slider(...props);
+}
+
 export interface Slider<Attr> extends Widget<Attr> { }
 export class Slider<Attr> extends Gtk.Scale {
     static {

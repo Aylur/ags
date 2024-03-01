@@ -11,6 +11,13 @@ export type BoxProps<
     vertical?: boolean
 }, Attr>;
 
+export function newBox<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown
+>(...props: ConstructorParameters<typeof Box<Child, Attr>>) {
+    return new Box(...props);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Box<Child, Attr> extends Widget<Attr> { }
 export class Box<Child extends Gtk.Widget, Attr> extends Gtk.Box {

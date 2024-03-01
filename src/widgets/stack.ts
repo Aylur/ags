@@ -38,6 +38,13 @@ export type StackProps<
     items?: [string, Gtk.Widget][]
 }, Attr>
 
+export function newStack<
+    Children extends { [name: string]: Gtk.Widget } = { [name: string]: Gtk.Widget },
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof Stack<Children, Attr>>) {
+    return new Stack(...props);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Stack<Children, Attr> extends Widget<Attr> { }
 export class Stack<Children extends { [name: string]: Gtk.Widget }, Attr> extends Gtk.Stack {

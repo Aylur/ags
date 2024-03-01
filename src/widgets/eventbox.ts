@@ -25,6 +25,13 @@ export type EventBoxProps<
     on_secondary_click_release?: EventHandler<Self>
 }, Attr>
 
+export function newEventBox<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown
+>(...props: ConstructorParameters<typeof EventBox<Child, Attr>>) {
+    return new EventBox(...props);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface EventBox<Child, Attr> extends Widget<Attr> { }
 export class EventBox<Child extends Gtk.Widget, Attr> extends Gtk.EventBox {

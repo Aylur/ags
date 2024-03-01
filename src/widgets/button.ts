@@ -27,6 +27,13 @@ export type ButtonProps<
     on_secondary_click_release?: EventHandler<Self>
 }, Attr>;
 
+export function newButton<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof Button<Child, Attr>>) {
+    return new Button(...props);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Button<Child, Attr> extends Widget<Attr> { }
 export class Button<Child extends Gtk.Widget, Attr> extends Gtk.Button {

@@ -21,6 +21,13 @@ export type RevealerProps<
     transition?: Transition
 }, Attr>
 
+export function newRevealer<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof Revealer<Child, Attr>>) {
+    return new Revealer(...props);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Revealer<Child, Attr> extends Widget<Attr> { }
 export class Revealer<Child extends Gtk.Widget, Attr> extends Gtk.Revealer {

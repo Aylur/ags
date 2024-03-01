@@ -52,6 +52,13 @@ export type WindowProps<
     focusable?: boolean
 }, Attr>
 
+export function newWindow<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof Window<Child, Attr>>) {
+    return new Window(...props);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Window<Child, Attr> extends Widget<Attr> { }
 export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
