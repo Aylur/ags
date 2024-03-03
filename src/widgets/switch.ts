@@ -28,7 +28,7 @@ export class Switch<Attr> extends Gtk.Switch {
 
     constructor(props: SwitchProps<Attr> = {}) {
         super(props as Gtk.Switch.ConstructorProperties);
-        this.connect('activate', this.on_activate.bind(this));
+        this.connect('notify::active', this.on_activate.bind(this));
     }
 
     get on_activate() { return this._get('on-activate') || (() => false); }
