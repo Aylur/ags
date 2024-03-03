@@ -453,10 +453,18 @@ export class Notifications extends Service {
                 daemon.running = true;
             },
             () => {
-                // TODO: get running daemon's name
-                print('Another notification daemon is already running, ' +
-                    'make sure you stop Dunst ' +
-                    'or any other daemon you have running');
+                const [name] = Gio.DBus.session.call_sync(
+                    'org.freedesktop.Notifications',
+                    '/org/freedesktop/Notifications',
+                    'org.freedesktop.Notifications',
+                    'GetServerInformation',
+                    null,
+                    null,
+                    Gio.DBusCallFlags.NONE,
+                    -1,
+                    null).deepUnpack() as string[];
+
+                console.warn(`Another notification daemon is already running: ${name}`);
             },
         );
     }

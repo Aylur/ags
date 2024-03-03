@@ -35,10 +35,7 @@ export class ProgressBar<Attr> extends Gtk.ProgressBar {
     get value() { return this.fraction; }
     set value(value: number) { this.fraction = value; }
 
-    get vertical() {
-        return this.orientation === Gtk.Orientation.VERTICAL;
-    }
-
+    get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
     set vertical(v: boolean) {
         this.orientation = Gtk.Orientation[v ? 'VERTICAL' : 'HORIZONTAL'];
     }

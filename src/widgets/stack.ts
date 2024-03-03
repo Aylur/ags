@@ -65,6 +65,7 @@ export class Stack<Children extends { [name: string]: Gtk.Widget }, Attr> extend
             props.children = children;
 
         super(props as Gtk.Stack.ConstructorProperties);
+        this.connect('notify::visible-child-name', () => this.notify('shown'));
     }
 
     add_named(child: Gtk.Widget, name: string): void {
@@ -149,7 +150,6 @@ export class Stack<Children extends { [name: string]: Gtk.Widget }, Attr> extend
             return;
 
         this.set_visible_child_name(name);
-        this.notify('shown');
     }
 }
 

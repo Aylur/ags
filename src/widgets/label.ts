@@ -50,6 +50,8 @@ export class Label<Attr> extends Gtk.Label {
         const text = typeof props === 'string' ? props : label;
         super(typeof props === 'string' ? {} : config);
         this._handleParamProp('label', text || '');
+        this.connect('notify::justify', () => this.notify('justification'));
+        this.connect('notify::ellipsize', () => this.notify('truncate'));
     }
 
     get label() { return super.label || ''; }
@@ -87,7 +89,6 @@ export class Label<Attr> extends Gtk.Label {
         }
 
         this.ellipsize = TRUNCATE[truncate];
-        this.notify('truncate');
     }
 
     get justification() {
@@ -109,7 +110,6 @@ export class Label<Attr> extends Gtk.Label {
         }
 
         this.justify = JUSTIFICATION[justify];
-        this.notify('justification');
     }
 }
 

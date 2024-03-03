@@ -40,6 +40,7 @@ export class Box<Child extends Gtk.Widget, Attr> extends Gtk.Box {
             props.children = children as Child[];
 
         super(props as Gtk.Box.ConstructorProperties);
+        this.connect('notify::orientation', () => this.notify('vertical'));
     }
 
     get child() { return this.children[0] as Child; }
@@ -67,14 +68,8 @@ export class Box<Child extends Gtk.Widget, Attr> extends Gtk.Box {
     }
 
     get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
-    set vertical(vertical: boolean) {
-        if (this.vertical === vertical)
-            return;
-
-        this.orientation = vertical
-            ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
-
-        this.notify('vertical');
+    set vertical(v: boolean) {
+        this.orientation = Gtk.Orientation[v ? 'VERTICAL' : 'HORIZONTAL'];
     }
 }
 

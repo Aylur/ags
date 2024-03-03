@@ -42,6 +42,7 @@ export class Revealer<Child extends Gtk.Widget, Attr> extends Gtk.Revealer {
             props.child = child;
 
         super(props as Gtk.Revealer.ConstructorProperties);
+        this.connect('notify::transition-type', () => this.notify('transition'));
     }
 
     get child() { return super.child as Child; }
@@ -67,7 +68,6 @@ export class Revealer<Child extends Gtk.Widget, Attr> extends Gtk.Revealer {
         }
 
         this.transition_type = TRANSITION[transition];
-        this.notify('transition');
     }
 }
 

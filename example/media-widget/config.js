@@ -6,7 +6,7 @@ const win = Widget.Window({
     child: Media(),
 });
 
-export default {
+App.config({
     style: './style.css',
     windows: [win],
-};
+});

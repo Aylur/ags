@@ -1,4 +1,4 @@
-# 1.7.8
+# 1.8.0
 
 ## Features
 
@@ -18,6 +18,7 @@
   - Spinner starts based on visibility
   - Switch.on_activate
   - ToggleButton.on_toggled
+- print notification daemons's name when its already running
 
 ## Fixes
 
@@ -28,6 +29,7 @@
 
 - revert: hyprland service: workspace and monitor signal emit number
 - types: Label's and Icon's Props type renamed to LabelProps, IconProps
+- deprecate: default export config object in favor of App.config
 
 # 1.7.7
 
