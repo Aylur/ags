@@ -21,6 +21,8 @@
         "eslint": "^8.42.0"
     },
     "scripts": {
+        "meson-setup": "meson setup --wipe build",
+        "meson-install": "meson install -C build",
         "test": "eslint ."
     }
 }
