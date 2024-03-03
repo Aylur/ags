@@ -10,6 +10,9 @@ import { timeout, readFileAsync } from './utils.js';
 import { loadInterfaceXML } from './utils.js';
 
 function deprecated(config: Config) {
+    console.warn('passing the config object with defualt export is DEPRECATED. '
+        + 'use App.config() instead');
+
     const warning = (from: string, to: string) => console.warn(
         `${from} config option has been removed: use ${to} instead`);
 
@@ -292,11 +295,11 @@ export class App extends Gtk.Application {
             const config = entry.default as Config;
             if (!config)
                 return this.emit('config-parsed');
+            else
+                // FIXME:
+                deprecated(config);
 
-            // FIXME:
-            deprecated(config);
             this.config(config);
-
             this.emit('config-parsed');
         } catch (err) {
             const error = err as { name?: string, message: string };

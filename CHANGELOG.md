@@ -29,6 +29,7 @@
 
 - revert: hyprland service: workspace and monitor signal emit number
 - types: Label's and Icon's Props type renamed to LabelProps, IconProps
+- deprecate: default export config object in favor of App.config
 
 # 1.7.7
 
