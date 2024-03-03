@@ -1,5 +1,5 @@
 import { applauncher } from './applauncher.js';
 
-export default {
+App.config({
     windows: [applauncher],
-};
+});

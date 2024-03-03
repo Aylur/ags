@@ -168,8 +168,7 @@ const Bar = (monitor = 0) => Widget.Window({
     }),
 });
 
-// exporting the config so ags can manage the windows
-export default {
+App.config({
     style: './style.css',
     windows: [
         Bar(),
@@ -178,4 +177,4 @@ export default {
         // Bar(0),
         // Bar(1)
     ],
-};
+});

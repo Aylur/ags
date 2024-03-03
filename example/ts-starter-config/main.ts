@@ -21,6 +21,6 @@ const Bar = (monitor: number) => Widget.Window({
     }),
 });
 
-export default {
+App.config({
     windows: [Bar(0)],
-};
+});
