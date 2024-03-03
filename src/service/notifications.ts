@@ -464,7 +464,7 @@ export class Notifications extends Service {
                     -1,
                     null).deepUnpack() as string[];
 
-                print(`Another notification daemon is already running: ${name}`);
+                console.warn(`Another notification daemon is already running: ${name}`);
             },
         );
     }
