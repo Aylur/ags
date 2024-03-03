@@ -18,6 +18,7 @@
   - Spinner starts based on visibility
   - Switch.on_activate
   - ToggleButton.on_toggled
+- print notification daemons's name when its already running
 
 ## Fixes
 
