@@ -7,6 +7,7 @@
 ## Fixes
 
 - compiles with typescript >= 5.0.4
+- DrawingArea.draw-fn
 
 # 1.8.0
 
