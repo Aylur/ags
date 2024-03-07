@@ -10,7 +10,7 @@ import { timeout, readFileAsync } from './utils.js';
 import { loadInterfaceXML } from './utils.js';
 
 function deprecated(config: Config) {
-    console.warn('passing the config object with defualt export is DEPRECATED. '
+    console.warn('passing the config object with default export is DEPRECATED. '
         + 'use App.config() instead');
 
     const warning = (from: string, to: string) => console.warn(
