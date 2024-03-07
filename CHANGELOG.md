@@ -1,5 +1,9 @@
 # git
 
+## Features
+
+- Calendar.detail
+
 ## Fixes
 
 - compiles with typescript >= 5.0.4
