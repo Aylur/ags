@@ -59,7 +59,7 @@ export class Variable<T> extends GObject.Object {
         if (this._interval)
             return console.error(Error(`${this} is already polling`));
 
-        const [time, cmd, transform = out => out as T] = this._poll;
+        const [time, cmd, transform = (out: string) => out as T] = this._poll;
         if (Array.isArray(cmd) || typeof cmd === 'string') {
             this._interval = interval(time, () => execAsync(cmd)
                 .then(out => this.value = transform(out, this))
