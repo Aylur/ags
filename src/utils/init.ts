@@ -49,9 +49,9 @@ const Bar = (/** @type {number} */ monitor) => Widget.Window({
     }),
 })
 
-export default {
+App.config({
     windows: [Bar(0)],
-}
+})
 `;
 
 const readMe = (types: string) => `
