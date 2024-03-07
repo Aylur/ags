@@ -132,13 +132,8 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         this.notify('gdkmonitor');
     }
 
-    get monitor(): Gdk.Monitor | number { return this._get('monitor'); }
-    set monitor(monitor: Gdk.Monitor | number) {
-        if (monitor instanceof Gdk.Monitor) {
-            this.gdkmonitor = monitor;
-            return;
-        }
-
+    get monitor(): number { return this._get('monitor'); }
+    set monitor(monitor: number) {
         if (monitor < 0)
             return;
 
