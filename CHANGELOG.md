@@ -1,3 +1,9 @@
+# git
+
+## Fixes
+
+- compiles with typescript >= 5.0.4
+
 # 1.8.0
 
 ## Features

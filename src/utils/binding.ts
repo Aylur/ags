@@ -32,12 +32,12 @@ export function derive<V,
 type B<T> = Binding<Variable<T>, any, T>
 
 // eslint-disable-next-line max-len
-export function watch<T>(init: T, objs: Array<Connectable | [Connectable, signal?: string]>, callback: () => T): B<T>
+export function watch<T>(init: T, objs: Array<Connectable | [obj: Connectable, signal?: string]>, callback: () => T): B<T>
 export function watch<T>(init: T, obj: Connectable, signal: string, callback: () => T): B<T>
 export function watch<T>(init: T, obj: Connectable, callback: () => T): B<T>
 export function watch<T>(
     init: T,
-    objs: Connectable | Array<Connectable | [Connectable, signal?: string]>,
+    objs: Connectable | Array<Connectable | [obj: Connectable, signal?: string]>,
     sigOrFn: string | (() => T),
     callback?: () => T,
 ) {

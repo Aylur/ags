@@ -41,7 +41,7 @@ stdenv.mkDerivation rec {
 
   src = buildNpmPackage {
     name = pname;
-    src = ../.;
+    src = lib.cleanSource ../.;
 
     dontBuild = true;
 
