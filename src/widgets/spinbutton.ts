@@ -8,6 +8,8 @@ export type SpinButtonProps<
     Self = SpinButton<Attr>,
 > = BaseProps<Self, Gtk.SpinButton.ConstructorProperties & {
     on_value_changed?: Event<Self>
+    range?: [min: number, max: number],
+    increments?: [step: number, page: number],
 }, Attr>;
 
 export function newSpinButton<
@@ -23,6 +25,8 @@ export class SpinButton<Attr> extends Gtk.SpinButton {
         register(this, {
             properties: {
                 'on-value-changed': ['jsobject', 'rw'],
+                'range': ['jsobject', 'rw'],
+                'increments': ['jsobject', 'rw'],
             },
         });
     }
@@ -34,6 +38,18 @@ export class SpinButton<Attr> extends Gtk.SpinButton {
 
     get on_value_changed() { return this._get('on-value-changed') || (() => false); }
     set on_value_changed(callback: Event<this>) { this._set('on-value-changed', callback); }
+
+    get range() { return this.get_range(); }
+    set range([min, max]: [number, number]) {
+        if (typeof min === 'number' && typeof max === 'number')
+            this.set_range(min, max);
+    }
+
+    get increments() { return this.get_increments(); }
+    set increments([step, page]: [number, number]) {
+        if (typeof step === 'number' && typeof page === 'number')
+            this.set_increments(step, page);
+    }
 }
 
 export default SpinButton;

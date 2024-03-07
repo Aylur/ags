@@ -3,6 +3,8 @@
 ## Features
 
 - Calendar.detail
+- SpinButton.range
+- SpinButton.increments
 
 ## Fixes
 
