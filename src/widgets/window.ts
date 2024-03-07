@@ -126,14 +126,19 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
     set child(child: Child) { super.child = child; }
 
     get gdkmonitor(): Gdk.Monitor | null { return this._get('gdkmonitor') || null; }
-    set gdkmonitor(monitor: Gdk.Monitor) {
+    set gdkmonitor(monitor: Gdk.Monitor | null) {
         this._set('gdkmonitor', monitor);
         LayerShell.set_monitor(this, monitor);
         this.notify('gdkmonitor');
     }
 
-    get monitor(): Gdk.Monitor { return this._get('monitor'); }
-    set monitor(monitor: number) {
+    get monitor(): Gdk.Monitor | number { return this._get('monitor'); }
+    set monitor(monitor: Gdk.Monitor | number) {
+        if (monitor instanceof Gdk.Monitor) {
+            this.gdkmonitor = monitor;
+            return;
+        }
+
         if (monitor < 0)
             return;
 

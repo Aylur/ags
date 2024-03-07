@@ -239,17 +239,14 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
         keyOrCallback: Key | Fn,
         callback?: Fn,
     ): this {
-        const mods = callback ? modsOrKey as Mod : [] as any[];
+        const mods = callback ? modsOrKey as Mod : [] as unknown as Mod;
         const key = callback ? keyOrCallback as Key : modsOrKey as Key;
         const fn = callback ? callback : keyOrCallback as Fn;
 
         this.connect('key-press-event', (_, event: Gdk.Event) => {
             const k = event.get_keyval()[1];
             const m = event.get_state()[1];
-            const ms = mods.reduce(
-                (ms, m) => ms | Gdk.ModifierType[`${m}_MASK` as keyof typeof Gdk.ModifierType],
-                0,
-            );
+            const ms = mods.reduce((ms, m) => ms | Gdk.ModifierType[`${m}_MASK`], 0);
 
             if (mods.length > 0 && k === Gdk[`KEY_${key}`] && m === ms)
                 return fn(this, event);
