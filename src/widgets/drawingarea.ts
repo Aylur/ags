@@ -37,7 +37,7 @@ export class DrawingArea<Attr> extends Gtk.DrawingArea {
     }
 
     get draw_fn() { return this._get('draw-fn') || (() => undefined); }
-    set draw_fn(fn: DrawFn<this>) { this._set('draw', fn); }
+    set draw_fn(fn: DrawFn<this>) { this._set('draw-fn', fn); }
 }
 
 export default DrawingArea;
