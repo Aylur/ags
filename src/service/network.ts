@@ -246,6 +246,7 @@ export class VpnConnection extends Service {
             'id': ['string'],
             'state': ['string'],
             'vpn-state': ['string'],
+            'icon-name': ['string'],
         });
     }
 
@@ -264,6 +265,14 @@ export class VpnConnection extends Service {
     get id() { return this._connection.get_id() || ''; }
     get state() { return this._state; }
     get vpn_state() { return this._vpnState; }
+    get icon_name() {
+        switch (this._state) {
+            case 'connected': return 'network-vpn-symbolic';
+            case 'disconnected': return 'network-vpn-disabled-symbolic';
+            case 'connecting':
+            case 'disconnecting': return 'network-vpn-acquiring-symbolic';
+        }
+    }
 
     constructor(vpn: Vpn, connection: NM.RemoteConnection) {
         super();
@@ -287,7 +296,9 @@ export class VpnConnection extends Service {
         const state =  _CONNECTION_STATE(this._activeConnection);
         if (state !== this._state) {
             this._state = state;
-            this.changed('state');
+            this.notify('state');
+            this.notify('icon-name');
+            this.emit('changed');
         }
     }
 
