@@ -243,6 +243,7 @@ export type ActiveVpnConnection = null | NM.VpnConnection;
 export class VpnConnection extends Service {
     static {
         Service.register(this, {}, {
+            'id': ['string'],
             'state': ['string'],
             'vpn-state': ['string'],
         });
@@ -250,6 +251,7 @@ export class VpnConnection extends Service {
 
     private _vpn!: Vpn;
     private _connection!: NM.Connection;
+    private _id!: string;
     private _activeConnection: ActiveVpnConnection = null;
     private _state: ReturnType<typeof _CONNECTION_STATE> = 'disconnected';
     private _stateBind: undefined | number = undefined;
@@ -258,8 +260,8 @@ export class VpnConnection extends Service {
 
     get connection() { return this._connection; }
     get active_connection() { return this._activeConnection; }
+    get uuid() { return this._connection.get_uuid()!; }
     get id() { return this._connection.get_id() || ''; }
-    get uuid() { return this._connection.get_uuid() || ''; }
     get state() { return this._state; }
     get vpn_state() { return this._vpnState; }
 
@@ -268,6 +270,17 @@ export class VpnConnection extends Service {
 
         this._vpn = vpn;
         this._connection = connection;
+
+        this._id = this._connection.get_id() || '';
+        this._connection.connect('changed', () => this._updateId());
+    }
+
+    private _updateId() {
+        const id = this._connection.get_id() || '';
+        if (id !== this._id) {
+            this._id = id;
+            this.changed('id');
+        }
     }
 
     private _updateState() {
