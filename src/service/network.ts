@@ -334,7 +334,7 @@ export class Vpn extends Service {
         this._client = client;
         this._connections = new Map();
 
-        bulkConnect(this._client, [
+        bulkConnect(this._client as unknown as GObject.Object, [
             ['connection-added', this._connectionAdded.bind(this)],
             ['connection-removed', this._connectionRemoved.bind(this)],
         ]);
