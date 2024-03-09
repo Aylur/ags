@@ -316,14 +316,15 @@ export class VpnConnection extends Service {
         this._updateVpnState();
     }
 
-    readonly activateConnection = () => {
-        if (this._state === 'disconnected')
-            this._vpn.activateVpnConnection(this);
-    };
-
-    readonly deactivateConnection = () => {
-        if (this._state === 'connected')
-            this._vpn.deactivateVpnConnection(this);
+    readonly setConnection = (connect: boolean) => {
+        if (connect) {
+            if (this._state === 'disconnected')
+                this._vpn.activateVpnConnection(this);
+        }
+        else {
+            if (this._state === 'connected')
+                this._vpn.deactivateVpnConnection(this);
+        }
     };
 }
 
