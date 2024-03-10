@@ -76,6 +76,7 @@ export function monitorFile(
     path: string,
     callback?: (file: Gio.File, event: Gio.FileMonitorEvent) => void,
     flags = Gio.FileMonitorFlags.NONE,
+    recursive = true,
 ) {
     // FIXME: remove the checking in the next release
     // @ts-expect-error
@@ -92,6 +93,30 @@ export function monitorFile(
 
         if (callback)
             mon.connect('changed', (_, file, _f, event) => callback(file, event));
+
+        // If recursive is enabled enumerate files in the subfolders
+        const enumerator = file.enumerate_children('standard::*',
+            Gio.FileQueryInfoFlags.NONE, null);
+        while (recursive) {
+            try {
+                const fileInfo = enumerator.next_file(null);
+
+                if (!fileInfo)
+                    break;
+
+                const fileType = fileInfo.get_file_type();
+                if (fileType === Gio.FileType.DIRECTORY) {
+                    const subfolder = file.get_child(fileInfo.get_name());
+                    const subfolderPath = subfolder.get_path();
+
+                    if (subfolderPath !== null)
+                        monitorFile(subfolderPath, callback, flags, recursive);
+                }
+            } catch (error) {
+                logError(error);
+            }
+        }
+
 
         // we need to save a reference in case the user doesn't
         // otherwise GC will pick it up
