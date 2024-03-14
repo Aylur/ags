@@ -20,12 +20,19 @@ const TRUNCATE = {
 type Justification = keyof typeof JUSTIFICATION;
 type Truncate = keyof typeof TRUNCATE;
 
-export type Props<Attr> = BaseProps<Label<Attr>, Gtk.Label.ConstructorProperties & {
+export type LabelProps<
+    Attr = unknown,
+    Self = Label<Attr>,
+> = BaseProps<Self, Gtk.Label.ConstructorProperties & {
     justification?: Justification
     truncate?: Truncate
 }, Attr>
 
-export type LabelProps<Attr> = Props<Attr> | string | undefined
+export function newLabel<
+    Attr = unknown
+>(...props: ConstructorParameters<typeof Label<Attr>>) {
+    return new Label(...props);
+}
 
 export interface Label<Attr> extends Widget<Attr> { }
 export class Label<Attr> extends Gtk.Label {
@@ -38,18 +45,20 @@ export class Label<Attr> extends Gtk.Label {
         });
     }
 
-    constructor(props: LabelProps<Attr> = {}) {
+    constructor(props: LabelProps<Attr> | string = {}) {
         const { label, ...config } = props as Gtk.Label.ConstructorProperties;
         const text = typeof props === 'string' ? props : label;
         super(typeof props === 'string' ? {} : config);
         this._handleParamProp('label', text || '');
+        this.connect('notify::justify', () => this.notify('justification'));
+        this.connect('notify::ellipsize', () => this.notify('truncate'));
     }
 
     get label() { return super.label || ''; }
     set label(label: string) {
         if (this.use_markup) {
             try {
-                Pango.parse_markup(label, label.length, '0');
+                Pango.parse_markup(label, -1, '0');
             } catch (e) {
                 // @ts-expect-error
                 if (e instanceof GLib.MarkupError)
@@ -80,7 +89,6 @@ export class Label<Attr> extends Gtk.Label {
         }
 
         this.ellipsize = TRUNCATE[truncate];
-        this.notify('truncate');
     }
 
     get justification() {
@@ -102,7 +110,6 @@ export class Label<Attr> extends Gtk.Label {
         }
 
         this.justify = JUSTIFICATION[justify];
-        this.notify('justification');
     }
 }
 

@@ -11,6 +11,12 @@ export type EntryProps<
     on_change?: EventHandler<Self>
 }, Attr>
 
+export function newEntry<
+    Attr = unknown
+>(...props: ConstructorParameters<typeof Entry<Attr>>) {
+    return new Entry(...props);
+}
+
 export interface Entry<Attr> extends Widget<Attr> { }
 export class Entry<Attr> extends Gtk.Entry {
     static {

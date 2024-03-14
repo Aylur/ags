@@ -34,7 +34,7 @@ label {
     color: yellow;
 }
 
-progress,
+levelbar block,
 highlight {
-    min-height: 8px;
+    min-height: 10px;
 }

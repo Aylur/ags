@@ -19,8 +19,8 @@ export class Application extends Service {
         });
     }
 
-    _app: Gio.DesktopAppInfo;
-    _frequency: number;
+    private _app: Gio.DesktopAppInfo;
+    private _frequency: number;
 
     get app() { return this._app; }
 
@@ -53,22 +53,22 @@ export class Application extends Service {
         return prop?.toLowerCase().includes(search.toLowerCase());
     }
 
-    getKey(key: string) {
+    readonly getKey = (key: string) => {
         return this._app.get_string(key);
-    }
+    };
 
-    match(term: string) {
+    readonly match = (term: string) => {
         const { name, desktop, description, executable } = this;
         return this._match(name, term) ||
             this._match(desktop, term) ||
             this._match(executable, term) ||
             this._match(description, term);
-    }
+    };
 
-    launch() {
+    readonly launch = () => {
         this.app.launch([], null);
         this.frequency++;
-    }
+    };
 }
 
 export class Applications extends Service {
@@ -82,11 +82,11 @@ export class Applications extends Service {
     private _list!: Application[];
     private _frequents: { [app: string]: number };
 
-    query(term: string) {
+    readonly query = (term: string) => {
         return this._list.filter(app => app.match(term)).sort((a, b) => {
             return a.frequency < b.frequency ? 1 : 0;
         });
-    }
+    };
 
     constructor() {
         super();
@@ -119,7 +119,7 @@ export class Applications extends Service {
         this.changed('frequents');
     }
 
-    reload() {
+    readonly reload = () => {
         this._list = Gio.AppInfo.get_all()
             .filter(app => app.should_show())
             .map(app => Gio.DesktopAppInfo.new(app.get_id() || ''))
@@ -131,7 +131,7 @@ export class Applications extends Service {
         }));
 
         this.changed('list');
-    }
+    };
 }
 
 export const applications = new Applications;

@@ -13,13 +13,20 @@ const TRANSITION = {
 type Transition = keyof typeof TRANSITION;
 
 export type RevealerProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = Revealer<Child, Attr>,
 > = BaseProps<Self, Gtk.Revealer.ConstructorProperties & {
     child?: Child
     transition?: Transition
 }, Attr>
+
+export function newRevealer<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof Revealer<Child, Attr>>) {
+    return new Revealer(...props);
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Revealer<Child, Attr> extends Widget<Attr> { }
@@ -30,8 +37,12 @@ export class Revealer<Child extends Gtk.Widget, Attr> extends Gtk.Revealer {
         });
     }
 
-    constructor(props: RevealerProps<Child, Attr> = {}) {
+    constructor(props: RevealerProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
+
         super(props as Gtk.Revealer.ConstructorProperties);
+        this.connect('notify::transition-type', () => this.notify('transition'));
     }
 
     get child() { return super.child as Child; }
@@ -57,7 +68,6 @@ export class Revealer<Child extends Gtk.Widget, Attr> extends Gtk.Revealer {
         }
 
         this.transition_type = TRANSITION[transition];
-        this.notify('transition');
     }
 }
 

@@ -1,8 +1,4 @@
-window#notifications {
-    all: unset;
-}
-
-window#notifications box.notifications {
+window.notification-popups box.notifications {
     padding: .5em;
 }
 

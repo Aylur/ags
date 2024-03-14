@@ -2,9 +2,9 @@ import Gtk from 'gi://Gtk?version=3.0';
 import { register, type BaseProps, type Widget } from './widget.js';
 
 export type CenterBoxProps<
-    StartWidget extends Gtk.Widget,
-    CenterWidget extends Gtk.Widget,
-    EndWidget extends Gtk.Widget,
+    StartWidget extends Gtk.Widget = Gtk.Widget,
+    CenterWidget extends Gtk.Widget = Gtk.Widget,
+    EndWidget extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = CenterBox<StartWidget, CenterWidget, EndWidget, Attr>,
 > = BaseProps<Self, Gtk.Box.ConstructorProperties & {
@@ -14,6 +14,15 @@ export type CenterBoxProps<
     center_widget?: CenterWidget
     end_widget?: EndWidget
 }, Attr>;
+
+export function newCenterBox<
+    StartWidget extends Gtk.Widget = Gtk.Widget,
+    CenterWidget extends Gtk.Widget = Gtk.Widget,
+    EndWidget extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof CenterBox<StartWidget, CenterWidget, EndWidget, Attr>>) {
+    return new CenterBox(...props);
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface CenterBox<StartWidget, CenterWidget, EndWidget, Attr> extends Widget<Attr> { }
@@ -35,7 +44,21 @@ export class CenterBox<
         });
     }
 
-    constructor(props: CenterBoxProps<StartWidget, CenterWidget, EndWidget, Attr> = {}) {
+    constructor(
+        props: CenterBoxProps<StartWidget, CenterWidget, EndWidget, Attr> = {},
+        startWidget?: StartWidget,
+        centerWidget?: CenterWidget,
+        endWidget?: EndWidget,
+    ) {
+        if (startWidget)
+            props.start_widget = startWidget;
+
+        if (centerWidget)
+            props.center_widget = centerWidget;
+
+        if (endWidget)
+            props.end_widget = endWidget;
+
         super(props as Gtk.Widget.ConstructorProperties);
     }
 

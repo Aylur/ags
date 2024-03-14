@@ -20,6 +20,7 @@
 , gvfs
 , libsoup_3
 , libnotify
+, pam
 , extraPackages ? [ ]
 , version ? "git"
 , buildTypes ? false
@@ -40,7 +41,7 @@ stdenv.mkDerivation rec {
 
   src = buildNpmPackage {
     name = pname;
-    src = ../.;
+    src = lib.cleanSource ../.;
 
     dontBuild = true;
 
@@ -88,6 +89,7 @@ stdenv.mkDerivation rec {
     gvfs
     libsoup_3
     libnotify
+    pam
   ] ++ extraPackages;
 
   meta = with lib; {

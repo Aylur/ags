@@ -5,7 +5,7 @@ import Gdk from 'gi://Gdk?version=3.0';
 type EventHandler<Self> = (self: Self, event: Gdk.Event) => boolean | unknown;
 
 export type ButtonProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = Button<Child, Attr>,
 > = BaseProps<Self, Gtk.Button.ConstructorProperties & {
@@ -26,6 +26,13 @@ export type ButtonProps<
     on_middle_click_release?: EventHandler<Self>
     on_secondary_click_release?: EventHandler<Self>
 }, Attr>;
+
+export function newButton<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof Button<Child, Attr>>) {
+    return new Button(...props);
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Button<Child, Attr> extends Widget<Attr> { }
@@ -52,7 +59,10 @@ export class Button<Child extends Gtk.Widget, Attr> extends Gtk.Button {
         });
     }
 
-    constructor(props: ButtonProps<Child, Attr> = {}) {
+    constructor(props: ButtonProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
+
         super(props as Gtk.Button.ConstructorProperties);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);

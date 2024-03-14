@@ -1,6 +1,11 @@
 import GObject from 'gi://GObject';
 import { pspec, registerGObject, PspecFlag, PspecType } from './utils/gobject.js';
 
+export type Connectable = {
+    connect: (sig: string, callback: (...args: unknown[]) => unknown) => number
+    disconnect: (id: number) => void
+}
+
 export type OnlyString<S extends string | unknown> = S extends string ? S : never;
 
 export type Props<T> = Omit<Pick<T, {
@@ -24,6 +29,9 @@ export class Binding<
         this.prop = prop;
     }
 
+    /** alias for transform */
+    as<T>(fn: (v: Return) => T) { return this.transform(fn); }
+
     transform<T>(fn: (v: Return) => T) {
         const bind = new Binding<Emitter, Prop, T>(this.emitter, this.prop);
         const prev = this.transformFn;
@@ -44,6 +52,7 @@ interface Services {
     powerprofiles: typeof import('./service/powerprofiles.js').default
     systemtray: typeof import('./service/systemtray.js').default
     sway: typeof import('./service/sway.js').default
+    greetd: typeof import('./service/greetd.js').default
 }
 
 export default class Service extends GObject.Object {

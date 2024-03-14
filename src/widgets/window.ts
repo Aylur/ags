@@ -32,9 +32,10 @@ type Exclusivity = 'normal' | 'ignore' | 'exclusive';
 type Keymode = keyof typeof KEYMODE;
 
 export type WindowProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
-> = BaseProps<Window<Child, Attr>, Gtk.Window.ConstructorProperties & {
+    Self = Window<Child, Attr>,
+> = BaseProps<Self, Gtk.Window.ConstructorProperties & {
     child?: Child
     anchor?: Anchor[]
     exclusivity?: Exclusivity
@@ -42,14 +43,21 @@ export type WindowProps<
     margins?: number[]
     monitor?: number
     gdkmonitor?: Gdk.Monitor
-    popup?: boolean
     visible?: boolean
     keymode?: Keymode
 
     // FIXME: deprecated
+    popup?: boolean
     exclusive?: boolean
     focusable?: boolean
 }, Attr>
+
+export function newWindow<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof Window<Child, Attr>>) {
+    return new Window(...props);
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Window<Child, Attr> extends Widget<Attr> { }
@@ -86,7 +94,10 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         popup = false,
         visible = true,
         ...params
-    }: WindowProps<Child, Attr> = {}) {
+    }: WindowProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            params.child = child;
+
         super(params as Gtk.Window.ConstructorProperties);
         LayerShell.init_for_window(this);
         LayerShell.set_namespace(this, this.name);
@@ -115,13 +126,13 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
     set child(child: Child) { super.child = child; }
 
     get gdkmonitor(): Gdk.Monitor | null { return this._get('gdkmonitor') || null; }
-    set gdkmonitor(monitor: Gdk.Monitor) {
+    set gdkmonitor(monitor: Gdk.Monitor | null) {
         this._set('gdkmonitor', monitor);
         LayerShell.set_monitor(this, monitor);
         this.notify('gdkmonitor');
     }
 
-    get monitor(): Gdk.Monitor { return this._get('monitor'); }
+    get monitor(): number { return this._get('monitor'); }
     set monitor(monitor: number) {
         if (monitor < 0)
             return;
@@ -264,10 +275,17 @@ export class Window<Child extends Gtk.Widget, Attr> extends Gtk.Window {
         this.notify('margins');
     }
 
+    // FIXME: deprecated
     get popup() { return !!this._get('popup'); }
     set popup(popup: boolean) {
         if (this.popup === popup)
             return;
+
+        console.warn('Window.popup is DEPRECATED. '
+            + 'the click away functionality depends on a bug which was patched in Hyprland '
+            + 'and it never worked on Sway anyway. '
+            + 'to close on the esc key '
+            + 'use self.keybind("Escape", () => App.closeWindow("window-name"))');
 
         if (this.popup) {
             const [esc, click] = this._get<[number, number]>('popup');

@@ -15,15 +15,23 @@ type Position = keyof typeof POSITION;
 
 type Mark = [number, string?, Position?] | number;
 
-export type SliderProps<Attr = unknown, Self = Slider<Attr>> =
-    BaseProps<Slider<Attr>, Gtk.Scale.ConstructorProperties & {
-        on_change?: EventHandler<Self>,
-        value?: number
-        min?: number
-        max?: number
-        step?: number
-        marks?: Mark[]
-    }, Attr>
+export type SliderProps<
+    Attr = unknown,
+    Self = Slider<Attr>,
+> = BaseProps<Slider<Attr>, Gtk.Scale.ConstructorProperties & {
+    on_change?: EventHandler<Self>,
+    value?: number
+    min?: number
+    max?: number
+    step?: number
+    marks?: Mark[]
+}, Attr>
+
+export function newSlider<
+    Attr = unknown
+>(...props: ConstructorParameters<typeof Slider<Attr>>) {
+    return new Slider(...props);
+}
 
 export interface Slider<Attr> extends Widget<Attr> { }
 export class Slider<Attr> extends Gtk.Scale {
@@ -128,14 +136,8 @@ export class Slider<Attr> extends Gtk.Scale {
     set dragging(dragging: boolean) { this._set('dragging', dragging); }
 
     get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
-    set vertical(vertical) {
-        if (this.vertical === vertical)
-            return;
-
-        this.orientation = vertical
-            ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
-
-        this.notify('vertical');
+    set vertical(v: boolean) {
+        this.orientation = Gtk.Orientation[v ? 'VERTICAL' : 'HORIZONTAL'];
     }
 
     vfunc_button_release_event(event: Gdk.EventButton): boolean {

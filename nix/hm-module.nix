@@ -25,6 +25,15 @@ in {
       '';
     };
 
+    finalPackage = mkOption {
+      type = types.package;
+      readOnly = true;
+      visible = false;
+      description = ''
+        Resulting ags package.
+      '';
+    };
+
     configDir = mkOption {
       type = with types; nullOr path;
       default = null;
@@ -55,6 +64,7 @@ in {
         buildTypes = true;
       };
     in {
+      programs.ags.finalPackage = pkg;
       home.packages = [pkg];
       home.file.".local/${path}".source = "${pkg}/${path}";
     }))

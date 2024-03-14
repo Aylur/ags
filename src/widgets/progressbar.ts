@@ -1,11 +1,19 @@
 import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
-export type ProgressBarProps<Attr> =
-    BaseProps<ProgressBar<Attr>, Gtk.ProgressBar.ConstructorProperties & {
-        vertical?: boolean
-        value?: number
-    }, Attr>
+export type ProgressBarProps<
+    Attr = unknown,
+    Self = ProgressBar<Attr>,
+> = BaseProps<Self, Gtk.ProgressBar.ConstructorProperties & {
+    vertical?: boolean
+    value?: number
+}, Attr>
+
+export function newProgressBar<
+    Attr = unknown
+>(...props: ConstructorParameters<typeof ProgressBar<Attr>>) {
+    return new ProgressBar(...props);
+}
 
 export interface ProgressBar<Attr> extends Widget<Attr> { }
 export class ProgressBar<Attr> extends Gtk.ProgressBar {
@@ -20,26 +28,16 @@ export class ProgressBar<Attr> extends Gtk.ProgressBar {
 
     constructor(props: ProgressBarProps<Attr> = {}) {
         super(props as Gtk.ProgressBar.ConstructorProperties);
+        this.connect('notify::fraction', () => this.notify('value'));
+        this.connect('notify::orientation', () => this.notify('vertical'));
     }
 
     get value() { return this.fraction; }
-    set value(value: number) {
-        if (this.value === value)
-            return;
-
-        this.fraction = value;
-        this.notify('value');
-    }
+    set value(value: number) { this.fraction = value; }
 
     get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
-    set vertical(vertical: boolean) {
-        if (this.vertical === vertical)
-            return;
-
-        this.orientation = vertical
-            ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
-
-        this.notify('vertical');
+    set vertical(v: boolean) {
+        this.orientation = Gtk.Orientation[v ? 'VERTICAL' : 'HORIZONTAL'];
     }
 }
 

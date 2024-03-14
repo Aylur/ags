@@ -2,13 +2,21 @@ import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 export type BoxProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
-> = BaseProps<Box<Child, Attr>, Gtk.Box.ConstructorProperties & {
+    Self = Box<Child, Attr>
+> = BaseProps<Self, Gtk.Box.ConstructorProperties & {
     child?: Child
     children?: Child[]
     vertical?: boolean
 }, Attr>;
+
+export function newBox<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown
+>(...props: ConstructorParameters<typeof Box<Child, Attr>>) {
+    return new Box(...props);
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Box<Child, Attr> extends Widget<Attr> { }
@@ -22,8 +30,17 @@ export class Box<Child extends Gtk.Widget, Attr> extends Gtk.Box {
         });
     }
 
-    constructor(props: BoxProps<Child, Attr> = {}) {
+    constructor(propsOrChildren: BoxProps<Child, Attr> | Child[] = {}, ...children: Gtk.Widget[]) {
+        const props = Array.isArray(propsOrChildren) ? {} : propsOrChildren;
+
+        if (Array.isArray(propsOrChildren))
+            props.children = propsOrChildren;
+
+        else if (children.length > 0)
+            props.children = children as Child[];
+
         super(props as Gtk.Box.ConstructorProperties);
+        this.connect('notify::orientation', () => this.notify('vertical'));
     }
 
     get child() { return this.children[0] as Child; }
@@ -51,14 +68,8 @@ export class Box<Child extends Gtk.Widget, Attr> extends Gtk.Box {
     }
 
     get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
-    set vertical(vertical: boolean) {
-        if (this.vertical === vertical)
-            return;
-
-        this.orientation = vertical
-            ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
-
-        this.notify('vertical');
+    set vertical(v: boolean) {
+        this.orientation = Gtk.Orientation[v ? 'VERTICAL' : 'HORIZONTAL'];
     }
 }
 

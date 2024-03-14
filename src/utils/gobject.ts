@@ -1,6 +1,21 @@
 import Gtk from 'gi://Gtk?version=3.0';
 import GObject from 'gi://GObject';
 
+type Camel<S extends string> = S extends `${infer P1}_${infer P2}${infer P3}`
+    ? `${Lowercase<P1>}${Uppercase<P2>}${Camel<P3>}` : S
+
+type Kebab<S extends string> = S extends `${infer Head}_${infer Tail}`
+    ? `${Head}-${Kebab<Tail>}` : S
+
+/**
+ * turns a snake_cased Record into
+ * snake & camel & kebab keyed Record
+ */
+export type CtorProps<T> =
+    T &
+    { [K in keyof T as Camel<string & K>]: T[K] } &
+    { [K in keyof T as Kebab<string & K>]: T[K] }
+
 export const kebabify = (str: string) => str
     .replace(/([a-z])([A-Z])/g, '$1-$2')
     .replaceAll('_', '-')

@@ -5,7 +5,7 @@ import Gdk from 'gi://Gdk?version=3.0';
 type EventHandler<Self> = (self: Self, event: Gdk.Event) => boolean | unknown;
 
 export type EventBoxProps<
-    Child extends Gtk.Widget,
+    Child extends Gtk.Widget = Gtk.Widget,
     Attr = unknown,
     Self = EventBox<Child, Attr>,
 > = BaseProps<Self, Gtk.EventBox.ConstructorProperties & {
@@ -24,6 +24,13 @@ export type EventBoxProps<
     on_middle_click_release?: EventHandler<Self>
     on_secondary_click_release?: EventHandler<Self>
 }, Attr>
+
+export function newEventBox<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown
+>(...props: ConstructorParameters<typeof EventBox<Child, Attr>>) {
+    return new EventBox(...props);
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface EventBox<Child, Attr> extends Widget<Attr> { }
@@ -50,7 +57,10 @@ export class EventBox<Child extends Gtk.Widget, Attr> extends Gtk.EventBox {
         });
     }
 
-    constructor(props: EventBoxProps<Child, Attr> = {}) {
+    constructor(props: EventBoxProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
+
         super(props as Gtk.EventBox.ConstructorProperties);
         this.add_events(Gdk.EventMask.SCROLL_MASK);
         this.add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
@@ -104,7 +114,6 @@ export class EventBox<Child extends Gtk.Widget, Attr> extends Gtk.EventBox {
 
     get child() { return super.child as Child; }
     set child(child: Child) { super.child = child; }
-
 
     get on_hover() { return this._get('on-hover'); }
     set on_hover(callback: EventHandler<this>) {

@@ -20,7 +20,7 @@ TYPES="$PKGDATA_DIR/types"
 
 mkdir -p $TYPES
 
-tsc $SCR -d --declarationDir $TYPES --emitDeclarationOnly
+tsc -p $SRC/tsconfig.json -d --declarationDir $TYPES --emitDeclarationOnly
 
 function fixPaths {
 	sed -i 's/node_modules/types/g' $1
@@ -66,4 +66,8 @@ done
 
 for file in $SRC/src/widgets/*.ts; do
 	resource "widgets/$(basename -s .ts $file)" >>$dts
+done
+
+for file in $SRC/src/utils/*.ts; do
+	resource "utils/$(basename -s .ts $file)" >>$dts
 done

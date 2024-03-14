@@ -5,8 +5,8 @@ import { readFile, writeFile } from './file.js';
 import { exec } from './exec.js';
 import { HOME } from '../utils.js';
 
-export function isRunning(dbusName: string) {
-    return Gio.DBus.session.call_sync(
+export function isRunning(dbusName: string, bus: 'session' | 'system') {
+    return Gio.DBus[bus].call_sync(
         'org.freedesktop.DBus',
         '/org/freedesktop/DBus',
         'org.freedesktop.DBus',
@@ -28,9 +28,9 @@ export function parsePath(path: string) {
 const defaultConfig = `
 const time = Variable('', {
     poll: [1000, function() {
-        return Date().toString();
+        return Date().toString()
     }],
-});
+})
 
 const Bar = (/** @type {number} */ monitor) => Widget.Window({
     monitor,
@@ -44,14 +44,14 @@ const Bar = (/** @type {number} */ monitor) => Widget.Window({
         }),
         end_widget: Widget.Label({
             hpack: 'center',
-            label: time.bind()
+            label: time.bind(),
         }),
-    })
+    }),
 })
 
-export default {
-    windows: [Bar(0)]
-}
+App.config({
+    windows: [Bar(0)],
+})
 `;
 
 const readMe = (types: string) => `
@@ -120,7 +120,8 @@ export async function init(configDir: string, entry: string) {
                 conf.compilerOptions.typeRoots = [...list, './types'];
 
             await writeFile(JSON.stringify(conf, null, 2), tsconfig);
-        } finally {
+        } catch (err) {
+            logError(err);
             console.warn(tsconfigWarning);
         }
     }
