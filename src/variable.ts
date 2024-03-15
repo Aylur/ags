@@ -23,7 +23,7 @@ export class Variable<T> extends GObject.Object {
     static {
         Service.register(this, {
             'changed': [],
-            'disposed': [],
+            'dispose': [],
         }, {
             'value': ['jsobject', 'rw'],
             'is-listening': ['boolean', 'r'],
