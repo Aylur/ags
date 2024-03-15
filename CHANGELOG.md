@@ -11,6 +11,7 @@
 - compiles with typescript >= 5.0.4
 - DrawingArea.draw-fn
 - hyprland: active client empty on window close
+- dispose signal on Variable
 
 # 1.8.0
 
