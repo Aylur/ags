@@ -334,10 +334,12 @@ export class Hyprland extends Service {
                 case 'closewindow':
                     await this._syncWorkspaces(false);
                     await this._syncClients(false);
-                    this._active.client.updateProperty('class', '');
-                    this._active.client.updateProperty('title', '');
-                    this._active.client.updateProperty('address', '');
-                    this._active.client.emit('changed');
+                    if (this._active.client.address === '0x' + argv[0]) {
+                        this._active.client.updateProperty('class', '');
+                        this._active.client.updateProperty('title', '');
+                        this._active.client.updateProperty('address', '');
+                        this._active.client.emit('changed');
+                    }
                     ['clients', 'workspaces'].forEach(e => this.notify(e));
                     this.emit('client-removed', '0x' + argv[0]);
                     break;
