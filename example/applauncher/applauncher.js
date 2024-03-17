@@ -49,7 +49,9 @@ const Applauncher = ({ width = 500, height = 500, spacing = 12 }) => {
 
         // to launch the first item on Enter
         on_accept: () => {
-            if (applications[0]) {
+            // make sure we only consider visible (searched for) applications
+			const results = applications.filter((item) => item.visible);
+            if (results[0]) {
                 App.toggleWindow(WINDOW_NAME)
                 applications[0].attribute.app.launch()
             }
