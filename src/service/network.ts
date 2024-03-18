@@ -293,7 +293,7 @@ export class VpnConnection extends Service {
     }
 
     private _updateState() {
-        const state =  _CONNECTION_STATE(this._activeConnection);
+        const state = _CONNECTION_STATE(this._activeConnection);
         if (state !== this._state) {
             this._state = state;
             this.notify('state');
@@ -303,7 +303,7 @@ export class VpnConnection extends Service {
     }
 
     private _updateVpnState() {
-        const vpnState =  _VPN_CONNECTION_STATE(this._activeConnection);
+        const vpnState = _VPN_CONNECTION_STATE(this._activeConnection);
         if (vpnState !== this._vpnState) {
             this._vpnState = vpnState;
             this.changed('vpn-state');
@@ -320,12 +320,18 @@ export class VpnConnection extends Service {
         }
 
         this._activeConnection = activeConnection;
-        this._stateBind = this._activeConnection?.connect('notify::state', () => this._updateState());
-        this._vpnStateBind = this._activeConnection?.connect('notify::vpn-state', () => this._updateVpnState());
+        this._stateBind = this._activeConnection?.connect(
+            'notify::state',
+            () => this._updateState(),
+        );
+        this._vpnStateBind = this._activeConnection?.connect(
+            'notify::vpn-state',
+            () => this._updateVpnState(),
+        );
 
         this._updateState();
         this._updateVpnState();
-    }
+    };
 
     readonly setConnection = (connect: boolean) => {
         if (connect) {
@@ -364,19 +370,26 @@ export class Vpn extends Service {
             ['connection-removed', this._connectionRemoved.bind(this)],
         ]);
 
-        this._client.get_connections().map((connection: NM.RemoteConnection) => this._connectionAdded(this._client, connection));
+        this._client.get_connections().map((connection: NM.RemoteConnection) =>
+            this._connectionAdded(this._client, connection));
 
-        this._client.connect('active-connection-added', (_: NM.Client, ac: NM.ActiveConnection) => {
-            const uuid = ac.get_uuid();
-            if (uuid && this._connections.has(uuid))
-                this._connections.get(uuid)?.updateActiveConnection(ac as ActiveVpnConnection);
-        });
+        this._client.connect(
+            'active-connection-added',
+            (_: NM.Client, ac: NM.ActiveConnection) => {
+                const uuid = ac.get_uuid();
+                if (uuid && this._connections.has(uuid))
+                    this._connections.get(uuid)?.updateActiveConnection(ac as ActiveVpnConnection);
+            },
+        );
 
-        this._client.connect('active-connection-removed', (_: NM.Client, ac: NM.ActiveConnection) => {
-            const uuid = ac.get_uuid();
-            if (uuid && this._connections.has(uuid))
-                this._connections.get(uuid)?.updateActiveConnection(null);
-        });
+        this._client.connect(
+            'active-connection-removed',
+            (_: NM.Client, ac: NM.ActiveConnection) => {
+                const uuid = ac.get_uuid();
+                if (uuid && this._connections.has(uuid))
+                    this._connections.get(uuid)?.updateActiveConnection(null);
+            },
+        );
     }
 
     private _connectionAdded(client: NM.Client, connection: NM.RemoteConnection) {
@@ -384,7 +397,9 @@ export class Vpn extends Service {
             return;
 
         const vpnConnection = new VpnConnection(this, connection);
-        const activeConnection = client.get_active_connections().find(ac => ac.get_uuid() === vpnConnection.uuid);
+        const activeConnection = client.get_active_connections()
+            .find(ac => ac.get_uuid() === vpnConnection.uuid);
+
         if (activeConnection)
             vpnConnection.updateActiveConnection(activeConnection as NM.VpnConnection);
 
@@ -492,7 +507,7 @@ export class Network extends Service {
 
         this.wired = new Wired(
             this._getDevice(NM.DeviceType.ETHERNET) as NM.DeviceEthernet);
-        
+
         this.vpn = new Vpn(this._client);
 
         this.wifi.connect('changed', this._sync.bind(this));
