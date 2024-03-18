@@ -46,7 +46,10 @@ export class Icon<Attr> extends Gtk.Image {
     }
 
     get size() { return this._get('size') || this._fontSize || 0; }
-    set size(size: number) { this._set('size', size); }
+    set size(size: number) {
+        this._set('size', size);
+        this.queue_draw();
+    }
 
     get icon() { return this._get('icon'); }
     set icon(icon: string | GdkPixbuf.Pixbuf) {
