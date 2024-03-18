@@ -111,7 +111,7 @@ export class Wifi extends Service {
         // TODO make signals actually signal when they should
         this._apBind = this._ap.connect('notify::strength', () => {
             this.emit('changed');
-            ['enabled', 'internet', 'strength', 'access-points', 'ssid', 'state', 'icon-name']
+            ['enabled', 'internet', 'strength', 'frequency', 'access-points', 'ssid', 'state', 'icon-name']
                 .map(prop => this.notify(prop));
         });
     }
