@@ -1,12 +1,12 @@
-import Media from './Media.js';
+import { Media } from "./Media.js"
 
 const win = Widget.Window({
-    name: 'mpris',
-    anchor: ['top', 'right'],
+    name: "mpris",
+    anchor: ["top", "right"],
     child: Media(),
-});
+})
 
 App.config({
-    style: './style.css',
+    style: "./style.css",
     windows: [win],
-});
+})
