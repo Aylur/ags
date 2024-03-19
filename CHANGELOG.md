@@ -5,6 +5,8 @@
 - Calendar.detail
 - SpinButton.range
 - SpinButton.increments
+- Network.frequency
+- recursive Utils.monitorFile
 
 ## Fixes
 
