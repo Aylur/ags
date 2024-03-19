@@ -75,21 +75,23 @@ const fileMonitors: Map<Gio.FileMonitor, boolean> = new Map;
 export function monitorFile(
     path: string,
     callback?: (file: Gio.File, event: Gio.FileMonitorEvent) => void,
-    flags = Gio.FileMonitorFlags.NONE,
-    recursive = true,
+    options: { flags: Gio.FileMonitorFlags; recursive: boolean } = {
+        flags: Gio.FileMonitorFlags.NONE,
+        recursive: true,
+    },
 ) {
     // FIXME: remove the checking in the next release
-    // @ts-expect-error
-    if (flags === 'file' || flags === 'directory') {
-        throw Error(
-            `${flags}` + ' passed as a parameter in `monitorFile`. ' +
-            'Specifying the type is no longer required.',
+    if (typeof options === 'number') {
+        console.warn(
+            `${options}` +
+        ' passed as a parameter in `options`.\n' +
+        'options parameter should be {flags: Gio.FileMonitorFlags, recursive: boolean}.',
         );
     }
 
     try {
         const file = Gio.File.new_for_path(path);
-        const mon = file.monitor(flags, null);
+        const mon = file.monitor(options.flags, null);
 
         if (callback)
             mon.connect('changed', (_, file, _f, event) => callback(file, event));
@@ -97,7 +99,7 @@ export function monitorFile(
         // If recursive is enabled enumerate files in the subfolders
         const enumerator = file.enumerate_children('standard::*',
             Gio.FileQueryInfoFlags.NONE, null);
-        while (recursive) {
+        while (options.recursive) {
             try {
                 const fileInfo = enumerator.next_file(null);
 
@@ -110,13 +112,12 @@ export function monitorFile(
                     const subfolderPath = subfolder.get_path();
 
                     if (subfolderPath !== null)
-                        monitorFile(subfolderPath, callback, flags, recursive);
+                        monitorFile(subfolderPath, callback, options);
                 }
             } catch (error) {
                 logError(error);
             }
         }
-
 
         // we need to save a reference in case the user doesn't
         // otherwise GC will pick it up
