@@ -63,6 +63,7 @@ export class Wifi extends Service {
             'enabled': ['boolean', 'rw'],
             'internet': ['boolean'],
             'strength': ['int'],
+            'frequency': ['int'],
             'access-points': ['jsobject'],
             'ssid': ['string'],
             'state': ['string'],
@@ -110,7 +111,7 @@ export class Wifi extends Service {
         // TODO make signals actually signal when they should
         this._apBind = this._ap.connect('notify::strength', () => {
             this.emit('changed');
-            ['enabled', 'internet', 'strength', 'access-points', 'ssid', 'state', 'icon-name']
+            ['enabled', 'internet', 'strength', 'frequency', 'access-points', 'ssid', 'state', 'icon-name']
                 .map(prop => this.notify(prop));
         });
     }
@@ -125,6 +126,7 @@ export class Wifi extends Service {
                 : 'Unknown',
             active: ap === this._ap,
             strength: ap.strength,
+            frequency: ap.frequency,
             iconName: _STRENGTH_ICONS.find(({ value }) => value <= ap.strength)?.icon,
         }));
     }
@@ -133,6 +135,7 @@ export class Wifi extends Service {
     set enabled(v) { this._client.wireless_enabled = v; }
 
     get strength() { return this._ap?.strength || -1; }
+    get frequency() { return this._ap?.frequency || -1; }
     get internet() { return _INTERNET(this._device); }
     get ssid() {
         if (!this._ap)
