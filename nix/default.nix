@@ -92,6 +92,8 @@ stdenv.mkDerivation rec {
     pam
   ] ++ extraPackages;
 
+  outputs = [ "out" "lib" ];
+
   meta = with lib; {
     description = "A customizable and extensible shell";
     homepage = "https://github.com/Aylur/ags";
