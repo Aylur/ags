@@ -84,8 +84,8 @@ export function monitorFile(
     if (typeof options === 'number') {
         console.warn(
             `${options}` +
-        ' passed as a parameter in `options`.\n' +
-        'options parameter should be {flags: Gio.FileMonitorFlags, recursive: boolean}.',
+            ' passed as a parameter in `options`.\n' +
+            'options parameter should be {flags: Gio.FileMonitorFlags, recursive: boolean}.',
         );
     }
 
@@ -96,26 +96,18 @@ export function monitorFile(
         if (callback)
             mon.connect('changed', (_, file, _f, event) => callback(file, event));
 
-        // If recursive is enabled enumerate files in the subfolders
-        const enumerator = file.enumerate_children('standard::*',
-            Gio.FileQueryInfoFlags.NONE, null);
-        while (options.recursive) {
-            try {
-                const fileInfo = enumerator.next_file(null);
+        if (options.recursive && GLib.file_test(path, GLib.FileTest.IS_DIR)) {
+            const enumerator = file.enumerate_children('standard::*',
+                Gio.FileQueryInfoFlags.NONE, null);
 
-                if (!fileInfo)
-                    break;
-
-                const fileType = fileInfo.get_file_type();
-                if (fileType === Gio.FileType.DIRECTORY) {
-                    const subfolder = file.get_child(fileInfo.get_name());
-                    const subfolderPath = subfolder.get_path();
-
-                    if (subfolderPath !== null)
-                        monitorFile(subfolderPath, callback, options);
+            let i = enumerator.next_file(null);
+            while (i) {
+                if (i.get_file_type() === Gio.FileType.DIRECTORY) {
+                    const path = file.get_child(i.get_name()).get_path();
+                    if (path)
+                        monitorFile(path, callback, options);
                 }
-            } catch (error) {
-                logError(error);
+                i = enumerator.next_file(null);
             }
         }
 
