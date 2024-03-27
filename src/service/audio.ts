@@ -61,24 +61,24 @@ export class Stream extends Service {
         this.setStream(stream || null);
     }
 
-    get application_id() { return this._stream?.application_id || null; }
-    get stream() { return this._stream || null; }
-    get description() { return this._stream?.description || null; }
-    get icon_name() { return this._stream?.icon_name || null; }
-    get id() { return this._stream?.id || null; }
-    get name() { return this._stream?.name || null; }
+    get application_id() { return this._stream?.application_id ?? null; }
+    get stream() { return this._stream ?? null; }
+    get description() { return this._stream?.description ?? null; }
+    get icon_name() { return this._stream?.icon_name ?? null; }
+    get id() { return this._stream?.id ?? null; }
+    get name() { return this._stream?.name ?? null; }
     get state() {
         return _MIXER_CONTROL_STATE[this._stream?.state || Gvc.MixerControlState.CLOSED];
     }
 
-    get is_muted() { return this.volume === 0; }
+    get is_muted(): boolean | null {
+        return this._stream?.is_muted ?? null;
+    }
+
     set is_muted(mute: boolean) {
-        if (mute) {
-            this._oldVolume = this.volume;
-            this.volume = 0;
-        }
-        else if (this.volume === 0) {
-            this.volume = this._oldVolume || 0.25;
+        if (this._stream) {
+            this._stream.is_muted = mute;
+            this._stream.change_is_muted(mute);
         }
     }
 
