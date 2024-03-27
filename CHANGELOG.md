@@ -5,6 +5,9 @@
 - Calendar.detail
 - SpinButton.range
 - SpinButton.increments
+- Network.frequency
+- recursive Utils.monitorFile
+- add: Network.vpn
 
 ## Fixes
 
@@ -12,6 +15,10 @@
 - DrawingArea.draw-fn
 - hyprland: active client empty on window close
 - dispose signal on Variable
+
+## Breaking Changes
+
+- Stream.is_muted corresponds to actual mute state
 
 # 1.8.0
 
