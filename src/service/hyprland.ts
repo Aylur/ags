@@ -84,8 +84,8 @@ export class Hyprland extends Service {
             'keyboard-layout': ['string', 'string'],
             'monitor-added': ['string'],
             'monitor-removed': ['string'],
-            'workspace-added': ['string'],
-            'workspace-removed': ['string'],
+            'workspace-added': ['int', 'string'],
+            'workspace-removed': ['int', 'string'],
             'client-added': ['string'],
             'client-removed': ['string'],
             'fullscreen': ['boolean'],
@@ -267,7 +267,7 @@ export class Hyprland extends Service {
 
         try {
             switch (e) {
-                case 'workspace':
+                case 'workspacev2':
                 case 'focusedmon':
                     await this._syncMonitors();
                     break;
@@ -282,14 +282,14 @@ export class Hyprland extends Service {
                     this.emit('monitor-added', argv[0]);
                     break;
 
-                case 'createworkspace':
+                case 'createworkspacev2':
                     await this._syncWorkspaces();
-                    this.emit('workspace-added', argv[0]);
+                    this.emit('workspace-added', argv[0], argv[1]);
                     break;
 
-                case 'destroyworkspace':
+                case 'destroyworkspacev2':
                     await this._syncWorkspaces();
-                    this.emit('workspace-removed', argv[0]);
+                    this.emit('workspace-removed', argv[0], argv[1]);
                     break;
 
                 case 'openwindow':
@@ -299,14 +299,14 @@ export class Hyprland extends Service {
                     this.emit('client-added', '0x' + argv[0]);
                     break;
 
-                case 'movewindow':
+                case 'movewindowv2':
                 case 'windowtitle':
                     await this._syncClients(false);
                     await this._syncWorkspaces(false);
                     ['clients', 'workspaces'].forEach(e => this.notify(e));
                     break;
 
-                case 'moveworkspace':
+                case 'moveworkspacev2':
                     await this._syncClients(false);
                     await this._syncWorkspaces(false);
                     await this._syncMonitors(false);
