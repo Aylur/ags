@@ -158,7 +158,7 @@ export class Wifi extends Service {
         this._device = new Device(device);
 
         this._client.connect('notify::wireless-enabled', () => this.changed('enabled'));
-        if (this._device) {
+        if (this._device.device) {
             bulkConnect((this._device.device as unknown) as Service, [
                 ['notify::active-access-point', this._activeAp.bind(this)],
                 ['access-point-added', () => this.emit('changed')],
@@ -286,7 +286,7 @@ export class Wired extends Service {
         this._device = new Device(device);
 
         // TODO make signals actually signal when they should
-        this._device?.connect('notify::speed', () => {
+        this._device.device?.connect('notify::speed', () => {
             this.emit('changed');
             ['speed', 'internet', 'state', 'icon-name']
                 .map(prop => this.notify(prop));
