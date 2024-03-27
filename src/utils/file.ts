@@ -75,23 +75,41 @@ const fileMonitors: Map<Gio.FileMonitor, boolean> = new Map;
 export function monitorFile(
     path: string,
     callback?: (file: Gio.File, event: Gio.FileMonitorEvent) => void,
-    flags = Gio.FileMonitorFlags.NONE,
+    options: { flags: Gio.FileMonitorFlags; recursive: boolean } = {
+        flags: Gio.FileMonitorFlags.NONE,
+        recursive: true,
+    },
 ) {
     // FIXME: remove the checking in the next release
-    // @ts-expect-error
-    if (flags === 'file' || flags === 'directory') {
-        throw Error(
-            `${flags}` + ' passed as a parameter in `monitorFile`. ' +
-            'Specifying the type is no longer required.',
+    if (typeof options === 'number') {
+        console.warn(
+            `${options}` +
+            ' passed as a parameter in `options`.\n' +
+            'options parameter should be {flags: Gio.FileMonitorFlags, recursive: boolean}.',
         );
     }
 
     try {
         const file = Gio.File.new_for_path(path);
-        const mon = file.monitor(flags, null);
+        const mon = file.monitor(options.flags, null);
 
         if (callback)
             mon.connect('changed', (_, file, _f, event) => callback(file, event));
+
+        if (options.recursive && GLib.file_test(path, GLib.FileTest.IS_DIR)) {
+            const enumerator = file.enumerate_children('standard::*',
+                Gio.FileQueryInfoFlags.NONE, null);
+
+            let i = enumerator.next_file(null);
+            while (i) {
+                if (i.get_file_type() === Gio.FileType.DIRECTORY) {
+                    const path = file.get_child(i.get_name()).get_path();
+                    if (path)
+                        monitorFile(path, callback, options);
+                }
+                i = enumerator.next_file(null);
+            }
+        }
 
         // we need to save a reference in case the user doesn't
         // otherwise GC will pick it up
