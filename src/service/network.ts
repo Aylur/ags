@@ -41,6 +41,30 @@ const _CONNECTIVITY_STATE = (client: NM.Client) => {
     }
 };
 
+const _CONNECTION_STATE = (activeConnection: NM.ActiveConnection | null) => {
+    switch (activeConnection?.get_state()) {
+        case NM.ActiveConnectionState.ACTIVATED: return 'connected';
+        case NM.ActiveConnectionState.ACTIVATING: return 'connecting';
+        case NM.ActiveConnectionState.DEACTIVATING: return 'disconnecting';
+        case NM.ActiveConnectionState.DEACTIVATED:
+        default: return 'disconnected';
+    }
+};
+
+const _VPN_CONNECTION_STATE = (activeVpnConnection: ActiveVpnConnection) => {
+    switch (activeVpnConnection?.get_vpn_state()) {
+        case NM.VpnConnectionState.UNKNOWN: return 'unknown';
+        case NM.VpnConnectionState.PREPARE: return 'prepare';
+        case NM.VpnConnectionState.NEED_AUTH: return 'needs_auth';
+        case NM.VpnConnectionState.CONNECT: return 'connect';
+        case NM.VpnConnectionState.IP_CONFIG_GET: return 'ip_config';
+        case NM.VpnConnectionState.ACTIVATED: return 'activated';
+        case NM.VpnConnectionState.FAILED: return 'failed';
+        case NM.VpnConnectionState.DISCONNECTED:
+        default: return 'disconnected';
+    }
+};
+
 const _STRENGTH_ICONS = [
     { value: 80, icon: 'network-wireless-signal-excellent-symbolic' },
     { value: 60, icon: 'network-wireless-signal-good-symbolic' },
@@ -226,6 +250,221 @@ export class Wired extends Service {
     }
 }
 
+export type ActiveVpnConnection = null | NM.VpnConnection;
+
+export class VpnConnection extends Service {
+    static {
+        Service.register(this, {}, {
+            'id': ['string'],
+            'state': ['string'],
+            'vpn-state': ['string'],
+            'icon-name': ['string'],
+        });
+    }
+
+    private _vpn!: Vpn;
+    private _connection!: NM.Connection;
+    private _id!: string;
+    private _activeConnection: ActiveVpnConnection = null;
+    private _state: ReturnType<typeof _CONNECTION_STATE> = 'disconnected';
+    private _stateBind: undefined | number = undefined;
+    private _vpnState: ReturnType<typeof _VPN_CONNECTION_STATE> = 'disconnected';
+    private _vpnStateBind: undefined | number = undefined;
+
+    get connection() { return this._connection; }
+    get active_connection() { return this._activeConnection; }
+    get uuid() { return this._connection.get_uuid()!; }
+    get id() { return this._connection.get_id() || ''; }
+    get state() { return this._state; }
+    get vpn_state() { return this._vpnState; }
+    get icon_name() {
+        switch (this._state) {
+            case 'connected': return 'network-vpn-symbolic';
+            case 'disconnected': return 'network-vpn-disabled-symbolic';
+            case 'connecting':
+            case 'disconnecting': return 'network-vpn-acquiring-symbolic';
+        }
+    }
+
+    constructor(vpn: Vpn, connection: NM.RemoteConnection) {
+        super();
+
+        this._vpn = vpn;
+        this._connection = connection;
+
+        this._id = this._connection.get_id() || '';
+        this._connection.connect('changed', () => this._updateId());
+    }
+
+    private _updateId() {
+        const id = this._connection.get_id() || '';
+        if (id !== this._id) {
+            this._id = id;
+            this.changed('id');
+        }
+    }
+
+    private _updateState() {
+        const state = _CONNECTION_STATE(this._activeConnection);
+        if (state !== this._state) {
+            this._state = state;
+            this.notify('state');
+            this.notify('icon-name');
+            this.emit('changed');
+        }
+    }
+
+    private _updateVpnState() {
+        const vpnState = _VPN_CONNECTION_STATE(this._activeConnection);
+        if (vpnState !== this._vpnState) {
+            this._vpnState = vpnState;
+            this.changed('vpn-state');
+        }
+    }
+
+    readonly updateActiveConnection = (activeConnection: ActiveVpnConnection) => {
+        if (this._activeConnection) {
+            if (this._stateBind)
+                this._activeConnection.disconnect(this._stateBind);
+
+            if (this._vpnStateBind)
+                this._activeConnection.disconnect(this._vpnStateBind);
+        }
+
+        this._activeConnection = activeConnection;
+        this._stateBind = this._activeConnection?.connect(
+            'notify::state',
+            () => this._updateState(),
+        );
+        this._vpnStateBind = this._activeConnection?.connect(
+            'notify::vpn-state',
+            () => this._updateVpnState(),
+        );
+
+        this._updateState();
+        this._updateVpnState();
+    };
+
+    readonly setConnection = (connect: boolean) => {
+        if (connect) {
+            if (this._state === 'disconnected')
+                this._vpn.activateVpnConnection(this);
+        }
+        else {
+            if (this._state === 'connected')
+                this._vpn.deactivateVpnConnection(this);
+        }
+    };
+}
+
+export class Vpn extends Service {
+    static {
+        Service.register(this, {
+            'connection-added': ['string'],
+            'connection-removed': ['string'],
+        }, {
+            'connections': ['jsobject'],
+            'activated-connections': ['jsobject'],
+        });
+    }
+
+    private _client: NM.Client;
+    private _connections: Map<string, VpnConnection>;
+
+    constructor(client: NM.Client) {
+        super();
+
+        this._client = client;
+        this._connections = new Map();
+
+        bulkConnect(this._client as unknown as GObject.Object, [
+            ['connection-added', this._connectionAdded.bind(this)],
+            ['connection-removed', this._connectionRemoved.bind(this)],
+        ]);
+
+        this._client.get_connections().map((connection: NM.RemoteConnection) =>
+            this._connectionAdded(this._client, connection));
+
+        this._client.connect(
+            'active-connection-added',
+            (_: NM.Client, ac: NM.ActiveConnection) => {
+                const uuid = ac.get_uuid();
+                if (uuid && this._connections.has(uuid))
+                    this._connections.get(uuid)?.updateActiveConnection(ac as ActiveVpnConnection);
+            },
+        );
+
+        this._client.connect(
+            'active-connection-removed',
+            (_: NM.Client, ac: NM.ActiveConnection) => {
+                const uuid = ac.get_uuid();
+                if (uuid && this._connections.has(uuid))
+                    this._connections.get(uuid)?.updateActiveConnection(null);
+            },
+        );
+    }
+
+    private _connectionAdded(client: NM.Client, connection: NM.RemoteConnection) {
+        if (connection.get_connection_type() !== 'vpn' || connection.get_uuid() === null)
+            return;
+
+        const vpnConnection = new VpnConnection(this, connection);
+        const activeConnection = client.get_active_connections()
+            .find(ac => ac.get_uuid() === vpnConnection.uuid);
+
+        if (activeConnection)
+            vpnConnection.updateActiveConnection(activeConnection as NM.VpnConnection);
+
+        vpnConnection.connect('changed', () => this.emit('changed'));
+        vpnConnection.connect('notify::state', (c: VpnConnection) => {
+            if (c.state === 'connected' || c.state === 'disconnected')
+                this.changed('activated-connections');
+        });
+
+        this._connections.set(vpnConnection.uuid, vpnConnection);
+
+        this.changed('connections');
+        this.emit('connection-added', vpnConnection.uuid);
+    }
+
+    private _connectionRemoved(_: NM.Client, connection: NM.RemoteConnection) {
+        const uuid = connection.get_uuid() || '';
+        if (!uuid || !this._connections.has(uuid))
+            return;
+
+        this._connections.get(uuid)!.updateActiveConnection(null);
+        this._connections.delete(uuid);
+
+        this.notify('connections');
+        this.notify('activated-connections');
+        this.emit('changed');
+        this.emit('connection-removed', uuid);
+    }
+
+    readonly activateVpnConnection = (vpn: VpnConnection) => {
+        this._client.activate_connection_async(vpn.connection, null, null, null, null);
+    };
+
+    readonly deactivateVpnConnection = (vpn: VpnConnection) => {
+        if (vpn.active_connection === null)
+            return;
+
+        this._client.deactivate_connection_async(vpn.active_connection, null, null);
+    };
+
+    readonly getConnection = (uuid: string) => this._connections.get(uuid);
+
+    get connections() { return Array.from(this._connections.values()); }
+    get activated_connections() {
+        const list: VpnConnection[] = [];
+        for (const [, connection] of this._connections) {
+            if (connection.state === 'connected')
+                list.push(connection);
+        }
+        return list;
+    }
+}
+
 export class Network extends Service {
     static {
         Service.register(this, {}, {
@@ -233,6 +472,7 @@ export class Network extends Service {
             'wired': ['jsobject'],
             'primary': ['string'],
             'connectivity': ['string'],
+            'vpn': ['jsobject'],
         });
     }
 
@@ -242,6 +482,7 @@ export class Network extends Service {
     wired!: Wired;
     primary: null | 'wifi' | 'wired' = null;
     connectivity!: string;
+    vpn!: Vpn;
 
     constructor() {
         super();
@@ -279,8 +520,11 @@ export class Network extends Service {
         this.wired = new Wired(
             this._getDevice(NM.DeviceType.ETHERNET) as NM.DeviceEthernet);
 
+        this.vpn = new Vpn(this._client);
+
         this.wifi.connect('changed', this._sync.bind(this));
         this.wired.connect('changed', this._sync.bind(this));
+        this.vpn.connect('changed', () => this.emit('changed'));
 
         this._sync();
     }
