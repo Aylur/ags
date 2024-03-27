@@ -84,8 +84,8 @@ export class Hyprland extends Service {
             'keyboard-layout': ['string', 'string'],
             'monitor-added': ['string'],
             'monitor-removed': ['string'],
-            'workspace-added': ['string'],
-            'workspace-removed': ['string'],
+            'workspace-added': ['int', 'string'],
+            'workspace-removed': ['int', 'string'],
             'client-added': ['string'],
             'client-removed': ['string'],
             'fullscreen': ['boolean'],
@@ -141,11 +141,8 @@ export class Hyprland extends Service {
         // this._syncWorkspaces();
         // this._syncClients();
 
-        const commitDate = JSON.parse(this.message('j/version')).commit_date;
-
-        this._eventActions.set(
-            commitDate >= '2024-3-16' ? 'workspacev2' : 'workspace',
-            async _ => await this._syncMonitors(),
+        this._eventActions.set('workspacev2', async _ =>
+            await this._syncMonitors(),
         );
 
         this._eventActions.set('focusedmon', async _ =>
@@ -162,19 +159,15 @@ export class Hyprland extends Service {
             this.emit('monitor-added', argv[0]);
         });
 
-        this._eventActions.set(
-            commitDate >= '2024-3-16' ? 'createworkspacev2' : 'createworkspace',
-            async argv => {
-                await this._syncWorkspaces();
-                this.emit('workspace-added', argv[0]);
-            });
+        this._eventActions.set('createworkspacev2', async argv => {
+            await this._syncWorkspaces();
+            this.emit('workspace-added', argv[0], argv[1]);
+        });
 
-        this._eventActions.set(
-            commitDate >= '2024-3-16' ? 'destroyworkspacev2' : 'destroyworkspace',
-            async argv => {
-                await this._syncWorkspaces();
-                this.emit('workspace-removed', argv[0]);
-            });
+        this._eventActions.set('destroyworkspacev2', async argv => {
+            await this._syncWorkspaces();
+            this.emit('workspace-removed', argv[0], argv[1]);
+        });
 
         this._eventActions.set('openwindow', async argv => {
             await this._syncClients(false);
@@ -183,13 +176,11 @@ export class Hyprland extends Service {
             this.emit('client-added', '0x' + argv[0]);
         });
 
-        this._eventActions.set(
-            commitDate >= '2024-3-16' ? 'movewindowv2' : 'movewindow',
-            async _ => {
-                await this._syncClients(false);
-                await this._syncWorkspaces(false);
-                ['clients', 'workspaces'].forEach(e => this.notify(e));
-            });
+        this._eventActions.set('movewindowv2', async _ => {
+            await this._syncClients(false);
+            await this._syncWorkspaces(false);
+            ['clients', 'workspaces'].forEach(e => this.notify(e));
+        });
 
         this._eventActions.set('windowtitle', async _ => {
             await this._syncClients(false);
@@ -197,14 +188,12 @@ export class Hyprland extends Service {
             ['clients', 'workspaces'].forEach(e => this.notify(e));
         });
 
-        this._eventActions.set(
-            commitDate >= '2024-3-16' ? 'moveworkspacev2' : 'moveworkspace',
-            async _ => {
-                await this._syncClients(false);
-                await this._syncWorkspaces(false);
-                await this._syncMonitors(false);
-                ['clients', 'workspaces', 'monitors'].forEach(e => this.notify(e));
-            });
+        this._eventActions.set('moveworkspacev2', async _ => {
+            await this._syncClients(false);
+            await this._syncWorkspaces(false);
+            await this._syncMonitors(false);
+            ['clients', 'workspaces', 'monitors'].forEach(e => this.notify(e));
+        });
 
         this._eventActions.set('fullscreen', async argv => {
             await this._syncClients(false);
