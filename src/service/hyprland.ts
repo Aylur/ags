@@ -141,42 +141,42 @@ export class Hyprland extends Service {
         // this._syncWorkspaces();
         // this._syncClients();
 
-        let commitDate = JSON.parse(this.message('j/version')).commit_date;
+        const commitDate = JSON.parse(this.message('j/version')).commit_date;
 
         this._eventActions.set(
             commitDate >= '2024-3-16' ? 'workspacev2' : 'workspace',
-            async (argv) => await this._syncMonitors()
+            async _ => await this._syncMonitors(),
         );
 
-        this._eventActions.set('focusedmon', async (argv) =>
-            await this._syncMonitors()
+        this._eventActions.set('focusedmon', async _ =>
+            await this._syncMonitors(),
         );
 
-        this._eventActions.set('monitorremoved', async (argv) => {
+        this._eventActions.set('monitorremoved', async argv => {
             await this._syncMonitors();
             this.emit('monitor-removed', argv[0]);
         });
 
-        this._eventActions.set('monitoradded', async (argv) => {
+        this._eventActions.set('monitoradded', async argv => {
             await this._syncMonitors();
             this.emit('monitor-added', argv[0]);
         });
 
         this._eventActions.set(
             commitDate >= '2024-3-16' ? 'createworkspacev2' : 'createworkspace',
-            async (argv) => {
+            async argv => {
                 await this._syncWorkspaces();
                 this.emit('workspace-added', argv[0]);
             });
 
         this._eventActions.set(
             commitDate >= '2024-3-16' ? 'destroyworkspacev2' : 'destroyworkspace',
-            async (argv) => {
+            async argv => {
                 await this._syncWorkspaces();
                 this.emit('workspace-removed', argv[0]);
             });
 
-        this._eventActions.set('openwindow', async (argv) => {
+        this._eventActions.set('openwindow', async argv => {
             await this._syncClients(false);
             await this._syncWorkspaces(false);
             ['clients', 'workspaces'].forEach(e => this.notify(e));
@@ -185,13 +185,13 @@ export class Hyprland extends Service {
 
         this._eventActions.set(
             commitDate >= '2024-3-16' ? 'movewindowv2' : 'movewindow',
-            async (argv) => {
+            async _ => {
                 await this._syncClients(false);
                 await this._syncWorkspaces(false);
                 ['clients', 'workspaces'].forEach(e => this.notify(e));
             });
 
-        this._eventActions.set('windowtitle', async (argv) => {
+        this._eventActions.set('windowtitle', async _ => {
             await this._syncClients(false);
             await this._syncWorkspaces(false);
             ['clients', 'workspaces'].forEach(e => this.notify(e));
@@ -199,32 +199,32 @@ export class Hyprland extends Service {
 
         this._eventActions.set(
             commitDate >= '2024-3-16' ? 'moveworkspacev2' : 'moveworkspace',
-            async (argv) => {
+            async _ => {
                 await this._syncClients(false);
                 await this._syncWorkspaces(false);
                 await this._syncMonitors(false);
                 ['clients', 'workspaces', 'monitors'].forEach(e => this.notify(e));
             });
 
-        this._eventActions.set('fullscreen', async (argv) => {
+        this._eventActions.set('fullscreen', async argv => {
             await this._syncClients(false);
             await this._syncWorkspaces(false);
             ['clients', 'workspaces'].forEach(e => this.notify(e));
             this.emit('fullscreen', argv[0] === '1');
         });
 
-        this._eventActions.set('activewindow', (argv) => {
+        this._eventActions.set('activewindow', argv => {
             this._active.client.updateProperty('class', argv[0]);
             this._active.client.updateProperty('title', argv.slice(1).join(','));
             this._active.client.emit('changed');
         });
 
-        this._eventActions.set('activewindowv2', (argv) => {
+        this._eventActions.set('activewindowv2', argv => {
             this._active.client.updateProperty('address', '0x' + argv[0]);
             this._active.client.emit('changed');
         });
 
-        this._eventActions.set('closewindow', async (argv) => {
+        this._eventActions.set('closewindow', async argv => {
             await this._syncWorkspaces(false);
             await this._syncClients(false);
             if (this._active.client.address === '0x' + argv[0]) {
@@ -237,19 +237,19 @@ export class Hyprland extends Service {
             this.emit('client-removed', '0x' + argv[0]);
         });
 
-        this._eventActions.set('urgent', (argv) => {
+        this._eventActions.set('urgent', argv => {
             this.emit('urgent-window', '0x' + argv[0]);
         });
 
-        this._eventActions.set('activelayout', (argv) => {
+        this._eventActions.set('activelayout', argv => {
             this.emit('keyboard-layout', `${argv[0]}`, `${argv[1]}`);
         });
 
-        this._eventActions.set('changefloatingmode', async (argv) => {
+        this._eventActions.set('changefloatingmode', async _ => {
             await this._syncClients();
         });
 
-        this._eventActions.set('submap', (argv) => {
+        this._eventActions.set('submap', argv => {
             this.emit('submap', argv[0]);
         });
 
@@ -380,10 +380,9 @@ export class Hyprland extends Service {
         const argv = params.split(',');
 
         try {
-            let action = this._eventActions.get(e);
+            const action = this._eventActions.get(e);
             if (action)
                 action(argv);
-
         } catch (error) {
             if (error instanceof Error)
                 console.error(error.message);
