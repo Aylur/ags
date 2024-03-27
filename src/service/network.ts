@@ -92,8 +92,8 @@ export class Wifi extends Service {
             'ssid': ['string'],
             'state': ['string'],
             'icon-name': ['string'],
-            'ipv4-address': ['string'],
-            'ipv6-address': ['string'],
+            'ipv4_address': ['string'],
+            'ipv6_address': ['string'],
 
         });
     }
@@ -102,7 +102,8 @@ export class Wifi extends Service {
     private _device: NM.DeviceWifi;
     private _ap!: NM.AccessPoint;
     private _apBind!: number;
-
+    private _ip4ConfigSignalId: number | undefined;
+    private _ip6ConfigSignalId: number | undefined;
     constructor(client: NM.Client, device: NM.DeviceWifi) {
         super();
         this._client = client;
@@ -117,14 +118,20 @@ export class Wifi extends Service {
             ]);
             this._activeAp();
         }
-        const ip4Config = this._device.ip4_config;
-        const ip6Config = this._device.ip6_config;
 
-        if ((this._device) && (ip4Config))
-            ip4Config.connect('notify::addresses', () => this.changed('ipv4-address'));
+        if (this._device) {
+            if (this._ip4ConfigSignalId)
+                this._device.ip4_config.disconnect(this._ip4ConfigSignalId);
+            this._ip4ConfigSignalId = this._device.ip4_config.connect('notify::addresses',
+                () => this.changed('ipv4_address'));
+        }
 
-        if ((this._device) && (ip6Config))
-            ip6Config.connect('notify::addresses', () => this.changed('ipv6-address'));
+        if (this._device) {
+            if (this._ip6ConfigSignalId)
+                this._device.ip6_config.disconnect(this._ip6ConfigSignalId);
+            this._ip6ConfigSignalId = this._device.ip6_config.connect('notify::addresses',
+                () => this.changed('ipv6_address'));
+        }
     }
 
     readonly scan = () => {
@@ -177,8 +184,24 @@ export class Wifi extends Service {
 
     get enabled() { return this._client.wireless_enabled; }
     set enabled(v) { this._client.wireless_enabled = v; }
-    get ipv4Address() { return this._device.ip4_config.get_addresses(); }
-    get ipv6Address() { return this._device.ip6_config.get_addresses(); }
+    get ipv4_address() {
+        if (this._device && this._device.ip4_config) {
+            const ip4 = this._device.ip4_config.get_addresses()
+                .map(item => item.get_address()).join(',');
+            return ip4;
+        }
+        else { return ''; }
+    }
+
+    get ipv6_address() {
+        if (this._device && this._device.ip6_config) {
+            const ip6 = this._device.ip6_config.get_addresses()
+                .map(item => item.get_address()).join(',');
+            return ip6;
+        }
+        else { return ''; }
+    }
+
 
     get strength() { return this._ap?.strength || -1; }
     get frequency() { return this._ap?.frequency || -1; }
@@ -229,13 +252,14 @@ export class Wired extends Service {
             'internet': ['string'],
             'state': ['string'],
             'icon-name': ['string'],
-            'ipv4-address': ['string'],
-            'ipv6-address': ['string'],
+            'ipv4_address': ['string'],
+            'ipv6_address': ['string'],
         });
     }
 
     private _device: NM.DeviceEthernet;
-
+    private _ip4ConfigSignalId: number | undefined;
+    private _ip6ConfigSignalId: number | undefined;
     constructor(device: NM.DeviceEthernet) {
         super();
         this._device = device;
@@ -247,18 +271,39 @@ export class Wired extends Service {
                 .map(prop => this.notify(prop));
         });
 
-        const ip4Config = this._device.ip4_config;
-        const ip6Config = this._device.ip6_config;
+        if (this._device) {
+            if (this._ip4ConfigSignalId)
+                this._device.ip4_config!.disconnect(this._ip4ConfigSignalId);
+            this._ip4ConfigSignalId = this._device.ip4_config!.connect('notify::addresses',
+                () => { this.changed('ipv4_address'); });
+        }
 
-        if ((this._device) && (ip4Config))
-            ip4Config.connect('notify::addresses', () => this.changed('ipv4-address'));
-
-        if ((this._device) && (ip6Config))
-            ip6Config.connect('notify::addresses', () => this.changed('ipv6-address'));
+        if (this._device) {
+            if (this._ip6ConfigSignalId)
+                this._device.ip6_config!.disconnect(this._ip6ConfigSignalId);
+            this._ip6ConfigSignalId = this._device.ip6_config!.connect('notify::addresses',
+                () => this.changed('ipv6_address'));
+        }
     }
 
-    get ipv4Address() { return this._device.ip4_config.get_addresses(); }
-    get ipv6Address() { return this._device.ip6_config.get_addresses(); }
+    get ipv4_address() {
+        if (this._device && this._device.ip4_config) {
+            const wip4 = this._device.ip4_config.get_addresses()
+                .map(item => item.get_address()).join(',');
+            return wip4;
+        }
+        else { return ''; }
+    }
+
+    get ipv6_address() {
+        if (this._device && this._device.ip6_config) {
+            const wip6 = this._device.ip6_config.get_addresses()
+                .map(item => item.get_address()).join(',');
+            return wip6;
+        }
+        else { return ''; }
+    }
+
     get speed() { return this._device.get_speed(); }
     get internet() { return _INTERNET(this._device); }
     get state() { return _DEVICE_STATE(this._device); }
