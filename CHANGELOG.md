@@ -7,6 +7,7 @@
 - SpinButton.increments
 - Network.frequency
 - recursive Utils.monitorFile
+- add: Network.vpn
 
 ## Fixes
 
