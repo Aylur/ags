@@ -130,7 +130,6 @@ export interface Widget<Attr> extends Required<CommonProps<Attr>> {
     ): this
 
     keybind<
-        // eslint-disable-next-line space-before-function-paren
         Fn extends (self: this, event: Gdk.Event) => void,
         Key extends keyof Keys,
     >(
@@ -139,7 +138,6 @@ export interface Widget<Attr> extends Required<CommonProps<Attr>> {
     ): this
 
     keybind<
-        // eslint-disable-next-line space-before-function-paren
         Fn extends (self: this, event: Gdk.Event) => void,
         Key extends keyof Keys,
         Mod extends Array<keyof ModifierKey>,

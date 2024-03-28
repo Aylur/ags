@@ -399,7 +399,6 @@ export class Notifications extends Service {
         return new GLib.Variant('(ssss)', [pkg.name, 'Aylur', pkg.version, '1.2']);
     }
 
-    // eslint-disable-next-line space-before-function-paren
     readonly clear = async () => {
         const close = (n: Notification, delay: number) => new Promise(resolve => {
             this._notifications.has(n.id)
