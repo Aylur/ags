@@ -51,6 +51,7 @@ interface Services {
     notifications: typeof import('./service/notifications.js').default
     powerprofiles: typeof import('./service/powerprofiles.js').default
     systemtray: typeof import('./service/systemtray.js').default
+    sway: typeof import('./service/sway.js').default
     greetd: typeof import('./service/greetd.js').default
 }
 
