@@ -195,7 +195,6 @@ export class Hyprland extends Service {
         return '';
     };
 
-    // eslint-disable-next-line space-before-function-paren
     readonly messageAsync = async (cmd: string) => {
         const [connection, stream] = this._socketStream(cmd);
         try {

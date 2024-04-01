@@ -37,7 +37,6 @@ export class Greetd extends Service {
 
     private _decoder = new TextDecoder;
 
-    // eslint-disable-next-line space-before-function-paren
     readonly login = async (
         username: string,
         password: string,

@@ -96,7 +96,9 @@ rules:
     - error
   space-before-function-paren:
     - error
-    - never
+    - anonymous: never
+      named: never
+      asyncArrow: ignore
   space-before-blocks:
     - error
   key-spacing:
