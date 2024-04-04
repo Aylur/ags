@@ -1,1 +1,1 @@
-option('build_types', type: 'boolean', value: false)
+option('build_types', type: 'boolean', value: true)
