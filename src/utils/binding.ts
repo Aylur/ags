@@ -12,7 +12,7 @@ export function merge<V,
     const update = () => fn(...deps.map(d => d.transformFn(d.emitter[d.prop])) as Args);
     const watcher = new Variable(update());
     for (const dep of deps)
-        dep.emitter.connect(`notify::${kebabify(dep.prop)}`, () => watcher.setValue(update()));
+        dep.emitter.connect(`notify::${kebabify(dep.prop)}`, () => watcher.value = update());
 
     return watcher.bind();
 }
@@ -24,7 +24,7 @@ export function derive<V,
     const update = () => fn(...deps.map(d => d.value) as Args);
     const watcher = new Variable(update());
     for (const dep of deps)
-        dep.connect('changed', () => watcher.setValue(update()));
+        dep.connect('changed', () => watcher.value = update());
 
     return watcher;
 }

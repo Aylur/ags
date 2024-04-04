@@ -15,6 +15,7 @@
 - DrawingArea.draw-fn
 - hyprland: active client empty on window close
 - dispose signal on Variable
+- skip unnecessary value setting in Utils.derive and Utils.merge
 
 ## Breaking Changes
 
