@@ -98,7 +98,7 @@ export function NotificationPopups(monitor = 0) {
     function onNotified(_, /** @type {number} */ id) {
         const n = notifications.getNotification(id)
         if (n)
-            list.children = [Notification(n), ...list.children]
+            list.children = [...list.children, Notification(n)]
     }
 
     function onDismissed(_, /** @type {number} */ id) {
