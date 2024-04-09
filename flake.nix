@@ -19,9 +19,10 @@
     packages = genSystems (system: rec {
       default = pkgs.${system}.callPackage ./nix {inherit version;};
       ags = default;
-      agsWithTypes = pkgs.${system}.callPackage ./nix {
+      agsWithTypes = default; # for backwards compatibility
+      agsNoTypes = pkgs.${system}.callPackage ./nix {
         inherit version;
-        buildTypes = true;
+        buildTypes = false;
       };
     });
 
