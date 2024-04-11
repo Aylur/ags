@@ -2,105 +2,122 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
-export function execAsync(cmd: string | string[]): Promise<string> {
-    return new Promise((resolve, reject) => {
-        if (typeof cmd === 'string') {
-            try {
-                const [, argv] = GLib.shell_parse_argv(cmd);
-                cmd = argv;
-            } catch (error) {
-                return reject(error);
-            }
+type Args<Out = void, Err = void> = {
+    cmd: string | string[],
+    out?: (stdout: string) => Out,
+    err?: (stderr: string) => Err,
+}
+
+function proc(arg: Args | string | string[]) {
+    let cmd = Array.isArray(arg) || typeof arg === 'string'
+        ? arg
+        : arg.cmd;
+
+    if (typeof cmd === 'string') {
+        const [, argv] = GLib.shell_parse_argv(cmd);
+        cmd = argv;
+    }
+
+    return Gio.Subprocess.new(
+        cmd,
+        Gio.SubprocessFlags.STDOUT_PIPE |
+        Gio.SubprocessFlags.STDERR_PIPE,
+    );
+}
+
+function readStream(stream: Gio.DataInputStream, callback: (out: string) => void) {
+    stream.read_line_async(GLib.PRIORITY_DEFAULT, null, (_, res) => {
+        const output = stream?.read_line_finish_utf8(res)[0];
+        if (typeof output === 'string') {
+            callback(output.trim());
+            readStream(stream, callback);
         }
-
-        const proc = Gio.Subprocess.new(
-            cmd,
-            Gio.SubprocessFlags.STDOUT_PIPE |
-            Gio.SubprocessFlags.STDERR_PIPE,
-        );
-
-        proc.communicate_utf8_async(null, null, (proc, res) => {
-            try {
-                if (!proc)
-                    return reject(null);
-
-                const [, stdout, stderr] = proc.communicate_utf8_finish(res);
-                proc.get_successful()
-                    ? resolve(stdout!.trim())
-                    : reject(stderr!.trim());
-            } catch (e) {
-                reject(e);
-            }
-        });
     });
 }
 
-export function exec(cmd: string) {
-    const [success, out, err] = GLib.spawn_command_line_sync(cmd);
-
-    const decoder = new TextDecoder();
-    if (!success)
-        return decoder.decode(err).trim();
-
-    return decoder.decode(out).trim();
-}
+export function subprocess(args: Args & {
+    bind?: Gtk.Widget,
+}): Gio.Subprocess
 
 export function subprocess(
     cmd: string | string[],
-    callback: (out: string) => void,
-    onError = logError,
+    out?: (stdout: string) => void,
+    err?: (stderr: string) => void,
+    bind?: Gtk.Widget,
+): Gio.Subprocess
+
+export function subprocess(
+    argsOrCmd: Args & { bind?: Gtk.Widget } | string | string[],
+    out: (stdout: string) => void = print,
+    err: (stderr: string) => void = err => console.error(Error(err)),
     bind?: Gtk.Widget,
 ) {
-    try {
-        const read = (stdout: Gio.DataInputStream) => {
-            stdout.read_line_async(GLib.PRIORITY_LOW, null, (stdout, res) => {
-                try {
-                    const output = stdout?.read_line_finish_utf8(res)[0];
-                    if (typeof output === 'string' && stdout) {
-                        callback(output);
-                        read(stdout);
-                    }
-                } catch (e) {
-                    onError(e);
-                }
-            });
-        };
+    const p = proc(argsOrCmd);
 
-        if (typeof cmd === 'string') {
-            try {
-                const [, argv] = GLib.shell_parse_argv(cmd);
-                cmd = argv;
-            } catch (error) {
-                onError(error);
-                return null;
-            }
-        }
+    const stdout = new Gio.DataInputStream({
+        base_stream: p.get_stdout_pipe(),
+        close_base_stream: true,
+    });
 
-        const proc = Gio.Subprocess.new(
-            cmd,
-            Gio.SubprocessFlags.STDOUT_PIPE |
-            Gio.SubprocessFlags.STDERR_PIPE,
-        );
+    const stderr = new Gio.DataInputStream({
+        base_stream: p.get_stderr_pipe(),
+        close_base_stream: true,
+    });
 
-        const pipe = proc.get_stdout_pipe();
-        if (!pipe) {
-            onError(Error(`subprocess ${cmd} stdout pipe is null`));
-            return null;
-        }
+    if (bind)
+        bind.connect('destroy', () => p.force_exit());
 
-        const stdout = new Gio.DataInputStream({
-            base_stream: pipe,
-            close_base_stream: true,
+    const onErr = Array.isArray(argsOrCmd) || typeof argsOrCmd === 'string'
+        ? err
+        : argsOrCmd.err;
+
+    const onOut = Array.isArray(argsOrCmd) || typeof argsOrCmd === 'string'
+        ? out
+        : argsOrCmd.out;
+
+    readStream(stdout, onOut ?? out);
+    readStream(stderr, onErr ?? err);
+    return p;
+}
+
+export function exec<Out = string, Err = string>(args: Args<Out, Err>): Out | Err
+export function exec<Out = string, Err = string>(
+    cmd: string | string[],
+    out?: (stdout: string) => Out,
+    err?: (stderr: string) => Err,
+): Out | Err
+
+export function exec<Out = string, Err = string>(
+    argsOrCmd: Args<Out, Err> | string | string[],
+    out: (stdout: string) => Out = out => out as Out,
+    err: (stderr: string) => Err = out => out as Err,
+): Out | Err {
+    const p = proc(argsOrCmd);
+
+    const onErr = Array.isArray(argsOrCmd) || typeof argsOrCmd === 'string'
+        ? err
+        : argsOrCmd.err;
+
+    const onOut = Array.isArray(argsOrCmd) || typeof argsOrCmd === 'string'
+        ? out
+        : argsOrCmd.out;
+
+    const [, stdout, stderr] = p.communicate_utf8(null, null);
+
+    return p.get_successful()
+        ? (onOut ?? out)(stdout!.trim())
+        : (onErr ?? err)(stderr!.trim());
+}
+
+export function execAsync(cmd: string | string[]): Promise<string> {
+    const p = proc(cmd);
+
+    return new Promise((resolve, reject) => {
+        p.communicate_utf8_async(null, null, (_, res) => {
+            const [, stdout, stderr] = p.communicate_utf8_finish(res);
+            p.get_successful()
+                ? resolve(stdout!.trim())
+                : reject(stderr!.trim());
         });
-
-        read(stdout);
-
-        if (bind)
-            bind.connect('destroy', () => proc.force_exit());
-
-        return proc;
-    } catch (e) {
-        logError(e);
-        return null;
-    }
+    });
 }

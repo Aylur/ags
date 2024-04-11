@@ -8,6 +8,7 @@
 - Network.frequency
 - recursive Utils.monitorFile
 - add: Network.vpn
+- improve exec utils
 
 ## Fixes
 
@@ -20,6 +21,7 @@
 ## Breaking Changes
 
 - Stream.is_muted corresponds to actual mute state
+- Utils.exec returns stderr on error
 
 # 1.8.0
 
