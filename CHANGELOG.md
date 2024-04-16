@@ -17,6 +17,7 @@
 - hyprland: active client empty on window close
 - dispose signal on Variable
 - skip unnecessary value setting in Utils.derive and Utils.merge
+- properly log errors from Variables
 
 ## Breaking Changes
 

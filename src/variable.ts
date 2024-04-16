@@ -63,13 +63,13 @@ export class Variable<T> extends GObject.Object {
         if (Array.isArray(cmd) || typeof cmd === 'string') {
             this._interval = interval(time, () => execAsync(cmd)
                 .then(out => this.value = transform(out, this))
-                .catch(err => logError(err)));
+                .catch(console.error));
         }
         if (typeof cmd === 'function') {
             this._interval = interval(time, () => {
                 const value = cmd(this);
                 if (value instanceof Promise)
-                    value.then(v => this.value = v).catch(logError);
+                    value.then(v => this.value = v).catch(console.error);
                 else
                     this.value = value;
             });
