@@ -84,8 +84,8 @@ export class Hyprland extends Service {
             'keyboard-layout': ['string', 'string'],
             'monitor-added': ['string'],
             'monitor-removed': ['string'],
-            'workspace-added': ['string'],
-            'workspace-removed': ['string'],
+            'workspace-added': ['int', 'string'],
+            'workspace-removed': ['int', 'string'],
             'client-added': ['string'],
             'client-removed': ['string'],
             'fullscreen': ['boolean'],
@@ -103,6 +103,7 @@ export class Hyprland extends Service {
     private _clients: Map<string, Client> = new Map();
     private _decoder = new TextDecoder();
     private _encoder = new TextEncoder();
+    private _eventActions: Map<string, (argv: string[]) => any> = new Map();
 
     get active() { return this._active; }
     get monitors() { return Array.from(this._monitors.values()); }
@@ -139,6 +140,108 @@ export class Hyprland extends Service {
 
         // this._syncWorkspaces();
         // this._syncClients();
+
+        this._eventActions.set('workspacev2', async _ =>
+            await this._syncMonitors(),
+        );
+
+        this._eventActions.set('focusedmon', async _ =>
+            await this._syncMonitors(),
+        );
+
+        this._eventActions.set('monitorremoved', async argv => {
+            await this._syncMonitors();
+            this.emit('monitor-removed', argv[0]);
+        });
+
+        this._eventActions.set('monitoradded', async argv => {
+            await this._syncMonitors();
+            this.emit('monitor-added', argv[0]);
+        });
+
+        this._eventActions.set('createworkspacev2', async argv => {
+            await this._syncWorkspaces();
+            this.emit('workspace-added', argv[0], argv[1]);
+        });
+
+        this._eventActions.set('destroyworkspacev2', async argv => {
+            await this._syncWorkspaces();
+            this.emit('workspace-removed', argv[0], argv[1]);
+        });
+
+        this._eventActions.set('openwindow', async argv => {
+            await this._syncClients(false);
+            await this._syncWorkspaces(false);
+            ['clients', 'workspaces'].forEach(e => this.notify(e));
+            this.emit('client-added', '0x' + argv[0]);
+        });
+
+        this._eventActions.set('movewindowv2', async _ => {
+            await this._syncClients(false);
+            await this._syncWorkspaces(false);
+            ['clients', 'workspaces'].forEach(e => this.notify(e));
+        });
+
+        this._eventActions.set('windowtitle', async _ => {
+            await this._syncClients(false);
+            await this._syncWorkspaces(false);
+            ['clients', 'workspaces'].forEach(e => this.notify(e));
+        });
+
+        this._eventActions.set('moveworkspacev2', async _ => {
+            await this._syncClients(false);
+            await this._syncWorkspaces(false);
+            await this._syncMonitors(false);
+            ['clients', 'workspaces', 'monitors'].forEach(e => this.notify(e));
+        });
+
+        this._eventActions.set('fullscreen', async argv => {
+            await this._syncClients(false);
+            await this._syncWorkspaces(false);
+            ['clients', 'workspaces'].forEach(e => this.notify(e));
+            this.emit('fullscreen', argv[0] === '1');
+        });
+
+        this._eventActions.set('activewindow', argv => {
+            this._active.client.updateProperty('class', argv[0]);
+            this._active.client.updateProperty('title', argv.slice(1).join(','));
+            this._active.client.emit('changed');
+        });
+
+        this._eventActions.set('activewindowv2', argv => {
+            this._active.client.updateProperty('address', '0x' + argv[0]);
+            this._active.client.emit('changed');
+        });
+
+        this._eventActions.set('closewindow', async argv => {
+            await this._syncWorkspaces(false);
+            await this._syncClients(false);
+            if (this._active.client.address === '0x' + argv[0]) {
+                this._active.client.updateProperty('class', '');
+                this._active.client.updateProperty('title', '');
+                this._active.client.updateProperty('address', '');
+                this._active.client.emit('changed');
+            }
+            ['clients', 'workspaces'].forEach(e => this.notify(e));
+            this.emit('client-removed', '0x' + argv[0]);
+        });
+
+        this._eventActions.set('urgent', argv => {
+            this.emit('urgent-window', '0x' + argv[0]);
+        });
+
+        this._eventActions.set('activelayout', argv => {
+            this.emit('keyboard-layout', `${argv[0]}`, `${argv[1]}`);
+        });
+
+        this._eventActions.set('changefloatingmode', async _ => {
+            await this._syncClients();
+        });
+
+        this._eventActions.set('submap', argv => {
+            this.emit('submap', argv[0]);
+        });
+
 
         this._watchSocket(new Gio.DataInputStream({
             close_base_stream: true,
@@ -265,103 +368,9 @@ export class Hyprland extends Service {
         const argv = params.split(',');
 
         try {
-            switch (e) {
-                case 'workspace':
-                case 'focusedmon':
-                    await this._syncMonitors();
-                    break;
-
-                case 'monitorremoved':
-                    await this._syncMonitors();
-                    this.emit('monitor-removed', argv[0]);
-                    break;
-
-                case 'monitoradded':
-                    await this._syncMonitors();
-                    this.emit('monitor-added', argv[0]);
-                    break;
-
-                case 'createworkspace':
-                    await this._syncWorkspaces();
-                    this.emit('workspace-added', argv[0]);
-                    break;
-
-                case 'destroyworkspace':
-                    await this._syncWorkspaces();
-                    this.emit('workspace-removed', argv[0]);
-                    break;
-
-                case 'openwindow':
-                    await this._syncClients(false);
-                    await this._syncWorkspaces(false);
-                    ['clients', 'workspaces'].forEach(e => this.notify(e));
-                    this.emit('client-added', '0x' + argv[0]);
-                    break;
-
-                case 'movewindow':
-                case 'windowtitle':
-                    await this._syncClients(false);
-                    await this._syncWorkspaces(false);
-                    ['clients', 'workspaces'].forEach(e => this.notify(e));
-                    break;
-
-                case 'moveworkspace':
-                    await this._syncClients(false);
-                    await this._syncWorkspaces(false);
-                    await this._syncMonitors(false);
-                    ['clients', 'workspaces', 'monitors'].forEach(e => this.notify(e));
-                    break;
-
-                case 'fullscreen':
-                    await this._syncClients(false);
-                    await this._syncWorkspaces(false);
-                    ['clients', 'workspaces'].forEach(e => this.notify(e));
-                    this.emit('fullscreen', argv[0] === '1');
-                    break;
-
-                case 'activewindow':
-                    this._active.client.updateProperty('class', argv[0]);
-                    this._active.client.updateProperty('title', argv.slice(1).join(','));
-                    this._active.client.emit('changed');
-                    break;
-
-                case 'activewindowv2':
-                    this._active.client.updateProperty('address', '0x' + argv[0]);
-                    this._active.client.emit('changed');
-                    break;
-
-                case 'closewindow':
-                    await this._syncWorkspaces(false);
-                    await this._syncClients(false);
-                    if (this._active.client.address === '0x' + argv[0]) {
-                        this._active.client.updateProperty('class', '');
-                        this._active.client.updateProperty('title', '');
-                        this._active.client.updateProperty('address', '');
-                        this._active.client.emit('changed');
-                    }
-                    ['clients', 'workspaces'].forEach(e => this.notify(e));
-                    this.emit('client-removed', '0x' + argv[0]);
-                    break;
-
-                case 'urgent':
-                    this.emit('urgent-window', '0x' + argv[0]);
-                    break;
-
-                case 'activelayout':
-                    this.emit('keyboard-layout', `${argv[0]}`, `${argv[1]}`);
-                    break;
-
-                case 'changefloatingmode': {
-                    await this._syncClients();
-                    break;
-                }
-                case 'submap':
-                    this.emit('submap', argv[0]);
-                    break;
-
-                default:
-                    break;
-            }
+            const action = this._eventActions.get(e);
+            if (action)
+                action(argv);
         } catch (error) {
             if (error instanceof Error)
                 console.error(error.message);
