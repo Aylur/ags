@@ -96,11 +96,11 @@ export function subprocess(
                     null,
                     (stdin, res) => {
                         stdin.write_all_finish(res)[0]
-                        ? resolve()
-                        : reject();
-                    }
+                            ? resolve()
+                            : reject();
+                    },
                 );
-            })
+            });
         },
     });
 }
