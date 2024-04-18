@@ -20,6 +20,7 @@ function proc(arg: Args | string | string[]) {
 
     return Gio.Subprocess.new(
         cmd,
+        Gio.SubprocessFlags.STDIN_PIPE  |
         Gio.SubprocessFlags.STDOUT_PIPE |
         Gio.SubprocessFlags.STDERR_PIPE,
     );
@@ -54,6 +55,11 @@ export function subprocess(
 ) {
     const p = proc(argsOrCmd);
 
+    const stdin = new Gio.DataOutputStream({
+        base_stream: p.get_stdin_pipe(),
+        close_base_stream: true,
+    });
+
     const stdout = new Gio.DataInputStream({
         base_stream: p.get_stdout_pipe(),
         close_base_stream: true,
@@ -77,7 +83,26 @@ export function subprocess(
 
     readStream(stdout, onOut ?? out);
     readStream(stderr, onErr ?? err);
-    return p;
+
+    return Object.assign(p, {
+        write(str: string): void {
+            stdin.write_all(new TextEncoder().encode(str), null);
+        },
+        writeAsync(str: string): Promise<void> {
+            return new Promise((resolve, reject) => {
+                stdin.write_all_async(
+                    new TextEncoder().encode(str),
+                    GLib.PRIORITY_DEFAULT,
+                    null,
+                    (stdin, res) => {
+                        stdin.write_all_finish(res)[0]
+                        ? resolve()
+                        : reject();
+                    }
+                );
+            })
+        },
+    });
 }
 
 export function exec<Out = string, Err = string>(args: Args<Out, Err>): Out | Err
