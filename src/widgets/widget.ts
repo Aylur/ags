@@ -493,11 +493,11 @@ export class AgsWidget<Attr> extends Gtk.Widget implements Widget<Attr> {
 
     isHovered(event?: Gdk.Event) {
         let [x, y] = this.get_pointer();
-        const { width: w, height: h } = this.get_allocation();
+        const { x: pos_x, y: pos_y, width: w, height: h } = this.get_allocation();
         if (event)
             [, x, y] = event.get_coords();
 
-        return x > 0 && x < w && y > 0 && y < h;
+        return x >= pos_x && y >= pos_y && x < (pos_x + w) && y <= (pos_y + h);
     }
 
     get click_through() { return !!this._get('click-through'); }
