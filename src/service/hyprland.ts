@@ -141,7 +141,8 @@ export class Hyprland extends Service {
         // this._syncWorkspaces();
         // this._syncClients();
 
-        let socketPath = GLib.file_test(`${XDG_RUNTIME_DIR}/hypr/${HIS}/.socket2.sock`, GLib.FileTest.EXISTS) ? `${XDG_RUNTIME_DIR}/hypr/${HIS}/.socket2.sock` : `/tmp/hypr/${HIS}/.socket2.sock`;
+        const socketPath = GLib.file_test(`${XDG_RUNTIME_DIR}/hypr/${HIS}/.socket2.sock`, GLib.FileTest.EXISTS) ?
+                                `${XDG_RUNTIME_DIR}/hypr/${HIS}/.socket2.sock` : `/tmp/hypr/${HIS}/.socket2.sock`;
 
         this._watchSocket(new Gio.DataInputStream({
             close_base_stream: true,
@@ -171,7 +172,8 @@ export class Hyprland extends Service {
     };
 
     private _socketStream(cmd: string) {
-        let socketPath = GLib.file_test(`${XDG_RUNTIME_DIR}/hypr/${HIS}/.socket.sock`, GLib.FileTest.EXISTS) ? `${XDG_RUNTIME_DIR}/hypr/${HIS}/.socket.sock` : `/tmp/hypr/${HIS}/.socket.sock`;
+        const socketPath = GLib.file_test(`${XDG_RUNTIME_DIR}/hypr/${HIS}/.socket.sock`, GLib.FileTest.EXISTS) ?
+                                `${XDG_RUNTIME_DIR}/hypr/${HIS}/.socket.sock` : `/tmp/hypr/${HIS}/.socket.sock`;
         const connection = socket(socketPath);
 
         connection
