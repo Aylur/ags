@@ -1,4 +1,4 @@
-# git
+# 1.8.2
 
 ## Features
 
@@ -8,7 +8,7 @@
 - Network.frequency
 - recursive Utils.monitorFile
 - add: Network.vpn
-- improve exec utils
+- add write and writeAsync to Utils.subprocess (#388)
 
 ## Fixes
 
@@ -18,6 +18,7 @@
 - dispose signal on Variable
 - skip unnecessary value setting in Utils.derive and Utils.merge
 - properly log errors from Variables
+- adjust Hyprland socket (#398)
 
 ## Breaking Changes
 
