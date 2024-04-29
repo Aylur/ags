@@ -501,9 +501,11 @@ export class Network extends Service {
     };
 
     private _getDevice(devType: NM.DeviceType) {
-        return this._client
+        const valid_devices = this._client
             .get_devices()
-            .find(device => device.get_device_type() === devType);
+            .filter(device => device.get_device_type() === devType);
+
+        return valid_devices.find(d => d.active_connection !== null) || valid_devices.at(0);
     }
 
     private _clientReady() {
