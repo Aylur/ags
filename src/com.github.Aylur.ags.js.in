@@ -20,6 +20,7 @@
  */
 
 import { exit, programArgs, programInvocationName } from "system";
+import GIR from "gi://GIRepository?version=2.0";
 
 imports.package.init({
     name: '@APP_ID@',
@@ -28,9 +29,8 @@ imports.package.init({
     libdir: '@LIBDIR@',
 });
 
-const { Repository } = imports.gi.GIRepository;
-Repository.prepend_search_path('@LIBDIR@');
-Repository.prepend_library_path('@LIBDIR@');
+GIR.Repository.prepend_search_path('@LIBDIR@');
+GIR.Repository.prepend_library_path('@LIBDIR@');
 
 const module = await import('resource://@RESOURCE_PATH@/main.js');
 const exitCode = await module.main([programInvocationName, ...programArgs]);
