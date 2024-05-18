@@ -157,7 +157,7 @@ export class CircularProgress<
         return Math.abs(start - end) <= epsilon;
     }
 
-    private _mapArcValueToRange(start: number, end: number, value: number): number {
+    private _scaleArcValue(start: number, end: number, value: number): number {
         // Ensure that start and end are between 0 and 1
         start = (start % 1 + 1) % 1;
         end = (end % 1 + 1) % 1;
@@ -167,13 +167,13 @@ export class CircularProgress<
         if (arcLength < 0)
             arcLength += 1; // Adjust for circular representation
 
-        // Calculate the position on the arc based on the percentage value
-        let position = start + (arcLength * value);
+        // Calculate the scaled value on the arc based on the arcLength
+        let scaled = arcLength * value;
 
-        // Ensure the position is between 0 and 1
-        position = (position % 1 + 1) % 1;
+        // Ensure the scaled value is between 0 and 1
+        scaled = (scaled % 1 + 1) % 1;
 
-        return position;
+        return scaled;
     }
 
     vfunc_draw(cr: Context): boolean {
@@ -192,31 +192,33 @@ export class CircularProgress<
 
         const startBackground = this._toRadian(this.start_at);
         let endBackground = this._toRadian(this.end_at);
-        let rangedValue = this.value + this.start_at;
+        let rangedValue;
 
         const isCircle = this._isFullCircle(this.start_at, this.end_at);
 
         if (isCircle) {
             // Redefine endDraw in radius to create an accurate full circle
             endBackground = startBackground + 2 * Math.PI;
+            rangedValue = this._toRadian(this.value);
         } else {
-            // Range the value for the arc shape
-            rangedValue = this._mapArcValueToRange(
-                this.start_at,
-                this.end_at,
-                this.value,
+            // Scale the value for the arc shape
+            rangedValue = this._toRadian(
+                this._scaleArcValue(
+                    this.start_at,
+                    this.end_at,
+                    this.value,
+                ),
             );
         }
 
-        const to = this._toRadian(rangedValue);
         let startProgress, endProgress;
 
         if (this.inverted) {
-            startProgress = (2 * Math.PI - to) - startBackground;
-            endProgress = (2 * Math.PI - startBackground) - startBackground;
+            startProgress = endBackground - rangedValue;
+            endProgress = endBackground;
         } else {
             startProgress = startBackground;
-            endProgress = to;
+            endProgress = startBackground + rangedValue;
         }
 
         // Draw background
