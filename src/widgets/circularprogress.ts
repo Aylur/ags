@@ -224,9 +224,25 @@ export class CircularProgress<
         // Draw background
         cr.setSourceRGBA(bg.red, bg.green, bg.blue, bg.alpha);
         cr.arc(center.x, center.y, radius, startBackground, endBackground);
-
         cr.setLineWidth(bgStroke);
         cr.stroke();
+
+        // Draw rounded background ends
+        if (this.rounded) {
+            const start = {
+                x: center.x + Math.cos(startBackground) * radius,
+                y: center.y + Math.sin(startBackground) * radius,
+            };
+            const end = {
+                x: center.x + Math.cos(endBackground) * radius,
+                y: center.y + Math.sin(endBackground) * radius,
+            };
+            cr.setLineWidth(0);
+            cr.arc(start.x, start.y, fgStroke / 2, 0, 0 - 0.01);
+            cr.fill();
+            cr.arc(end.x, end.y, fgStroke / 2, 0, 0 - 0.01);
+            cr.fill();
+        }
 
         // Draw progress
         cr.setSourceRGBA(fg.red, fg.green, fg.blue, fg.alpha);
@@ -234,15 +250,15 @@ export class CircularProgress<
         cr.setLineWidth(fgStroke);
         cr.stroke();
 
-        // Draw rounded ends
+        // Draw rounded progress ends
         if (this.rounded) {
             const start = {
-                x: center.x + Math.cos(startBackground) * radius,
-                y: center.y + Math.sin(startBackground) * radius,
+                x: center.x + Math.cos(startProgress) * radius,
+                y: center.y + Math.sin(startProgress) * radius,
             };
             const end = {
-                x: center.x + Math.cos(to) * radius,
-                y: center.y + Math.sin(to) * radius,
+                x: center.x + Math.cos(endProgress) * radius,
+                y: center.y + Math.sin(endProgress) * radius,
             };
             cr.setLineWidth(0);
             cr.arc(start.x, start.y, fgStroke / 2, 0, 0 - 0.01);
