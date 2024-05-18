@@ -1,16 +1,16 @@
 import GObject from 'gi://GObject';
-import { pspec, registerGObject, PspecFlag, PspecType } from './gobject.js';
+import { pspec, registerGObject, PspecFlag, PspecType } from './utils/gobject.js';
 
-export const kebabify = (str: string) => str
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replaceAll('_', '-')
-    .toLowerCase();
+export type Connectable = {
+    connect: (sig: string, callback: (...args: unknown[]) => unknown) => number
+    disconnect: (id: number) => void
+}
 
 export type OnlyString<S extends string | unknown> = S extends string ? S : never;
 
-export type Props<T> = Pick<T, {
+export type Props<T> = Omit<Pick<T, {
     [K in keyof T]: T[K] extends (...args: any[]) => any ? never : OnlyString<K>
-}[keyof T]>;
+}[keyof T]>, 'g_type_instance'>;
 
 export type BindableProps<T> = {
     [K in keyof T]: Binding<any, any, NonNullable<T[K]>> | T[K];
@@ -23,19 +23,35 @@ export class Binding<
 > {
     emitter: Emitter;
     prop: Prop;
-    transformFn = (v: Return) => v;
+    transformFn = (v: any) => v; // see #262
     constructor(emitter: Emitter, prop: Prop) {
         this.emitter = emitter;
         this.prop = prop;
     }
 
+    /** alias for transform */
+    as<T>(fn: (v: Return) => T) { return this.transform(fn); }
+
     transform<T>(fn: (v: Return) => T) {
         const bind = new Binding<Emitter, Prop, T>(this.emitter, this.prop);
         const prev = this.transformFn;
-        // @ts-expect-error
         bind.transformFn = (v: Return) => fn(prev(v));
         return bind;
     }
+}
+
+interface Services {
+    applications: typeof import('./service/applications.js').default
+    audio: typeof import('./service/audio.js').default
+    battery: typeof import('./service/battery.js').default
+    bluetooth: typeof import('./service/bluetooth.js').default
+    hyprland: typeof import('./service/hyprland.js').default
+    mpris: typeof import('./service/mpris.js').default
+    network: typeof import('./service/network.js').default
+    notifications: typeof import('./service/notifications.js').default
+    powerprofiles: typeof import('./service/powerprofiles.js').default
+    systemtray: typeof import('./service/systemtray.js').default
+    greetd: typeof import('./service/greetd.js').default
 }
 
 export default class Service extends GObject.Object {
@@ -44,6 +60,10 @@ export default class Service extends GObject.Object {
             GTypeName: 'AgsService',
             Signals: { 'changed': {} },
         }, this);
+    }
+
+    static async import<S extends keyof Services>(service: S): Promise<Services[S]> {
+        return (await import(`./service/${service}.js`)).default;
     }
 
     static pspec(name: string, type: PspecType = 'jsobject', handle: PspecFlag = 'r') {

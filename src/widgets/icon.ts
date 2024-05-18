@@ -1,36 +1,40 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import Gdk from 'gi://Gdk?version=3.0';
-import { Binding } from '../service.js';
 import cairo from '@girs/cairo-1.0';
 import { lookUpIcon } from '../utils.js';
 
-export type Props = BaseProps<AgsIcon, Gtk.Image.ConstructorProperties & {
+type Ico = string | GdkPixbuf.Pixbuf
+
+export type IconProps<
+    Attr = unknown,
+    Self = Icon<Attr>,
+> = BaseProps<Self, Gtk.Image.ConstructorProperties & {
     size?: number
-    icon?: // Binding is here because unions mess up BaseProps
-    | string
-    | GdkPixbuf.Pixbuf
-    | Binding<any, any, string>
-    | Binding<any, any, GdkPixbuf.Pixbuf>;
-}>
+    icon?: Ico;
+}, Attr>
 
-export type IconProps = Props | string | GdkPixbuf.Pixbuf | undefined
+export function newIcon<
+    Attr = unknown
+>(...props: ConstructorParameters<typeof Icon<Attr>>) {
+    return new Icon(...props);
+}
 
-export default class AgsIcon extends AgsWidget(Gtk.Image) {
+export interface Icon<Attr> extends Widget<Attr> { }
+export class Icon<Attr> extends Gtk.Image {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'size': ['double', 'rw'],
                 'icon': ['jsobject', 'rw'],
-                'type': ['string', 'rw'],
             },
         });
     }
 
-    constructor(props: IconProps = {}) {
-        const { icon = '', ...rest } = props as Props;
+    constructor(props: IconProps<Attr> | Ico = {}) {
+        const { icon = '', ...rest } = props as IconProps<Attr>;
         super(typeof props === 'string' || props instanceof GdkPixbuf.Pixbuf
             ? {}
             : rest as Gtk.Image.ConstructorProperties);
@@ -42,30 +46,33 @@ export default class AgsIcon extends AgsWidget(Gtk.Image) {
     }
 
     get size() { return this._get('size') || this._fontSize || 0; }
-    set size(size: number) { this._set('size', size); }
+    set size(size: number) {
+        this._set('size', size);
+        this.queue_draw();
+    }
 
     get icon() { return this._get('icon'); }
     set icon(icon: string | GdkPixbuf.Pixbuf) {
         this._set('icon', icon);
-        this._set('type', 'named');
+        this._set('type', 'named', false);
 
         if (typeof icon === 'string') {
             if (lookUpIcon(icon)) {
-                this._set('type', 'named');
+                this._set('type', 'named', false);
             }
             else if (GLib.file_test(icon, GLib.FileTest.EXISTS)) {
-                this._set('type', 'file');
+                this._set('type', 'file', false);
             }
             else if (icon !== '') {
-                console.error(Error(`can't assign "${icon}" as icon, ` +
+                console.warn(Error(`can't assign "${icon}" as icon, ` +
                     'it is not a file nor a named icon'));
             }
         }
         else if (icon instanceof GdkPixbuf.Pixbuf) {
-            this._set('type', 'pixbuf');
+            this._set('type', 'pixbuf', false);
         }
         else {
-            console.error(Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));
+            console.warn(Error(`expected Pixbuf or string for icon, but got ${typeof icon}`));
         }
 
         this._size();
@@ -118,3 +125,5 @@ export default class AgsIcon extends AgsWidget(Gtk.Image) {
         return super.vfunc_draw(cr);
     }
 }
+
+export default Icon;

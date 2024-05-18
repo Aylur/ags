@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 const POLICY = {
@@ -8,17 +8,30 @@ const POLICY = {
     'external': Gtk.PolicyType.EXTERNAL,
 } as const;
 
-export type Policy = keyof typeof POLICY;
+type Policy = keyof typeof POLICY;
 
-export type ScrollableProps = BaseProps<AgsScrollable, Gtk.ScrolledWindow.ConstructorProperties &
-{
+export type ScrollableProps<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+    Self = Scrollable<Child, Attr>,
+> = BaseProps<Self, Gtk.ScrolledWindow.ConstructorProperties & {
+    child?: Child
     hscroll?: Policy,
     vscroll?: Policy,
-}>
+}, Attr>
 
-export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
+export function newScrollable<
+    Child extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof Scrollable<Child, Attr>>) {
+    return new Scrollable(...props);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Scrollable<Child, Attr> extends Widget<Attr> { }
+export class Scrollable<Child extends Gtk.Widget, Attr> extends Gtk.ScrolledWindow {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'hscroll': ['string', 'rw'],
                 'vscroll': ['string', 'rw'],
@@ -26,12 +39,28 @@ export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
         });
     }
 
-    constructor(props: ScrollableProps = {}) {
+    constructor(props: ScrollableProps<Child, Attr> = {}, child?: Child) {
+        if (child)
+            props.child = child;
+
         super({
             ...props as Gtk.ScrolledWindow.ConstructorProperties,
             hadjustment: new Gtk.Adjustment(),
             vadjustment: new Gtk.Adjustment(),
         });
+
+        this.connect('destroy', () => {
+            if (this.child instanceof Gtk.Viewport)
+                this.child.child.destroy();
+        });
+    }
+
+    get child() { return super.child as Child; }
+    set child(child: Child) {
+        if (this.child instanceof Gtk.Viewport)
+            this.child.child = child;
+        else
+            super.child = child;
     }
 
     setScroll(orientation: 'h' | 'v', scroll: Policy) {
@@ -63,3 +92,5 @@ export default class AgsScrollable extends AgsWidget(Gtk.ScrolledWindow) {
         );
     }
 }
+
+export default Scrollable;

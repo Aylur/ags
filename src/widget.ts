@@ -1,138 +1,125 @@
-/* eslint-disable max-len */
 import Gtk from 'gi://Gtk?version=3.0';
-import AgsWidget, { type BaseProps, type Connectable } from './widgets/widget.js';
-import AgsBox from './widgets/box.js';
-import AgsCenterBox from './widgets/centerbox.js';
-import AgsEventBox from './widgets/eventbox.js';
-import AgsIcon from './widgets/icon.js';
-import AgsLabel from './widgets/label.js';
-import AgsButton from './widgets/button.js';
-import AgsSlider from './widgets/slider.js';
-import AgsScrollable from './widgets/scrollable.js';
-import AgsStack from './widgets/stack.js';
-import AgsOverlay from './widgets/overlay.js';
-import AgsRevealer from './widgets/revealer.js';
-import AgsProgressBar from './widgets/progressbar.js';
-import AgsEntry from './widgets/entry.js';
-import { AgsMenu, AgsMenuItem } from './widgets/menu.js';
-import AgsWindow from './widgets/window.js';
-import AgsCircularProgress from './widgets/circularprogress.js';
+import { register, type BaseProps, type Widget as TWidget } from './widgets/widget.js';
+import { newBox as Box } from './widgets/box.js';
+import { newButton as Button } from './widgets/button.js';
+import { newCalendar as Calendar } from './widgets/calendar.js';
+import { newCenterBox as CenterBox } from './widgets/centerbox.js';
+import { newCircularProgress as CircularProgress } from './widgets/circularprogress.js';
+import { newColorButton as ColorButton } from './widgets/colorbutton.js';
+import { newDrawingArea as DrawingArea } from './widgets/drawingarea.js';
+import { newEntry as Entry } from './widgets/entry.js';
+import { newEventBox as EventBox } from './widgets/eventbox.js';
+import { newFileChooserButton as FileChooserButton } from './widgets/filechooserbutton.js';
+import { newFixed as Fixed } from './widgets/fixed.js';
+import { newFlowBox as FlowBox } from './widgets/flowbox.js';
+import { newFontButton as FontButton } from './widgets/fontbutton.js';
+import { newIcon as Icon } from './widgets/icon.js';
+import { newLabel as Label } from './widgets/label.js';
+import { newLevelBar as LevelBar } from './widgets/levelbar.js';
+import { newListBox as ListBox } from './widgets/listbox.js';
+import { newMenu as Menu } from './widgets/menu.js';
+import { newMenuBar as MenuBar } from './widgets/menubar.js';
+import { newMenuItem as MenuItem } from './widgets/menuitem.js';
+import { newOverlay as Overlay } from './widgets/overlay.js';
+import { newProgressBar as ProgressBar } from './widgets/progressbar.js';
+import { newRevealer as Revealer } from './widgets/revealer.js';
+import { newScrollable as Scrollable } from './widgets/scrollable.js';
+import { newSeparator as Separator } from './widgets/separator.js';
+import { newSlider as Slider } from './widgets/slider.js';
+import { newSpinButton as SpinButton } from './widgets/spinbutton.js';
+import { newSpinner as Spinner } from './widgets/spinner.js';
+import { newStack as Stack } from './widgets/stack.js';
+import { newSwitch as Switch } from './widgets/switch.js';
+import { newToggleButton as ToggleButton } from './widgets/togglebutton.js';
+import { newWindow as Window } from './widgets/window.js';
 
-Widget.createCtor = createCtor;
-export function createCtor<T extends { new(...args: any[]): any }>(Widget: T) {
-    return (...props: ConstructorParameters<T>) => {
-        return new Widget(...props) as InstanceType<T> & Connectable<InstanceType<T>>;
-    };
-}
-
-export const Window = createCtor(AgsWindow);
-export const Box = createCtor(AgsBox);
-export const Button = createCtor(AgsButton);
-export const CenterBox = createCtor(AgsCenterBox);
-export const CircularProgress = createCtor(AgsCircularProgress);
-export const Entry = createCtor(AgsEntry);
-export const EventBox = createCtor(AgsEventBox);
-export const Icon = createCtor(AgsIcon);
-export const Label = createCtor(AgsLabel);
-export const Menu = createCtor(AgsMenu);
-export const MenuItem = createCtor(AgsMenuItem);
-export const Overlay = createCtor(AgsOverlay);
-export const ProgressBar = createCtor(AgsProgressBar);
-export const Revealer = createCtor(AgsRevealer);
-export const Scrollable = createCtor(AgsScrollable);
-export const Slider = createCtor(AgsSlider);
-export const Stack = createCtor(AgsStack);
-
-export default Widget;
-
-const ctors = new Map();
-export function Widget<
-    T extends typeof Gtk.Widget,
-    Props = ConstructorParameters<T>[0],
->({ type, ...props }:
-    { type: T } & Props,
+// ts can't compile export default { subclass, Box, Button ... }
+// so we use a function and add members to it instead
+// to bundle everything in a default export
+export default function W<
+    T extends { new(...args: any[]): Gtk.Widget },
+    Props,
+>(
+    Base: T, typename = Base.name,
 ) {
-    console.warn('Calling Widget({ type }) is deprecated. ' +
-        `Use Widget.subclass instead, or open up an issue/PR to include ${type.name} on Widget`);
-
-    if (ctors.has(type))
-        // @ts-expect-error
-        return new ctors.get(type)(props);
-
-    const Ctor = AgsWidget(type);
-    ctors.set(type, Ctor);
-    return new Ctor(props);
-}
-
-// so they are still accessible when importing only Widget
-Widget.Box = Box;
-Widget.Button = Button;
-Widget.CenterBox = CenterBox;
-Widget.CircularProgress = CircularProgress;
-Widget.Entry = Entry;
-Widget.EventBox = EventBox;
-Widget.Icon = Icon;
-Widget.Label = Label;
-Widget.Menu = Menu;
-Widget.MenuItem = MenuItem;
-Widget.Overlay = Overlay;
-Widget.ProgressBar = ProgressBar;
-Widget.Revealer = Revealer;
-Widget.Scrollable = Scrollable;
-Widget.Slider = Slider;
-Widget.Stack = Stack;
-Widget.Window = Window;
-
-Widget.subclass = subclass;
-export function subclass<T extends typeof Gtk.Widget, Props>(W: T, typename = W.name) {
-    const Widget = AgsWidget(W, typename);
-    return (props: BaseProps<InstanceType<typeof Widget>, Props>) => {
-        return new Widget(props as Gtk.Widget.ConstructorProperties) as
-            InstanceType<typeof Widget> & Connectable<InstanceType<typeof Widget>>;
+    class Subclassed extends Base {
+        static { register(this, { typename }); }
+        constructor(...params: any[]) { super(...params); }
+    }
+    type Instance<Attr> = InstanceType<typeof Subclassed> & TWidget<Attr>;
+    return <Attr>(props: BaseProps<Instance<Attr>, Props, Attr>) => {
+        return new Subclassed(props) as Instance<Attr>;
     };
 }
 
-export const Calendar = subclass<typeof Gtk.Calendar, Gtk.Calendar.ConstructorProperties>(Gtk.Calendar);
-Widget.Calendar = Calendar;
+export {
+    register,
+    W as subclass,
+    Box,
+    Button,
+    Calendar,
+    CenterBox,
+    CircularProgress,
+    ColorButton,
+    DrawingArea,
+    Entry,
+    EventBox,
+    FileChooserButton,
+    Fixed,
+    FlowBox,
+    FontButton,
+    Icon,
+    Label,
+    LevelBar,
+    ListBox,
+    Menu,
+    MenuBar,
+    MenuItem,
+    Overlay,
+    ProgressBar,
+    Revealer,
+    Scrollable,
+    Separator,
+    Slider,
+    SpinButton,
+    Spinner,
+    Stack,
+    Switch,
+    ToggleButton,
+    Window,
+};
 
-export const ColorButton = subclass<typeof Gtk.ColorButton, Gtk.ColorButton.ConstructorProperties>(Gtk.ColorButton);
-Widget.ColorButton = ColorButton;
-
-export const DrawingArea = subclass<typeof Gtk.DrawingArea, Gtk.DrawingArea.ConstructorProperties>(Gtk.DrawingArea);
-Widget.DrawingArea = DrawingArea;
-
-export const FileChooserButton = subclass<typeof Gtk.FileChooserButton, Gtk.FileChooserButton.ConstructorProperties>(Gtk.FileChooserButton);
-Widget.FileChooserButton = FileChooserButton;
-
-export const Fixed = subclass<typeof Gtk.Fixed, Gtk.Fixed.ConstructorProperties>(Gtk.Fixed);
-Widget.Fixed = Fixed;
-
-export const FlowBox = subclass<typeof Gtk.FlowBox, Gtk.FlowBox.ConstructorProperties>(Gtk.FlowBox);
-Widget.FlowBox = FlowBox;
-
-export const FontButton = subclass<typeof Gtk.FontButton, Gtk.FontButton.ConstructorProperties>(Gtk.FontButton);
-Widget.FontButton = FontButton;
-
-export const LevelBar = subclass<typeof Gtk.LevelBar, Gtk.LevelBar.ConstructorProperties>(Gtk.LevelBar);
-Widget.LevelBar = LevelBar;
-
-export const ListBox = subclass<typeof Gtk.ListBox, Gtk.ListBox.ConstructorProperties>(Gtk.ListBox);
-Widget.ListBox = ListBox;
-
-export const MenuBar = subclass<typeof Gtk.MenuBar, Gtk.MenuBar.ConstructorProperties>(Gtk.MenuBar);
-Widget.MenuBar = MenuBar;
-
-export const Separator = subclass<typeof Gtk.Separator, Gtk.Separator.ConstructorProperties>(Gtk.Separator);
-Widget.Separator = Separator;
-
-export const SpinButton = subclass<typeof Gtk.SpinButton, Gtk.SpinButton.ConstructorProperties>(Gtk.SpinButton);
-Widget.SpinButton = SpinButton;
-
-export const Spinner = subclass<typeof Gtk.Spinner, Gtk.Spinner.ConstructorProperties>(Gtk.Spinner);
-Widget.Spinner = Spinner;
-
-export const Switch = subclass<typeof Gtk.Switch, Gtk.Switch.ConstructorProperties>(Gtk.Switch);
-Widget.Switch = Switch;
-
-export const ToggleButton = subclass<typeof Gtk.ToggleButton, Gtk.ToggleButton.ConstructorProperties>(Gtk.ToggleButton);
-Widget.ToggleButton = ToggleButton;
+W.register = register;
+W.subclass = W;
+W.Box = Box;
+W.Button = Button;
+W.Calendar = Calendar;
+W.CenterBox = CenterBox;
+W.CircularProgress = CircularProgress;
+W.ColorButton = ColorButton;
+W.DrawingArea = DrawingArea;
+W.Entry = Entry;
+W.EventBox = EventBox;
+W.FileChooserButton = FileChooserButton;
+W.Fixed = Fixed;
+W.FlowBox = FlowBox;
+W.FontButton = FontButton;
+W.Icon = Icon;
+W.Label = Label;
+W.LevelBar = LevelBar;
+W.ListBox = ListBox;
+W.Menu = Menu;
+W.MenuBar = MenuBar;
+W.MenuItem = MenuItem;
+W.Overlay = Overlay;
+W.ProgressBar = ProgressBar;
+W.Revealer = Revealer;
+W.Scrollable = Scrollable;
+W.Separator = Separator;
+W.Slider = Slider;
+W.SpinButton = SpinButton;
+W.Spinner = Spinner;
+W.Stack = Stack;
+W.Switch = Switch;
+W.ToggleButton = ToggleButton;
+W.Window = Window;

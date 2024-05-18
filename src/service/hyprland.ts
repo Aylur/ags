@@ -3,10 +3,9 @@ import Gio from 'gi://Gio';
 import Service from '../service.js';
 
 Gio._promisify(Gio.DataInputStream.prototype, 'read_upto_async');
-const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
 
-const socket = (path: string) => new Gio.SocketClient()
-    .connect(new Gio.UnixSocketAddress({ path }), null);
+const HIS = GLib.getenv('HYPRLAND_INSTANCE_SIGNATURE');
+const XDG_RUNTIME_DIR = GLib.getenv('XDG_RUNTIME_DIR') || '/';
 
 export class ActiveClient extends Service {
     static {
@@ -24,11 +23,6 @@ export class ActiveClient extends Service {
     get address() { return this._address; }
     get title() { return this._title; }
     get class() { return this._class; }
-
-    updateProperty(prop: 'address' | 'title' | 'class', value: unknown) {
-        super.updateProperty(prop, value);
-        this.emit('changed');
-    }
 }
 
 export class ActiveID extends Service {
@@ -48,7 +42,6 @@ export class ActiveID extends Service {
     update(id: number, name: string) {
         super.updateProperty('id', id);
         super.updateProperty('name', name);
-        this.emit('changed');
     }
 }
 
@@ -90,10 +83,10 @@ export class Hyprland extends Service {
             'keyboard-layout': ['string', 'string'],
             'monitor-added': ['string'],
             'monitor-removed': ['string'],
-            'client-added': ['string'],
-            'client-removed': ['string'],
             'workspace-added': ['string'],
             'workspace-removed': ['string'],
+            'client-added': ['string'],
+            'client-removed': ['string'],
             'fullscreen': ['boolean'],
         }, {
             'active': ['jsobject'],
@@ -103,10 +96,10 @@ export class Hyprland extends Service {
         });
     }
 
-    private _active: Actives;
-    private _monitors: Map<number, Monitor>;
-    private _workspaces: Map<number, Workspace>;
-    private _clients: Map<string, Client>;
+    private _active: Actives = new Actives();
+    private _monitors: Map<number, Monitor> = new Map();
+    private _workspaces: Map<number, Workspace> = new Map();
+    private _clients: Map<string, Client> = new Map();
     private _decoder = new TextDecoder();
     private _encoder = new TextEncoder();
 
@@ -115,32 +108,51 @@ export class Hyprland extends Service {
     get workspaces() { return Array.from(this._workspaces.values()); }
     get clients() { return Array.from(this._clients.values()); }
 
-    getMonitor(id: number) { return this._monitors.get(id); }
-    getWorkspace(id: number) { return this._workspaces.get(id); }
-    getClient(address: string) { return this._clients.get(address); }
+    readonly getMonitor = (id: number) => this._monitors.get(id);
+    readonly getWorkspace = (id: number) => this._workspaces.get(id);
+    readonly getClient = (address: string) => this._clients.get(address);
 
     constructor() {
         if (!HIS)
             console.error('Hyprland is not running');
 
         super();
-        this._active = new Actives();
-        this._monitors = new Map();
-        this._workspaces = new Map();
-        this._clients = new Map();
-        this._syncMonitors();
-        this._syncWorkspaces();
-        this._syncClients();
+
+        // init monitor
+        for (const m of JSON.parse(this.message('j/monitors')) as Monitor[]) {
+            this._monitors.set(m.id, m);
+            if (m.focused) {
+                this._active.monitor.update(m.id, m.name);
+                this._active.workspace.update(m.activeWorkspace.id, m.activeWorkspace.name);
+            }
+        }
+
+        // init workspaces
+        for (const ws of JSON.parse(this.message('j/workspaces')) as Workspace[])
+            this._workspaces.set(ws.id, ws);
+
+        // init clients
+        for (const c of JSON.parse(this.message('j/clients')) as Client[])
+            this._clients.set(c.address, c);
 
         this._watchSocket(new Gio.DataInputStream({
             close_base_stream: true,
-            base_stream: socket(`/tmp/hypr/${HIS}/.socket2.sock`)
+            base_stream: this._connection('socket2')
                 .get_input_stream(),
         }));
 
-        this._active.connect('changed', () => this.emit('changed'));
-        ['monitor', 'workspace', 'client'].forEach(active =>
-            this._active.connect(`notify::${active}`, () => this.changed('active')));
+        this._active.connect('changed', () => this.changed('active'));
+    }
+
+    private _connection(socket: 'socket' | 'socket2') {
+        const sock = (pre: string) => `${pre}/hypr/${HIS}/.${socket}.sock`;
+
+        const path = GLib.file_test(sock(XDG_RUNTIME_DIR), GLib.FileTest.EXISTS)
+            ? sock(XDG_RUNTIME_DIR)
+            : sock('/tmp');
+
+        return new Gio.SocketClient()
+            .connect(new Gio.UnixSocketAddress({ path }), null);
     }
 
     private _watchSocket(stream: Gio.DataInputStream) {
@@ -154,65 +166,98 @@ export class Hyprland extends Service {
         });
     }
 
-    async sendMessage(cmd: string) {
-        const connection = socket(`/tmp/hypr/${HIS}/.socket.sock`);
+    // FIXME: deprecated
+    readonly sendMessage = (cmd: string) => {
+        console.warn('hyprland.sendMessage is DEPRECATED, '
+            + ' use hyprland.message or hyprland.messageAsync');
+        return this.messageAsync(cmd);
+    };
+
+    private _socketStream(cmd: string) {
+        const connection = this._connection('socket');
 
         connection
             .get_output_stream()
             .write(this._encoder.encode(cmd), null);
 
-        const inputStream = new Gio.DataInputStream({
+        const stream = new Gio.DataInputStream({
             close_base_stream: true,
             base_stream: connection.get_input_stream(),
         });
 
-        return inputStream.read_upto_async('\x04', -1, 0, null)
-            .then(result => {
-                const [response] = result as unknown as [string, number];
-                connection.close(null);
-                return response;
-            });
+        return [connection, stream] as const;
     }
 
-    private async _syncMonitors() {
+    readonly message = (cmd: string) => {
+        const [connection, stream] = this._socketStream(cmd);
         try {
-            const msg = await this.sendMessage('j/monitors');
-            this._monitors = new Map();
-            (JSON.parse(msg) as Array<Monitor>).forEach(monitor => {
-                const { activeWorkspace } = monitor;
-                this._monitors.set(monitor.id, monitor);
-                if (monitor.focused) {
-                    this._active.monitor.update(monitor.id, monitor.name);
-                    this._active.workspace.update(activeWorkspace.id, activeWorkspace.name);
+            const [response] = stream.read_upto('\x04', -1, null);
+            return response || '';
+        } catch (error) {
+            logError(error);
+        } finally {
+            connection.close(null);
+        }
+        return '';
+    };
+
+    readonly messageAsync = async (cmd: string) => {
+        const [connection, stream] = this._socketStream(cmd);
+        try {
+            const result = await stream.read_upto_async('\x04', -1, 0, null);
+            const [response] = result as unknown as [string, number];
+            return response;
+        } catch (error) {
+            logError(error);
+        } finally {
+            connection.close(null);
+        }
+        return '';
+    };
+
+    private async _syncMonitors(notify = true) {
+        try {
+            const msg = await this.messageAsync('j/monitors');
+            this._monitors.clear();
+            for (const m of JSON.parse(msg) as Array<Monitor>) {
+                this._monitors.set(m.id, m);
+                if (m.focused) {
+                    this._active.monitor.update(m.id, m.name);
+                    this._active.workspace.update(m.activeWorkspace.id, m.activeWorkspace.name);
+                    this._active.monitor.emit('changed');
+                    this._active.workspace.emit('changed');
                 }
-            });
-            this.notify('monitors');
+            }
+            if (notify)
+                this.notify('monitors');
         } catch (error) {
             logError(error);
         }
     }
 
-    private async _syncWorkspaces() {
+    private async _syncWorkspaces(notify = true) {
         try {
-            const msg = await this.sendMessage('j/workspaces');
-            this._workspaces = new Map();
-            (JSON.parse(msg) as Array<Workspace>).forEach(ws => {
+            const msg = await this.messageAsync('j/workspaces');
+            this._workspaces.clear();
+            for (const ws of JSON.parse(msg) as Array<Workspace>)
                 this._workspaces.set(ws.id, ws);
-            });
-            this.notify('workspaces');
+
+            if (notify)
+                this.notify('workspaces');
         } catch (error) {
             logError(error);
         }
     }
 
-    private async _syncClients() {
+    private async _syncClients(notify = true) {
         try {
-            const msg = await this.sendMessage('j/clients');
-            this._clients = new Map();
-            (JSON.parse(msg) as Array<Client>).forEach(client => {
-                this._clients.set(client.address, client);
-            });
-            this.notify('clients');
+            const msg = await this.messageAsync('j/clients');
+            this._clients.clear();
+            for (const c of JSON.parse(msg) as Array<Client>)
+                this._clients.set(c.address, c);
+
+            if (notify)
+                this.notify('clients');
         } catch (error) {
             logError(error);
         }
@@ -224,8 +269,6 @@ export class Hyprland extends Service {
 
         const [e, params] = event.split('>>');
         const argv = params.split(',');
-
-        this.emit('event', e, params);
 
         try {
             switch (e) {
@@ -255,45 +298,55 @@ export class Hyprland extends Service {
                     break;
 
                 case 'openwindow':
-                    await this._syncClients();
-                    await this._syncWorkspaces();
+                    await this._syncClients(false);
+                    await this._syncWorkspaces(false);
+                    ['clients', 'workspaces'].forEach(e => this.notify(e));
                     this.emit('client-added', '0x' + argv[0]);
                     break;
 
                 case 'movewindow':
                 case 'windowtitle':
-                    await this._syncClients();
-                    await this._syncWorkspaces();
+                    await this._syncClients(false);
+                    await this._syncWorkspaces(false);
+                    ['clients', 'workspaces'].forEach(e => this.notify(e));
                     break;
 
                 case 'moveworkspace':
-                    await this._syncWorkspaces();
-                    await this._syncMonitors();
+                    await this._syncClients(false);
+                    await this._syncWorkspaces(false);
+                    await this._syncMonitors(false);
+                    ['clients', 'workspaces', 'monitors'].forEach(e => this.notify(e));
                     break;
 
                 case 'fullscreen':
-                    await this._syncClients();
-                    await this._syncWorkspaces();
+                    await this._syncClients(false);
+                    await this._syncWorkspaces(false);
+                    ['clients', 'workspaces'].forEach(e => this.notify(e));
                     this.emit('fullscreen', argv[0] === '1');
                     break;
 
                 case 'activewindow':
                     this._active.client.updateProperty('class', argv[0]);
                     this._active.client.updateProperty('title', argv.slice(1).join(','));
+                    this._active.client.emit('changed');
                     break;
 
                 case 'activewindowv2':
                     this._active.client.updateProperty('address', '0x' + argv[0]);
+                    this._active.client.emit('changed');
                     break;
 
                 case 'closewindow':
-                    this._active.client.updateProperty('class', '');
-                    this._active.client.updateProperty('title', '');
-                    this._active.client.updateProperty('address', '');
-                    await this._syncWorkspaces();
-                    this._clients.delete('0x' + argv[0]);
+                    await this._syncWorkspaces(false);
+                    await this._syncClients(false);
+                    if (this._active.client.address === '0x' + argv[0]) {
+                        this._active.client.updateProperty('class', '');
+                        this._active.client.updateProperty('title', '');
+                        this._active.client.updateProperty('address', '');
+                        this._active.client.emit('changed');
+                    }
+                    ['clients', 'workspaces'].forEach(e => this.notify(e));
                     this.emit('client-removed', '0x' + argv[0]);
-                    this.notify('clients');
                     break;
 
                 case 'urgent':
@@ -305,9 +358,7 @@ export class Hyprland extends Service {
                     break;
 
                 case 'changefloatingmode': {
-                    const client = this._clients.get('0x' + argv[0]);
-                    if (client)
-                        client.floating = argv[1] === '1';
+                    await this._syncClients();
                     break;
                 }
                 case 'submap':
@@ -322,6 +373,7 @@ export class Hyprland extends Service {
                 console.error(error.message);
         }
 
+        this.emit('event', e, params);
         this.emit('changed');
     }
 }

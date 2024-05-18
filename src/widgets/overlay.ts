@@ -1,22 +1,54 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
-export type OverlayProps = BaseProps<AgsOverlay, Gtk.Overlay.ConstructorProperties & {
+export type OverlayProps<
+    Child extends Gtk.Widget = Gtk.Widget,
+    OverlayChild extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+    Self = Overlay<Child, OverlayChild, Attr>,
+> = BaseProps<Self, Gtk.Overlay.ConstructorProperties & {
     pass_through?: boolean
-    overlays?: Gtk.Widget[]
-}>
+    overlays?: OverlayChild[]
+    overlay?: OverlayChild
+    child?: Child
+}, Attr>
 
-export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
+export function newOverlay<
+    Child extends Gtk.Widget = Gtk.Widget,
+    OverlayChild extends Gtk.Widget = Gtk.Widget,
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof Overlay<Child, OverlayChild, Attr>>) {
+    return new Overlay(...props);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Overlay<Child, OverlayChild, Attr> extends Widget<Attr> { }
+export class Overlay<
+    Child extends Gtk.Widget,
+    OverlayChild extends Gtk.Widget,
+    Attr
+> extends Gtk.Overlay {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'pass-through': ['boolean', 'rw'],
                 'overlays': ['jsobject', 'rw'],
+                'overlay': ['jsobject', 'rw'],
             },
         });
     }
 
-    constructor(props: OverlayProps = {}) {
+    constructor(
+        props: OverlayProps<Child, OverlayChild, Attr> = {},
+        child?: Child,
+        ...overlays: Gtk.Widget[]
+    ) {
+        if (child)
+            props.child = child;
+
+        if (overlays.length > 0)
+            props.overlays = overlays as OverlayChild[];
+
         super(props as Gtk.Overlay.ConstructorProperties);
     }
 
@@ -35,13 +67,19 @@ export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
         this.notify('pass-through');
     }
 
-    get overlays() {
-        return this.get_children().filter(ch => ch === this.child);
+    get overlay() { return this.overlays[0] as Child; }
+    set overlay(overlay: Child) {
+        this.overlays = [overlay];
+        this.notify('overlay');
     }
 
-    set overlays(overlays: Gtk.Widget[]) {
+    get overlays() {
+        return this.get_children().filter(ch => ch !== this.child) as Child[];
+    }
+
+    set overlays(overlays: Child[]) {
         this.get_children()
-            .filter(ch => ch !== this.child && !overlays.includes(ch))
+            .filter(ch => ch !== this.child && !overlays.includes(ch as Child))
             .forEach(ch => ch.destroy());
 
         this.get_children()
@@ -53,3 +91,5 @@ export default class AgsOverlay extends AgsWidget(Gtk.Overlay) {
         this.notify('overlays');
     }
 }
+
+export default Overlay;

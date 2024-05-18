@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 
 const TRANSITION = {
@@ -24,33 +24,75 @@ const TRANSITION = {
     'over_right_left': Gtk.StackTransitionType.OVER_RIGHT_LEFT,
 } as const;
 
-export type Transition = keyof typeof TRANSITION;
+type Transition = keyof typeof TRANSITION;
 
-export type StackProps = BaseProps<AgsStack, Gtk.Stack.ConstructorProperties & {
-    shown?: string
-    items?: [string, Gtk.Widget][]
+export type StackProps<
+    Children extends { [name: string]: Gtk.Widget } = { [name: string]: Gtk.Widget },
+    Attr = unknown,
+    Self = Stack<Children, Attr>,
+> = BaseProps<Self, Gtk.Stack.ConstructorProperties & {
+    shown?: keyof Children,
     transition?: Transition
-}>
+    children?: Children,
+    // FIXME:
+    items?: [string, Gtk.Widget][]
+}, Attr>
 
-export default class AgsStack extends AgsWidget(Gtk.Stack) {
+export function newStack<
+    Children extends { [name: string]: Gtk.Widget } = { [name: string]: Gtk.Widget },
+    Attr = unknown,
+>(...props: ConstructorParameters<typeof Stack<Children, Attr>>) {
+    return new Stack(...props);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface Stack<Children, Attr> extends Widget<Attr> { }
+export class Stack<Children extends { [name: string]: Gtk.Widget }, Attr> extends Gtk.Stack {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'transition': ['string', 'rw'],
                 'shown': ['string', 'rw'],
+                'children': ['jsobject', 'rw'],
+                // FIXME: deprecated
                 'items': ['jsobject', 'rw'],
             },
         });
     }
 
-    constructor(props: StackProps = {}) {
+    constructor(props: StackProps<Children, Attr> = {}, children?: Children) {
+        if (children)
+            props.children = children;
+
         super(props as Gtk.Stack.ConstructorProperties);
+        this.connect('notify::visible-child-name', () => this.notify('shown'));
     }
 
     add_named(child: Gtk.Widget, name: string): void {
-        this.items.push([name, child]);
-        super.add_named(child, name);
-        this.notify('items');
+        // @ts-expect-error
+        this.children[name] = child;
+        this.children = { ...this.children };
+    }
+
+    get children() { return this._get('children') || {}; }
+    set children(children: Children) {
+        if (!children)
+            return;
+
+        const oldCh = Object.values(this.children);
+        const newCh = Object.values(children);
+        for (const widget of oldCh) {
+            if (!newCh.includes(widget))
+                widget.destroy();
+            else
+                this.remove(widget);
+        }
+
+        this._set('children', children);
+        for (const [name, widget] of Object.entries(children))
+            super.add_named(widget, name);
+
+        this.notify('children');
     }
 
     get items() {
@@ -60,14 +102,14 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
         return this._get('items');
     }
 
-    set items(items: [string, Gtk.Widget][]) {
+    set items(items: Array<[string, Gtk.Widget]>) {
+        if (items)
+            console.warn(Error('Stack.items is DEPRECATED, use Stack.children'));
+
         this.items
             .filter(([name]) => !items.find(([n]) => n === name))
             .forEach(([, ch]) => ch.destroy());
 
-        // remove any children that weren't destroyed so
-        // we can re-add everything without trying to add
-        // items multiple times
         this.items
             .filter(([, ch]) => this.get_children().includes(ch))
             .forEach(([, ch]) => this.remove(ch));
@@ -102,15 +144,13 @@ export default class AgsStack extends AgsWidget(Gtk.Stack) {
         this.notify('transition');
     }
 
-    get shown() { return this.visible_child_name; }
-    set shown(name: string | null) {
-        if (!this.get_child_by_name(name)) {
-            this.visible = false;
+    get shown() { return this.visible_child_name as keyof Children; }
+    set shown(name: keyof Children) {
+        if (typeof name !== 'string')
             return;
-        }
 
-        this.visible = true;
         this.set_visible_child_name(name);
-        this.notify('shown');
     }
 }
+
+export default Stack;

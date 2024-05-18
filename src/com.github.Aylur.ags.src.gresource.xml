@@ -9,30 +9,46 @@
     <file>utils.js</file>
     <file>variable.js</file>
     <file>widget.js</file>
-    <file>gobject.js</file>
 
     <file>widgets/widget.js</file>
     <file>widgets/box.js</file>
     <file>widgets/button.js</file>
+    <file>widgets/calendar.js</file>
     <file>widgets/centerbox.js</file>
     <file>widgets/circularprogress.js</file>
+    <file>widgets/colorbutton.js</file>
+    <file>widgets/drawingarea.js</file>
     <file>widgets/entry.js</file>
     <file>widgets/eventbox.js</file>
+    <file>widgets/filechooserbutton.js</file>
+    <file>widgets/fixed.js</file>
+    <file>widgets/flowbox.js</file>
+    <file>widgets/fontbutton.js</file>
     <file>widgets/icon.js</file>
     <file>widgets/label.js</file>
+    <file>widgets/levelbar.js</file>
+    <file>widgets/listbox.js</file>
     <file>widgets/menu.js</file>
+    <file>widgets/menubar.js</file>
+    <file>widgets/menuitem.js</file>
     <file>widgets/overlay.js</file>
     <file>widgets/progressbar.js</file>
     <file>widgets/revealer.js</file>
     <file>widgets/scrollable.js</file>
+    <file>widgets/separator.js</file>
     <file>widgets/slider.js</file>
+    <file>widgets/spinbutton.js</file>
+    <file>widgets/spinner.js</file>
     <file>widgets/stack.js</file>
+    <file>widgets/switch.js</file>
+    <file>widgets/togglebutton.js</file>
     <file>widgets/window.js</file>
 
     <file>service/applications.js</file>
     <file>service/audio.js</file>
     <file>service/battery.js</file>
     <file>service/bluetooth.js</file>
+    <file>service/greetd.js</file>
     <file>service/hyprland.js</file>
     <file>service/mpris.js</file>
     <file>service/network.js</file>
@@ -52,10 +68,15 @@
     <file>dbus/org.kde.StatusNotifierWatcher.xml</file>
     <file>dbus/org.kde.StatusNotifierItem.xml</file>
 
+    <file>utils/binding.js</file>
     <file>utils/etc.js</file>
     <file>utils/exec.js</file>
-    <file>utils/file.js</file>
-    <file>utils/timeout.js</file>
     <file>utils/fetch.js</file>
+    <file>utils/file.js</file>
+    <file>utils/gobject.js</file>
+    <file>utils/init.js</file>
+    <file>utils/notify.js</file>
+    <file>utils/pam.js</file>
+    <file>utils/timeout.js</file>
   </gresource>
 </gresources>

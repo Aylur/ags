@@ -1,6 +1,5 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-import App from '../app.js';
 import Service from '../service.js';
 import { ensureDirectory, idle } from '../utils.js';
 import { CACHE_DIR } from '../utils.js';
@@ -20,11 +19,28 @@ const MEDIA_CACHE_PATH = `${CACHE_DIR}/media`;
 type PlaybackStatus = 'Playing' | 'Paused' | 'Stopped';
 type LoopStatus = 'None' | 'Track' | 'Playlist';
 type MprisMetadata = {
-    'xesam:artist': string[]
-    'xesam:title': string
-    'mpris:artUrl': string
-    'mpris:length': number
-    'mpris:trackid': string
+    'mpris:trackid'?: string
+    'mpris:length'?: number
+    'mpris:artUrl'?: string
+    'xesam:album'?: string
+    'xesam:albumArtist'?: string
+    'xesam:artist'?: string[]
+    'xesam:asText'?: string
+    'xesam:audioBPM'?: number
+    'xesam:autoRating'?: number
+    'xesam:comment'?: string[]
+    'xesam:composer'?: string[]
+    'xesam:contentCreated'?: string
+    'xesam:discNumber'?: number
+    'xesam:firstUsed'?: string
+    'xesam:genre'?: string[]
+    'xesam:lastUsed'?: string
+    'xesam:lyricist'?: string[]
+    'xesam:title'?: string
+    'xesam:trackNumber'?: number
+    'xesam:url'?: string
+    'xesam:useCount'?: number
+    'xesam:userRating'?: number
     [key: string]: unknown
 }
 
@@ -38,9 +54,11 @@ export class MprisPlayer extends Service {
             'name': ['string'],
             'entry': ['string'],
             'identity': ['string'],
+            'metadata': ['string'],
             'trackid': ['string'],
             'track-artists': ['jsobject'],
             'track-title': ['string'],
+            'track-album': ['string'],
             'track-cover-url': ['string'],
             'cover-path': ['string'],
             'play-back-status': ['string'],
@@ -59,10 +77,12 @@ export class MprisPlayer extends Service {
     get name() { return this._name; }
     get entry() { return this._entry; }
     get identity() { return this._identity; }
+    get metadata() { return this._metadata; }
 
     get trackid() { return this._trackid; }
     get track_artists() { return this._trackArtists; }
     get track_title() { return this._trackTitle; }
+    get track_album() { return this._trackAlbum; }
     get track_cover_url() { return this._trackCoverUrl; }
     get cover_path() { return this._coverPath; }
     get play_back_status() { return this._playBackStatus; }
@@ -77,10 +97,12 @@ export class MprisPlayer extends Service {
     private _name: string;
     private _entry!: string;
     private _identity!: string;
+    private _metadata: MprisMetadata = {};
 
     private _trackid!: string;
     private _trackArtists!: string[];
     private _trackTitle!: string;
+    private _trackAlbum!: string;
     private _trackCoverUrl!: string;
     private _coverPath!: string;
     private _playBackStatus!: PlaybackStatus;
@@ -154,6 +176,10 @@ export class MprisPlayer extends Service {
         if (typeof trackTitle !== 'string')
             trackTitle = 'Unknown title';
 
+        let trackAlbum = metadata['xesam:album'];
+        if (typeof trackAlbum !== 'string')
+            trackAlbum = 'Unknown album';
+
         let trackCoverUrl = metadata['mpris:artUrl'];
         if (typeof trackCoverUrl !== 'string')
             trackCoverUrl = '';
@@ -161,6 +187,7 @@ export class MprisPlayer extends Service {
         let length = metadata['mpris:length'];
         length = typeof length === 'number' ? length / 1_000_000 : -1;
 
+        this.updateProperty('metadata', metadata);
         this.updateProperty('shuffle-status', this._playerProxy.Shuffle);
         this.updateProperty('loop-status', this._playerProxy.LoopStatus);
         this.updateProperty('can-go-next', this._playerProxy.CanGoNext);
@@ -170,14 +197,16 @@ export class MprisPlayer extends Service {
         this.updateProperty('trackid', metadata['mpris:trackid']);
         this.updateProperty('track-artists', trackArtists);
         this.updateProperty('track-title', trackTitle);
+        this.updateProperty('track-album', trackAlbum);
         this.updateProperty('track-cover-url', trackCoverUrl);
         this.updateProperty('length', length);
+        this.updateProperty('identity', this._mprisProxy.Identity);
         this._cacheCoverArt();
         this.emit('changed');
     }
 
     private _cacheCoverArt() {
-        if (!App.config.cacheCoverArt || this._trackCoverUrl === '')
+        if (!mpris.cacheCoverArt || this._trackCoverUrl === '')
             return;
 
         this._coverPath = MEDIA_CACHE_PATH + '/' +
@@ -239,15 +268,15 @@ export class MprisPlayer extends Service {
         this.emit('position', time);
     }
 
-    playPause() { this._playerProxy.PlayPauseAsync().catch(console.error); }
-    play() { this._playerProxy.PlayAsync().catch(console.error); }
-    stop() { this._playerProxy.StopAsync().catch(console.error); }
+    readonly playPause = () => this._playerProxy.PlayPauseAsync().catch(console.error);
+    readonly play = () => this._playerProxy.PlayAsync().catch(console.error);
+    readonly stop = () => this._playerProxy.StopAsync().catch(console.error);
 
-    next() { this._playerProxy.NextAsync().catch(console.error); }
-    previous() { this._playerProxy.PreviousAsync().catch(console.error); }
+    readonly next = () => this._playerProxy.NextAsync().catch(console.error);
+    readonly previous = () => this._playerProxy.PreviousAsync().catch(console.error);
 
-    shuffle() { this._playerProxy.Shuffle = !this._playerProxy.Shuffle; }
-    loop() {
+    readonly shuffle = () => this._playerProxy.Shuffle = !this._playerProxy.Shuffle;
+    readonly loop = () => {
         switch (this._playerProxy.LoopStatus) {
             case 'None':
                 this._playerProxy.LoopStatus = 'Track';
@@ -261,7 +290,7 @@ export class MprisPlayer extends Service {
             default:
                 break;
         }
-    }
+    };
 }
 
 export class Mpris extends Service {
@@ -275,15 +304,12 @@ export class Mpris extends Service {
         });
     }
 
+    public cacheCoverArt = true;
+
     private _proxy: DBusProxy;
     private _players: Map<string, MprisPlayer> = new Map;
-    private _initialzed = false;
 
     get players() {
-        if (!this._initialzed) {
-            console.warn('accessing Mpris.players on top level will return an empty array ' +
-                'because the list is not initialzed yet');
-        }
         return Array.from(this._players.values());
     }
 
@@ -323,7 +349,6 @@ export class Mpris extends Service {
         if (error)
             return logError(error);
 
-        this._initialzed = true;
         const [names] = await this._proxy.ListNamesAsync();
         for (const name of names) {
             if (name.startsWith(DBUS_PREFIX))
@@ -346,13 +371,13 @@ export class Mpris extends Service {
             this._addPlayer(name);
     }
 
-    getPlayer(name = '') {
+    readonly getPlayer = (name = '') => {
         for (const [busName, player] of this._players) {
             if (busName.includes(name))
                 return player;
         }
         return null;
-    }
+    };
 }
 
 export const mpris = new Mpris;

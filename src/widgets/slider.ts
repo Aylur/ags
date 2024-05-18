@@ -1,8 +1,8 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 
-export type EventHandler = (self: AgsSlider, event: Gdk.Event) => void | unknown;
+type EventHandler<Self> = (self: Self, event: Gdk.Event) => void | unknown;
 
 const POSITION = {
     'left': Gtk.PositionType.LEFT,
@@ -11,22 +11,33 @@ const POSITION = {
     'bottom': Gtk.PositionType.BOTTOM,
 } as const;
 
-export type Position = keyof typeof POSITION;
+type Position = keyof typeof POSITION;
 
-export type Mark = [number, string?, Position?] | number;
+type Mark = [number, string?, Position?] | number;
 
-export type SliderProps = BaseProps<AgsSlider, Gtk.Scale.ConstructorProperties & {
-    on_change?: EventHandler,
+export type SliderProps<
+    Attr = unknown,
+    Self = Slider<Attr>,
+> = BaseProps<Slider<Attr>, Gtk.Scale.ConstructorProperties & {
+    on_change?: EventHandler<Self>,
     value?: number
+    slider?: boolean
     min?: number
     max?: number
     step?: number
     marks?: Mark[]
-}>
+}, Attr>
 
-export default class AgsSlider extends AgsWidget(Gtk.Scale) {
+export function newSlider<
+    Attr = unknown
+>(...props: ConstructorParameters<typeof Slider<Attr>>) {
+    return new Slider(...props);
+}
+
+export interface Slider<Attr> extends Widget<Attr> { }
+export class Slider<Attr> extends Gtk.Scale {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'dragging': ['boolean', 'r'],
                 'vertical': ['boolean', 'rw'],
@@ -46,7 +57,7 @@ export default class AgsSlider extends AgsWidget(Gtk.Scale) {
         step = 0.01,
         marks = [],
         ...rest
-    }: SliderProps = {}) {
+    }: SliderProps<Attr> = {}) {
         super({
             adjustment: new Gtk.Adjustment,
             ...rest as Gtk.Scale.ConstructorProperties,
@@ -67,7 +78,7 @@ export default class AgsSlider extends AgsWidget(Gtk.Scale) {
     }
 
     get on_change() { return this._get('on-change'); }
-    set on_change(callback: EventHandler) { this._set('on-change', callback); }
+    set on_change(callback: EventHandler<this>) { this._set('on-change', callback); }
 
     get value() { return this.adjustment.value; }
     set value(value: number) {
@@ -126,14 +137,8 @@ export default class AgsSlider extends AgsWidget(Gtk.Scale) {
     set dragging(dragging: boolean) { this._set('dragging', dragging); }
 
     get vertical() { return this.orientation === Gtk.Orientation.VERTICAL; }
-    set vertical(vertical) {
-        if (this.vertical === vertical)
-            return;
-
-        this.orientation = vertical
-            ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL;
-
-        this.notify('vertical');
+    set vertical(v: boolean) {
+        this.orientation = Gtk.Orientation[v ? 'VERTICAL' : 'HORIZONTAL'];
     }
 
     vfunc_button_release_event(event: Gdk.EventButton): boolean {
@@ -166,3 +171,5 @@ export default class AgsSlider extends AgsWidget(Gtk.Scale) {
         return super.vfunc_scroll_event(event);
     }
 }
+
+export default Slider;

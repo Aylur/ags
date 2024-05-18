@@ -1,0 +1,49 @@
+.player {
+    padding: 10px;
+    min-width: 350px;
+}
+
+.player .img {
+    min-width: 100px;
+    min-height: 100px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 13px;
+    margin-right: 1em;
+}
+
+.player .title {
+    font-size: 1.2em;
+}
+
+.player .artist {
+    font-size: 1.1em;
+    color: @insensitive_fg_color;
+}
+
+.player scale.position {
+    padding: 0;
+    margin-bottom: .3em;
+}
+
+.player scale.position trough {
+    min-height: 8px;
+}
+
+.player scale.position highlight {
+    background-color: @theme_fg_color;
+}
+
+.player scale.position slider {
+    all: unset;
+}
+
+.player button {
+    min-height: 1em;
+    min-width: 1em;
+    padding: .3em;
+}
+
+.player button.play-pause {
+    margin: 0 .3em;
+}

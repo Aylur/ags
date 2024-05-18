@@ -1,4 +1,4 @@
-import AgsWidget, { type BaseProps } from './widget.js';
+import { register, type BaseProps, type Widget } from './widget.js';
 import Gtk from 'gi://Gtk?version=3.0';
 import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
@@ -17,19 +17,27 @@ const TRUNCATE = {
     'end': Pango.EllipsizeMode.END,
 } as const;
 
-export type Justification = keyof typeof JUSTIFICATION;
-export type Truncate = keyof typeof TRUNCATE;
+type Justification = keyof typeof JUSTIFICATION;
+type Truncate = keyof typeof TRUNCATE;
 
-export type Props = BaseProps<AgsLabel, Gtk.Label.ConstructorProperties & {
+export type LabelProps<
+    Attr = unknown,
+    Self = Label<Attr>,
+> = BaseProps<Self, Gtk.Label.ConstructorProperties & {
     justification?: Justification
     truncate?: Truncate
-}>
+}, Attr>
 
-export type LabelProps = Props | string | undefined
+export function newLabel<
+    Attr = unknown
+>(...props: ConstructorParameters<typeof Label<Attr>>) {
+    return new Label(...props);
+}
 
-export default class AgsLabel extends AgsWidget(Gtk.Label) {
+export interface Label<Attr> extends Widget<Attr> { }
+export class Label<Attr> extends Gtk.Label {
     static {
-        AgsWidget.register(this, {
+        register(this, {
             properties: {
                 'justification': ['string', 'rw'],
                 'truncate': ['string', 'rw'],
@@ -37,18 +45,20 @@ export default class AgsLabel extends AgsWidget(Gtk.Label) {
         });
     }
 
-    constructor(props: LabelProps = {}) {
+    constructor(props: LabelProps<Attr> | string = {}) {
         const { label, ...config } = props as Gtk.Label.ConstructorProperties;
         const text = typeof props === 'string' ? props : label;
         super(typeof props === 'string' ? {} : config);
         this._handleParamProp('label', text || '');
+        this.connect('notify::justify', () => this.notify('justification'));
+        this.connect('notify::ellipsize', () => this.notify('truncate'));
     }
 
     get label() { return super.label || ''; }
     set label(label: string) {
         if (this.use_markup) {
             try {
-                Pango.parse_markup(label, label.length, '0');
+                Pango.parse_markup(label, -1, '0');
             } catch (e) {
                 // @ts-expect-error
                 if (e instanceof GLib.MarkupError)
@@ -79,7 +89,6 @@ export default class AgsLabel extends AgsWidget(Gtk.Label) {
         }
 
         this.ellipsize = TRUNCATE[truncate];
-        this.notify('truncate');
     }
 
     get justification() {
@@ -101,6 +110,7 @@ export default class AgsLabel extends AgsWidget(Gtk.Label) {
         }
 
         this.justify = JUSTIFICATION[justify];
-        this.notify('justification');
     }
 }
+
+export default Label;
