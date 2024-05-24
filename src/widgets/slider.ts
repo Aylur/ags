@@ -21,6 +21,7 @@ export type SliderProps<
 > = BaseProps<Slider<Attr>, Gtk.Scale.ConstructorProperties & {
     on_change?: EventHandler<Self>,
     value?: number
+    slider?: boolean
     min?: number
     max?: number
     step?: number

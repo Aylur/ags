@@ -43,10 +43,11 @@ function Player(player) {
         class_name: "position",
         draw_value: false,
         on_change: ({ value }) => player.position = value * player.length,
+        visible: player.bind("length").as(l => l > 0),
         setup: self => {
-            const update = () => {
-                self.visible = player.length > 0
-                self.value = player.position / player.length
+            function update() {
+                const value = player.position / player.length
+                self.value = value > 0 ? value : 0
             }
             self.hook(player, update)
             self.hook(player, update, "position")

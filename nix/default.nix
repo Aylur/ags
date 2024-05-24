@@ -23,7 +23,7 @@
 , pam
 , extraPackages ? [ ]
 , version ? "git"
-, buildTypes ? false
+, buildTypes ? true
 }:
 
 let
@@ -53,8 +53,8 @@ stdenv.mkDerivation rec {
     '';
   };
 
-  mesonFlags = builtins.concatLists [
-    (lib.optional buildTypes "-Dbuild_types=true")
+  mesonFlags = [
+    "-Dbuild_types=${if buildTypes then "true" else "false"}"
   ];
 
   prePatch = ''
