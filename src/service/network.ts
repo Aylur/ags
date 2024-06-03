@@ -192,6 +192,11 @@ export class Wifi extends Service {
             [0, 'none'],
         ];
 
+        // Check if wifi is enabled first, since internet might be provided by
+        // a wired network.
+        if (!this.enabled)
+            return 'network-wireless-offline-symbolic';
+
         if (this.internet === 'connected') {
             for (const [threshold, name] of iconNames) {
                 if (this.strength >= threshold)
@@ -201,9 +206,6 @@ export class Wifi extends Service {
 
         if (this.internet === 'connecting')
             return 'network-wireless-acquiring-symbolic';
-
-        if (this.enabled)
-            return 'network-wireless-offline-symbolic';
 
         return 'network-wireless-disabled-symbolic';
     }
