@@ -132,8 +132,8 @@ export class Variable<T> extends GObject.Object {
         this.notify('is-listening');
     }
 
-    get is_listening() { return !!this._subprocess; }
-    get is_polling() { return !!this._listen; }
+    get is_polling() { return !!this._poll; }
+    get is_listening() { return !!this._listen; }
 
     dispose() {
         if (this._interval)
