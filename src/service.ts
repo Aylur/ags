@@ -52,6 +52,7 @@ interface Services {
     powerprofiles: typeof import('./service/powerprofiles.js').default
     systemtray: typeof import('./service/systemtray.js').default
     greetd: typeof import('./service/greetd.js').default
+    statusdbus: typeof import('./service/statusdbus.js').default
 }
 
 export default class Service extends GObject.Object {

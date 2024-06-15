@@ -1,0 +1,7 @@
+<node>
+    <interface name="com.github.Aylur.ags.status">
+        <method name="Set">
+            <arg direction="in" type="s" name="string"/>
+        </method>
+    </interface>
+</node>
