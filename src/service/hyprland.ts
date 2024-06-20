@@ -116,9 +116,9 @@ export class Hyprland extends Service {
     readonly getGdkMonitor = (id: number) => {
         const monitor = this._monitors.get(id);
         if (!monitor)
-            return undefined;
+            return null;
 
-        return Gdk.Display.get_default()?.get_monitor_at_point(monitor.x, monitor.y);
+        return Gdk.Display.get_default()?.get_monitor_at_point(monitor.x, monitor.y) || null;
     };
 
     constructor() {
