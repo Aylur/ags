@@ -133,7 +133,7 @@ export class Variable<T> extends GObject.Object {
     }
 
     get is_listening() { return !!this._subprocess; }
-    get is_polling() { return !!this._listen; }
+    get is_polling() { return !!this._interval; }
 
     dispose() {
         if (this._interval)
