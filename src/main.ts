@@ -21,7 +21,7 @@ OPTIONS:
     -c, --config            Path to the config file. Default: ${DEFAULT_CONF}
     -b, --bus-name          Bus name of the process
     -i, --inspector         Open up the Gtk debug tool
-    -t, --toggle-window     Show or hide a window
+    -t, --toggle-window     Show (--show), hide (--hide), or toggle (--toggle) a window. USAGE: "-t window_name [option]". Default option is toggle
     -r, --run-js            Execute string as an async function
     -f, --run-file          Execute file as an async function
     --init                  Initialize the configuration directory
@@ -35,6 +35,7 @@ export async function main(args: string[]) {
         runJs: '',
         runFile: '',
         toggleWindow: '',
+        toggleType: 'toggle',
         quit: false,
         init: false,
 
@@ -108,6 +109,13 @@ export async function main(args: string[]) {
             case '-t':
             case '--toggle-window':
                 flags.toggleWindow = args[++i];
+                switch (args[i+1]) {
+                    case '--toggle':
+                    case '--show':
+                    case '--hide':
+                        flags.toggleType = args[++i].replace(/^--/,"");
+                        break;
+                }
                 break;
 
             case 'quit':

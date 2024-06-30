@@ -400,8 +400,21 @@ export class App extends Gtk.Application {
             });
     }
 
-    ToggleWindow(name: string) {
-        this.toggleWindow(name);
+    ToggleWindow(name: string, toggleType: string = "toggle") {
+        switch(toggleType) {
+            case "toggle":
+                this.toggleWindow(name);
+                break;
+            case "show":
+                if (!this.getWindow(name)?.visible) this.openWindow(name);
+                break;
+            case "hide":
+                if (this.getWindow(name)?.visible) this.closeWindow(name);
+                break;
+            default:
+                console.error(`unknown toggleType: ${toggleType}`);
+                break;
+        }
         return `${this.getWindow(name)?.visible}`;
     }
 

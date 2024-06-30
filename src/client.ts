@@ -19,6 +19,7 @@ interface Flags {
     runJs: string
     runFile: string
     toggleWindow: string
+    toggleType: string
     quit: boolean
 
     // FIXME: deprecated
@@ -96,7 +97,7 @@ export default function(bus: string, path: string, flags: Flags) {
     const client = new Client(bus, path, proxy);
 
     if (flags.toggleWindow)
-        print(proxy.ToggleWindowSync(flags.toggleWindow));
+        print(proxy.ToggleWindowSync(flags.toggleWindow, flags.toggleType));
 
     else if (flags.runJs)
         client.remote('Js', flags.runJs);

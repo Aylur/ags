@@ -4,6 +4,7 @@
         <method name='Quit'/>
         <method name="ToggleWindow">
             <arg direction="in" type="s" name="name"/>
+            <arg direction="in" type="s" name="toggle-type"/>
             <arg direction="out" type="s" name="state"/>
         </method>
         <method name="RunJs">
