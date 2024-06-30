@@ -46,23 +46,41 @@ export class ActiveID extends Service {
     }
 }
 
+export class ActiveLayout extends Service {
+    static {
+        Service.register(this, {}, {
+            'language': ['string'],
+        });
+    }
+
+    private _language = '';
+
+    get language() { return this._language; }
+
+    update(language: string) {
+        super.updateProperty('language', language);
+    }
+}
+
 export class Actives extends Service {
     static {
         Service.register(this, {}, {
             'client': ['jsobject'],
             'monitor': ['jsobject'],
             'workspace': ['jsobject'],
+            'layout': ['jsobject'],
         });
     }
 
     private _client = new ActiveClient;
     private _monitor = new ActiveID;
     private _workspace = new ActiveID;
+    private _layout = new ActiveLayout;
 
     constructor() {
         super();
 
-        (['client', 'workspace', 'monitor'] as const).forEach(obj => {
+        (['client', 'workspace', 'monitor', 'layout'] as const).forEach(obj => {
             this[`_${obj}`].connect('changed', () => {
                 this.notify(obj);
                 this.emit('changed');
@@ -73,6 +91,7 @@ export class Actives extends Service {
     get client() { return this._client; }
     get monitor() { return this._monitor; }
     get workspace() { return this._workspace; }
+    get layout() { return this._layout; }
 }
 
 export class Hyprland extends Service {
@@ -94,6 +113,7 @@ export class Hyprland extends Service {
             'monitors': ['jsobject'],
             'workspaces': ['jsobject'],
             'clients': ['jsobject'],
+            'layout': ['jsobject'],
         });
     }
 
@@ -101,6 +121,7 @@ export class Hyprland extends Service {
     private _monitors: Map<number, Monitor> = new Map();
     private _workspaces: Map<number, Workspace> = new Map();
     private _clients: Map<string, Client> = new Map();
+    private _layouts: Map<string, Layout> = new Map();
     private _decoder = new TextDecoder();
     private _encoder = new TextEncoder();
 
@@ -112,6 +133,7 @@ export class Hyprland extends Service {
     readonly getMonitor = (id: number) => this._monitors.get(id);
     readonly getWorkspace = (id: number) => this._workspaces.get(id);
     readonly getClient = (address: string) => this._clients.get(address);
+    readonly getLayout = (layout: string) => this._layouts.get(layout);
 
     readonly getGdkMonitor = (id: number) => {
         const monitor = this._monitors.get(id);
@@ -143,6 +165,20 @@ export class Hyprland extends Service {
         // init clients
         for (const c of JSON.parse(this.message('j/clients')) as Client[])
             this._clients.set(c.address, c);
+
+        //init layout
+        const devices = JSON.parse(this.message('j/devices'));
+
+        let result = '';
+        for (let i = 0; i < devices.keyboards.length; i += 1) {
+            if (devices.keyboards[i].main === true) {
+                result = devices.keyboards[i].active_keymap;
+                break;
+            }
+        }
+        this._active.layout.update(result);
+        this._active.layout.emit('changed');
+        this.notify('layout');
 
         this._watchSocket(new Gio.DataInputStream({
             close_base_stream: true,
@@ -375,6 +411,9 @@ export class Hyprland extends Service {
 
                 case 'activelayout':
                     this.emit('keyboard-layout', `${argv[0]}`, `${argv[1]}`);
+                    this._active.layout.update(argv[1]);
+                    this._active.layout.emit('changed');
+                    this.notify('layout');
                     break;
 
                 case 'changefloatingmode': {
@@ -468,6 +507,10 @@ export interface Client {
     grouped: [string],
     swallowing: string
     focusHistoryID: number
+}
+
+export interface Layout {
+    language: string
 }
 
 export const hyprland = new Hyprland;
