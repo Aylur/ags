@@ -58,9 +58,10 @@ export class Application extends Service {
     };
 
     readonly match = (term: string) => {
-        const { name, desktop, description, executable } = this;
+        const { name, desktop, wm_class, description, executable } = this;
         return this._match(name, term) ||
             this._match(desktop, term) ||
+            this._match(wm_class, term) ||
             this._match(executable, term) ||
             this._match(description, term);
     };
