@@ -81,6 +81,31 @@ const DEVICE = (device: string) => {
     }
 };
 
+const _DEVICE_IP_ADDRESS = (device: NM.Device): string => {
+    let ip4Config = device.get_ip4_config();
+    let addresses: string[] = [];
+
+    if (ip4Config) {
+        addresses = addresses.concat(ip4Config.get_addresses().map(addr => addr.get_address()).filter(addr => addr !== null) as string[]);
+    }
+
+    if (addresses.length === 0) {
+        return 'No IP';
+    }
+
+    // Filter out loopback and link-local addresses
+    addresses = addresses.filter(address => {
+        return !address.startsWith('127.') && !address.startsWith('169.254.') && !address.includes('::1');
+    });
+
+    if (addresses.length === 0) {
+        return 'No valid IP';
+    }
+
+    // The first IP address should be the one you want
+    return addresses[0];
+};
+
 export class Wifi extends Service {
     static {
         Service.register(this, {}, {
@@ -92,6 +117,7 @@ export class Wifi extends Service {
             'ssid': ['string'],
             'state': ['string'],
             'icon-name': ['string'],
+            'ip-address': ['string'],
         });
     }
 
@@ -144,6 +170,7 @@ export class Wifi extends Service {
                 'ssid',
                 'state',
                 'icon-name',
+                'ip-address',
             ];
             props.map(prop => this.notify(prop));
         });
@@ -209,6 +236,8 @@ export class Wifi extends Service {
 
         return 'network-wireless-disabled-symbolic';
     }
+    get ip_address() { return _DEVICE_IP_ADDRESS(this._device); }
+
 }
 
 export class Wired extends Service {
@@ -218,6 +247,7 @@ export class Wired extends Service {
             'internet': ['string'],
             'state': ['string'],
             'icon-name': ['string'],
+            'ip-address': ['string'],
         });
     }
 
@@ -230,7 +260,7 @@ export class Wired extends Service {
         // TODO make signals actually signal when they should
         this._device?.connect('notify::speed', () => {
             this.emit('changed');
-            ['speed', 'internet', 'state', 'icon-name']
+            ['speed', 'internet', 'state', 'icon-name', 'ip-address']
                 .map(prop => this.notify(prop));
         });
     }
@@ -250,6 +280,7 @@ export class Wired extends Service {
 
         return 'network-wired-disconnected-symbolic';
     }
+    get ip_address() { return _DEVICE_IP_ADDRESS(this._device); }
 }
 
 export type ActiveVpnConnection = null | NM.VpnConnection;
