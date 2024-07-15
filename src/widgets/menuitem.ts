@@ -11,7 +11,7 @@ export type MenuItemProps<
     child?: Child
     on_activate?: Event<Self>
     on_select?: Event<Self>
-    on_deselct?: Event<Self>
+    on_deselect?: Event<Self>
 }, Attr>
 
 export function newMenuItem<
