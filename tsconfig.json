@@ -5,21 +5,16 @@
         "lib": [
             "ES2022"
         ],
-        "allowJs": true,
-        "checkJs": false,
-        "outDir": "_build/tsc-out",
-        "strict": true,
-        "moduleResolution": "node",
         "baseUrl": ".",
-        "typeRoots": [
-            "./node_modules/@girs"
-        ],
+        "outDir": "dist",
+        "strict": true,
+        "moduleResolution": "Bundler",
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true
+        "checkJs": true,
+        "allowJs": true
     },
     "include": [
-        "@girs",
-        "types/*",
-        "src"
+        "node_modules/@girs",
+        "ags.js"
     ]
 }

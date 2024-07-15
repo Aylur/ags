@@ -1,3 +1,7 @@
+# 2.0.0
+
+- Switch to Astal implementation
+
 # 1.8.2
 
 ## Features
