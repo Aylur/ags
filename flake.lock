@@ -1,16 +1,390 @@
 {
   "nodes": {
-    "nixpkgs": {
+    "astal": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
       "locked": {
-        "lastModified": 1718714799,
-        "narHash": "sha256-FUZpz9rg3gL8NVPKbqU8ei1VkPLsTIfAJ2fdAf5qjak=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "c00d587b1a1afbf200b1d8f0b0e4ba9deb1c7f0e",
+        "lastModified": 1721048046,
+        "narHash": "sha256-XBrMGEtniU+cXcAcE0SN79r/jcytbC8/xqoneIef7Hk=",
+        "owner": "astal-sh",
+        "repo": "libastal",
+        "rev": "68b58c94094ebbb44e75be82ece77badaa0cd68f",
         "type": "github"
       },
       "original": {
-        "owner": "NixOS",
+        "owner": "astal-sh",
+        "repo": "libastal",
+        "type": "github"
+      }
+    },
+    "astal-apps": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1720983643,
+        "narHash": "sha256-FKT3LxeCpDWdEq2chynyNFHyMbeGqAceCJ5kNMAin2M=",
+        "owner": "astal-sh",
+        "repo": "apps",
+        "rev": "65505430192109ad726f3e7dca51bd7863bd9915",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astal-sh",
+        "repo": "apps",
+        "type": "github"
+      }
+    },
+    "astal-auth": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1718556609,
+        "narHash": "sha256-EeYnp9HEpQXNGweF/Ea6ZfjTSV6biHFSsZV010nDHaM=",
+        "owner": "astal-sh",
+        "repo": "auth",
+        "rev": "b35a38aa93670f6be06202f2ad3066a227f0a1b9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astal-sh",
+        "repo": "auth",
+        "type": "github"
+      }
+    },
+    "astal-battery": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_4"
+      },
+      "locked": {
+        "lastModified": 1720983737,
+        "narHash": "sha256-S+Qgterg15/BDFsItZAGU3ZdGyFJ1XoQSQtjW0QynZA=",
+        "owner": "astal-sh",
+        "repo": "battery",
+        "rev": "65dc018701e7e794eb75877b034a4e7e91c66384",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astal-sh",
+        "repo": "battery",
+        "type": "github"
+      }
+    },
+    "astal-bluetooth": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_5"
+      },
+      "locked": {
+        "lastModified": 1720983772,
+        "narHash": "sha256-ZlyNX12SmY3k/qPCj4rzGMOAtgv3loUXGJEJ5x1R91I=",
+        "owner": "astal-sh",
+        "repo": "bluetooth",
+        "rev": "9c5a03ea93473a6ad8236c9095d812114c22b4e9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astal-sh",
+        "repo": "bluetooth",
+        "type": "github"
+      }
+    },
+    "astal-hyprland": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_6"
+      },
+      "locked": {
+        "lastModified": 1720983818,
+        "narHash": "sha256-wA/J2RCCDEo+DlAhilsA35KjF8e0Dd2V66GGOEAxYpY=",
+        "owner": "astal-sh",
+        "repo": "hyprland",
+        "rev": "ba2ee78b96c540fdcd274358555479a71977a759",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astal-sh",
+        "repo": "hyprland",
+        "type": "github"
+      }
+    },
+    "astal-mpris": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_7"
+      },
+      "locked": {
+        "lastModified": 1720988233,
+        "narHash": "sha256-guB1sEe7eO7mPhT5/CO9fbpDi3B0hxl+ox8o5NyIGb8=",
+        "owner": "astal-sh",
+        "repo": "mpris",
+        "rev": "ce7152d13fdbda1191a4838096a936ea61d1e55a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astal-sh",
+        "repo": "mpris",
+        "type": "github"
+      }
+    },
+    "astal-notifd": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_8"
+      },
+      "locked": {
+        "lastModified": 1720984044,
+        "narHash": "sha256-47mJh/DZLTDviXE21NeJmMD7ahQXi2+cKyt5/O2mcLw=",
+        "owner": "astal-sh",
+        "repo": "notifd",
+        "rev": "17a57b9725ed6d826ff60c47fe7887671c5a1668",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astal-sh",
+        "repo": "notifd",
+        "type": "github"
+      }
+    },
+    "astal-powerprofiles": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_9"
+      },
+      "locked": {
+        "lastModified": 1720984079,
+        "narHash": "sha256-EdjjngsnopOAXm1BJmV82IYd7IQQt4q73wd4uJzoUuo=",
+        "owner": "astal-sh",
+        "repo": "powerprofiles",
+        "rev": "2944f8480d1518ecd64dc9ca9b7e9f472de8814c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astal-sh",
+        "repo": "powerprofiles",
+        "type": "github"
+      }
+    },
+    "astal-river": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_10"
+      },
+      "locked": {
+        "lastModified": 1720868637,
+        "narHash": "sha256-DuU5zs+IbGqIS6z61j/CBOl0x/ZPc7ssq7NiVhs8YKM=",
+        "owner": "astal-sh",
+        "repo": "river",
+        "rev": "1296dc824446984038c08a2278ebeea1c537ebf7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astal-sh",
+        "repo": "river",
+        "type": "github"
+      }
+    },
+    "astal-tray": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_11"
+      },
+      "locked": {
+        "lastModified": 1719587238,
+        "narHash": "sha256-6DfK50lMbMLVgqL3IyCe6zMAGnB5V5cTTPsMIf80GVE=",
+        "owner": "astal-sh",
+        "repo": "tray",
+        "rev": "9a484bdee02904034449961612fd5b2cdbe6a337",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astal-sh",
+        "repo": "tray",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1716293225,
+        "narHash": "sha256-pU9ViBVE3XYb70xZx+jK6SEVphvt7xMTbm6yDIF4xPs=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "3eaeaeb6b1e08a016380c279f8846e0bd8808916",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_10": {
+      "locked": {
+        "lastModified": 1720031269,
+        "narHash": "sha256-rwz8NJZV+387rnWpTYcXaRNvzUSnnF9aHONoJIYmiUQ=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "9f4128e00b0ae8ec65918efeba59db998750ead6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_11": {
+      "locked": {
+        "lastModified": 1719254875,
+        "narHash": "sha256-ECni+IkwXjusHsm9Sexdtq8weAq/yUyt1TWIemXt3Ko=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "2893f56de08021cffd9b6b6dfc70fd9ccd51eb60",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_12": {
+      "locked": {
+        "lastModified": 1720957393,
+        "narHash": "sha256-oedh2RwpjEa+TNxhg5Je9Ch6d3W1NKi7DbRO1ziHemA=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "693bc46d169f5af9c992095736e82c3488bf7dbb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1716137900,
+        "narHash": "sha256-sowPU+tLQv8GlqtVtsXioTKeaQvlMz/pefcdwg8MvfM=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "6c0b7a92c30122196a761b440ac0d46d3d9954f1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1716137900,
+        "narHash": "sha256-sowPU+tLQv8GlqtVtsXioTKeaQvlMz/pefcdwg8MvfM=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "6c0b7a92c30122196a761b440ac0d46d3d9954f1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_4": {
+      "locked": {
+        "lastModified": 1718895438,
+        "narHash": "sha256-k3JqJrkdoYwE3fHE6xGDY676AYmyh4U2Zw+0Bwe5DLU=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "d603719ec6e294f034936c0d0dc06f689d91b6c3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_5": {
+      "locked": {
+        "lastModified": 1716137900,
+        "narHash": "sha256-sowPU+tLQv8GlqtVtsXioTKeaQvlMz/pefcdwg8MvfM=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "6c0b7a92c30122196a761b440ac0d46d3d9954f1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_6": {
+      "locked": {
+        "lastModified": 1716137900,
+        "narHash": "sha256-sowPU+tLQv8GlqtVtsXioTKeaQvlMz/pefcdwg8MvfM=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "6c0b7a92c30122196a761b440ac0d46d3d9954f1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_7": {
+      "locked": {
+        "lastModified": 1720768451,
+        "narHash": "sha256-EYekUHJE2gxeo2pM/zM9Wlqw1Uw2XTJXOSAO79ksc4Y=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "7e7c39ea35c5cdd002cd4588b03a3fb9ece6fad9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_8": {
+      "locked": {
+        "lastModified": 1716137900,
+        "narHash": "sha256-sowPU+tLQv8GlqtVtsXioTKeaQvlMz/pefcdwg8MvfM=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "6c0b7a92c30122196a761b440ac0d46d3d9954f1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_9": {
+      "locked": {
+        "lastModified": 1716137900,
+        "narHash": "sha256-sowPU+tLQv8GlqtVtsXioTKeaQvlMz/pefcdwg8MvfM=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "6c0b7a92c30122196a761b440ac0d46d3d9954f1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
         "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
@@ -18,7 +392,18 @@
     },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs"
+        "astal": "astal",
+        "astal-apps": "astal-apps",
+        "astal-auth": "astal-auth",
+        "astal-battery": "astal-battery",
+        "astal-bluetooth": "astal-bluetooth",
+        "astal-hyprland": "astal-hyprland",
+        "astal-mpris": "astal-mpris",
+        "astal-notifd": "astal-notifd",
+        "astal-powerprofiles": "astal-powerprofiles",
+        "astal-river": "astal-river",
+        "astal-tray": "astal-tray",
+        "nixpkgs": "nixpkgs_12"
       }
     }
   },
