@@ -151,6 +151,7 @@ export class Wifi extends Service {
 
     get access_points() {
         return this._device.get_access_points().map(ap => ({
+            _ap: ap,
             bssid: ap.bssid,
             address: ap.hw_address,
             lastSeen: ap.last_seen,
