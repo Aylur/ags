@@ -104,6 +104,7 @@ in
       changelog = "https://github.com/Aylur/ags/blob/${version}/CHANGELOG.md";
       platforms = ["x86_64-linux" "aarch64-linux"];
       license = lib.licenses.gpl3;
-      meta.maintainers = [lib.maintainers.Aylur];
+      mainProgram = "ags";
+      maintainers = [lib.maintainers.Aylur];
     };
   }
