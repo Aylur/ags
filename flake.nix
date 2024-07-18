@@ -3,17 +3,18 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    # «https://github.com/nix-systems/nix-systems»
+    systems.url = "github:nix-systems/default-linux";
   };
 
   outputs = {
     nixpkgs,
     self,
+    systems,
   }: let
     version = builtins.replaceStrings ["\n"] [""] (builtins.readFile ./version);
-    genSystems = nixpkgs.lib.genAttrs [
-      "aarch64-linux"
-      "x86_64-linux"
-    ];
+    genSystems = nixpkgs.lib.genAttrs (import systems);
     pkgs = genSystems (system: import nixpkgs {inherit system;});
   in {
     packages = genSystems (system: rec {
