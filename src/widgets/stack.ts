@@ -93,6 +93,7 @@ export class Stack<Children extends { [name: string]: Gtk.Widget }, Attr> extend
             super.add_named(widget, name);
 
         this.notify('children');
+        this.show_all();
     }
 
     get items() {
