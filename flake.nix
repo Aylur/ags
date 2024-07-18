@@ -17,16 +17,21 @@
     genSystems = nixpkgs.lib.genAttrs (import systems);
     pkgs = genSystems (system: import nixpkgs {inherit system;});
   in {
-    packages = genSystems (system: rec {
-      default = pkgs.${system}.callPackage ./nix {inherit version;};
-      ags = default;
-      agsWithTypes = default; # for backwards compatibility
-      agsNoTypes = pkgs.${system}.callPackage ./nix {
+    packages = genSystems (system: let
+      inherit (pkgs.${system}) callPackage;
+    in {
+      default = callPackage ./nix {inherit version;};
+      ags = self.packages.${system}.default;
+      agsWithTypes = self.packages.${system}.default; # for backwards compatibility
+      agsNoTypes = callPackage ./nix {
         inherit version;
         buildTypes = false;
       };
     });
 
-    homeManagerModules.default = import ./nix/hm-module.nix self;
+    homeManagerModules = {
+      default = self.homeManagerModules.ags;
+      ags = import ./nix/hm-module.nix self;
+    };
   };
 }
