@@ -81,6 +81,59 @@ const DEVICE = (device: string) => {
     }
 };
 
+class Device extends Service {
+    static {
+        Service.register(this, {}, {
+            'state': ['string'],
+            'ipv4_address': ['string'],
+            'ipv6_address': ['string'],
+        });
+    }
+
+    private _device: NM.DeviceEthernet | NM.DeviceWifi;
+    private _ip4ConfigSignalId: number | undefined;
+    private _ip6ConfigSignalId: number | undefined;
+    constructor(device: NM.DeviceEthernet | NM.DeviceWifi) {
+        super();
+        this._device = device;
+        if (this._device) {
+            if (this._ip4ConfigSignalId)
+                this._device.ip4_config.disconnect(this._ip4ConfigSignalId);
+            this._ip4ConfigSignalId = this._device.ip4_config.connect('notify::addresses',
+                () => this.changed('ipv4_address'));
+        }
+
+        if (this._device) {
+            if (this._ip6ConfigSignalId)
+                this._device.ip6_config.disconnect(this._ip6ConfigSignalId);
+            this._ip6ConfigSignalId = this._device.ip6_config.connect('notify::addresses',
+                () => this.changed('ipv6_address'));
+        }
+    }
+
+    get device() { return this._device; }
+    get ipv4_address() {
+        if (this._device && this._device.ip4_config) {
+            const ip4 = this._device.ip4_config.get_addresses()
+                .map(item => item.get_address()).join(',');
+            return ip4;
+        }
+        else { return ''; }
+    }
+
+    get ipv6_address() {
+        if (this._device && this._device.ip6_config) {
+            const ip6 = this._device.ip6_config.get_addresses()
+                .map(item => item.get_address()).join(',');
+            return ip6;
+        }
+        else { return ''; }
+    }
+
+    get internet() { return _INTERNET(this._device); }
+    get state() { return _DEVICE_STATE(this._device); }
+}
+
 export class Wifi extends Service {
     static {
         Service.register(this, {}, {
@@ -96,18 +149,17 @@ export class Wifi extends Service {
     }
 
     private _client: NM.Client;
-    private _device: NM.DeviceWifi;
+    private _device: Device;
     private _ap!: NM.AccessPoint;
     private _apBind!: number;
-
     constructor(client: NM.Client, device: NM.DeviceWifi) {
         super();
         this._client = client;
-        this._device = device;
+        this._device = new Device(device);
 
         this._client.connect('notify::wireless-enabled', () => this.changed('enabled'));
-        if (this._device) {
-            bulkConnect((this._device as unknown) as Service, [
+        if (this._device.device) {
+            bulkConnect((this._device.device as unknown) as Service, [
                 ['notify::active-access-point', this._activeAp.bind(this)],
                 ['access-point-added', () => this.emit('changed')],
                 ['access-point-removed', () => this.emit('changed')],
@@ -117,17 +169,23 @@ export class Wifi extends Service {
     }
 
     readonly scan = () => {
-        this._device.request_scan_async(null, (device, res) => {
-            device.request_scan_finish(res);
-            this.emit('changed');
-        });
+        if (this._device.device instanceof NM.DeviceWifi) {
+            this._device.device.request_scan_async(null, (device, res) => {
+                device.request_scan_finish(res);
+                this.emit('changed');
+            });
+        } else {
+            return;
+        }
     };
 
     private _activeAp() {
         if (this._ap)
             this._ap.disconnect(this._apBind);
 
-        this._ap = this._device.get_active_access_point();
+        if (this._device.device instanceof NM.DeviceWifi)
+            this._ap = this._device.device.get_active_access_point();
+
         if (!this._ap)
             return;
 
@@ -149,19 +207,22 @@ export class Wifi extends Service {
         });
     }
 
+    get nmDevice() { return this._device; }
     get access_points() {
-        return this._device.get_access_points().map(ap => ({
-            bssid: ap.bssid,
-            address: ap.hw_address,
-            lastSeen: ap.last_seen,
-            ssid: ap.ssid
-                ? NM.utils_ssid_to_utf8(ap.ssid.get_data() || new Uint8Array)
-                : 'Unknown',
-            active: ap === this._ap,
-            strength: ap.strength,
-            frequency: ap.frequency,
-            iconName: _STRENGTH_ICONS.find(({ value }) => value <= ap.strength)?.icon,
-        }));
+        if (this._device.device instanceof NM.DeviceWifi) {
+            return this._device.device.get_access_points().map(ap => ({
+                bssid: ap.bssid,
+                address: ap.hw_address,
+                lastSeen: ap.last_seen,
+                ssid: ap.ssid
+                    ? NM.utils_ssid_to_utf8(ap.ssid.get_data() || new Uint8Array)
+                    : 'Unknown',
+                active: ap === this._ap,
+                strength: ap.strength,
+                frequency: ap.frequency,
+                iconName: _STRENGTH_ICONS.find(({ value }) => value <= ap.strength)?.icon,
+            }));
+        } else { return null; }
     }
 
     get enabled() { return this._client.wireless_enabled; }
@@ -169,7 +230,7 @@ export class Wifi extends Service {
 
     get strength() { return this._ap?.strength || -1; }
     get frequency() { return this._ap?.frequency || -1; }
-    get internet() { return _INTERNET(this._device); }
+    get internet() { return this._device.internet; }
     get ssid() {
         if (!this._ap)
             return '';
@@ -181,7 +242,7 @@ export class Wifi extends Service {
         return NM.utils_ssid_to_utf8(ssid);
     }
 
-    get state() { return _DEVICE_STATE(this._device); }
+    get state() { return this._device.state; }
 
     get icon_name() {
         const iconNames: [number, string][] = [
@@ -221,23 +282,29 @@ export class Wired extends Service {
         });
     }
 
-    private _device: NM.DeviceEthernet;
-
+    private _device: Device;
     constructor(device: NM.DeviceEthernet) {
         super();
-        this._device = device;
+        this._device = new Device(device);
 
         // TODO make signals actually signal when they should
-        this._device?.connect('notify::speed', () => {
+        this._device.device?.connect('notify::speed', () => {
             this.emit('changed');
             ['speed', 'internet', 'state', 'icon-name']
                 .map(prop => this.notify(prop));
         });
     }
 
-    get speed() { return this._device.get_speed(); }
-    get internet() { return _INTERNET(this._device); }
-    get state() { return _DEVICE_STATE(this._device); }
+    get speed() {
+        if (this._device.device instanceof NM.DeviceEthernet)
+            return this._device.device.get_speed(); // If it's an ethernet device, return its speed
+        else
+            return -1; // Return a default value if it's not an ethernet device
+    }
+
+    get nmDevice() { return this._device; }
+    get state() { return this._device.state; }
+    get internet() { return this._device.internet; }
     get icon_name() {
         if (this.internet === 'connecting')
             return 'network-wired-acquiring-symbolic';
