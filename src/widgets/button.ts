@@ -3,6 +3,8 @@ import Gtk from 'gi://Gtk?version=3.0';
 import Gdk from 'gi://Gdk?version=3.0';
 
 type EventHandler<Self> = (self: Self, event: Gdk.Event) => boolean | unknown;
+const BUTTON_BACK = 8;
+const BUTTON_FORWARD = 9;
 
 export type ButtonProps<
     Child extends Gtk.Widget = Gtk.Widget,
@@ -21,10 +23,14 @@ export type ButtonProps<
     on_primary_click?: EventHandler<Self>
     on_middle_click?: EventHandler<Self>
     on_secondary_click?: EventHandler<Self>
+    on_back_click?: EventHandler<Self>
+    on_forward_click?: EventHandler<Self>
 
     on_primary_click_release?: EventHandler<Self>
     on_middle_click_release?: EventHandler<Self>
     on_secondary_click_release?: EventHandler<Self>
+    on_back_click_release?: EventHandler<Self>
+    on_forward_click_release?: EventHandler<Self>
 }, Attr>;
 
 export function newButton<
@@ -51,10 +57,14 @@ export class Button<Child extends Gtk.Widget, Attr> extends Gtk.Button {
                 'on-primary-click': ['jsobject', 'rw'],
                 'on-secondary-click': ['jsobject', 'rw'],
                 'on-middle-click': ['jsobject', 'rw'],
+                'on-back-click': ['jsobject', 'rw'],
+                'on-forward-click': ['jsobject', 'rw'],
 
                 'on-primary-click-release': ['jsobject', 'rw'],
                 'on-secondary-click-release': ['jsobject', 'rw'],
                 'on-middle-click-release': ['jsobject', 'rw'],
+                'on-back-click-release': ['jsobject', 'rw'],
+                'on-forward-click-release': ['jsobject', 'rw'],
             },
         });
     }
@@ -88,6 +98,12 @@ export class Button<Child extends Gtk.Widget, Attr> extends Gtk.Button {
 
             else if (event.get_button()[1] === Gdk.BUTTON_SECONDARY)
                 return this.on_secondary_click?.(this, event);
+
+            else if (event.get_button()[1] === BUTTON_BACK)
+                return this.on_back_click?.(this, event);
+
+            else if (event.get_button()[1] === BUTTON_FORWARD)
+                return this.on_forward_click?.(this, event);
         });
 
         this.connect('button-release-event', (_, event: Gdk.Event) => {
@@ -99,6 +115,12 @@ export class Button<Child extends Gtk.Widget, Attr> extends Gtk.Button {
 
             else if (event.get_button()[1] === Gdk.BUTTON_SECONDARY)
                 return this.on_secondary_click_release?.(this, event);
+
+            else if (event.get_button()[1] === BUTTON_BACK)
+                return this.on_back_click_release?.(this, event);
+
+            else if (event.get_button()[1] === BUTTON_FORWARD)
+                return this.on_forward_click_release?.(this, event);
         });
 
         this.connect('scroll-event', (_, event: Gdk.Event) => {
@@ -153,6 +175,16 @@ export class Button<Child extends Gtk.Widget, Attr> extends Gtk.Button {
         this._set('on-secondary-click', callback);
     }
 
+    get on_back_click() { return this._get('on-back-click'); }
+    set on_back_click(callback: EventHandler<this>) {
+        this._set('on-back-click', callback);
+    }
+
+    get on_forward_click() { return this._get('on-forward-click'); }
+    set on_forward_click(callback: EventHandler<this>) {
+        this._set('on-forward-click', callback);
+    }
+
     get on_primary_click_release() { return this._get('on-primary-click-release'); }
     set on_primary_click_release(callback: EventHandler<this>) {
         this._set('on-primary-click-release', callback);
@@ -166,6 +198,16 @@ export class Button<Child extends Gtk.Widget, Attr> extends Gtk.Button {
     get on_secondary_click_release() { return this._get('on-secondary-click-release'); }
     set on_secondary_click_release(callback: EventHandler<this>) {
         this._set('on-secondary-click-release', callback);
+    }
+
+    get on_back_click_release() { return this._get('on-back-click-release'); }
+    set on_back_click_release(callback: EventHandler<this>) {
+        this._set('on-back-click-release', callback);
+    }
+
+    get on_forward_click_release() { return this._get('on-forward-click-release'); }
+    set on_forward_click_release(callback: EventHandler<this>) {
+        this._set('on-forward-click-release', callback);
     }
 }
 
