@@ -455,6 +455,7 @@ export interface Client {
     fullscreenMode: number
     fakeFullscreen: boolean
     grouped: [string],
+    tags: string[]
     swallowing: string
     focusHistoryID: number
 }
