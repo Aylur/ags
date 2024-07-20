@@ -90,24 +90,41 @@ function init(config) {
     print(`Config setup at ${config}`)
 }
 
+/**
+ * @param {any[]} acc
+ * @param {any} item
+ */
+function duplicates(acc, item) {
+    return acc.includes(item) ? acc : [item, ...acc]
+}
+
 /** @param {string} config */
 function generateTypes(config) {
-    const tsconfig = {
-        compilerOptions: {
-            module: "ESNext",
-            outDir: "dist",
-            checkJs: true,
-            allowJs: true,
-            jsx: "react-jsx",
-            jsxImportSource: `${ASTAL_GJS}/src/jsx`,
-            paths: { astal: [`${ASTAL_GJS}/index.ts`] },
-            typeRoots: ["./node_modules/@girs"],
-        },
-    }
+    if (!GLib.file_test(config, GLib.FileTest.EXISTS))
+        Gio.File.new_for_path(config).make_directory_with_parents(null)
+
+    const tsconfig = GLib.file_test(`${config}/tsconfig.json`, GLib.FileTest.EXISTS)
+        ? JSON.parse(Astal.read_file(`${config}/tsconfig.json`) || "{}")
+        : {}
+
+    tsconfig.compilerOptions = Object.assign(tsconfig?.compilerOptions || {}, {
+        module: "ESNext",
+        outDir: "dist",
+        checkJs: tsconfig?.compilerOptions?.checkJs ?? true,
+        allowJs: tsconfig?.compilerOptions?.allowJs ?? true,
+        jsx: "react-jsx",
+        jsxImportSource: `${ASTAL_GJS}/src/jsx`,
+        paths: Object.assign(tsconfig?.compilerOptions?.paths || {}, {
+            astal: [`${ASTAL_GJS}/index.ts`],
+        }),
+    })
+
+    tsconfig.include = [...(tsconfig?.include || []), "./node_modules/@girs"]
+        .reduce(duplicates, [])
 
     Astal.write_file(
         `${config}/tsconfig.json`,
-        JSON.stringify(tsconfig, null, 2),
+        JSON.stringify(tsconfig, null, 4),
     )
 
     const dataDirs = [
@@ -120,7 +137,7 @@ function generateTypes(config) {
     const girDirectories = dataDirs
         .map(dir => `${dir}/gir-1.0`)
         .filter(dir => GLib.file_test(dir, GLib.FileTest.IS_DIR))
-        .reduce((/** @type {string[]} */ acc, dir) => acc.includes(dir) ? acc : [dir, ...acc], [])
+        .reduce(duplicates, [])
 
     const gencmd = [
         NPX, "@ts-for-gir/cli", "generate",
@@ -143,6 +160,7 @@ function generateTypes(config) {
 async function run(dir) {
     const config = `${dir}/config`
     const outfile = `${RUNDIR}/config.js`
+    const outcss = `${RUNDIR}/config.css`
     const tsconfig = `${RUNDIR}/tsconfig.json`
     const formats = ["js", "jsx", "ts", "tsx"]
 
@@ -152,14 +170,20 @@ async function run(dir) {
     }
 
     try {
+        if (GLib.file_test(outfile, GLib.FileTest.EXISTS))
+            Gio.File.new_for_path(outfile).delete(null)
+
+        if (GLib.file_test(outcss, GLib.FileTest.EXISTS))
+            Gio.File.new_for_path(outcss).delete(null)
+
         if (!GLib.file_test(RUNDIR, GLib.FileTest.EXISTS))
             Gio.File.new_for_path(RUNDIR).make_directory_with_parents(null)
 
         Astal.write_file(tsconfig, JSON.stringify({
             compilerOptions: {
-                target: "ES2022",
-                module: "ES2022",
-                lib: ["ES2022"],
+                target: "ESNext",
+                module: "ESNext",
+                lib: ["ESNext"],
                 moduleResolution: "Bundler",
                 skipLibCheck: true,
                 allowJs: true,
@@ -177,6 +201,7 @@ async function run(dir) {
             "--bundle", config,
             `--tsconfig=${tsconfig}`,
             `--outdir=${RUNDIR}`,
+            "--target=chrome98", // nested css
             "--format=esm",
             "--external:console",
             "--external:system",
@@ -297,15 +322,14 @@ async function main(args) {
         return Astal.Application.toggle_window_by_name(instance, toggleWindow)
 
     if (flags.init)
-        init(config)
+        return init(config)
 
     if (flags.genTypes)
-        generateTypes(config)
+        return generateTypes(config)
 
     if (message) {
         try {
-            print(Astal.Application.send_message(instance, message))
-            exit(0)
+            return print(Astal.Application.send_message(instance, message))
         }
         catch (error) {
             printerr(error)
@@ -313,8 +337,19 @@ async function main(args) {
         }
     }
 
-    if (!flags.init)
+    try {
         await run(config)
+    }
+    catch (error) {
+        console.error(error)
+        exit(1)
+    }
 }
 
-main(programArgs)
+try {
+    main(programArgs)
+}
+catch (error) {
+    console.error(error)
+    exit(1)
+}
