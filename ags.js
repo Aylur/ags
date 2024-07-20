@@ -1,5 +1,5 @@
 #!@GJS@ -m
-import { exit, programArgs, programInvocationName } from "system";
+import { exit, programArgs, programInvocationName } from "system"
 import GLib from "gi://GLib"
 import Gio from "gi://Gio"
 import Astal from "gi://Astal"
@@ -30,7 +30,6 @@ OPTIONS:
     -g, --generate-types     Generate TypeScript types and tsconfig.json
     --init                   Initialize the configuration directory
 `
-
 
 const baseconfig = `
 import { App, Variable, Astal, Gtk } from "astal"
@@ -82,7 +81,7 @@ function init(config) {
     ]
 
     if (!GLib.file_test(config, GLib.FileTest.EXISTS))
-        Gio.File.new_for_path(config).make_directory_with_parents(null);
+        Gio.File.new_for_path(config).make_directory_with_parents(null)
 
     Astal.write_file(`${config}/.gitignore`, gitignore.join("\n").trim())
     Astal.write_file(`${config}/config.js`, baseconfig.trim())
@@ -95,6 +94,7 @@ function init(config) {
 function generateTypes(config) {
     const tsconfig = {
         compilerOptions: {
+            module: "ESNext",
             outDir: "dist",
             checkJs: true,
             allowJs: true,
@@ -102,7 +102,7 @@ function generateTypes(config) {
             jsxImportSource: `${ASTAL_GJS}/src/jsx`,
             paths: { astal: [`${ASTAL_GJS}/index.ts`] },
             typeRoots: ["./node_modules/@girs"],
-        }
+        },
     }
 
     Astal.write_file(
@@ -114,7 +114,7 @@ function generateTypes(config) {
         "/usr/local/share",
         "/usr/share",
         "/usr/share/*",
-        ...XDG_DATA_DIRS.split(':')
+        ...XDG_DATA_DIRS.split(":"),
     ]
 
     const girDirectories = dataDirs
@@ -126,14 +126,15 @@ function generateTypes(config) {
         NPX, "@ts-for-gir/cli", "generate",
         "--outdir", `${config}/node_modules/@girs`,
         "--promisify",
-        ...girDirectories.flatMap(path => ["-g", path])
+        ...girDirectories.flatMap(path => ["-g", path]),
     ].flat()
 
     try {
         print("Generating types, this might take a while...")
         Gio.Subprocess.new(gencmd, Gio.SubprocessFlags.STDIN_INHERIT)
             .wait(null)
-    } catch (error) {
+    }
+    catch (error) {
         console.error(error)
     }
 }
@@ -141,7 +142,7 @@ function generateTypes(config) {
 /** @param {string} dir */
 async function run(dir) {
     const config = `${dir}/config`
-    const outfile = `${RUNDIR}/ags.js`
+    const outfile = `${RUNDIR}/config.js`
     const tsconfig = `${RUNDIR}/tsconfig.json`
     const formats = ["js", "jsx", "ts", "tsx"]
 
@@ -152,7 +153,7 @@ async function run(dir) {
 
     try {
         if (!GLib.file_test(RUNDIR, GLib.FileTest.EXISTS))
-            Gio.File.new_for_path(RUNDIR).make_directory_with_parents(null);
+            Gio.File.new_for_path(RUNDIR).make_directory_with_parents(null)
 
         Astal.write_file(tsconfig, JSON.stringify({
             compilerOptions: {
@@ -166,7 +167,7 @@ async function run(dir) {
                 jsxImportSource: `${ASTAL_GJS}/src/jsx`,
                 paths: {
                     "astal/*": [`${ASTAL_GJS}/src/*`],
-                    "astal": [`${ASTAL_GJS}/index.ts`]
+                    "astal": [`${ASTAL_GJS}/index.ts`],
                 },
             },
         }))
@@ -175,7 +176,7 @@ async function run(dir) {
             ESBUILD,
             "--bundle", config,
             `--tsconfig=${tsconfig}`,
-            `--outfile=${outfile}`,
+            `--outdir=${RUNDIR}`,
             "--format=esm",
             "--external:console",
             "--external:system",
@@ -184,7 +185,8 @@ async function run(dir) {
             "--external:file://*",
             "--loader:.js=jsx",
         ])
-    } catch (error) {
+    }
+    catch (error) {
         printerr(error)
     }
 
@@ -192,7 +194,8 @@ async function run(dir) {
         GLib.set_prgname("ags")
         Gtk.init(null)
         await import(`file://${outfile}`)
-    } catch (error) {
+    }
+    catch (error) {
         console.error(error)
     }
 }
@@ -212,63 +215,63 @@ async function main(args) {
 
     for (let i = 0; i < args.length; ++i) {
         switch (args[i]) {
-            case '-h':
-            case '--help':
+            case "-h":
+            case "--help":
                 return print(help.trim())
 
-            case '-v':
-            case '--version':
+            case "-v":
+            case "--version":
                 print("ags:", VERSION)
                 print("astal:", Astal.VERSION)
                 return
 
-            case '-l':
-            case '--list':
+            case "-l":
+            case "--list":
                 return print(Astal.Application.get_instances().join("\n"))
 
-            case '-q':
-            case '--quit':
+            case "-q":
+            case "--quit":
                 flags.quit = true
                 break
 
-            case '-i':
-            case '--instance':
+            case "-i":
+            case "--instance":
                 flags.instance = args[++i]
                 break
 
-            case '-m':
-            case '--message':
+            case "-m":
+            case "--message":
                 flags.message = args[++i]
                 break
 
-            case '-I':
-            case '--inspector':
+            case "-I":
+            case "--inspector":
                 flags.inspector = true
                 break
 
-            case '-g':
-            case '--generate-types':
+            case "-g":
+            case "--generate-types":
                 flags.genTypes = true
                 break
 
-            case '-t':
-            case '--togge-window':
+            case "-t":
+            case "--togge-window":
                 flags.toggleWindow = args[++i]
                 break
 
-            case '-c':
-            case '--config':
+            case "-c":
+            case "--config": {
                 const path = args[++i]
-                const config = path.startsWith('.')
-                    ? `${GLib.getenv('PWD')}${path.slice(1)}`
+                const config = path.startsWith(".")
+                    ? `${GLib.getenv("PWD")}${path.slice(1)}`
                     : path
 
                 flags.config = config.endsWith("/")
                     ? config.slice(0, -1)
                     : config
                 break
-
-            case '--init':
+            }
+            case "--init":
                 flags.init = true
                 break
 
@@ -303,7 +306,8 @@ async function main(args) {
         try {
             print(Astal.Application.send_message(instance, message))
             exit(0)
-        } catch (error) {
+        }
+        catch (error) {
             printerr(error)
             exit(1)
         }

@@ -1,7 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    astal.url = "github:astal-sh/libastal";
+    astal.url = "/home/demeter/Projects/astal/libastal";
     astal-apps.url = "github:astal-sh/apps";
     astal-auth.url = "github:astal-sh/auth";
     astal-battery.url = "github:astal-sh/battery";
@@ -59,8 +59,14 @@
       astal-tray = inputs.astal-tray.packages.${system}.default;
     };
 
-    devShells.${system}.default = pkgs.mkShell {
-      inherit nativeBuildInputs buildInputs;
+    devShells.${system} = {
+      default = pkgs.mkShell {
+        inherit nativeBuildInputs buildInputs;
+      };
+      ags = pkgs.mkShell {
+        inherit nativeBuildInputs;
+        buildInputs = buildInputs ++ builtins.attrValues self.packages.${system};
+      };
     };
 
     homeManagerModules.default = {

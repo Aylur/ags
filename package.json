@@ -1,8 +1,11 @@
 {
-  "devDependencies": {
-    "@ts-for-gir/cli": "^4.0.0-beta.6"
-  },
+    "devDependencies": {
+        "@eslint/js": "^9.7.0",
+        "@stylistic/eslint-plugin": "^2.3.0",
+        "@ts-for-gir/cli": "latest",
+        "eslint": "^9.7.0"
+    },
     "scripts": {
-        "types": "ts-for-gir generate -o node_modules/@girs -v"
+        "types": "ts-for-gir generate -o node_modules/@girs"
     }
 }
