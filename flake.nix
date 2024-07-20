@@ -1,7 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    astal.url = "/home/demeter/Projects/astal/libastal";
+    astal.url = "github:astal-sh/libastal";
     astal-apps.url = "github:astal-sh/apps";
     astal-auth.url = "github:astal-sh/auth";
     astal-battery.url = "github:astal-sh/battery";
