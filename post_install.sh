@@ -9,7 +9,7 @@ mkdir -p $BIN_DIR
 
 BIN_SRC="$PKGDATA_DIR/$APP_ID"
 BIN_DEST="$BIN_DIR/ags"
-ln -s -f $BIN_SRC $BIN_DEST
+ln -s -r -f $BIN_SRC $BIN_DEST
 
 if [[ "$5" == "false" ]]; then
 	exit 0
