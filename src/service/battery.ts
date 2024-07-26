@@ -9,6 +9,7 @@ const PowerManagerProxy = Gio.DBusProxy.makeProxyWrapper(BatteryIFace) as unknow
 const DeviceState = {
     CHARGING: 1,
     FULLY_CHARGED: 4,
+    PENDING_CHARGE: 5,
 };
 
 export class Battery extends Service {
@@ -19,6 +20,7 @@ export class Battery extends Service {
             'available': ['boolean'],
             'percent': ['int'],
             'charging': ['boolean'],
+            'pending-charge': ['boolean'],
             'charged': ['boolean'],
             'icon-name': ['string'],
             'time-remaining': ['float'],
@@ -33,6 +35,7 @@ export class Battery extends Service {
     private _available = false;
     private _percent = -1;
     private _charging = false;
+    private _pendingCharge = false;
     private _charged = false;
     private _iconName = 'battery-missing-symbolic';
     private _timeRemaining = 0;
@@ -43,6 +46,7 @@ export class Battery extends Service {
     get available() { return this._available; }
     get percent() { return this._percent; }
     get charging() { return this._charging; }
+    get pending_charge() { return this._pendingCharge; }
     get charged() { return this._charged; }
     get icon_name() { return this._iconName; }
     get time_remaining() { return this._timeRemaining; }
@@ -67,6 +71,7 @@ export class Battery extends Service {
             return this.updateProperty('available', false);
 
         const charging = this._proxy.State === DeviceState.CHARGING;
+        const pendingCharge = this._proxy.State === DeviceState.PENDING_CHARGE;
         const percent = this._proxy.Percentage;
         const charged =
             this._proxy.State === DeviceState.FULLY_CHARGED ||
@@ -92,6 +97,7 @@ export class Battery extends Service {
         this.updateProperty('icon-name', iconName);
         this.updateProperty('percent', percent);
         this.updateProperty('charging', charging);
+        this.updateProperty('pending-charge', pendingCharge);
         this.updateProperty('charged', charged);
         this.updateProperty('time-remaining', timeRemaining);
         this.updateProperty('energy', energy);
