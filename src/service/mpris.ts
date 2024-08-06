@@ -113,7 +113,7 @@ export class MprisPlayer extends Service {
     private _loopStatus!: LoopStatus | null;
     private _length!: number;
 
-    private _binding = { mpris: 0, player: 0 };
+    private _binding = { mpris: [0, 0], player: 0 };
     private _mprisProxy: MprisProxy;
     private _playerProxy: PlayerProxy;
 
@@ -138,18 +138,21 @@ export class MprisPlayer extends Service {
     }
 
     close() {
-        this._mprisProxy?.disconnect(this._binding.mpris);
+        this._mprisProxy?.disconnect(this._binding.mpris[0]);
+        this._mprisProxy?.disconnect(this._binding.mpris[1]);
         this._playerProxy?.disconnect(this._binding.player);
         this.emit('closed');
     }
 
     private _onMprisProxyReady() {
-        this._binding.mpris = this._mprisProxy.connect(
+        this._binding.mpris[0] = this._mprisProxy.connect(
             'notify::g-name-owner',
             () => {
                 if (!this._mprisProxy.g_name_owner)
                     this.close();
             });
+        this._binding.mpris[1] = this._mprisProxy.connect(
+            'g-properties-changed', () => this._updateState());
 
         this._identity = this._mprisProxy.Identity;
         this._entry = this._mprisProxy.DesktopEntry;
@@ -201,6 +204,7 @@ export class MprisPlayer extends Service {
         this.updateProperty('track-cover-url', trackCoverUrl);
         this.updateProperty('length', length);
         this.updateProperty('identity', this._mprisProxy.Identity);
+        this.updateProperty('entry', this._mprisProxy.DesktopEntry);
         this._cacheCoverArt();
         this.emit('changed');
     }
