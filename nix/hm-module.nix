@@ -51,6 +51,16 @@ in {
       '';
       example = literalExpression "[ pkgs.libsoup_3 ]";
     };
+
+    systemd.enable = mkOption {
+      type = types.bool;
+      default = false;
+      example = true;
+      description = ''
+        Enable systemd integration.
+      '';
+    };
+
   };
 
   config = mkIf cfg.enable (mkMerge [
@@ -60,14 +70,16 @@ in {
     (mkIf (cfg.package != null) (let
       path = "/share/com.github.Aylur.ags/types";
       pkg = cfg.package.override {
-        extraPackages = cfg.extraPackages;
+extraPackages = cfg.extraPackages;
         buildTypes = true;
       };
     in {
       programs.ags.finalPackage = pkg;
       home.packages = [pkg];
       home.file.".local/${path}".source = "${pkg}/${path}";
-    }))
+    })
+    )
+    (mkIf cfg.systemd.enable (
     {
       systemd.user.services.ags = {
         Unit = {
@@ -87,6 +99,5 @@ in {
           WantedBy = ["graphical-session.target"];
         };
       };
-    }
+    }))
   ]);
-}
