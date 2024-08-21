@@ -20,8 +20,8 @@ export function isRunning(dbusName: string, bus: 'session' | 'system') {
 }
 
 export function parsePath(path: string) {
-    return path.startsWith('.')
-        ? `${GLib.getenv('PWD')}${path.slice(1)}`
+    return path.startsWith('./')
+        ? `${GLib.getenv('PWD')}/${path.slice(2)}`
         : path;
 }
 
