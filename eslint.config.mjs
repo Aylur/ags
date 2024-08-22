@@ -1,5 +1,5 @@
-import pluginJs from "@eslint/js";
-import stylistic from "@stylistic/eslint-plugin";
+import pluginJs from "@eslint/js"
+import stylistic from "@stylistic/eslint-plugin"
 
 export default [
     pluginJs.configs.recommended,
@@ -9,13 +9,4 @@ export default [
         quotes: "double",
         commaDangle: "always-multiline",
     }),
-    {
-        languageOptions: {
-            globals: {
-                print: "readonly",
-                printerr: "readonly",
-                console: "readonly",
-            },
-        },
-    },
-];
+]

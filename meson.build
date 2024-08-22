@@ -3,30 +3,48 @@ project(
   'c',
   version: run_command('cat', join_paths(meson.project_source_root(), 'version')).stdout().strip(),
   meson_version: '>= 0.62.0',
-  license: ['GPL-3.0-or-later'],
-  default_options: [
-    'warning_level=2',
-    'werror=false',
-  ],
 )
 
 astal = dependency('astal-0.1')
-esbuild = find_program('esbuild')
+node = find_program('node')
 npx = find_program('npx')
 gjs = find_program('gjs')
+ags_bundle = find_program('ags-bundle')
 datadirs = run_command('bash', '-c', 'echo $XDG_DATA_DIRS').stdout().strip()
 
-configure_file(
-  input: 'ags.js',
-  output: 'ags',
-  configuration: {
+pkgdatadir = get_option('prefix') / get_option('datadir') / 'ags'
+
+custom_target(
+  'ags',
+  output: ['ags'],
+  command: [node.full_path(), files('esbuild.mjs')],
+  build_by_default: true,
+  install: true,
+  install_dir: get_option('prefix') / get_option('bindir'),
+  env: {
+    'AGS_INFILE': meson.project_source_root() + '/src/ags.ts',
+    'AGS_OUTFILE': meson.project_build_root() + '/ags',
+    'AGS_BUNDLER': ags_bundle.full_path(),
     'ASTAL_GJS': astal.get_variable('gjs'),
     'GJS': gjs.full_path(),
-    'ESBUILD': esbuild.full_path(),
     'NPX': npx.full_path(),
+    'PKGDATADIR': pkgdatadir,
     'VERSION': meson.project_version(),
     'XDG_DATA_DIRS': datadirs,
   },
+)
+
+configure_file(
+  input: 'data/tsconfig.json',
+  output: 'tsconfig.json',
+  configuration: {
+    'ASTAL_GJS': astal.get_variable('gjs'),
+  },
   install: true,
-  install_dir: get_option('prefix') / get_option('bindir'),
+  install_dir: pkgdatadir,
+)
+
+install_data(
+  'data/env.d.ts',
+  install_dir: pkgdatadir,
 )

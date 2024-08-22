@@ -1,19 +1,4 @@
 {
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    astal.url = "github:astal-sh/libastal";
-    astal-apps.url = "github:astal-sh/apps";
-    astal-auth.url = "github:astal-sh/auth";
-    astal-battery.url = "github:astal-sh/battery";
-    astal-bluetooth.url = "github:astal-sh/bluetooth";
-    astal-hyprland.url = "github:astal-sh/hyprland";
-    astal-mpris.url = "github:astal-sh/mpris";
-    astal-notifd.url = "github:astal-sh/notifd";
-    astal-powerprofiles.url = "github:astal-sh/powerprofiles";
-    astal-river.url = "github:astal-sh/river";
-    astal-tray.url = "github:astal-sh/tray";
-  };
-
   outputs = {
     self,
     nixpkgs,
@@ -22,6 +7,7 @@
   } @ inputs: let
     system = "x86_64-linux";
     pkgs = import nixpkgs {inherit system;};
+    version = builtins.replaceStrings ["\n"] [""] (builtins.readFile ./version);
 
     nativeBuildInputs = with pkgs; [
       wrapGAppsHook
@@ -29,6 +15,7 @@
       meson
       ninja
       pkg-config
+      go
     ];
 
     buildInputs = with pkgs; [
@@ -41,22 +28,35 @@
   in {
     packages.${system} = {
       default = pkgs.stdenv.mkDerivation {
-        inherit nativeBuildInputs buildInputs;
+        inherit nativeBuildInputs version;
+        buildInputs = buildInputs ++ [self.packages.${system}.ags-bundle];
         pname = "ags";
-        version = "2.0.0";
-        src = ./.;
+        src = pkgs.buildNpmPackage {
+          name = "ags";
+          src = ./.;
+          npmDepsHash = "sha256-zo2GJjQC0aEwXZFhoPEBAtMvHF87zddllgZBMyz/XhE=";
+          installPhase = ''
+            mkdir $out
+            cp * -r $out
+          '';
+        };
       };
 
-      astal-apps = inputs.astal-apps.packages.${system}.default;
-      astal-auth = inputs.astal-auth.packages.${system}.default;
-      astal-battery = inputs.astal-battery.packages.${system}.default;
-      astal-bluetooth = inputs.astal-bluetooth.packages.${system}.default;
-      astal-hyprland = inputs.astal-hyprland.packages.${system}.default;
-      astal-mpris = inputs.astal-mpris.packages.${system}.default;
-      astal-notifd = inputs.astal-notifd.packages.${system}.default;
-      astal-powerprofiles = inputs.astal-powerprofiles.packages.${system}.default;
-      astal-river = inputs.astal-river.packages.${system}.default;
-      astal-tray = inputs.astal-tray.packages.${system}.default;
+      ags-bundle = import ./ags-bundle {
+        inherit pkgs version;
+      };
+
+      apps = inputs.apps.packages.${system}.default;
+      auth = inputs.auth.packages.${system}.default;
+      battery = inputs.battery.packages.${system}.default;
+      bluetooth = inputs.bluetooth.packages.${system}.default;
+      hyprland = inputs.hyprland.packages.${system}.default;
+      mpris = inputs.mpris.packages.${system}.default;
+      notifd = inputs.notifd.packages.${system}.default;
+      powerprofiles = inputs.powerprofiles.packages.${system}.default;
+      river = inputs.river.packages.${system}.default;
+      tray = inputs.tray.packages.${system}.default;
+      wireplumber = inputs.wireplumber.packages.${system}.default;
     };
 
     devShells.${system} = {
@@ -65,7 +65,10 @@
       };
       ags = pkgs.mkShell {
         inherit nativeBuildInputs;
-        buildInputs = buildInputs ++ builtins.attrValues self.packages.${system};
+        buildInputs =
+          buildInputs
+          ++ (builtins.attrValues self.packages.${system})
+          ++ [pkgs.libdbusmenu-gtk3];
       };
     };
 
@@ -138,6 +141,62 @@
           home.packages = [pkg];
         }))
       ]);
+    };
+  };
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    astal = {
+      url = "github:astal-sh/libastal";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    apps = {
+      url = "github:astal-sh/apps";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    auth = {
+      url = "github:astal-sh/auth";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    battery = {
+      url = "github:astal-sh/battery";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    bluetooth = {
+      url = "github:astal-sh/bluetooth";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    hyprland = {
+      url = "github:astal-sh/hyprland";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    mpris = {
+      url = "github:astal-sh/mpris";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    notifd = {
+      url = "github:astal-sh/notifd";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    network = {
+      url = "github:astal-sh/network";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    powerprofiles = {
+      url = "github:astal-sh/powerprofiles";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    river = {
+      url = "github:astal-sh/river";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    tray = {
+      url = "github:astal-sh/tray";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    wireplumber = {
+      url = "github:astal-sh/wireplumber";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 }

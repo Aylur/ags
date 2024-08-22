@@ -1,0 +1,16 @@
+window.Bar {
+    background: transparent;
+    color: @theme_fg_color;
+    font-weight: bold;
+}
+
+window.Bar>centerbox {
+    background: @theme_bg_color;
+    border-radius: 10px;
+    margin: 8px;
+}
+
+window.Bar button {
+    border-radius: 8px;
+    margin: 2px;
+}
