@@ -5,6 +5,7 @@ import Bar from "./widget/Bar"
 App.start({
     css: style,
     main() {
-        Bar()
+        Bar(0)
+        // Bar(1) // initialize other monitors
     },
 })

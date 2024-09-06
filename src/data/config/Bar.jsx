@@ -4,7 +4,7 @@ import { App, Variable, Astal, Gtk } from "astal"
 const time = Variable("").poll(1000, "date")
 
 /** @param {number} monitor */
-export default function Bar(monitor = 0) {
+export default function Bar(monitor) {
     return <window
         className="Bar"
         monitor={monitor}

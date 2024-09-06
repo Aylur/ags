@@ -1,6 +1,0 @@
-export { default as help } from "./help"
-export { default as version } from "./version"
-export { default as init } from "./init"
-export { default as generateTypes } from "./types"
-export { default as run } from "./run"
-export * from "./astal"
