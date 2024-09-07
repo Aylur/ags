@@ -53,23 +53,28 @@ func main() {
 	}
 
 	if *Opts.bundle {
-		bundle()
+		cwd, _ := os.Getwd()
+		outfile := filepath.Join(cwd, "ags.js")
+		Build(getAppEntry(), outfile)
+		fmt.Println(Green("project bundled") + " at " + Cyan(outfile))
 		return
 	}
 
 	run()
 }
 
-func getEntry() (string, string) {
+func getOutfile() string {
 	rundir, found := os.LookupEnv("XDG_RUNTIME_DIR")
 
 	if !found {
 		rundir = "/tmp"
 	}
 
-	infile := filepath.Join(*Opts.config, "app")
-	outfile := filepath.Join(rundir, "ags.js")
+	return filepath.Join(rundir, "ags.js")
+}
 
+func getAppEntry() string {
+	infile := filepath.Join(*Opts.config, "app")
 	valid := []string{"js", "ts", "jsx", "tsx"}
 
 	app := Some(valid, func(ext string) bool {
@@ -87,19 +92,20 @@ func getEntry() (string, string) {
 		Err(msg)
 	}
 
-	return infile, outfile
-}
-
-func bundle() {
-	infile, _ := getEntry()
-	cwd, _ := os.Getwd()
-	outfile := filepath.Join(cwd, "ags.js")
-	Build(infile, outfile)
-	fmt.Println(Green("project bundled") + " at " + Cyan(outfile))
+	return infile
 }
 
 func run() {
-	infile, outfile := getEntry()
+	var infile string
+
+	if len(Opts.args) > 0 {
+		*Opts.config = filepath.Dir(Opts.args[0])
+		infile = Opts.args[0]
+	} else {
+		infile = getAppEntry()
+	}
+
+	outfile := getOutfile()
 	Build(infile, outfile)
 	cmd := Exec("gjs", "-m", outfile)
 	cmd.Stdout = os.Stdout

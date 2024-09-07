@@ -23,6 +23,7 @@ type cliOptions struct {
 	quit         *bool
 	init         *bool
 	genTypes     *bool
+	args         []string
 }
 
 var (
@@ -66,6 +67,7 @@ var Opts = func() cliOptions {
 		Err(err)
 	}
 
+	opts.args = cli.Args()
 	return opts
 }()
 
