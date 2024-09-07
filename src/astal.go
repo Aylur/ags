@@ -9,7 +9,6 @@ func astal(args ...string) {
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	cmd.Run()
-	os.Exit(0)
 }
 
 func List() {

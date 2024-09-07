@@ -48,7 +48,7 @@ var inlinePlugin api.Plugin = api.Plugin{
 var sassPlugin api.Plugin = api.Plugin{
 	Name: "sass",
 	Setup: func(build api.PluginBuild) {
-		build.OnResolve(api.OnResolveOptions{Filter: `.*\.(css|scss|sass)$`},
+		build.OnResolve(api.OnResolveOptions{Filter: `.*\.(scss|sass)$`},
 			func(args api.OnResolveArgs) (api.OnResolveResult, error) {
 				return api.OnResolveResult{
 					Path: path.Join(
@@ -60,7 +60,7 @@ var sassPlugin api.Plugin = api.Plugin{
 			},
 		)
 
-		build.OnLoad(api.OnLoadOptions{Filter: `.*\.(css|scss|sass)$`, Namespace: "sass"},
+		build.OnLoad(api.OnLoadOptions{Filter: `.*\.(scss|sass)$`, Namespace: "sass"},
 			func(args api.OnLoadArgs) (api.OnLoadResult, error) {
 				data, err := os.ReadFile(args.Path)
 				if err != nil {
@@ -92,16 +92,7 @@ var sassPlugin api.Plugin = api.Plugin{
 // svg loader
 // other css preproceccors
 // http plugin with caching
-func build() string {
-	rundir, found := os.LookupEnv("XDG_RUNTIME_DIR")
-
-	if !found {
-		rundir = "/tmp"
-	}
-
-	outfile := filepath.Join(rundir, "ags.js")
-	infile := filepath.Join(*Opts.config, "app")
-
+func Build(infile, outfile string) {
 	result := api.Build(api.BuildOptions{
 		Color:       api.ColorAlways,
 		LogLevel:    api.LogLevelWarning,
@@ -115,7 +106,8 @@ func build() string {
 			"SRC": fmt.Sprintf(`"%s"`, *Opts.config),
 		},
 		Loader: map[string]api.Loader{
-			".js": api.LoaderJSX,
+			".js":  api.LoaderJSX,
+			".css": api.LoaderText,
 		},
 		External: []string{
 			"console",
@@ -135,38 +127,5 @@ func build() string {
 	// TODO: custom error logs
 	if len(result.Errors) > 0 {
 		os.Exit(1)
-	}
-
-	return outfile
-}
-
-func Run() {
-	infile := filepath.Join(*Opts.config, "app")
-	valid := []string{"js", "ts", "jsx", "tsx"}
-
-	app := Some(valid, func(ext string) bool {
-		_, err := os.Stat(infile + "." + ext)
-		return !os.IsNotExist(err)
-	})
-
-	if !app {
-		msg := "no such file or directory: " +
-			fmt.Sprintf("\"%s\"\n", Cyan(*Opts.config+"/app")) +
-			Magenta("tip: ") + "valid names are: "
-		for _, v := range valid {
-			msg = msg + fmt.Sprintf(` "%s"`, Cyan("app."+v))
-		}
-		Err(msg)
-	}
-
-	cmd := Exec("gjs", "-m", build())
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-	cmd.Dir = *Opts.config
-
-	// TODO: watch and restart
-	if err := cmd.Run(); err != nil {
-		Err(err)
 	}
 }

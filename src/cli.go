@@ -15,6 +15,7 @@ type cliOptions struct {
 	config       *string
 	toggleWindow *string
 	message      *string
+	bundle       *bool
 	help         *bool
 	version      *bool
 	inspector    *bool
@@ -51,6 +52,7 @@ var Opts = func() cliOptions {
 		quit:         cli.BoolP("quit", "q", false, ""),
 		genTypes:     cli.BoolP("generate", "g", false, ""),
 		init:         cli.Bool("init", false, ""),
+		bundle:       cli.BoolP("bundle", "b", false, ""),
 	}
 
 	cli.Usage = PrintHelp
@@ -89,14 +91,12 @@ func PrintHelp() {
 		opt("I", "inspector", "     Open up Gtk debug tool") +
 		opt("t", "toggle", "        Show or hide a window") +
 		opt("g", "generate", "      Generate TypeScript types") +
+		opt("b", "bundle", "        Bundle config into a JavaScript file") +
 		"        " + Blue("--init") + "          Initialize the configuration directory\n")
-
-	os.Exit(0)
 }
 
 func PrintVersion() {
 	fmt.Println("ags: ", Yellow(strings.TrimSpace(version)))
 	out, _ := Exec("gjs", "-c", versionscript).Output()
 	fmt.Print(string(out))
-	os.Exit(0)
 }
