@@ -41,7 +41,11 @@ in
 
     src = buildNpmPackage {
       name = pname;
-      src = lib.cleanSource ../.;
+
+      src = builtins.path {
+        name = "ags-${version}";
+        path = lib.cleanSource ../.;
+      };
 
       dontBuild = true;
 
