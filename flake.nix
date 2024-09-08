@@ -19,6 +19,10 @@
         ags = pkgs.callPackage ./src {
           astal = astal.packages.${system}.default;
         };
+        agsFull = pkgs.callPackage ./src {
+          astal = astal.packages.${system}.default;
+          extraPackages = builtins.attrValues astal.packages.${system};
+        };
       };
 
     devShells.${system} = {
