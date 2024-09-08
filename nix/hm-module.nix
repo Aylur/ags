@@ -101,3 +101,4 @@ extraPackages = cfg.extraPackages;
       };
     }))
   ]);
+}
