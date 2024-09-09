@@ -60,7 +60,6 @@ in {
         Enable systemd integration.
       '';
     };
-
   };
 
   config = mkIf cfg.enable (mkMerge [
@@ -70,17 +69,15 @@ in {
     (mkIf (cfg.package != null) (let
       path = "/share/com.github.Aylur.ags/types";
       pkg = cfg.package.override {
-extraPackages = cfg.extraPackages;
+        extraPackages = cfg.extraPackages;
         buildTypes = true;
       };
     in {
       programs.ags.finalPackage = pkg;
       home.packages = [pkg];
       home.file.".local/${path}".source = "${pkg}/${path}";
-    })
-    )
-    (mkIf cfg.systemd.enable (
-    {
+    }))
+    (mkIf cfg.systemd.enable {
       systemd.user.services.ags = {
         Unit = {
           Description = "AGS - A library built for GJS to allow defining GTK widgets in a declarative way.";
@@ -99,5 +96,6 @@ extraPackages = cfg.extraPackages;
           WantedBy = ["graphical-session.target"];
         };
       };
-    }))
+    })
   ]);
+}
