@@ -21,7 +21,9 @@
         };
         agsFull = pkgs.callPackage ./src {
           astal = astal.packages.${system}.default;
-          extraPackages = builtins.attrValues astal.packages.${system};
+          extraPackages = builtins.attrValues (
+            builtins.removeAttrs astal.packages.${system} ["docs"]
+          );
         };
       };
 
