@@ -299,7 +299,7 @@ export class Notifications extends Service {
     private _dbus!: Gio.DBusExportedObject;
     private _notifications: Map<number, Notification>;
     private _dnd = false;
-    private _idCount = 0;
+    private _idCount = 1;
 
     constructor() {
         super();
