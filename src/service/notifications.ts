@@ -299,7 +299,7 @@ export class Notifications extends Service {
     private _dbus!: Gio.DBusExportedObject;
     private _notifications: Map<number, Notification>;
     private _dnd = false;
-    private _idCount = 0;
+    private _idCount = 1;
 
     constructor() {
         super();
@@ -347,7 +347,7 @@ export class Notifications extends Service {
         hints: Hints,
         expiration: number,
     ) {
-        const id = replacesId || this._idCount++;
+        const id = this._notifications.has(replacesId) ? replacesId : this._idCount++;
         const n = new Notification(appName, id, appIcon, summary, body, acts, hints, !this.dnd);
 
         if (this.forceTimeout || expiration === -1) {
