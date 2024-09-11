@@ -9,4 +9,4 @@ It was heavily inspired by [EWW](https://github.com/elkowar/eww).
 
 ## Get started
 
-To get started read the [wiki](https://aylur.github.io/astal).
+To get started read the [wiki](https://aylur.github.io/astal/ags/first-widgets).
