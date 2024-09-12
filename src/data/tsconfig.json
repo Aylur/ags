@@ -18,7 +18,7 @@
                 "@ASTAL_GJS@"
             ],
             "astal/*": [
-                "@ASTAL_GJS@/*"
+                "@ASTAL_GJS@/src/*"
             ]
         },
     }
