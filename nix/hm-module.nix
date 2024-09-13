@@ -51,6 +51,15 @@ in {
       '';
       example = literalExpression "[ pkgs.libsoup_3 ]";
     };
+
+    systemd.enable = mkOption {
+      type = types.bool;
+      default = false;
+      example = true;
+      description = ''
+        Enable systemd integration.
+      '';
+    };
   };
 
   config = mkIf cfg.enable (mkMerge [
@@ -68,5 +77,25 @@ in {
       home.packages = [pkg];
       home.file.".local/${path}".source = "${pkg}/${path}";
     }))
+    (mkIf cfg.systemd.enable {
+      systemd.user.services.ags = {
+        Unit = {
+          Description = "AGS - A library built for GJS to allow defining GTK widgets in a declarative way.";
+          Documentation = "https://github.com/Aylur/ags";
+          PartOf = ["graphical-session.target"];
+          After = ["graphical-session-pre.target"];
+        };
+
+        Service = {
+          ExecStart = "${config.programs.ags.package}/bin/ags -b hypr";
+          Restart = "on-failure";
+          KillMode = "mixed";
+        };
+
+        Install = {
+          WantedBy = ["graphical-session.target"];
+        };
+      };
+    })
   ]);
 }

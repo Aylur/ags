@@ -13,7 +13,7 @@
   gjs,
   wrapGAppsHook,
   upower,
-  gnome,
+  gnome-bluetooth,
   gtk-layer-shell,
   glib-networking,
   networkmanager,
@@ -41,7 +41,11 @@ in
 
     src = buildNpmPackage {
       name = pname;
-      src = lib.cleanSource ../.;
+
+      src = builtins.path {
+        name = "ags-${version}";
+        path = lib.cleanSource ../.;
+      };
 
       dontBuild = true;
 
@@ -70,7 +74,7 @@ in
         gtk3
         libpulseaudio
         upower
-        gnome.gnome-bluetooth
+        gnome-bluetooth
         gtk-layer-shell
         glib-networking
         networkmanager
