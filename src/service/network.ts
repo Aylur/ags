@@ -131,7 +131,7 @@ export class Wifi extends Service {
                 ssid: ['string'],
                 state: ['string'],
                 'icon-name': ['string'],
-            }
+            },
         );
     }
 
@@ -146,7 +146,7 @@ export class Wifi extends Service {
         this._device = device;
 
         this._client.connect('notify::wireless-enabled', () =>
-            this.changed('enabled')
+            this.changed('enabled'),
         );
         if (this._device) {
             bulkConnect(this._device as unknown as Service, [
@@ -177,27 +177,27 @@ export class Wifi extends Service {
         const savedConnections = this._client.get_connections();
         const savedConnection = this.findSavedConnectionBySSID(
             savedConnections,
-            ssid
+            ssid,
         );
 
-        if (savedConnection) {
+        if (savedConnection)
             this.activateSavedConnection(savedConnection, ap);
-        } else {
+        else
             this.createNewConnection(ap, password);
-        }
     };
 
     private findAccessPointBySSID(
         accessPoints: NM.AccessPoint[],
-        ssid: string
+        ssid: string,
     ): NM.AccessPoint | null {
         return (
-            accessPoints.find((ap) => {
+            accessPoints.find(ap => {
                 const apSsidData = ap.get_ssid();
-                if (!apSsidData) return false;
+                if (!apSsidData)
+                    return false;
 
                 const apSsid = NM.utils_ssid_to_utf8(
-                    apSsidData.get_data() || new Uint8Array()
+                    apSsidData.get_data() || new Uint8Array(),
                 );
                 return apSsid === ssid;
             }) || null
@@ -206,18 +206,20 @@ export class Wifi extends Service {
 
     private findSavedConnectionBySSID(
         savedConnections: NM.Connection[],
-        ssid: string
+        ssid: string,
     ): NM.Connection | null {
         return (
-            savedConnections.find((connection) => {
+            savedConnections.find(connection => {
                 const wirelessSetting = connection.get_setting_wireless();
-                if (!wirelessSetting) return false;
+                if (!wirelessSetting)
+                    return false;
 
                 const connectionSsidData = wirelessSetting.get_ssid();
-                if (!connectionSsidData) return false;
+                if (!connectionSsidData)
+                    return false;
 
                 const connectionSsid = NM.utils_ssid_to_utf8(
-                    connectionSsidData.get_data() || new Uint8Array()
+                    connectionSsidData.get_data() || new Uint8Array(),
                 );
                 return connectionSsid === ssid;
             }) || null
@@ -226,7 +228,7 @@ export class Wifi extends Service {
 
     private activateSavedConnection(
         savedConnection: NM.Connection,
-        ap: NM.AccessPoint
+        ap: NM.AccessPoint,
     ) {
         console.log(`Found saved connection for SSID: ${ap.get_ssid()}`);
 
@@ -240,18 +242,18 @@ export class Wifi extends Service {
                     const activeConnection =
                         client.activate_connection_finish(result);
                     console.log(
-                        'Connection activated successfully: ' + activeConnection
+                        'Connection activated successfully: ' + activeConnection,
                     );
                 } catch (error) {
                     this.logError('Activation failed: ' + error);
                 }
-            }
+            },
         );
     }
 
     private createNewConnection(ap: NM.AccessPoint, password?: string) {
         console.log(
-            `No saved connection found for SSID: ${ap.get_ssid()}. Creating a new one.`
+            `No saved connection found for SSID: ${ap.get_ssid()}. Creating a new one.`,
         );
 
         const connection = new NM.SimpleConnection();
@@ -281,7 +283,7 @@ export class Wifi extends Service {
                 } catch (error) {
                     this.logError('Connection failed: ' + error);
                 }
-            }
+            },
         );
     }
 
@@ -290,10 +292,12 @@ export class Wifi extends Service {
     }
 
     private _activeAp() {
-        if (this._ap) this._ap.disconnect(this._apBind);
+        if (this._ap)
+            this._ap.disconnect(this._apBind);
 
         this._ap = this._device.get_active_access_point();
-        if (!this._ap) return;
+        if (!this._ap)
+            return;
 
         // TODO make signals actually signal when they should
         this._apBind = this._ap.connect('notify::strength', () => {
@@ -308,16 +312,16 @@ export class Wifi extends Service {
                 'state',
                 'icon-name',
             ];
-            props.map((prop) => this.notify(prop));
+            props.map(prop => this.notify(prop));
         });
     }
 
     get access_points() {
-        return this._device.get_access_points().map((ap) => {
+        return this._device.get_access_points().map(ap => {
             const connection = this._client
                 .get_connections()
                 .find(
-                    (c) => c.get_setting_wireless()?.get_bssid() === ap.bssid
+                    c => c.get_setting_wireless()?.get_bssid() === ap.bssid,
                 );
 
             const ssidData = ap.get_ssid();
@@ -336,7 +340,7 @@ export class Wifi extends Service {
                 strength: ap.strength,
                 frequency: ap.frequency,
                 iconName: _STRENGTH_ICONS.find(
-                    ({ value }) => value <= ap.strength
+                    ({ value }) => value <= ap.strength,
                 )?.icon,
                 saved: !!connection,
                 uuid: connection?.get_uuid() || null,
@@ -349,6 +353,7 @@ export class Wifi extends Service {
     get enabled() {
         return this._client.wireless_enabled;
     }
+
     set enabled(v) {
         this._client.wireless_enabled = v;
     }
@@ -356,17 +361,22 @@ export class Wifi extends Service {
     get strength() {
         return this._ap?.strength || -1;
     }
+
     get frequency() {
         return this._ap?.frequency || -1;
     }
+
     get internet() {
         return _INTERNET(this._device);
     }
+
     get ssid() {
-        if (!this._ap) return '';
+        if (!this._ap)
+            return '';
 
         const ssid = this._ap.get_ssid().get_data();
-        if (!ssid) return 'Unknown';
+        if (!ssid)
+            return 'Unknown';
 
         return NM.utils_ssid_to_utf8(ssid);
     }
@@ -386,7 +396,8 @@ export class Wifi extends Service {
 
         // Check if wifi is enabled first, since internet might be provided by
         // a wired network.
-        if (!this.enabled) return 'network-wireless-offline-symbolic';
+        if (!this.enabled)
+            return 'network-wireless-offline-symbolic';
 
         if (this.internet === 'connected') {
             for (const [threshold, name] of iconNames) {
@@ -412,7 +423,7 @@ export class Wired extends Service {
                 internet: ['string'],
                 state: ['string'],
                 'icon-name': ['string'],
-            }
+            },
         );
     }
 
@@ -425,8 +436,8 @@ export class Wired extends Service {
         // TODO make signals actually signal when they should
         this._device?.connect('notify::speed', () => {
             this.emit('changed');
-            ['speed', 'internet', 'state', 'icon-name'].map((prop) =>
-                this.notify(prop)
+            ['speed', 'internet', 'state', 'icon-name'].map(prop =>
+                this.notify(prop),
             );
         });
     }
@@ -434,17 +445,21 @@ export class Wired extends Service {
     get speed() {
         return this._device.get_speed();
     }
+
     get internet() {
         return _INTERNET(this._device);
     }
+
     get state() {
         return _DEVICE_STATE(this._device);
     }
+
     get icon_name() {
         if (this.internet === 'connecting')
             return 'network-wired-acquiring-symbolic';
 
-        if (this.internet === 'connected') return 'network-wired-symbolic';
+        if (this.internet === 'connected')
+            return 'network-wired-symbolic';
 
         if (network.connectivity !== 'full')
             return 'network-wired-no-route-symbolic';
@@ -465,7 +480,7 @@ export class VpnConnection extends Service {
                 state: ['string'],
                 'vpn-state': ['string'],
                 'icon-name': ['string'],
-            }
+            },
         );
     }
 
@@ -477,26 +492,33 @@ export class VpnConnection extends Service {
     private _stateBind: undefined | number = undefined;
     private _vpnState: ReturnType<typeof _VPN_CONNECTION_STATE> =
         'disconnected';
+
     private _vpnStateBind: undefined | number = undefined;
 
     get connection() {
         return this._connection;
     }
+
     get active_connection() {
         return this._activeConnection;
     }
+
     get uuid() {
         return this._connection.get_uuid()!;
     }
+
     get id() {
         return this._connection.get_id() || '';
     }
+
     get state() {
         return this._state;
     }
+
     get vpn_state() {
         return this._vpnState;
     }
+
     get icon_name() {
         switch (this._state) {
             case 'connected':
@@ -546,7 +568,7 @@ export class VpnConnection extends Service {
     }
 
     readonly updateActiveConnection = (
-        activeConnection: ActiveVpnConnection
+        activeConnection: ActiveVpnConnection,
     ) => {
         if (this._activeConnection) {
             if (this._stateBind)
@@ -558,11 +580,11 @@ export class VpnConnection extends Service {
 
         this._activeConnection = activeConnection;
         this._stateBind = this._activeConnection?.connect('notify::state', () =>
-            this._updateState()
+            this._updateState(),
         );
         this._vpnStateBind = this._activeConnection?.connect(
             'notify::vpn-state',
-            () => this._updateVpnState()
+            () => this._updateVpnState(),
         );
 
         this._updateState();
@@ -591,7 +613,7 @@ export class Vpn extends Service {
             {
                 connections: ['jsobject'],
                 'activated-connections': ['jsobject'],
-            }
+            },
         );
     }
 
@@ -612,7 +634,7 @@ export class Vpn extends Service {
         this._client
             .get_connections()
             .map((connection: NM.RemoteConnection) =>
-                this._connectionAdded(this._client, connection)
+                this._connectionAdded(this._client, connection),
             );
 
         this._client.connect(
@@ -620,10 +642,10 @@ export class Vpn extends Service {
             (_: NM.Client, ac: NM.ActiveConnection) => {
                 const uuid = ac.get_uuid();
                 if (uuid && this._connections.has(uuid))
-                    this._connections
-                        .get(uuid)
-                        ?.updateActiveConnection(ac as ActiveVpnConnection);
-            }
+                {this._connections
+                    .get(uuid)
+                    ?.updateActiveConnection(ac as ActiveVpnConnection);}
+            },
         );
 
         this._client.connect(
@@ -632,13 +654,13 @@ export class Vpn extends Service {
                 const uuid = ac.get_uuid();
                 if (uuid && this._connections.has(uuid))
                     this._connections.get(uuid)?.updateActiveConnection(null);
-            }
+            },
         );
     }
 
     private _connectionAdded(
         client: NM.Client,
-        connection: NM.RemoteConnection
+        connection: NM.RemoteConnection,
     ) {
         if (
             connection.get_connection_type() !== 'vpn' ||
@@ -649,12 +671,12 @@ export class Vpn extends Service {
         const vpnConnection = new VpnConnection(this, connection);
         const activeConnection = client
             .get_active_connections()
-            .find((ac) => ac.get_uuid() === vpnConnection.uuid);
+            .find(ac => ac.get_uuid() === vpnConnection.uuid);
 
         if (activeConnection)
-            vpnConnection.updateActiveConnection(
-                activeConnection as NM.VpnConnection
-            );
+        {vpnConnection.updateActiveConnection(
+                activeConnection as NM.VpnConnection,
+        );}
 
         vpnConnection.connect('changed', () => this.emit('changed'));
         vpnConnection.connect('notify::state', (c: VpnConnection) => {
@@ -670,7 +692,8 @@ export class Vpn extends Service {
 
     private _connectionRemoved(_: NM.Client, connection: NM.RemoteConnection) {
         const uuid = connection.get_uuid() || '';
-        if (!uuid || !this._connections.has(uuid)) return;
+        if (!uuid || !this._connections.has(uuid))
+            return;
 
         this._connections.get(uuid)!.updateActiveConnection(null);
         this._connections.delete(uuid);
@@ -687,17 +710,18 @@ export class Vpn extends Service {
             null,
             null,
             null,
-            null
+            null,
         );
     };
 
     readonly deactivateVpnConnection = (vpn: VpnConnection) => {
-        if (vpn.active_connection === null) return;
+        if (vpn.active_connection === null)
+            return;
 
         this._client.deactivate_connection_async(
             vpn.active_connection,
             null,
-            null
+            null,
         );
     };
 
@@ -706,11 +730,13 @@ export class Vpn extends Service {
     get connections() {
         return Array.from(this._connections.values());
     }
+
     get activated_connections() {
         const list: VpnConnection[] = [];
-        for (const [, connection] of this._connections) {
-            if (connection.state === 'connected') list.push(connection);
-        }
+        for (const [, connection] of this._connections)
+        {if (connection.state === 'connected')
+            list.push(connection);}
+
         return list;
     }
 }
@@ -726,7 +752,7 @@ export class Network extends Service {
                 primary: ['string'],
                 connectivity: ['string'],
                 vpn: ['jsobject'],
-            }
+            },
         );
     }
 
@@ -756,10 +782,10 @@ export class Network extends Service {
     private _getDevice(devType: NM.DeviceType) {
         const valid_devices = this._client
             .get_devices()
-            .filter((device) => device.get_device_type() === devType);
+            .filter(device => device.get_device_type() === devType);
 
         return (
-            valid_devices.find((d) => d.active_connection !== null) ||
+            valid_devices.find(d => d.active_connection !== null) ||
             valid_devices.at(0)
         );
     }
@@ -774,11 +800,11 @@ export class Network extends Service {
 
         this.wifi = new Wifi(
             this._client,
-            this._getDevice(NM.DeviceType.WIFI) as NM.DeviceWifi
+            this._getDevice(NM.DeviceType.WIFI) as NM.DeviceWifi,
         );
 
         this.wired = new Wired(
-            this._getDevice(NM.DeviceType.ETHERNET) as NM.DeviceEthernet
+            this._getDevice(NM.DeviceType.ETHERNET) as NM.DeviceEthernet,
         );
 
         this.vpn = new Vpn(this._client);
