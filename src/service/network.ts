@@ -235,12 +235,21 @@ export class Wifi extends Service {
             null,
             (client, result) => {
                 try {
-                    const activeConnection = client.activate_connection_finish(result);
+                    const activeConnection =
+                        client.activate_connection_finish(result);
                     activeConnection.connect('notify::state', () => {
-                        if (activeConnection.state === NM.ActiveConnectionState.ACTIVATED)
-                            console.log('Connection established successfully!');
-                        else if (activeConnection.state === NM.ActiveConnectionState.DEACTIVATED)
-                            throw new Error(`Activation failed: ${activeConnection.state}`);
+                        if (
+                            activeConnection.state ===
+                            NM.ActiveConnectionState.ACTIVATED
+                        )
+                        {console.log('Connection established successfully!');}
+                        else if (
+                            activeConnection.state ===
+                            NM.ActiveConnectionState.DEACTIVATED
+                        )
+                        {throw new Error(
+                            `Activation failed: ${activeConnection.state}`,
+                        );}
                     });
                 } catch (error) {
                     throw new Error(`Activation failed: ${error}`);
@@ -272,15 +281,31 @@ export class Wifi extends Service {
             null,
             (client, result) => {
                 try {
-                    const activeConnection = client.add_and_activate_connection_finish(result);
-                    activeConnection.connect('notify::state', () => {
-                        if (activeConnection.state === NM.ActiveConnectionState.ACTIVATED)
-                        {console.log('Connection established successfully!');}
-                        else if (activeConnection.state === NM.ActiveConnectionState.DEACTIVATED) {
-                            this.forgetAP(activeConnection.get_uuid()!);
-                            throw new Error('Connection failed: ' + activeConnection.state);
-                        }
-                    });
+                    const activeConnection =
+                        client.add_and_activate_connection_finish(result);
+                    const stateChangeHandlerId: number =
+                        activeConnection.connect('notify::state', () => {
+                            if (
+                                activeConnection.state ===
+                                NM.ActiveConnectionState.ACTIVATED
+                            ) {
+                                console.log(
+                                    'Connection established successfully!',
+                                );
+                                activeConnection.disconnect(
+                                    stateChangeHandlerId,
+                                );
+                            } else if (
+                                activeConnection.state ===
+                                NM.ActiveConnectionState.DEACTIVATED
+                            ) {
+                                this.forgetAP(activeConnection.get_uuid()!);
+                                throw new Error(
+                                    'Connection failed: ' +
+                                        activeConnection.state,
+                                );
+                            }
+                        });
                 } catch (error) {
                     throw new Error('Connection failed: ' + error);
                 }
@@ -289,7 +314,9 @@ export class Wifi extends Service {
     }
 
     readonly forgetAP = (uuid: string) => {
-        const connection = this._client.get_connections().find(c => c.get_uuid() === uuid);
+        const connection = this._client
+            .get_connections()
+            .find(c => c.get_uuid() === uuid);
 
         if (!connection)
             throw new Error(`Connection with UUID ${uuid} not found.`);
@@ -298,7 +325,9 @@ export class Wifi extends Service {
             try {
                 connection.delete_finish(result);
             } catch (error) {
-                throw new Error(`Failed to remove connection ${uuid}: ${error}`);
+                throw new Error(
+                    `Failed to remove connection ${uuid}: ${error}`,
+                );
             }
         });
     };
