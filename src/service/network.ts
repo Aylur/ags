@@ -169,10 +169,8 @@ export class Wifi extends Service {
         const accessPoints = this._device.get_access_points();
         const ap = this.findAccessPointBySSID(accessPoints, ssid);
 
-        if (!ap) {
-            this.logError(`Access Point with SSID not found: ${ssid}`);
-            return;
-        }
+        if (!ap)
+            throw new Error(`Access Point with SSID not found: ${ssid}`);
 
         const savedConnections = this._client.get_connections();
         const savedConnection = this.findSavedConnectionBySSID(
@@ -230,8 +228,6 @@ export class Wifi extends Service {
         savedConnection: NM.Connection,
         ap: NM.AccessPoint,
     ) {
-        console.log(`Found saved connection for SSID: ${ap.get_ssid()}`);
-
         this._client.activate_connection_async(
             savedConnection,
             this._device,
@@ -245,17 +241,13 @@ export class Wifi extends Service {
                         'Connection activated successfully: ' + activeConnection,
                     );
                 } catch (error) {
-                    this.logError('Activation failed: ' + error);
+                    throw new Error(`Activation failed: ${error}`);
                 }
             },
         );
     }
 
     private createNewConnection(ap: NM.AccessPoint, password?: string) {
-        console.log(
-            `No saved connection found for SSID: ${ap.get_ssid()}. Creating a new one.`,
-        );
-
         const connection = new NM.SimpleConnection();
         const setting = new NM.SettingWireless();
 
@@ -277,18 +269,12 @@ export class Wifi extends Service {
             null,
             (client, result) => {
                 try {
-                    const activeConnection =
-                        client.add_and_activate_connection_finish(result);
-                    console.log('Connection successful: ' + activeConnection);
+                    client.add_and_activate_connection_finish(result);
                 } catch (error) {
-                    this.logError('Connection failed: ' + error);
+                    throw new Error('Connection failed: ' + error);
                 }
             },
         );
-    }
-
-    private logError(message: string) {
-        console.error(message);
     }
 
     private _activeAp() {
@@ -641,10 +627,11 @@ export class Vpn extends Service {
             'active-connection-added',
             (_: NM.Client, ac: NM.ActiveConnection) => {
                 const uuid = ac.get_uuid();
-                if (uuid && this._connections.has(uuid))
-                {this._connections
-                    .get(uuid)
-                    ?.updateActiveConnection(ac as ActiveVpnConnection);}
+                if (uuid && this._connections.has(uuid)) {
+                    this._connections
+                        .get(uuid)
+                        ?.updateActiveConnection(ac as ActiveVpnConnection);
+                }
             },
         );
 
@@ -673,10 +660,11 @@ export class Vpn extends Service {
             .get_active_connections()
             .find(ac => ac.get_uuid() === vpnConnection.uuid);
 
-        if (activeConnection)
-        {vpnConnection.updateActiveConnection(
+        if (activeConnection) {
+            vpnConnection.updateActiveConnection(
                 activeConnection as NM.VpnConnection,
-        );}
+            );
+        }
 
         vpnConnection.connect('changed', () => this.emit('changed'));
         vpnConnection.connect('notify::state', (c: VpnConnection) => {
@@ -736,6 +724,7 @@ export class Vpn extends Service {
         for (const [, connection] of this._connections)
         {if (connection.state === 'connected')
             list.push(connection);}
+
 
         return list;
     }
