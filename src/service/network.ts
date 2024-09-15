@@ -5,96 +5,63 @@ import { bulkConnect } from '../utils.js';
 
 const _INTERNET = (device: NM.Device) => {
     switch (device?.active_connection?.state) {
-        case NM.ActiveConnectionState.ACTIVATED:
-            return 'connected';
-        case NM.ActiveConnectionState.ACTIVATING:
-            return 'connecting';
+        case NM.ActiveConnectionState.ACTIVATED: return 'connected';
+        case NM.ActiveConnectionState.ACTIVATING: return 'connecting';
         case NM.ActiveConnectionState.DEACTIVATING:
         case NM.ActiveConnectionState.DEACTIVATED:
-        default:
-            return 'disconnected';
+        default: return 'disconnected';
     }
 };
 
 const _DEVICE_STATE = (device: NM.Device) => {
     switch (device?.state) {
-        case NM.DeviceState.UNMANAGED:
-            return 'unmanaged';
-        case NM.DeviceState.UNAVAILABLE:
-            return 'unavailable';
-        case NM.DeviceState.DISCONNECTED:
-            return 'disconnected';
-        case NM.DeviceState.PREPARE:
-            return 'prepare';
-        case NM.DeviceState.CONFIG:
-            return 'config';
-        case NM.DeviceState.NEED_AUTH:
-            return 'need_auth';
-        case NM.DeviceState.IP_CONFIG:
-            return 'ip_config';
-        case NM.DeviceState.IP_CHECK:
-            return 'ip_check';
-        case NM.DeviceState.SECONDARIES:
-            return 'secondaries';
-        case NM.DeviceState.ACTIVATED:
-            return 'activated';
-        case NM.DeviceState.DEACTIVATING:
-            return 'deactivating';
-        case NM.DeviceState.FAILED:
-            return 'failed';
-        default:
-            return 'unknown';
+        case NM.DeviceState.UNMANAGED: return 'unmanaged';
+        case NM.DeviceState.UNAVAILABLE: return 'unavailable';
+        case NM.DeviceState.DISCONNECTED: return 'disconnected';
+        case NM.DeviceState.PREPARE: return 'prepare';
+        case NM.DeviceState.CONFIG: return 'config';
+        case NM.DeviceState.NEED_AUTH: return 'need_auth';
+        case NM.DeviceState.IP_CONFIG: return 'ip_config';
+        case NM.DeviceState.IP_CHECK: return 'ip_check';
+        case NM.DeviceState.SECONDARIES: return 'secondaries';
+        case NM.DeviceState.ACTIVATED: return 'activated';
+        case NM.DeviceState.DEACTIVATING: return 'deactivating';
+        case NM.DeviceState.FAILED: return 'failed';
+        default: return 'unknown';
     }
 };
 
 const _CONNECTIVITY_STATE = (client: NM.Client) => {
     switch (client.connectivity) {
-        case NM.ConnectivityState.NONE:
-            return 'none';
-        case NM.ConnectivityState.PORTAL:
-            return 'portal';
-        case NM.ConnectivityState.LIMITED:
-            return 'limited';
-        case NM.ConnectivityState.FULL:
-            return 'full';
-        default:
-            return 'unknown';
+        case NM.ConnectivityState.NONE: return 'none';
+        case NM.ConnectivityState.PORTAL: return 'portal';
+        case NM.ConnectivityState.LIMITED: return 'limited';
+        case NM.ConnectivityState.FULL: return 'full';
+        default: return 'unknown';
     }
 };
 
 const _CONNECTION_STATE = (activeConnection: NM.ActiveConnection | null) => {
     switch (activeConnection?.get_state()) {
-        case NM.ActiveConnectionState.ACTIVATED:
-            return 'connected';
-        case NM.ActiveConnectionState.ACTIVATING:
-            return 'connecting';
-        case NM.ActiveConnectionState.DEACTIVATING:
-            return 'disconnecting';
+        case NM.ActiveConnectionState.ACTIVATED: return 'connected';
+        case NM.ActiveConnectionState.ACTIVATING: return 'connecting';
+        case NM.ActiveConnectionState.DEACTIVATING: return 'disconnecting';
         case NM.ActiveConnectionState.DEACTIVATED:
-        default:
-            return 'disconnected';
+        default: return 'disconnected';
     }
 };
 
 const _VPN_CONNECTION_STATE = (activeVpnConnection: ActiveVpnConnection) => {
     switch (activeVpnConnection?.get_vpn_state()) {
-        case NM.VpnConnectionState.UNKNOWN:
-            return 'unknown';
-        case NM.VpnConnectionState.PREPARE:
-            return 'prepare';
-        case NM.VpnConnectionState.NEED_AUTH:
-            return 'needs_auth';
-        case NM.VpnConnectionState.CONNECT:
-            return 'connect';
-        case NM.VpnConnectionState.IP_CONFIG_GET:
-            return 'ip_config';
-        case NM.VpnConnectionState.ACTIVATED:
-            return 'activated';
-        case NM.VpnConnectionState.FAILED:
-            return 'failed';
+        case NM.VpnConnectionState.UNKNOWN: return 'unknown';
+        case NM.VpnConnectionState.PREPARE: return 'prepare';
+        case NM.VpnConnectionState.NEED_AUTH: return 'needs_auth';
+        case NM.VpnConnectionState.CONNECT: return 'connect';
+        case NM.VpnConnectionState.IP_CONFIG_GET: return 'ip_config';
+        case NM.VpnConnectionState.ACTIVATED: return 'activated';
+        case NM.VpnConnectionState.FAILED: return 'failed';
         case NM.VpnConnectionState.DISCONNECTED:
-        default:
-            return 'disconnected';
+        default: return 'disconnected';
     }
 };
 
@@ -108,19 +75,15 @@ const _STRENGTH_ICONS = [
 
 const DEVICE = (device: string) => {
     switch (device) {
-        case '802-11-wireless':
-            return 'wifi';
-        case '802-3-ethernet':
-            return 'wired';
-        default:
-            return null;
+        case '802-11-wireless': return 'wifi';
+        case '802-3-ethernet': return 'wired';
+        default: return null;
     }
 };
 
 export class Wifi extends Service {
     static {
-        Service.register(
-            this,
+        Service.register(this,
             {},
             {
                 enabled: ['boolean', 'rw'],
@@ -145,9 +108,7 @@ export class Wifi extends Service {
         this._client = client;
         this._device = device;
 
-        this._client.connect('notify::wireless-enabled', () =>
-            this.changed('enabled'),
-        );
+        this._client.connect('notify::wireless-enabled', () => this.changed('enabled'));
         if (this._device) {
             bulkConnect(this._device as unknown as Service, [
                 ['notify::active-access-point', this._activeAp.bind(this)],
@@ -166,22 +127,28 @@ export class Wifi extends Service {
     };
 
     readonly connectToAP = (ssid: string, password?: string) => {
-        const accessPoints = this._device.get_access_points();
-        const ap = this.findAccessPointBySSID(accessPoints, ssid);
+        return new Promise((resolve, reject) => {
+            const accessPoints = this._device.get_access_points();
+            const ap = this.findAccessPointBySSID(accessPoints, ssid);
 
-        if (!ap)
-            throw new Error(`Access Point with SSID not found: ${ssid}`);
+            if (!ap) {
+                reject(new Error(`Access Point with SSID not found: ${ssid}`));
+                return;
+            }
 
-        const savedConnections = this._client.get_connections();
-        const savedConnection = this.findSavedConnectionBySSID(
-            savedConnections,
-            ssid,
-        );
+            const savedConnections = this._client.get_connections();
+            const savedConnection = this.findSavedConnectionBySSID(savedConnections, ssid);
 
-        if (savedConnection)
-            this.activateSavedConnection(savedConnection, ap);
-        else
-            this.createNewConnection(ap, password);
+            if (savedConnection) {
+                this.activateSavedConnection(savedConnection, ap)
+                    .then(resolve)
+                    .catch(reject);
+            } else {
+                this.createNewConnection(ap, password)
+                    .then(resolve)
+                    .catch(reject);
+            }
+        });
     };
 
     private findAccessPointBySSID(
@@ -224,111 +191,121 @@ export class Wifi extends Service {
         );
     }
 
-    private activateSavedConnection(
-        savedConnection: NM.Connection,
-        ap: NM.AccessPoint,
-    ) {
-        this._client.activate_connection_async(
-            savedConnection,
-            this._device,
-            ap.get_path(),
-            null,
-            (client, result) => {
-                try {
-                    const activeConnection =
-                        client.activate_connection_finish(result);
-                    activeConnection.connect('notify::state', () => {
-                        if (
-                            activeConnection.state ===
-                            NM.ActiveConnectionState.ACTIVATED
-                        )
-                        {console.log('Connection established successfully!');}
-                        else if (
-                            activeConnection.state ===
-                            NM.ActiveConnectionState.DEACTIVATED
-                        )
-                        {throw new Error(
-                            `Activation failed: ${activeConnection.state}`,
-                        );}
-                    });
-                } catch (error) {
-                    throw new Error(`Activation failed: ${error}`);
-                }
-            },
-        );
+    private activateSavedConnection(savedConnection: NM.Connection, ap: NM.AccessPoint) {
+        return new Promise((resolve, reject) => {
+            this._client.activate_connection_async(
+                savedConnection,
+                this._device,
+                ap.get_path(),
+                null,
+                (client, result) => {
+                    try {
+                        const activeConnection = client.activate_connection_finish(result);
+                        const stateChangeHandlerId: number =
+                            activeConnection.connect('notify::state', () => {
+                                if (
+                                    activeConnection.state === NM.ActiveConnectionState.ACTIVATED
+                                ) {
+                                    resolve(activeConnection.state);
+                                    activeConnection.disconnect(stateChangeHandlerId);
+                                } else if (
+                                    activeConnection.state === NM.ActiveConnectionState.DEACTIVATED
+                                ) {
+                                    reject(
+                                        new Error(
+                                            `Activation failed: ${activeConnection.state}`,
+                                        ),
+                                    );
+                                    activeConnection.disconnect(stateChangeHandlerId);
+                                }
+                            });
+                    } catch (error) {
+                        reject(new Error(`Activation failed: ${error}`));
+                    }
+                },
+            );
+        });
     }
 
     private createNewConnection(ap: NM.AccessPoint, password?: string) {
-        const connection = new NM.SimpleConnection();
-        const setting = new NM.SettingWireless();
+        return new Promise((resolve, reject) => {
+            const connection = new NM.SimpleConnection();
+            const setting = new NM.SettingWireless();
 
-        setting.set_property('ssid', ap.get_ssid());
-        setting.set_property('bssid', ap.get_bssid());
-        setting.set_property('mode', 'infrastructure');
-        connection.add_setting(setting);
+            setting.set_property('ssid', ap.get_ssid());
+            setting.set_property('bssid', ap.get_bssid());
+            setting.set_property('mode', 'infrastructure');
+            connection.add_setting(setting);
 
-        if (password) {
-            const settingWirelessSecurity = new NM.SettingWirelessSecurity();
-            settingWirelessSecurity.set_property('key-mgmt', 'wpa-psk');
-            settingWirelessSecurity.set_property('psk', password);
-            connection.add_setting(settingWirelessSecurity);
-        }
+            if (password) {
+                const settingWirelessSecurity = new NM.SettingWirelessSecurity();
+                settingWirelessSecurity.set_property('key-mgmt', 'wpa-psk');
+                settingWirelessSecurity.set_property('psk', password);
+                connection.add_setting(settingWirelessSecurity);
+            }
 
-        this._client.add_and_activate_connection_async(
-            connection,
-            this._device,
-            ap.get_path(),
-            null,
-            (client, result) => {
-                try {
-                    const activeConnection =
-                        client.add_and_activate_connection_finish(result);
-                    const stateChangeHandlerId: number =
-                        activeConnection.connect('notify::state', () => {
-                            if (
-                                activeConnection.state ===
-                                NM.ActiveConnectionState.ACTIVATED
-                            ) {
-                                console.log(
-                                    'Connection established successfully!',
-                                );
-                                activeConnection.disconnect(
-                                    stateChangeHandlerId,
-                                );
-                            } else if (
-                                activeConnection.state ===
-                                NM.ActiveConnectionState.DEACTIVATED
-                            ) {
-                                this.forgetAP(activeConnection.get_uuid()!);
-                                throw new Error(
-                                    'Connection failed: ' +
-                                        activeConnection.state,
-                                );
-                            }
-                        });
-                } catch (error) {
-                    throw new Error('Connection failed: ' + error);
-                }
-            },
-        );
+            this._client.add_and_activate_connection_async(
+                connection,
+                this._device,
+                ap.get_path(),
+                null,
+                (client, result) => {
+                    try {
+                        const activeConnection =
+                            client.add_and_activate_connection_finish(result);
+                        const stateChangeHandlerId: number =
+                            activeConnection.connect('notify::state', () => {
+                                if (
+                                    activeConnection.state === NM.ActiveConnectionState.ACTIVATED
+                                ) {
+                                    resolve(activeConnection.state);
+                                    activeConnection.disconnect(stateChangeHandlerId);
+                                } else if (
+                                    activeConnection.state === NM.ActiveConnectionState.DEACTIVATED
+                                ) {
+                                    this.forgetAP(activeConnection.get_uuid()!)
+                                        .then(() =>
+                                            reject(
+                                                new Error(
+                                                    'Connection failed: ' + activeConnection.state,
+                                                ),
+                                            ),
+                                        )
+                                        .catch(reject);
+                                    activeConnection.disconnect(stateChangeHandlerId);
+                                }
+                            });
+                    } catch (error) {
+                        reject(new Error('Connection failed: ' + error));
+                    }
+                },
+            );
+        });
     }
 
     readonly forgetAP = (uuid: string) => {
-        const connection = this._client
-            .get_connections()
-            .find(c => c.get_uuid() === uuid);
+        return new Promise((resolve, reject) => {
+            const connection = this._client
+                .get_connections()
+                .find(c => c.get_uuid() === uuid);
 
-        if (!connection)
-            throw new Error(`Connection with UUID ${uuid} not found.`);
-
-        connection.delete_async(null, (connection, result) => {
-            try {
-                connection.delete_finish(result);
-            } catch (error) {
-                throw new Error(
-                    `Failed to remove connection ${uuid}: ${error}`,
-                );
+            if (!connection) {
+                reject(new Error(`Connection with UUID ${uuid} not found.`));
+                return;
             }
+
+            connection.delete_async(null, (connection, result) => {
+                try {
+                    connection.delete_finish(result);
+                    resolve(result);
+                } catch (error) {
+                    reject(
+                        new Error(
+                            `Failed to remove connection ${uuid}: ${error}`,
+                        ),
+                    );
+                }
+            });
         });
     };
 
