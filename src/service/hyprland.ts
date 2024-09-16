@@ -284,6 +284,7 @@ export class Hyprland extends Service {
                 case 'workspace':
                 case 'focusedmon':
                     await this._syncMonitors();
+                    await this._syncWorkspaces();
                     break;
 
                 case 'monitorremoved':
