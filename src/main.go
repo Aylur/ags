@@ -107,10 +107,12 @@ func run() {
 
 	outfile := getOutfile()
 	Build(infile, outfile)
+	astalLib := "GI_TYPELIB_PATH=" + filepath.Join(astalGjs, "../../../lib64/girepository-1.0")
 	cmd := Exec("gjs", "-m", outfile)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
+	cmd.Env = append(cmd.Environ(), astalLib)
 	cmd.Dir = *Opts.config
 
 	// TODO: watch and restart
