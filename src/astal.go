@@ -20,7 +20,7 @@ func Quit() {
 }
 
 func Message() {
-	astal("--message", *Opts.message)
+	astal(*Opts.message)
 }
 
 func Inspector() {
