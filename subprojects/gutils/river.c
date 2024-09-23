@@ -1,4 +1,6 @@
 #include "river.h"
+#include "gio/gio.h"
+#include "river-control-unstable-v1-client-protocol.h"
 #include "river-private.h"
 
 enum {
@@ -40,6 +42,31 @@ static void handle_global_remove(void               *data,
 static const struct wl_registry_listener registry_listener = {
     .global = handle_global,
     .global_remove = handle_global_remove,
+};
+
+static void handle_success(void                              *data,
+                           struct zriver_command_callback_v1 *command_callback,
+                           const char                        *output) {
+    (void) command_callback;
+
+    GTask *task = data;
+    g_task_return_pointer(task, g_strdup(output), g_free);
+    g_object_unref(task);
+}
+
+static void handle_failure(void                              *data,
+                           struct zriver_command_callback_v1 *command_callback,
+                           const char                        *output) {
+    (void) command_callback;
+
+    GTask *task = data;
+    g_task_return_new_error(task, G_IO_ERROR, G_IO_ERROR_FAILED, "%s", output);
+    g_object_unref(task);
+}
+
+static const struct zriver_command_callback_v1_listener command_callback_listener = {
+    .success = handle_success,
+    .failure = handle_failure,
 };
 
 static void handle_focused_unfocused_output(void                         *data,
@@ -195,11 +222,21 @@ void gutils_river_listen(GUtilsRiver *self) {
  * gutils_river_send_command:
  * @self: a #GUtilsRiver
  * @arguments: (array zero-terminated=1) (element-type utf8): the list of arguments
+ * @io_priority: the [I/O priority][io-priority] of the request
+ * @cancellable: (nullable): optional #GCancellable object,
+ *   %NULL to ignore
+ * @callback: (scope async) (closure user_data): a #GAsyncReadyCallback
+ *   to call when the request is satisfied
+ * @user_data: the data to pass to callback function
  *
  * Sends a command to riverctl.
  */
-void gutils_river_send_command(GUtilsRiver       *self,
-                               const char *const *arguments) {
+void gutils_river_send_command(GUtilsRiver         *self,
+                               const char *const   *arguments,
+                               int                  io_priority,
+                               GCancellable        *cancellable,
+                               GAsyncReadyCallback  callback,
+                               gpointer             user_data) {
     g_return_if_fail(self->valid);
 
     const char *arg;
@@ -207,7 +244,18 @@ void gutils_river_send_command(GUtilsRiver       *self,
         zriver_control_v1_add_argument(self->control, arg);
     }
 
-    struct zriver_command_callback_v1 *callback =
+    struct zriver_command_callback_v1 *command_callback =
         zriver_control_v1_run_command(self->control, self->seat);
-    zriver_command_callback_v1_destroy(callback);
+
+    GTask *task = g_task_new(NULL, cancellable, callback, user_data);
+    g_task_set_priority(task, io_priority);
+    zriver_command_callback_v1_add_listener(command_callback, &command_callback_listener, task);
+}
+
+char *gutils_river_send_command_finish(GUtilsRiver   *self,
+                                       GAsyncResult  *res,
+                                       GError       **error) {
+    (void) self;
+
+    return g_task_propagate_pointer(G_TASK(res), error);
 }

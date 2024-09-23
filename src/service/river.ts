@@ -1,4 +1,5 @@
 import Gdk from 'gi://Gdk?version=3.0';
+import Gio from 'gi://Gio';
 import Service from '../service.js';
 
 //@ts-expect-error missing types
@@ -93,9 +94,15 @@ export class River extends Service {
 
     readonly getMonitor = (id: number) => this._monitors.get(id);
 
-    readonly sendCommand = (...args: string[]) => {
-        this._river.send_command(args);
-    }
+    readonly sendCommand = (...args: string[]) => new Promise((resolve, reject) => {
+        this._river.send_command(args, 0, null, (_: unknown, res: Gio.AsyncResult) => {
+            try {
+                resolve(this._river.send_command_finish(res));
+            } catch (e) {
+                reject(e);
+            }
+        });
+    });
 }
 
 export const river = new River;
