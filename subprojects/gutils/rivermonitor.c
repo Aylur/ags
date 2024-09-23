@@ -19,6 +19,7 @@ enum {
     SIGNAL_FOCUSED_TAGS,
     SIGNAL_VIEW_TAGS,
     SIGNAL_URGENT_TAGS,
+    SIGNAL_LAYOUT_NAME,
     NUM_SIGNALS,
 };
 
@@ -77,15 +78,19 @@ static void handle_urgent_tags(void                           *data,
 static void handle_layout_name(void                           *data,
                                struct zriver_output_status_v1 *output,
                                const char                     *name) {
-    (void) data;
     (void) output;
-    (void) name;
+
+    GUtilsRiverMonitor *self = GUTILS_RIVER_MONITOR(data);
+    g_signal_emit(self, signals[SIGNAL_LAYOUT_NAME], 0, name);
 }
 
 static void handle_layout_name_clear(void                           *data,
                                      struct zriver_output_status_v1 *output) {
     (void) data;
     (void) output;
+
+    GUtilsRiverMonitor *self = GUTILS_RIVER_MONITOR(data);
+    g_signal_emit(self, signals[SIGNAL_LAYOUT_NAME], 0, NULL);
 }
 
 static const struct zriver_output_status_v1_listener output_status_listener = {
@@ -240,6 +245,19 @@ static void gutils_river_monitor_class_init(GUtilsRiverMonitorClass *klass) {
                      0, NULL, NULL,
                      NULL,
                      G_TYPE_NONE, 1, G_TYPE_UINT);
+
+    /**
+     * GUtilsRiverMonitor::layout-name:
+     * @object: a #GUtilsRiverMonitor.
+     * @name: (nullable): The new layout name, or NULL if the name is unset.
+     */
+    signals[SIGNAL_LAYOUT_NAME] =
+        g_signal_new(g_intern_static_string("layout-name"),
+                     GUTILS_TYPE_RIVER_MONITOR,
+                     G_SIGNAL_RUN_LAST,
+                     0, NULL, NULL,
+                     NULL,
+                     G_TYPE_NONE, 1, G_TYPE_STRING);
 }
 
 static void gutils_river_monitor_init(GUtilsRiverMonitor *self) {

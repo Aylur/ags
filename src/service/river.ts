@@ -12,6 +12,7 @@ export class RiverMonitor extends Service {
             'focused-tags': ['int'],
             'view-tags': ['jsobject'],
             'urgent-tags': ['int'],
+            'layout-name': ['jsobject'],
         });
     }
 
@@ -19,9 +20,15 @@ export class RiverMonitor extends Service {
     private _focusedTags = 0;
     private _viewTags: number[] = [];
     private _urgentTags = 0;
+    private _layoutName: string | null = null;
+
+    // Hold a reference to prevent garbage collection
+    private readonly _monitor: GUtils.RiverMonitor;
 
     constructor(monitor: GUtils.RiverMonitor) {
         super();
+
+        this._monitor = monitor;
 
         this.updateProperty('id', monitor.monitor);
 
@@ -36,12 +43,17 @@ export class RiverMonitor extends Service {
         monitor.connect('urgent-tags', (_: GUtils.RiverMonitor, tags: number) => {
             this.updateProperty('urgent-tags', tags);
         });
+
+        monitor.connect('layout-name', (_: GUtils.RiverMonitor, name: string | null) => {
+            this.updateProperty('layout-name', name);
+        });
     }
 
     get id() { return this._id; }
     get focusedTags() { return this._focusedTags; }
     get viewTags() { return this._viewTags; }
     get urgentTags() { return this._urgentTags; }
+    get layoutName() { return this._layoutName; }
 }
 
 export class River extends Service {
