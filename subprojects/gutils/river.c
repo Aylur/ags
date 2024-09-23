@@ -1,6 +1,7 @@
 #include "river.h"
 #include "gdk/gdk.h"
 #include "glib-object.h"
+#include "glib.h"
 
 #include <wayland-client.h>
 #include <river-control-unstable-v1-client-protocol.h>
@@ -144,6 +145,19 @@ void gutils_river_listen(GUtilsRiver *self) {
     self->seat_status =
         zriver_status_manager_v1_get_river_seat_status(self->status_manager, self->seat);
     zriver_seat_status_v1_add_listener(self->seat_status, &seat_status_listener, self);
+}
+
+void gutils_river_send_command(GUtilsRiver *self, const char *const *arguments) {
+    g_return_if_fail(self->valid);
+
+    const char *arg;
+    while ((arg = *arguments++)) {
+        zriver_control_v1_add_argument(self->control, arg);
+    }
+
+    struct zriver_command_callback_v1 *callback =
+        zriver_control_v1_run_command(self->control, self->seat);
+    zriver_command_callback_v1_destroy(callback);
 }
 
 static void handle_global(void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t version) {

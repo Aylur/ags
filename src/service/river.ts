@@ -53,26 +53,25 @@ export class River extends Service {
 
     private _focusedView = '';
     private _monitors: Map<number, RiverMonitor> = new Map();
+    private _river = new GUtils.River();
 
     constructor() {
         super();
 
-        const gRiver = new GUtils.River();
-
-        if (!gRiver.valid) {
+        if (!this._river.valid) {
             console.error('River is not detected');
             return;
         }
 
-        gRiver.connect('focused-view', (_: any, title: string) => {
+        this._river.connect('focused-view', (_: any, title: string) => {
             this.updateProperty('focused-view', title);
         });
-        gRiver.listen();
+        this._river.listen();
 
         let numMonitors = Gdk.Display.get_default()?.get_n_monitors() ?? 0;
         for (let i = 0; i < numMonitors; i++) {
             const gMonitor = new GUtils.RiverMonitor({
-                river: gRiver,
+                river: this._river,
                 monitor: i,
             });
 
@@ -89,6 +88,10 @@ export class River extends Service {
     get monitors() { return Array.from(this._monitors.values()); }
 
     readonly getMonitor = (id: number) => this._monitors.get(id);
+
+    readonly sendCommand = (...args: string[]) => {
+        this._river.send_command(args);
+    }
 }
 
 export const river = new River;

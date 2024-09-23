@@ -13,6 +13,14 @@ G_DECLARE_FINAL_TYPE (GUtilsRiver, gutils_river, GUTILS, RIVER, GObject)
 G_DECLARE_FINAL_TYPE (GUtilsRiverMonitor, gutils_river_monitor, GUTILS, RIVER_MONITOR, GObject)
 
 void gutils_river_listen(GUtilsRiver *self);
+
+/**
+ * gutils_river_send_command:
+ * @self: a #GUtilsRiver
+ * @arguments: (array zero-terminated=1) (element-type utf8): the list of arguments
+ */
+void gutils_river_send_command(GUtilsRiver *self, const char *const *arguments);
+
 void gutils_river_monitor_listen(GUtilsRiverMonitor *self);
 
 G_END_DECLS
