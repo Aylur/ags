@@ -1,21 +1,35 @@
-project('pam', 'c')
+project('gutils', 'c')
 
 pkglibdir = get_option('pkglibdir')
 pkgdatadir = get_option('pkgdatadir')
 
 cc = meson.get_compiler('c')
 
-libsources = ['pam.c', 'pam.h']
+wayland = import('unstable-wayland')
+
+libsources = [
+  'pam.c',
+  'pam.h',
+  'river.c',
+  'river.h',
+]
+
+scanner_sources = [
+  wayland.scan_xml('protocol/river-control-unstable-v1.xml'),
+  wayland.scan_xml('protocol/river-status-unstable-v1.xml'),
+]
 
 deps = [
   dependency('gobject-2.0'),
   dependency('gio-2.0'),
-  dependency('pam')
+  dependency('gdk-wayland-3.0'),
+  dependency('pam'),
+  dependency('wayland-client'),
 ]
 
 girlib = shared_library(
   'gutils',
-  sources: libsources,
+  sources: libsources + scanner_sources,
   dependencies: deps,
   install: true
 )
