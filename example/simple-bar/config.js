@@ -1,4 +1,3 @@
-const hyprland = await Service.import("hyprland")
 const notifications = await Service.import("notifications")
 const mpris = await Service.import("mpris")
 const audio = await Service.import("audio")
@@ -13,27 +12,75 @@ const date = Variable("", {
 // so to make a reuseable widget, make it a function
 // then you can simply instantiate one by calling it
 
-function Workspaces() {
-    const activeId = hyprland.active.workspace.bind("id")
-    const workspaces = hyprland.bind("workspaces")
-        .as(ws => ws.map(({ id }) => Widget.Button({
-            on_clicked: () => hyprland.messageAsync(`dispatch workspace ${id}`),
-            child: Widget.Label(`${id}`),
-            class_name: activeId.as(i => `${i === id ? "focused" : ""}`),
-        })))
+let Workspaces, ClientTitle
 
-    return Widget.Box({
-        class_name: "workspaces",
-        children: workspaces,
-    })
-}
+const river = await Service.import("river")
+if (river.connected) {
+    const getActiveViews = viewTags => {
+        let all = 0
+        for (const tags of viewTags) {
+            all |= tags
+        }
 
+        const result = []
+        for (let i = 0; i < 32; i++) {
+            if (all & (1 << i)) {
+                result.push(i + 1)
+            }
+        }
+        return result
+    }
 
-function ClientTitle() {
-    return Widget.Label({
-        class_name: "client-title",
-        label: hyprland.active.client.bind("title"),
-    })
+    Workspaces = monitor => {
+        const riverMonitor = river.getMonitor(monitor)
+        const focusedTags = riverMonitor.bind("focused-tags")
+        const workspaces = riverMonitor.bind("view-tags")
+            .as(views => getActiveViews(views).map(tag => {
+                const tagBits = 1 << (tag - 1)
+
+                return Widget.Button({
+                    on_clicked: () => river.sendCommand('set-focused-tags', `${tagBits}`),
+                    child: Widget.Label(`${tag}`),
+                    class_name: focusedTags.as(i => `${i & tagBits ? "focused" : ""}`),
+                })
+            }))
+
+        return Widget.Box({
+            class_name: "workspaces",
+            children: workspaces,
+        })
+    }
+
+    ClientTitle = () => {
+        return Widget.Label({
+            class_name: "client-title",
+            label: river.bind("focused-view"),
+        })
+    }
+} else {
+    const hyprland = await Service.import("hyprland")
+
+    Workspaces = () => {
+        const activeId = hyprland.active.workspace.bind("id")
+        const workspaces = hyprland.bind("workspaces")
+            .as(ws => ws.map(({ id }) => Widget.Button({
+                on_clicked: () => hyprland.messageAsync(`dispatch workspace ${id}`),
+                child: Widget.Label(`${id}`),
+                class_name: activeId.as(i => `${i === id ? "focused" : ""}`),
+            })))
+
+        return Widget.Box({
+            class_name: "workspaces",
+            children: workspaces,
+        })
+    }
+
+    ClientTitle = () => {
+        return Widget.Label({
+            class_name: "client-title",
+            label: hyprland.active.client.bind("title"),
+        })
+    }
 }
 
 
@@ -157,11 +204,11 @@ function SysTray() {
 
 
 // layout of the bar
-function Left() {
+function Left(monitor) {
     return Widget.Box({
         spacing: 8,
         children: [
-            Workspaces(),
+            Workspaces(monitor),
             ClientTitle(),
         ],
     })
@@ -198,7 +245,7 @@ function Bar(monitor = 0) {
         anchor: ["top", "left", "right"],
         exclusivity: "exclusive",
         child: Widget.CenterBox({
-            start_widget: Left(),
+            start_widget: Left(monitor),
             center_widget: Center(),
             end_widget: Right(),
         }),
