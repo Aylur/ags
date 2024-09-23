@@ -7,14 +7,16 @@ cc = meson.get_compiler('c')
 
 wayland = import('unstable-wayland')
 
-libsources = [
+gir_sources = [
   'pam.c',
   'pam.h',
   'river.c',
   'river.h',
+  'rivermonitor.c',
+  'rivermonitor.h',
 ]
 
-scanner_sources = [
+other_sources = [
   wayland.scan_xml('protocol/river-control-unstable-v1.xml'),
   wayland.scan_xml('protocol/river-status-unstable-v1.xml'),
 ]
@@ -29,7 +31,7 @@ deps = [
 
 girlib = shared_library(
   'gutils',
-  sources: libsources + scanner_sources,
+  sources: gir_sources + other_sources,
   dependencies: deps,
   install: true
 )
@@ -37,7 +39,7 @@ girlib = shared_library(
 gnome = import('gnome')
 gnome.generate_gir(
   girlib,
-  sources: libsources,
+  sources: gir_sources,
   nsversion: '1.0',
   namespace: 'GUtils',
   symbol_prefix: 'gutils',

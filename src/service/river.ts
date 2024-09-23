@@ -24,15 +24,15 @@ export class RiverMonitor extends Service {
 
         this.updateProperty('id', monitor.monitor);
 
-        monitor.connect('focused-tags', (_: any, tags: number) => {
+        monitor.connect('focused-tags', (_: GUtils.RiverMonitor, tags: number) => {
             this.updateProperty('focused-tags', tags);
         });
 
-        monitor.connect('view-tags', (_: any, tags: number[]) => {
+        monitor.connect('view-tags', (_: GUtils.RiverMonitor, tags: number[]) => {
             this.updateProperty('view-tags', tags);
         });
 
-        monitor.connect('urgent-tags', (_: any, tags: number) => {
+        monitor.connect('urgent-tags', (_: GUtils.RiverMonitor, tags: number) => {
             this.updateProperty('urgent-tags', tags);
         });
     }
@@ -53,12 +53,15 @@ export class River extends Service {
 
     private _focusedView = '';
     private _monitors: Map<number, RiverMonitor> = new Map();
+    private _connected = false;
+
     private _river = new GUtils.River();
 
     constructor() {
         super();
 
-        if (!this._river.valid) {
+        this._connected = this._river.valid;
+        if (!this._connected) {
             console.error('River is not detected');
             return;
         }
@@ -86,6 +89,7 @@ export class River extends Service {
 
     get focusedView() { return this._focusedView; }
     get monitors() { return Array.from(this._monitors.values()); }
+    get connected() { return this._connected; }
 
     readonly getMonitor = (id: number) => this._monitors.get(id);
 
