@@ -1,14 +1,13 @@
 import Gdk from 'gi://Gdk?version=3.0';
-import Gio from 'gi://Gio';
+import type Gio from 'gi://Gio';
 import Service from '../service.js';
 
 //@ts-expect-error missing types
 import GUtils from 'gi://GUtils';
 
-export class RiverMonitor extends Service {
+export class Output extends Service {
     static {
         Service.register(this, {}, {
-            'id': ['int'],
             'focused-tags': ['int'],
             'view-tags': ['jsobject'],
             'urgent-tags': ['int'],
@@ -16,40 +15,36 @@ export class RiverMonitor extends Service {
         });
     }
 
-    private _id = 0;
     private _focusedTags = 0;
     private _viewTags: number[] = [];
     private _urgentTags = 0;
     private _layoutName: string | null = null;
 
     // Hold a reference to prevent garbage collection
-    private readonly _monitor: GUtils.RiverMonitor;
+    private readonly _output: GUtils.RiverOutput;
 
-    constructor(monitor: GUtils.RiverMonitor) {
+    constructor(output: GUtils.RiverOutput) {
         super();
 
-        this._monitor = monitor;
+        this._output = output;
 
-        this.updateProperty('id', monitor.monitor);
-
-        monitor.connect('focused-tags', (_: GUtils.RiverMonitor, tags: number) => {
+        output.connect('focused-tags', (_: GUtils.RiverOutput, tags: number) => {
             this.updateProperty('focused-tags', tags);
         });
 
-        monitor.connect('view-tags', (_: GUtils.RiverMonitor, tags: number[]) => {
+        output.connect('view-tags', (_: GUtils.RiverOutput, tags: number[]) => {
             this.updateProperty('view-tags', tags);
         });
 
-        monitor.connect('urgent-tags', (_: GUtils.RiverMonitor, tags: number) => {
+        output.connect('urgent-tags', (_: GUtils.RiverOutput, tags: number) => {
             this.updateProperty('urgent-tags', tags);
         });
 
-        monitor.connect('layout-name', (_: GUtils.RiverMonitor, name: string | null) => {
+        output.connect('layout-name', (_: GUtils.RiverOutput, name: string | null) => {
             this.updateProperty('layout-name', name);
         });
     }
 
-    get id() { return this._id; }
     get focusedTags() { return this._focusedTags; }
     get viewTags() { return this._viewTags; }
     get urgentTags() { return this._urgentTags; }
@@ -60,12 +55,10 @@ export class River extends Service {
     static {
         Service.register(this, {}, {
             'focused-view': ['string'],
-            'monitors': ['jsobject'],
         });
     }
 
     private _focusedView = '';
-    private _monitors: Map<number, RiverMonitor> = new Map();
     private _connected = false;
 
     private _river = new GUtils.River();
@@ -83,28 +76,31 @@ export class River extends Service {
             this.updateProperty('focused-view', title);
         });
         this._river.listen();
-
-        let numMonitors = Gdk.Display.get_default()?.get_n_monitors() ?? 0;
-        for (let i = 0; i < numMonitors; i++) {
-            const gMonitor = new GUtils.RiverMonitor({
-                river: this._river,
-                monitor: i,
-            });
-
-            const monitor = new RiverMonitor(gMonitor);
-            gMonitor.listen();
-
-            if (gMonitor.connected) {
-                this._monitors.set(i, monitor);
-            }
-        }
     }
 
     get focusedView() { return this._focusedView; }
-    get monitors() { return Array.from(this._monitors.values()); }
     get connected() { return this._connected; }
 
-    readonly getMonitor = (id: number) => this._monitors.get(id);
+    readonly getOutput = (monitor: number | Gdk.Monitor) => {
+        let m: Gdk.Monitor | null;
+        if (typeof monitor === 'number') {
+            m = Gdk.Display.get_default()?.get_monitor(monitor) ?? null;
+            if (m == null)
+                return null;
+        } else {
+            m = monitor;
+        }
+
+        const output = new GUtils.RiverOutput({ monitor: m });
+        const result = new Output(output);
+        output.listen(this._river);
+
+        if (!output.connected) {
+            return null;
+        }
+
+        return result;
+    }
 
     readonly sendCommand = (...args: string[]) => new Promise((resolve, reject) => {
         this._river.send_command(args, 0, null, (_: unknown, res: Gio.AsyncResult) => {

@@ -12,8 +12,8 @@ gir_sources = [
   'pam.h',
   'river.c',
   'river.h',
-  'rivermonitor.c',
-  'rivermonitor.h',
+  'river-output.c',
+  'river-output.h',
 ]
 
 other_sources = [
@@ -44,7 +44,7 @@ gnome.generate_gir(
   namespace: 'GUtils',
   symbol_prefix: 'gutils',
   identifier_prefix: 'GUtils',
-  includes: ['GObject-2.0', 'Gio-2.0'],
+  includes: ['GObject-2.0', 'Gio-2.0', 'Gdk-3.0'],
   install_dir_gir: pkgdatadir,
   install_dir_typelib: pkglibdir,
   install: true

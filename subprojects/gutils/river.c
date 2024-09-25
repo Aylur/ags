@@ -1,7 +1,11 @@
 #include "river.h"
-#include "gio/gio.h"
-#include "river-control-unstable-v1-client-protocol.h"
-#include "river-private.h"
+#include "river-output.h"
+
+#include <gdk/gdkwayland.h>
+
+#include <wayland-client.h>
+#include <river-control-unstable-v1-client-protocol.h>
+#include <river-status-unstable-v1-client-protocol.h>
 
 enum {
     PROP_VALID = 1,
@@ -13,6 +17,7 @@ enum {
     NUM_SIGNALS,
 };
 
+static GParamSpec *props[NUM_PROPS] = { NULL, };
 static guint signals[NUM_SIGNALS] = { 0 };
 
 static void handle_global(void               *data,
@@ -90,7 +95,7 @@ static void handle_focused_view(void                         *data,
                                 const char                   *title) {
     (void) seat_status;
 
-    GUtilsRiver*self = GUTILS_RIVER(data);
+    GUtilsRiver *self = data;
     g_signal_emit(self, signals[SIGNAL_FOCUSED_VIEW], 0, title);
 }
 
@@ -149,8 +154,6 @@ static void gutils_river_finalize(GObject *object) {
 }
 
 static void gutils_river_class_init(GUtilsRiverClass *klass) {
-    static GParamSpec *props[NUM_PROPS] = { NULL, };
-
     GObjectClass *object_class = G_OBJECT_CLASS(klass);
 
     object_class->set_property = gutils_river_set_property;
@@ -222,9 +225,8 @@ void gutils_river_listen(GUtilsRiver *self) {
  * gutils_river_send_command:
  * @self: a #GUtilsRiver
  * @arguments: (array zero-terminated=1) (element-type utf8): the list of arguments
- * @io_priority: the [I/O priority][io-priority] of the request
- * @cancellable: (nullable): optional #GCancellable object,
- *   %NULL to ignore
+ * @io_priority: the I/O priority
+ * @cancellable: (nullable): optional #GCancellable object, %NULL to ignore
  * @callback: (scope async) (closure user_data): a #GAsyncReadyCallback
  *   to call when the request is satisfied
  * @user_data: the data to pass to callback function

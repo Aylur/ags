@@ -32,22 +32,34 @@ if (river.connected) {
     }
 
     Workspaces = monitor => {
-        const riverMonitor = river.getMonitor(monitor)
-        const focusedTags = riverMonitor.bind("focused-tags")
-        const workspaces = riverMonitor.bind("view-tags")
-            .as(views => getActiveViews(views).map(tag => {
-                const tagBits = 1 << (tag - 1)
-
-                return Widget.Button({
-                    on_clicked: () => river.sendCommand('set-focused-tags', `${tagBits}`),
-                    child: Widget.Label(`${tag}`),
-                    class_name: focusedTags.as(i => `${i & tagBits ? "focused" : ""}`),
-                })
-            }))
+        const output = river.getOutput(monitor)
 
         return Widget.Box({
             class_name: "workspaces",
-            children: workspaces,
+            children: Utils.merge([
+                output.bind("focused-tags"),
+                output.bind("view-tags"),
+                output.bind("urgent-tags"),
+            ], (focused, view, urgent) => {
+                let all = focused | urgent
+                for (const tags of view) {
+                    all |= tags
+                }
+
+                const result = []
+                for (let i = 0; i < 32; i++) {
+                    const tagBits = 1 << i
+                    if (all & tagBits) {
+                        const tag = i + 1
+                        result.push(Widget.Button({
+                            on_clicked: () => river.sendCommand('set-focused-tags', `${tagBits}`),
+                            child: Widget.Label(`${tag}`),
+                            class_name: `${focused & tagBits ? "focused" : ""}`,
+                        }))
+                    }
+                }
+                return result
+            }),
         })
     }
 
