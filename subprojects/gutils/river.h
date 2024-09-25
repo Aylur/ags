@@ -28,8 +28,6 @@ G_DECLARE_FINAL_TYPE (GUtilsRiver, gutils_river, GUTILS, RIVER, GObject)
 
 void gutils_river_listen(GUtilsRiver *self);
 
-void gutils_river_resend_focus_signals(GUtilsRiver *self);
-
 void gutils_river_send_command(GUtilsRiver         *self,
                                const char *const   *arguments,
                                int                  io_priority,
