@@ -77,7 +77,6 @@ export class River extends Service {
 
         this._connected = this._river.valid;
         if (!this._connected) {
-            console.error('River is not detected');
             return;
         }
 
