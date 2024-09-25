@@ -6,12 +6,14 @@
 
 G_BEGIN_DECLS
 
+struct zriver_seat_status_v1;
 struct zriver_output_status_v1;
 struct wl_output;
 
 struct _GUtilsRiverOutput {
     GObject parent_instance;
 
+    struct zriver_seat_status_v1 *seat_status;
     struct zriver_output_status_v1 *output_status;
     struct wl_output *output;
 

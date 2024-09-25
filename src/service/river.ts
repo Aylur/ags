@@ -12,6 +12,7 @@ export class Output extends Service {
             'view-tags': ['jsobject'],
             'urgent-tags': ['int'],
             'layout-name': ['jsobject'],
+            'focused': ['boolean'],
         });
     }
 
@@ -19,6 +20,7 @@ export class Output extends Service {
     private _viewTags: number[] = [];
     private _urgentTags = 0;
     private _layoutName: string | null = null;
+    private _focused = false;
 
     // Hold a reference to prevent garbage collection
     private readonly _output: GUtils.RiverOutput;
@@ -43,22 +45,29 @@ export class Output extends Service {
         output.connect('layout-name', (_: GUtils.RiverOutput, name: string | null) => {
             this.updateProperty('layout-name', name);
         });
+
+        output.connect('focused', (_: GUtils.RiverOutput, focused: boolean) => {
+            this.updateProperty('focused', focused);
+        });
     }
 
     get focusedTags() { return this._focusedTags; }
     get viewTags() { return this._viewTags; }
     get urgentTags() { return this._urgentTags; }
     get layoutName() { return this._layoutName; }
+    get focused() { return this._focused; }
 }
 
 export class River extends Service {
     static {
         Service.register(this, {}, {
             'focused-view': ['string'],
+            'mode': ['string'],
         });
     }
 
     private _focusedView = '';
+    private _mode = '';
     private _connected = false;
 
     private _river = new GUtils.River();
@@ -75,10 +84,14 @@ export class River extends Service {
         this._river.connect('focused-view', (_: any, title: string) => {
             this.updateProperty('focused-view', title);
         });
+        this._river.connect('mode', (_: any, mode: string) => {
+            this.updateProperty('mode', mode);
+        });
         this._river.listen();
     }
 
     get focusedView() { return this._focusedView; }
+    get mode() { return this._mode; }
     get connected() { return this._connected; }
 
     readonly getOutput = (monitor: number | Gdk.Monitor) => {

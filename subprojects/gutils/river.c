@@ -14,6 +14,7 @@ enum {
 
 enum {
     SIGNAL_FOCUSED_VIEW,
+    SIGNAL_MODE,
     NUM_SIGNALS,
 };
 
@@ -85,9 +86,10 @@ static void handle_focused_unfocused_output(void                         *data,
 static void handle_mode(void                         *data,
                         struct zriver_seat_status_v1 *seat_status,
                         const char                   *name) {
-    (void) data;
     (void) seat_status;
-    (void) name;
+
+    GUtilsRiver *self = data;
+    g_signal_emit(self, signals[SIGNAL_MODE], 0, name);
 }
 
 static void handle_focused_view(void                         *data,
@@ -180,6 +182,19 @@ static void gutils_river_class_init(GUtilsRiverClass *klass) {
      */
     signals[SIGNAL_FOCUSED_VIEW] =
         g_signal_new(g_intern_static_string("focused-view"),
+                     GUTILS_TYPE_RIVER,
+                     G_SIGNAL_RUN_LAST,
+                     0, NULL, NULL,
+                     NULL,
+                     G_TYPE_NONE, 1, G_TYPE_STRING);
+
+    /**
+     * GUtilsRiver::mode:
+     * @object: a #GUtilsRiver.
+     * @mode: the mode
+     */
+    signals[SIGNAL_MODE] =
+        g_signal_new(g_intern_static_string("mode"),
                      GUTILS_TYPE_RIVER,
                      G_SIGNAL_RUN_LAST,
                      0, NULL, NULL,

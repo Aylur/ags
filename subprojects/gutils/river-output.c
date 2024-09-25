@@ -16,6 +16,7 @@ enum {
     SIGNAL_VIEW_TAGS,
     SIGNAL_URGENT_TAGS,
     SIGNAL_LAYOUT_NAME,
+    SIGNAL_FOCUSED,
     NUM_SIGNALS,
 };
 
@@ -87,6 +88,51 @@ static const struct zriver_output_status_v1_listener output_status_listener = {
     .layout_name_clear = handle_layout_name_clear,
 };
 
+static void handle_focused_output(void                         *data,
+                                  struct zriver_seat_status_v1 *seat_status,
+                                  struct wl_output             *output) {
+    (void) seat_status;
+
+    GUtilsRiverOutput *self = data;
+    if (output == self->output) {
+        g_signal_emit(self, signals[SIGNAL_FOCUSED], 0, TRUE);
+    }
+}
+
+static void handle_unfocused_output(void                         *data,
+                                    struct zriver_seat_status_v1 *seat_status,
+                                    struct wl_output             *output) {
+    (void) seat_status;
+
+    GUtilsRiverOutput *self = data;
+    if (output == self->output) {
+        g_signal_emit(self, signals[SIGNAL_FOCUSED], 0, FALSE);
+    }
+}
+
+static void handle_mode(void                         *data,
+                        struct zriver_seat_status_v1 *seat_status,
+                        const char                   *name) {
+    (void) data;
+    (void) seat_status;
+    (void) name;
+}
+
+static void handle_focused_view(void                         *data,
+                                struct zriver_seat_status_v1 *seat_status,
+                                const char                   *title) {
+    (void) data;
+    (void) seat_status;
+    (void) title;
+}
+
+static const struct zriver_seat_status_v1_listener seat_status_listener = {
+    .focused_output = handle_focused_output,
+    .unfocused_output = handle_unfocused_output,
+    .focused_view = handle_focused_view,
+    .mode = handle_mode,
+};
+
 static void gutils_river_output_set_property(GObject      *object,
                                              guint         property_id,
                                              const GValue *value,
@@ -136,6 +182,7 @@ static void gutils_river_output_dispose(GObject *object) {
 static void gutils_river_output_finalize(GObject *object) {
     GUtilsRiverOutput *self = (GUtilsRiverOutput *) object;
 
+    g_clear_pointer(&self->seat_status, zriver_seat_status_v1_destroy);
     g_clear_pointer(&self->output_status, zriver_output_status_v1_destroy);
 
     G_OBJECT_CLASS(gutils_river_output_parent_class)->dispose(object);
@@ -238,6 +285,19 @@ static void gutils_river_output_class_init(GUtilsRiverOutputClass *klass) {
                      0, NULL, NULL,
                      NULL,
                      G_TYPE_NONE, 1, G_TYPE_STRING);
+
+    /**
+     * GUtilsRiverOutput::focused:
+     * @object: a #GUtilsRiverOutput.
+     * @focused: true if the output is focused.
+     */
+    signals[SIGNAL_FOCUSED] =
+        g_signal_new(g_intern_static_string("focused"),
+                     GUTILS_TYPE_RIVER_OUTPUT,
+                     G_SIGNAL_RUN_LAST,
+                     0, NULL, NULL,
+                     NULL,
+                     G_TYPE_NONE, 1, G_TYPE_BOOLEAN);
 }
 
 static void gutils_river_output_init(GUtilsRiverOutput *self) {
@@ -263,6 +323,10 @@ void gutils_river_output_listen(GUtilsRiverOutput *self,
         g_warning("Could not get Wayland monitor for %s.", gdk_monitor_get_model(self->monitor));
         return;
     }
+
+    self->seat_status =
+        zriver_status_manager_v1_get_river_seat_status(river->status_manager, river->seat);
+        zriver_seat_status_v1_add_listener(self->seat_status, &seat_status_listener, self);
 
     self->output_status =
         zriver_status_manager_v1_get_river_output_status(river->status_manager, self->output);
