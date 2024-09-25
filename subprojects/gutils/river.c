@@ -215,7 +215,6 @@ static void gutils_river_init(GUtilsRiver *self) {
     wl_registry_add_listener(registry, &registry_listener, self);
     wl_display_roundtrip(display);
     if (self->status_manager == NULL || self->control == NULL || self->seat == NULL) {
-        g_warning("River was not detected.");
         return;
     }
 
