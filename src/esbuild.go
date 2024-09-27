@@ -68,6 +68,9 @@ var sassPlugin api.Plugin = api.Plugin{
 				}
 
 				sass := Exec("sass", "--stdin", "-I", filepath.Dir(args.Path))
+				// if cwd is the path of the currently loaded file sass warns about it
+				// in order to avoid the deprecation warning we explicitly set it to something else
+				sass.Dir = "/"
 				sass.Stderr = os.Stderr
 				stdin, _ := sass.StdinPipe()
 				stdin.Write(data)
