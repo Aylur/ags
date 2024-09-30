@@ -26,6 +26,7 @@
     gjs
     nodejs
     dart-sass
+    astal # FIXME: should not be needed after the astal commends are properly implemented using dbus in astal.go
   ];
 in
   buildGoModule {
