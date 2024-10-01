@@ -1,3 +1,4 @@
+import Gdk from 'gi://Gdk?version=3.0';
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import Service from '../service.js';
@@ -111,6 +112,14 @@ export class Hyprland extends Service {
     readonly getMonitor = (id: number) => this._monitors.get(id);
     readonly getWorkspace = (id: number) => this._workspaces.get(id);
     readonly getClient = (address: string) => this._clients.get(address);
+
+    readonly getGdkMonitor = (id: number) => {
+        const monitor = this._monitors.get(id);
+        if (!monitor)
+            return null;
+
+        return Gdk.Display.get_default()?.get_monitor_at_point(monitor.x, monitor.y) || null;
+    };
 
     constructor() {
         if (!HIS)
