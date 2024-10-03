@@ -4,12 +4,9 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
-	"strings"
 )
 
 var (
-	astalGjs = "/usr/share/astal/gjs"
-
 	//go:embed data/env.d.ts
 	envdts string
 
@@ -65,13 +62,12 @@ func InitConfig() {
 		Err("could not initialize: " + Cyan(config) + " is not empty")
 	}
 
-	tsconf := strings.ReplaceAll(tsconfig, "@ASTAL_GJS@", astalGjs)
 	appfile, bar := getConfig(true)
 
 	Mkdir(config + "/widget")
 
 	WriteFile(config+"/.gitignore", "@girs/\nnode_modules/")
-	WriteFile(config+"/tsconfig.json", tsconf)
+	WriteFile(config+"/tsconfig.json", tsconfig)
 	WriteFile(config+"/env.d.ts", envdts)
 	WriteFile(config+"/style.css", style)
 	WriteFile(config+"/widget/"+bar.name, bar.content)

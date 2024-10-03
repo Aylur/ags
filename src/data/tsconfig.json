@@ -11,15 +11,6 @@
         "skipLibCheck": true,
         "checkJs": true,
         "allowJs": true,
-        "jsx": "react-jsx",
-        "jsxImportSource": "@ASTAL_GJS@/src/jsx",
-        "paths": {
-            "astal": [
-                "@ASTAL_GJS@"
-            ],
-            "astal/*": [
-                "@ASTAL_GJS@/src/*"
-            ]
-        },
+        "jsx": "react-jsx"
     }
 }
