@@ -1,7 +1,7 @@
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 import Service from '../service.js';
-import { ensureDirectory, idle } from '../utils.js';
+import { ensureDirectory, idle, timeout } from '../utils.js';
 import { CACHE_DIR } from '../utils.js';
 import { loadInterfaceXML } from '../utils.js';
 import { DBusProxy, PlayerProxy, MprisProxy } from '../dbus/types.js';
@@ -368,7 +368,7 @@ export class Mpris extends Service {
             return;
 
         if (newOwner && !oldOwner)
-            this._addPlayer(name);
+            timeout(500, this._addPlayer.bind(this, name));
     }
 
     readonly getPlayer = (name = '') => {
