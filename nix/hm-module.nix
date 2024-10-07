@@ -52,6 +52,14 @@ in {
       example = literalExpression "[ pkgs.libsoup_3 ]";
     };
 
+    systemd.busName = mkOption {
+      type = types.str;
+      default = "ags";
+      description = ''
+        The bus name to use with the systemd service.
+      '';
+    };
+
     systemd.enable = mkOption {
       type = types.bool;
       default = false;
@@ -87,7 +95,7 @@ in {
         };
 
         Service = {
-          ExecStart = "${config.programs.ags.package}/bin/ags -b hypr";
+          ExecStart = "${config.programs.ags.package}/bin/ags -b ${cfg.systemd.busName}";
           Restart = "on-failure";
           KillMode = "mixed";
         };
