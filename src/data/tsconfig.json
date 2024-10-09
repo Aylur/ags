@@ -1,16 +1,12 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
-        "target": "ES2023",
-        "module": "ES2022",
-        "lib": [
-            "ES2023"
-        ],
+        "experimentalDecorators": true,
         "strict": true,
+        "target": "ES2023",
         "moduleResolution": "Bundler",
-        "skipLibCheck": true,
-        "checkJs": true,
-        "allowJs": true,
+        // "checkJs": true,
+        // "allowJs": true,
         "jsx": "react-jsx",
         "jsxImportSource": "@ASTAL_GJS@/src/jsx",
         "paths": {
