@@ -443,6 +443,7 @@ export interface Client {
         name: string
     }
     floating: boolean
+    pseudo: boolean
     monitor: number
     class: string
     title: string
@@ -451,10 +452,10 @@ export interface Client {
     pid: number
     xwayland: boolean
     pinned: boolean
-    fullscreen: boolean
-    fullscreenMode: number
-    fakeFullscreen: boolean
+    fullscreen: number
+    fullscreenClient: number
     grouped: [string],
+    tags: [string]
     swallowing: string
     focusHistoryID: number
 }
