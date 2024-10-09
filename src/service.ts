@@ -50,6 +50,7 @@ interface Services {
     network: typeof import('./service/network.js').default
     notifications: typeof import('./service/notifications.js').default
     powerprofiles: typeof import('./service/powerprofiles.js').default
+    river: typeof import('./service/river.js').default
     systemtray: typeof import('./service/systemtray.js').default
     greetd: typeof import('./service/greetd.js').default
 }
