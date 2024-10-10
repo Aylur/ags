@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -9,6 +10,8 @@ import (
 
 	"github.com/evanw/esbuild/pkg/api"
 )
+
+var astalGjs = "/usr/share/astal/gjs"
 
 var inlinePlugin api.Plugin = api.Plugin{
 	Name: "inline",
@@ -91,6 +94,41 @@ var sassPlugin api.Plugin = api.Plugin{
 	},
 }
 
+func fixTsCfg(infile string) string {
+	tsCfgPath := filepath.Join(filepath.Dir(infile), "tsconfig.json")
+	tsCfgData, err := os.ReadFile(tsCfgPath)
+	if err != nil {
+		Err(err)
+	}
+
+	var tsCfg map[string]interface{}
+	json.Unmarshal(tsCfgData, &tsCfg)
+
+	compilerOptions, ok := tsCfg["compilerOptions"].(map[string]interface{})
+	if !ok {
+    // If compilerOptions doesn't exist or isn't a map, create it
+		compilerOptions = make(map[string]interface{})
+		tsCfg["compilerOptions"] = compilerOptions
+	}
+
+	// Insert paths
+	paths := map[string]interface{}{
+		"astal":   []string{astalGjs},
+		"astal/*": []string{astalGjs + "/src/*"},
+	}
+	compilerOptions["paths"] = paths
+
+	// Insert jsxImportSource
+	compilerOptions["jsxImportSource"] = astalGjs + "/src/jsx"
+
+	updatedTsCfg, err := json.Marshal(tsCfg)
+	if err != nil {
+		Err(err)
+	}
+
+	return string(updatedTsCfg)
+}
+
 // TODO:
 // svg loader
 // other css preproceccors
@@ -105,6 +143,7 @@ func Build(infile, outfile string) {
 		Format:      api.FormatESModule,
 		Platform:    api.PlatformNeutral,
 		Write:       true,
+		TsconfigRaw: fixTsCfg(infile),
 		Define: map[string]string{
 			"SRC": fmt.Sprintf(`"%s"`, *Opts.config),
 		},
