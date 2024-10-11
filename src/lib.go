@@ -34,7 +34,10 @@ func Mkdir(path string) {
 }
 
 func WriteFile(path string, content string) {
-	os.WriteFile(path, []byte(content), 0644)
+	err := os.WriteFile(path, []byte(content), 0644)
+	if err != nil {
+		Err(err)
+	}
 }
 
 func Exec(cmd string, args ...string) *exec.Cmd {
