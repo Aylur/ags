@@ -1,5 +1,5 @@
-import { App } from "astal"
-import style from "inline:./style.css"
+import { App } from "astal/gtk3"
+import style from "./style.css"
 import Bar from "./widget/Bar"
 
 App.start({

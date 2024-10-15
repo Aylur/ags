@@ -8,13 +8,13 @@
         // "checkJs": true,
         // "allowJs": true,
         "jsx": "react-jsx",
-        "jsxImportSource": "@ASTAL_GJS@/src/jsx",
+        "jsxImportSource": "@ASTAL_GJS@/@GTK_VERSION@",
         "paths": {
             "astal": [
                 "@ASTAL_GJS@"
             ],
             "astal/*": [
-                "@ASTAL_GJS@/src/*"
+                "@ASTAL_GJS@/*"
             ]
         },
     }

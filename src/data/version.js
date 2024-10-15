@@ -12,7 +12,8 @@ function ver(name = "", lib = "") {
     print(`${name}: ${ver}`)
 }
 
-ver("astal")
+ver("astal3")
+ver("astal-io", "IO")
 ver("apps", "Apps")
 ver("auth", "Auth")
 ver("battery", "Battery")

@@ -1,4 +1,7 @@
 {
+  astal3,
+  astal-io,
+  astal-gjs,
   lib,
   writers,
   buildGoModule,
@@ -6,12 +9,10 @@
   gobject-introspection,
   gtk3,
   glib,
-  astal,
   gjs,
   nodejs,
   dart-sass,
   extraPackages ? [],
-  astalGjs ? "${astal}/share/astal/gjs"
 }: let
   inherit (builtins) replaceStrings readFile;
 
@@ -26,7 +27,7 @@
     gjs
     nodejs
     dart-sass
-    astal # FIXME: should not be needed after the astal commends are properly implemented using dbus in astal.go
+    astal-io # FIXME: should not be needed after the astal commends are properly implemented using dbus in astal.go
   ];
 in
   buildGoModule {
@@ -44,7 +45,8 @@ in
     buildInputs = extraPackages ++ [
       glib
       gtk3
-      astal
+      astal-io
+      astal3
     ];
 
     preFixup = ''
@@ -55,6 +57,6 @@ in
     '';
 
     ldflags = [
-      "-X main.astalGjs=${astalGjs}"
+      "-X main.astalGjs=${astal-gjs}"
     ];
   }
