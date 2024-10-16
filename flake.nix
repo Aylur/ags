@@ -16,19 +16,19 @@
       astal.packages.${system}
       // {
         default = self.packages.${system}.ags;
-        ags = pkgs.callPackage ./src {
-          astal3 = astal.packages.${system}.astal3;
-          astal-io = astal.packages.${system}.io;
-          astal-gjs = astal.packages.${system}.gjs;
-        };
-        agsFull = pkgs.callPackage ./src {
-          astal3 = astal.packages.${system}.astal3;
-          astal-io = astal.packages.${system}.io;
-          astal-gjs = astal.packages.${system}.gjs;
+        ags = pkgs.callPackage ./src (with astal.packages.${system}; {
+          astal3 = astal3;
+          astal-io = io;
+          astal-gjs = "${gjs}/share/astal/gjs";
+        });
+        agsFull = pkgs.callPackage ./src (with astal.packages.${system}; {
+          astal3 = astal3;
+          astal-io = io;
+          astal-gjs = "${gjs}/share/astal/gjs";
           extraPackages = builtins.attrValues (
             builtins.removeAttrs astal.packages.${system} ["docs"]
           );
-        };
+        });
       };
 
     devShells.${system} = {
