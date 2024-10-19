@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var tsForGir = "@ts-for-gir/cli@4.0.0-beta.16"
+var tsForGir = "@ts-for-gir/cli@4.0.0-beta.15"
 
 func girDirectories() []string {
 	dataDirs := append([]string{
