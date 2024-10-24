@@ -3,6 +3,8 @@
   stdenv,
   buildNpmPackage,
   fetchFromGitLab,
+  fetchFromGitHub,
+  fetchzip,
   nodePackages,
   meson,
   pkg-config,
@@ -28,7 +30,23 @@
 }: let
   pname = "ags";
 
-  gvc-src = fetchFromGitLab {
+  getGnomeZip = {
+    domain,
+    repo,
+    rev,
+    owner,
+    sha256,
+    ...
+  }:
+    fetchzip {
+      urls = [
+        ((fetchFromGitLab {inherit rev repo owner domain;}).url)
+        ((fetchFromGitHub {inherit rev repo owner;}).url)
+      ];
+      inherit sha256;
+    };
+
+  gvc-src = getGnomeZip {
     domain = "gitlab.gnome.org";
     owner = "GNOME";
     repo = "libgnome-volume-control";
