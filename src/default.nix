@@ -1,5 +1,7 @@
 {
   astal3,
+  astal4,
+  gtk4-layer-shell,
   astal-io,
   astal-gjs,
   lib,
@@ -7,11 +9,11 @@
   buildGoModule,
   wrapGAppsHook,
   gobject-introspection,
-  gtk3,
   glib,
   gjs,
   nodejs,
   dart-sass,
+  blueprint-compiler,
   extraPackages ? [],
 }: let
   inherit (builtins) replaceStrings readFile;
@@ -27,6 +29,7 @@
     gjs
     nodejs
     dart-sass
+    blueprint-compiler
     astal-io # FIXME: should not be needed after the astal commends are properly implemented using dbus in astal.go
   ];
 in
@@ -44,9 +47,9 @@ in
 
     buildInputs = extraPackages ++ [
       glib
-      gtk3
       astal-io
       astal3
+      astal4
     ];
 
     preFixup = ''
@@ -58,5 +61,6 @@ in
 
     ldflags = [
       "-X main.astalGjs=${astal-gjs}"
+      "-X main.gtk4LayerShell=${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
     ];
   }

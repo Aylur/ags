@@ -20,12 +20,12 @@
       // {
         default = self.packages.${system}.ags;
         ags = pkgs.callPackage ./src (with astal.packages.${system}; {
-          astal3 = astal3;
+          inherit astal3 astal4;
           astal-io = io;
           astal-gjs = "${gjs}/share/astal/gjs";
         });
         agsFull = pkgs.callPackage ./src (with astal.packages.${system}; {
-          astal3 = astal3;
+          inherit astal3 astal4;
           astal-io = io;
           astal-gjs = "${gjs}/share/astal/gjs";
           extraPackages = builtins.attrValues (

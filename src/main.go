@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 )
 
+var gtk4LayerShell = "/usr/lib/libgtk4-layer-shell.so"
+
 func main() {
 	if *Opts.help {
 		PrintHelp()
@@ -107,6 +109,9 @@ func run() {
 
 	outfile := getOutfile()
 	Build(infile, outfile)
+
+    // TODO: gtk4 flag
+	// os.Setenv("LD_PRELOAD", gtk4LayerShell)
 	cmd := Exec("gjs", "-m", outfile)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

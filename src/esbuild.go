@@ -48,7 +48,7 @@ var inlinePlugin api.Plugin = api.Plugin{
 var sassPlugin api.Plugin = api.Plugin{
 	Name: "sass",
 	Setup: func(build api.PluginBuild) {
-		build.OnResolve(api.OnResolveOptions{Filter: `.*\.(scss|sass)$`},
+		build.OnResolve(api.OnResolveOptions{Filter: `.*\.scss$`},
 			func(args api.OnResolveArgs) (api.OnResolveResult, error) {
 				return api.OnResolveResult{
 					Path: path.Join(
@@ -60,7 +60,7 @@ var sassPlugin api.Plugin = api.Plugin{
 			},
 		)
 
-		build.OnLoad(api.OnLoadOptions{Filter: `.*\.(scss|sass)$`, Namespace: "sass"},
+		build.OnLoad(api.OnLoadOptions{Filter: `.*\.scss$`, Namespace: "sass"},
 			func(args api.OnLoadArgs) (api.OnLoadResult, error) {
 				data, err := os.ReadFile(args.Path)
 				if err != nil {
@@ -77,6 +77,41 @@ var sassPlugin api.Plugin = api.Plugin{
 				stdin.Close()
 
 				data, err = sass.Output()
+				if err != nil {
+					return api.OnLoadResult{}, err
+				}
+
+				content := strings.TrimSpace(string(data))
+				return api.OnLoadResult{
+					Contents:   &content,
+					WatchFiles: []string{args.Path},
+					Loader:     api.LoaderText,
+				}, nil
+			})
+	},
+}
+
+var blpPlugin api.Plugin = api.Plugin{
+	Name: "blueprint",
+	Setup: func(build api.PluginBuild) {
+		build.OnResolve(api.OnResolveOptions{Filter: `.*\.blp$`},
+			func(args api.OnResolveArgs) (api.OnResolveResult, error) {
+				return api.OnResolveResult{
+					Path: path.Join(
+						args.ResolveDir,
+						args.Path,
+					),
+					Namespace: "blueprint",
+				}, nil
+			},
+		)
+
+		build.OnLoad(api.OnLoadOptions{Filter: `.*\.blp$`, Namespace: "blueprint"},
+			func(args api.OnLoadArgs) (api.OnLoadResult, error) {
+				blp := Exec("blueprint-compiler", "compile", args.Path)
+				blp.Stderr = os.Stderr
+
+				data, err := blp.Output()
 				if err != nil {
 					return api.OnLoadResult{}, err
 				}
@@ -124,6 +159,7 @@ func Build(infile, outfile string) {
 		Plugins: []api.Plugin{
 			inlinePlugin,
 			sassPlugin,
+			blpPlugin,
 		},
 	})
 
