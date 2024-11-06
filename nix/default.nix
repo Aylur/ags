@@ -18,12 +18,17 @@
 }: let
   inherit (builtins) replaceStrings readFile;
 
-  datadirs = writers.writeNu "datadirs" /*nu*/ ''
-    $env.XDG_DATA_DIRS
-    | split row ":"
-    | filter { $"($in)/gir-1.0" | path exists }
-    | str join ":"
-  '';
+  datadirs =
+    writers.writeNu "datadirs"
+    /*
+    nu
+    */
+    ''
+      $env.XDG_DATA_DIRS
+      | split row ":"
+      | filter { $"($in)/gir-1.0" | path exists }
+      | str join ":"
+    '';
 
   bins = [
     gjs
@@ -32,25 +37,34 @@
     blueprint-compiler
     astal-io # FIXME: should not be needed after the astal commends are properly implemented using dbus in astal.go
   ];
+
+  version = replaceStrings ["\n"] [""] (readFile ../version);
+  pname = "ags";
 in
   buildGoModule {
-    version = replaceStrings ["\n"] [""] (readFile ./version);
-    pname = "ags";
-    src = ./.;
+    inherit pname version;
 
-    vendorHash = "sha256-MXappgAYaFcxYQVck4fxbAFS1Hn9KsoOOpzmZBgxuM0=";
+    src = builtins.path {
+      name = "${pname}-${version}";
+      path = lib.cleanSource ../.;
+    };
+
+    vendorHash = "sha256-NCWnrnaFxPfPtUP5egYcT980yzndsWXiin/iJE3M3HA=";
+    proxyVendor = true;
 
     nativeBuildInputs = [
       wrapGAppsHook
       gobject-introspection
     ];
 
-    buildInputs = extraPackages ++ [
-      glib
-      astal-io
-      astal3
-      astal4
-    ];
+    buildInputs =
+      extraPackages
+      ++ [
+        glib
+        astal-io
+        astal3
+        astal4
+      ];
 
     preFixup = ''
       gappsWrapperArgs+=(

@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"fmt"
@@ -6,22 +6,7 @@ import (
 	"os/exec"
 )
 
-func Map[T any, R any](input []T, fn func(T) R) []R {
-	result := make([]R, len(input))
-	for i, v := range input {
-		result[i] = fn(v)
-	}
-	return result
-}
-
-func Some[T any](input []T, fn func(T) bool) bool {
-	for _, v := range input {
-		if fn(v) {
-			return true
-		}
-	}
-	return false
-}
+var r = "\x1b[0m"
 
 func Mkdir(path string) {
 	_, err := os.Stat(path)
@@ -46,14 +31,6 @@ func Exec(cmd string, args ...string) *exec.Cmd {
 		Err(`executable "` + Magenta(cmd) + `" not found in $PATH`)
 	}
 	return exec.Command(cmd, args...)
-}
-
-func HideCursor() {
-	fmt.Print("\033[?25l")
-}
-
-func ShowCursor() {
-	fmt.Print("\033[?25h")
 }
 
 func Invert(str string) string {

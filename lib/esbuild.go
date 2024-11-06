@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"fmt"
@@ -62,21 +62,13 @@ var sassPlugin api.Plugin = api.Plugin{
 
 		build.OnLoad(api.OnLoadOptions{Filter: `.*\.scss$`, Namespace: "sass"},
 			func(args api.OnLoadArgs) (api.OnLoadResult, error) {
-				data, err := os.ReadFile(args.Path)
-				if err != nil {
-					return api.OnLoadResult{}, err
-				}
-
-				sass := Exec("sass", "--stdin", "-I", filepath.Dir(args.Path))
+				sass := Exec("sass", args.Path, "-I", filepath.Dir(args.Path))
 				// if cwd is the path of the currently loaded file sass warns about it
 				// in order to avoid the deprecation warning we explicitly set it to something else
 				sass.Dir = "/"
 				sass.Stderr = os.Stderr
-				stdin, _ := sass.StdinPipe()
-				stdin.Write(data)
-				stdin.Close()
 
-				data, err = sass.Output()
+				data, err := sass.Output()
 				if err != nil {
 					return api.OnLoadResult{}, err
 				}
@@ -130,7 +122,7 @@ var blpPlugin api.Plugin = api.Plugin{
 // svg loader
 // other css preproceccors
 // http plugin with caching
-func Build(infile, outfile string) {
+func Bundle(srcdir, infile, outfile string) {
 	result := api.Build(api.BuildOptions{
 		Color:       api.ColorAlways,
 		LogLevel:    api.LogLevelWarning,
@@ -141,7 +133,7 @@ func Build(infile, outfile string) {
 		Platform:    api.PlatformNeutral,
 		Write:       true,
 		Define: map[string]string{
-			"SRC": fmt.Sprintf(`"%s"`, *Opts.config),
+			"SRC": fmt.Sprintf(`"%s"`, srcdir),
 		},
 		Loader: map[string]api.Loader{
 			".js":  api.LoaderJSX,

@@ -1,12 +1,12 @@
-import { App, Astal, Gtk } from "astal/gtk3"
+import { App, Astal, Gtk, Gdk } from "astal/gtk3"
 import { Variable } from "astal"
 
 const time = Variable("").poll(1000, "date")
 
-export default function Bar(monitor: number) {
+export default function Bar(gdkmonitor: Gdk.Monitor) {
     return <window
         className="Bar"
-        monitor={monitor}
+        gdkmonitor={gdkmonitor}
         exclusivity={Astal.Exclusivity.EXCLUSIVE}
         anchor={Astal.WindowAnchor.TOP
             | Astal.WindowAnchor.LEFT
