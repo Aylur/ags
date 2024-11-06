@@ -12,7 +12,7 @@ var reqCommand = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		instance, _ := cmd.Flags().GetString("instance")
-		lib.Astal("--instance", instance, "--message", args[0])
+		lib.Astal("--instance", instance, args[0])
 	},
 }
 
