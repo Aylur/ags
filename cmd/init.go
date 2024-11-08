@@ -11,14 +11,15 @@ import (
 )
 
 var (
-	force bool
-	gtk   int
+	force         bool
+	gtk           int
+	initDirectory string
 )
 
 var initCommand = &cobra.Command{
-	Use:   "init [directory]",
+	Use:   "init",
 	Short: "Initialize a project directory",
-	Long:  "Setup files needed by TypeScript and generate types",
+	Long:  "Initialize a project directory by setting up files needed by TypeScript, generating types and setting up a basic bar example",
 	Args:  cobra.MaximumNArgs(1),
 	Run:   initConfig,
 }
@@ -28,6 +29,7 @@ func init() {
 
 	f.IntVarP(&gtk, "gtk", "g", 3, "use this gtk version")
 	f.BoolVarP(&force, "force", "f", false, "override existing files")
+	f.StringVarP(&initDirectory, "directory", "d", defaultConfigDir(), "target directory")
 }
 
 func getDataFile(name string) string {

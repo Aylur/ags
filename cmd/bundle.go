@@ -9,7 +9,7 @@ import (
 )
 
 var bundleCommand = &cobra.Command{
-	Use:   "bundle [file or directory] [outfile]",
+	Use:   "bundle [entryfile] [outfile]",
 	Short: "Bundle an app",
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {

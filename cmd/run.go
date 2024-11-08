@@ -9,12 +9,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var gtk4 bool
+var (
+	gtk4      bool
+	targetDir string
+)
 
 var runCommand = &cobra.Command{
-	Use:   "run [optional file or directory]",
+	Use:   "run [file]",
 	Short: "Run an app",
-	Long:  `Run a given app. Defaults to ` + defaultConfigDir(),
 	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) > 0 {
@@ -35,14 +37,18 @@ var runCommand = &cobra.Command{
 			}
 
 		} else {
-			dir := defaultConfigDir()
-			run(getAppEntry(dir), dir)
+			run(getAppEntry(targetDir), targetDir)
 		}
 	},
 }
 
 func init() {
-	runCommand.Flags().BoolVar(&gtk4, "gtk4", false, "preload Gtk4LayerShell")
+	f := runCommand.Flags()
+	f.BoolVar(&gtk4, "gtk4", false, "preload Gtk4LayerShell")
+	f.StringVarP(&targetDir, "directory", "d", defaultConfigDir(),
+		`directory to search for an "app" entry file
+when no positional argument is given
+`+"\b")
 }
 
 func getOutfile() string {

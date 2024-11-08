@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	typesConfigDir string
+	typesTonfigDir string
 	ignoreModules  []string
 )
 
@@ -21,12 +21,12 @@ var typesCommand = &cobra.Command{
 	Use:     "types [pattern]",
 	Short:   "Generate TypeScript types",
 	Args:    cobra.MaximumNArgs(1),
-	Example: `  types Astal* --ignore Gtk3 --ignore Astal3`,
+	Example: `  ags types Astal* --ignore Gtk3 --ignore Astal3`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) > 0 {
-			genTypes(typesConfigDir, args[0])
+			genTypes(typesTonfigDir, args[0])
 		} else {
-			genTypes(typesConfigDir, "*")
+			genTypes(typesTonfigDir, "*")
 		}
 	},
 }
@@ -34,7 +34,7 @@ var typesCommand = &cobra.Command{
 func init() {
 	f := typesCommand.Flags()
 
-	f.StringVarP(&typesConfigDir, "config", "c", defaultConfigDir(), "configuration directory")
+	f.StringVarP(&typesTonfigDir, "directory", "d", defaultConfigDir(), "target directory")
 	f.StringArrayVarP(&ignoreModules, "ignore", "i", []string{}, "modules that should be ignored")
 }
 
