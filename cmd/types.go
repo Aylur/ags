@@ -75,12 +75,12 @@ func showCursor() {
 	fmt.Print("\033[?25h")
 }
 
-func genTypes(configDir, pattern string) error {
+func genTypes(configDir, pattern string) {
 	lib.Mkdir(configDir)
 
 	npx, err := exec.LookPath("npx")
 	if err != nil {
-		return err
+		lib.Err(err)
 	}
 
 	flags := []string{
@@ -105,5 +105,8 @@ func genTypes(configDir, pattern string) error {
 
 	showCursor()
 
-	return err
+	if err != nil {
+		lib.Err("type generation failed, try running\n" +
+			lib.Yellow(npx+" "+strings.Join(flags, " ")))
+	}
 }

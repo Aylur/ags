@@ -31,13 +31,13 @@ var runCommand = &cobra.Command{
 			}
 
 			if info.IsDir() {
-				run(getAppEntry(path), path)
+				run(getAppEntry(path))
 			} else {
-				run(path, filepath.Dir(path))
+				run(path)
 			}
 
 		} else {
-			run(getAppEntry(targetDir), targetDir)
+			run(getAppEntry(targetDir))
 		}
 	},
 }
@@ -83,9 +83,9 @@ func getAppEntry(dir string) string {
 	return infile
 }
 
-func run(infile, dir string) {
+func run(infile string) {
 	outfile := getOutfile()
-	lib.Bundle(dir, infile, outfile)
+	lib.Bundle(infile, outfile, lib.BundleOptions{})
 
 	if gtk4 {
 		os.Setenv("LD_PRELOAD", gtk4LayerShell)
@@ -95,7 +95,7 @@ func run(infile, dir string) {
 	gjs.Stdout = os.Stdout
 	gjs.Stderr = os.Stderr
 	gjs.Stdin = os.Stdin
-	gjs.Dir = dir
+	gjs.Dir = filepath.Dir(infile)
 
 	// TODO: watch and restart
 	if err := gjs.Run(); err != nil {

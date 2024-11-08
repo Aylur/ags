@@ -8,6 +8,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	tsconfig    string
+	tsconfigRaw string
+)
+
 var bundleCommand = &cobra.Command{
 	Use:   "bundle [entryfile] [outfile]",
 	Short: "Bundle an app",
@@ -28,10 +33,21 @@ var bundleCommand = &cobra.Command{
 			lib.Err(err)
 		}
 
+		opt := lib.BundleOptions{
+			Tsconfig:    tsconfig,
+			TsconfigRaw: tsconfigRaw,
+		}
+
 		if info.IsDir() {
-			lib.Bundle(path, getAppEntry(path), outfile)
+			lib.Bundle(getAppEntry(path), outfile, opt)
 		} else {
-			lib.Bundle(filepath.Dir(path), path, outfile)
+			lib.Bundle(path, outfile, opt)
 		}
 	},
+}
+
+func init() {
+	f := bundleCommand.Flags()
+	f.StringVar(&tsconfig, "tsconfig", "", "path to tsconfig.json")
+	f.StringVar(&tsconfigRaw, "tsconfig-raw", "", "content of tsconfig.json")
 }

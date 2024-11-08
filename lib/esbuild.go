@@ -118,20 +118,27 @@ var blpPlugin api.Plugin = api.Plugin{
 	},
 }
 
+type BundleOptions struct {
+	Tsconfig    string
+	TsconfigRaw string
+}
+
 // TODO:
 // svg loader
 // other css preproceccors
 // http plugin with caching
-func Bundle(srcdir, infile, outfile string) {
-	result := api.Build(api.BuildOptions{
-		Color:       api.ColorAlways,
-		LogLevel:    api.LogLevelWarning,
-		EntryPoints: []string{infile},
-		Bundle:      true,
-		Outfile:     outfile,
-		Format:      api.FormatESModule,
-		Platform:    api.PlatformNeutral,
-		Write:       true,
+func Bundle(infile, outfile string, opts BundleOptions) {
+	srcdir := filepath.Dir(infile)
+	options := api.BuildOptions{
+		Color:         api.ColorAlways,
+		LogLevel:      api.LogLevelWarning,
+		EntryPoints:   []string{infile},
+		Bundle:        true,
+		Outfile:       outfile,
+		Format:        api.FormatESModule,
+		Platform:      api.PlatformNeutral,
+		Write:         true,
+		AbsWorkingDir: srcdir,
 		Define: map[string]string{
 			"SRC": fmt.Sprintf(`"%s"`, srcdir),
 		},
@@ -153,7 +160,17 @@ func Bundle(srcdir, infile, outfile string) {
 			sassPlugin,
 			blpPlugin,
 		},
-	})
+	}
+
+	if opts.Tsconfig != "" {
+		options.Tsconfig = opts.Tsconfig
+	}
+
+	if opts.TsconfigRaw != "" {
+		options.TsconfigRaw = opts.TsconfigRaw
+	}
+
+	result := api.Build(options)
 
 	// TODO: custom error logs
 	if len(result.Errors) > 0 {

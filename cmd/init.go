@@ -77,9 +77,6 @@ func initConfig(cmd *cobra.Command, args []string) {
 	lib.WriteFile(configDir+"/widget/Bar.tsx", bartsx)
 	lib.WriteFile(configDir+"/app.ts", appts)
 
-	if err := genTypes(configDir, "*"); err != nil {
-		lib.Err(err)
-	}
-
+	genTypes(configDir, "*")
 	fmt.Println(lib.Green("project ready") + " at " + lib.Cyan(configDir))
 }
