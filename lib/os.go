@@ -18,6 +18,11 @@ func Mkdir(path string) {
 	}
 }
 
+func FileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	return !os.IsNotExist(err)
+}
+
 func WriteFile(path string, content string) {
 	err := os.WriteFile(path, []byte(content), 0644)
 	if err != nil {

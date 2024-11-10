@@ -27,8 +27,7 @@ var initCommand = &cobra.Command{
 func init() {
 	f := initCommand.Flags()
 
-	f.IntVarP(&gtk, "gtk", "g", 3, "use this gtk version")
-	f.BoolVarP(&force, "force", "f", false, "override existing files")
+	f.IntVarP(&gtk, "gtk", "g", 3, "gtk version to use")
 	f.StringVarP(&initDirectory, "directory", "d", defaultConfigDir(), "target directory")
 }
 
@@ -40,6 +39,8 @@ func getDataFile(name string) string {
 	return string(content)
 }
 
+// TODO: write basic config when dir is empty
+// option to override tsconfig.json and env.d.ts
 func initConfig(cmd *cobra.Command, args []string) {
 	if gtk != 3 {
 		lib.Err("currently only gtk3 is supported")

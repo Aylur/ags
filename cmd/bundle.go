@@ -33,21 +33,10 @@ var bundleCommand = &cobra.Command{
 			lib.Err(err)
 		}
 
-		opt := lib.BundleOptions{
-			Tsconfig:    tsconfig,
-			TsconfigRaw: tsconfigRaw,
-		}
-
 		if info.IsDir() {
-			lib.Bundle(getAppEntry(path), outfile, opt)
+			lib.Bundle(getAppEntry(path), outfile)
 		} else {
-			lib.Bundle(path, outfile, opt)
+			lib.Bundle(path, outfile)
 		}
 	},
-}
-
-func init() {
-	f := bundleCommand.Flags()
-	f.StringVar(&tsconfig, "tsconfig", "", "path to tsconfig.json")
-	f.StringVar(&tsconfigRaw, "tsconfig-raw", "", "content of tsconfig.json")
 }

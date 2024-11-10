@@ -2,6 +2,7 @@ package main
 
 import (
 	"ags/cmd"
+	"ags/lib"
 	"embed"
 )
 
@@ -20,6 +21,7 @@ var (
 )
 
 func main() {
+	lib.Initialize(astalGjs)
 	cmd.Initialize(cmd.Variables{
 		Version:        version,
 		Data:           data,

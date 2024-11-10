@@ -19,11 +19,7 @@
   inherit (builtins) replaceStrings readFile;
 
   datadirs =
-    writers.writeNu "datadirs"
-    /*
-    nu
-    */
-    ''
+    writers.writeNu "datadirs" /*nu*/ ''
       $env.XDG_DATA_DIRS
       | split row ":"
       | filter { $"($in)/gir-1.0" | path exists }
@@ -49,7 +45,7 @@ in
       path = lib.cleanSource ../.;
     };
 
-    vendorHash = "sha256-NCWnrnaFxPfPtUP5egYcT980yzndsWXiin/iJE3M3HA=";
+    vendorHash = "sha256-Pw6UNT5YkDVz4HcH7b5LfOg+K3ohrBGPGB9wYGAQ9F4=";
     proxyVendor = true;
 
     nativeBuildInputs = [
