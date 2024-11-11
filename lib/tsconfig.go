@@ -17,30 +17,16 @@ func Initialize(_astalGjs string) {
 	astalGjs = _astalGjs
 }
 
-type tsCompilerOptions struct {
-	ExperimentalDecorators bool                `json:"experimentalDecorators"`
-	Target                 string              `json:"target"`
-	Module                 string              `json:"module"`
-	ModuleResolution       string              `json:"moduleResolution"`
-	Jsx                    string              `json:"jsx"`
-	JsxImportSource        string              `json:"jsxImportSource"`
-	Paths                  map[string][]string `json:"paths"`
-}
-
-type tsconfig struct {
-	CompilerOptions tsCompilerOptions `json:"compilerOptions"`
-}
-
-func defaultTsconfig() tsconfig {
-	return tsconfig{
-		CompilerOptions: tsCompilerOptions{
-			ExperimentalDecorators: true,
-			Module:                 "ES2022",
-			Target:                 "ES2022",
-			ModuleResolution:       "Bundler",
-			Jsx:                    "react-jsx",
-			JsxImportSource:        astalGjs + "/" + defaultGtkVersion,
-			Paths: map[string][]string{
+func defaultTsconfig() map[string]interface{} {
+	return map[string]interface{}{
+		"compilerOptions": map[string]interface{}{
+			"experimentalDecorators": true,
+			"module":                 "ES2022",
+			"target":                 "ES2022",
+			"moduleResolution":       "Bundler",
+			"jsx":                    "react-jsx",
+			"jsxImportSource":        astalGjs + "/" + defaultGtkVersion,
+			"paths": map[string][]string{
 				"astal":   {astalGjs},
 				"astal/*": {astalGjs + "/*"},
 			},
@@ -48,8 +34,16 @@ func defaultTsconfig() tsconfig {
 	}
 }
 
-func (tsconfig *tsconfig) updateTsconfig() {
-	src := tsconfig.CompilerOptions.JsxImportSource
+func updateTsconfig(tsconfig map[string]interface{}) {
+	opts, ok := tsconfig["compilerOptions"].(map[string]interface{})
+	if !ok {
+		opts = map[string]interface{}{}
+	}
+
+	src, ok := opts["jsxImportSource"].(string)
+	if !ok {
+		src = "/gtk3"
+	}
 
 	var gtk string
 	if strings.HasSuffix(src, "gtk4") {
@@ -58,14 +52,23 @@ func (tsconfig *tsconfig) updateTsconfig() {
 		gtk = "/gtk3"
 	}
 
-	tsconfig.CompilerOptions.ExperimentalDecorators = true
-	tsconfig.CompilerOptions.Module = "ES2022"
-	tsconfig.CompilerOptions.Target = "ES2022"
-	tsconfig.CompilerOptions.ModuleResolution = "Bundler"
-	tsconfig.CompilerOptions.Jsx = "react-jsx"
-	tsconfig.CompilerOptions.JsxImportSource = astalGjs + gtk
-	tsconfig.CompilerOptions.Paths["astal"] = []string{astalGjs}
-	tsconfig.CompilerOptions.Paths["astal/*"] = []string{astalGjs + "/*"}
+	opts["experimentalDecorators"] = true
+	opts["module"] = "ES2022"
+	opts["target"] = "ES2022"
+	opts["moduleResolution"] = "Bundler"
+	opts["jsx"] = "react-jsx"
+	opts["jsxImportSource"] = astalGjs + gtk
+
+	paths, ok := opts["paths"].(map[string]interface{})
+	if !ok {
+		paths = map[string]interface{}{
+			"astal":   []string{astalGjs},
+			"astal/*": []string{astalGjs + "/*"},
+		}
+	}
+
+	paths["astal"] = []string{astalGjs}
+	paths["astal/*"] = []string{astalGjs + "/*"}
 }
 
 // if tsconfig.json exists in srcdir returns an updated config
@@ -73,7 +76,7 @@ func (tsconfig *tsconfig) updateTsconfig() {
 func GetTsconfig(srcdir string) string {
 	path := srcdir + "/tsconfig.json"
 
-	var tsconfig tsconfig
+	var tsconfig map[string]interface{}
 	if FileExists(path) {
 		data, err := os.ReadFile(path)
 		if err != nil {
@@ -85,7 +88,7 @@ func GetTsconfig(srcdir string) string {
 			Err(err)
 		}
 
-		tsconfig.updateTsconfig()
+		updateTsconfig(tsconfig)
 	} else {
 		tsconfig = defaultTsconfig()
 	}
