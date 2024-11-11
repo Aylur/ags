@@ -142,16 +142,15 @@ func Bundle(infile, outfile, tsconfig string) {
 	}
 
 	result := api.Build(api.BuildOptions{
-		Color:         api.ColorAlways,
-		LogLevel:      api.LogLevelWarning,
-		EntryPoints:   []string{infile},
-		Bundle:        true,
-		Outfile:       outfile,
-		Format:        api.FormatESModule,
-		Platform:      api.PlatformNeutral,
-		TsconfigRaw:   tsconfig,
-		Write:         true,
-		AbsWorkingDir: srcdir,
+		Color:       api.ColorAlways,
+		LogLevel:    api.LogLevelWarning,
+		EntryPoints: []string{infile},
+		Bundle:      true,
+		Outfile:     outfile,
+		Format:      api.FormatESModule,
+		Platform:    api.PlatformNeutral,
+		TsconfigRaw: tsconfig,
+		Write:       true,
 		Define: map[string]string{
 			"SRC": fmt.Sprintf(`"%s"`, srcdir),
 		},
