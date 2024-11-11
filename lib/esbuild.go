@@ -126,6 +126,7 @@ func Bundle(infile, outfile, tsconfig string) {
 	srcdir := filepath.Dir(infile)
 
 	if tsconfig != "" {
+		// if a tsconfig file is specified use that
 		path, err := filepath.Abs(tsconfig)
 		if err != nil {
 			Err(err)
@@ -137,7 +138,16 @@ func Bundle(infile, outfile, tsconfig string) {
 		}
 
 		tsconfig = string(data)
+
+	} else if FileExists("tsconfig.json") {
+		cwd, err := os.Getwd()
+		if err != nil {
+			Err(err)
+		}
+
+		tsconfig = GetTsconfig(cwd)
 	} else {
+		// fallback to default
 		tsconfig = GetTsconfig(srcdir)
 	}
 
