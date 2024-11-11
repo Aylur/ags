@@ -88,7 +88,7 @@ func getAppEntry(dir string) string {
 
 func run(infile string) {
 	outfile := getOutfile()
-	lib.Bundle(infile, outfile, tsconfig)
+	lib.Bundle(infile, outfile, tsconfig, "")
 
 	if gtk4 {
 		os.Setenv("LD_PRELOAD", gtk4LayerShell)

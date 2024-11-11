@@ -122,8 +122,18 @@ var blpPlugin api.Plugin = api.Plugin{
 // svg loader
 // other css preproceccors
 // http plugin with caching
-func Bundle(infile, outfile, tsconfig string) {
+func Bundle(infile, outfile, tsconfig, cwd string) {
 	srcdir := filepath.Dir(infile)
+
+	if cwd == "" {
+		cwd = srcdir
+	} else {
+		var err error
+		cwd, err = filepath.Abs(cwd)
+		if err != nil {
+			Err(err)
+		}
+	}
 
 	if tsconfig != "" {
 		// if a tsconfig file is specified use that
@@ -138,8 +148,8 @@ func Bundle(infile, outfile, tsconfig string) {
 		}
 
 		tsconfig = string(data)
-
 	} else if FileExists("tsconfig.json") {
+		// check cwd for tsconfig
 		cwd, err := os.Getwd()
 		if err != nil {
 			Err(err)
@@ -152,15 +162,16 @@ func Bundle(infile, outfile, tsconfig string) {
 	}
 
 	result := api.Build(api.BuildOptions{
-		Color:       api.ColorAlways,
-		LogLevel:    api.LogLevelWarning,
-		EntryPoints: []string{infile},
-		Bundle:      true,
-		Outfile:     outfile,
-		Format:      api.FormatESModule,
-		Platform:    api.PlatformNeutral,
-		TsconfigRaw: tsconfig,
-		Write:       true,
+		Color:         api.ColorAlways,
+		LogLevel:      api.LogLevelWarning,
+		EntryPoints:   []string{infile},
+		Bundle:        true,
+		Outfile:       outfile,
+		Format:        api.FormatESModule,
+		Platform:      api.PlatformNeutral,
+		AbsWorkingDir: cwd,
+		TsconfigRaw:   tsconfig,
+		Write:         true,
 		Define: map[string]string{
 			"SRC": fmt.Sprintf(`"%s"`, srcdir),
 		},

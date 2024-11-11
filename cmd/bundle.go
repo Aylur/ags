@@ -8,7 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var tsconfig string
+var (
+	tsconfig   string
+	workingDir string
+)
 
 var bundleCommand = &cobra.Command{
 	Use:   "bundle [entryfile] [outfile]",
@@ -31,9 +34,9 @@ var bundleCommand = &cobra.Command{
 		}
 
 		if info.IsDir() {
-			lib.Bundle(getAppEntry(path), outfile, tsconfig)
+			lib.Bundle(getAppEntry(path), outfile, tsconfig, workingDir)
 		} else {
-			lib.Bundle(path, outfile, tsconfig)
+			lib.Bundle(path, outfile, tsconfig, workingDir)
 		}
 	},
 }
@@ -41,4 +44,8 @@ var bundleCommand = &cobra.Command{
 func init() {
 	f := bundleCommand.Flags()
 	f.StringVar(&tsconfig, "tsconfig", "", "path to tsconfig.json")
+
+	f.StringVar(&workingDir, "cwd", "", `working directory of the bundle
+leaving it empty is same as the root directory of the entryfile
+this flag is useful when the entryfile is not in the root directory`)
 }
