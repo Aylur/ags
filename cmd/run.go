@@ -49,6 +49,9 @@ func init() {
 		`directory to search for an "app" entry file
 when no positional argument is given
 `+"\b")
+
+	f.StringVar(&tsconfig, "tsconfig", "", "path to tsconfig.json")
+	f.MarkHidden("tsconfig")
 }
 
 func getOutfile() string {
@@ -85,7 +88,7 @@ func getAppEntry(dir string) string {
 
 func run(infile string) {
 	outfile := getOutfile()
-	lib.Bundle(infile, outfile)
+	lib.Bundle(infile, outfile, tsconfig)
 
 	if gtk4 {
 		os.Setenv("LD_PRELOAD", gtk4LayerShell)

@@ -122,8 +122,25 @@ var blpPlugin api.Plugin = api.Plugin{
 // svg loader
 // other css preproceccors
 // http plugin with caching
-func Bundle(infile, outfile string) {
+func Bundle(infile, outfile, tsconfig string) {
 	srcdir := filepath.Dir(infile)
+
+	if tsconfig != "" {
+		path, err := filepath.Abs(tsconfig)
+		if err != nil {
+			Err(err)
+		}
+
+		data, err := os.ReadFile(path)
+		if err != nil {
+			Err(err)
+		}
+
+		tsconfig = string(data)
+	} else {
+		tsconfig = GetTsconfig(srcdir)
+	}
+
 	result := api.Build(api.BuildOptions{
 		Color:         api.ColorAlways,
 		LogLevel:      api.LogLevelWarning,
@@ -132,7 +149,7 @@ func Bundle(infile, outfile string) {
 		Outfile:       outfile,
 		Format:        api.FormatESModule,
 		Platform:      api.PlatformNeutral,
-		TsconfigRaw:   getTsconfig(srcdir),
+		TsconfigRaw:   tsconfig,
 		Write:         true,
 		AbsWorkingDir: srcdir,
 		Define: map[string]string{

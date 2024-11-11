@@ -28,6 +28,7 @@ func init() {
 	f := initCommand.Flags()
 
 	f.IntVarP(&gtk, "gtk", "g", 3, "gtk version to use")
+	f.BoolVarP(&force, "force", "f", false, "override existing files")
 	f.StringVarP(&initDirectory, "directory", "d", defaultConfigDir(), "target directory")
 }
 
@@ -39,9 +40,8 @@ func getDataFile(name string) string {
 	return string(content)
 }
 
-// TODO: write basic config when dir is empty
-// option to override tsconfig.json and env.d.ts
 func initConfig(cmd *cobra.Command, args []string) {
+	// TODO: gtk4 template
 	if gtk != 3 {
 		lib.Err("currently only gtk3 is supported")
 	}
@@ -57,26 +57,20 @@ func initConfig(cmd *cobra.Command, args []string) {
 		configDir = defaultConfigDir()
 	}
 
-	tsconfig := getDataFile("tsconfig.json")
-	envdts := getDataFile("env.d.ts")
-	stylescss := getDataFile("style.scss")
-	bartsx := getDataFile("gtk3/Bar.tsx")
-	appts := getDataFile("gtk3/app.ts")
-
 	if info, err := os.Stat(configDir); err == nil && info.IsDir() && !force {
 		lib.Err("could not initialize: " + lib.Cyan(configDir) + " already exists")
 	}
 
-	tsconf := strings.ReplaceAll(tsconfig, "@ASTAL_GJS@", astalGjs)
-	tsconf = strings.ReplaceAll(tsconf, "@GTK_VERSION@", "gtk3") // TODO: gtk4 flag
+	tsconf := strings.ReplaceAll(getDataFile("tsconfig.json"), "@ASTAL_GJS@", astalGjs)
+	tsconf = strings.ReplaceAll(tsconf, "@GTK_VERSION@", "gtk3")
 	lib.Mkdir(configDir + "/widget")
 
 	lib.WriteFile(configDir+"/.gitignore", "@girs/\nnode_modules/")
 	lib.WriteFile(configDir+"/tsconfig.json", tsconf)
-	lib.WriteFile(configDir+"/env.d.ts", envdts)
-	lib.WriteFile(configDir+"/style.scss", stylescss)
-	lib.WriteFile(configDir+"/widget/Bar.tsx", bartsx)
-	lib.WriteFile(configDir+"/app.ts", appts)
+	lib.WriteFile(configDir+"/env.d.ts", getDataFile("env.d.ts"))
+	lib.WriteFile(configDir+"/style.scss", getDataFile("style.scss"))
+	lib.WriteFile(configDir+"/widget/Bar.tsx", getDataFile("gtk3/Bar.tsx"))
+	lib.WriteFile(configDir+"/app.ts", getDataFile("gtk3/app.ts"))
 
 	genTypes(configDir, "*")
 	fmt.Println(lib.Green("project ready") + " at " + lib.Cyan(configDir))

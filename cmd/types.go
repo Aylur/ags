@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	typesTonfigDir string
 	ignoreModules  []string
+	updateTsconfig bool
 )
 
 var typesCommand = &cobra.Command{
@@ -23,10 +23,19 @@ var typesCommand = &cobra.Command{
 	Args:    cobra.MaximumNArgs(1),
 	Example: `  ags types Astal* --ignore Gtk3 --ignore Astal3`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if updateTsconfig {
+			lib.WriteFile(targetDir+"/tsconfig.json", lib.GetTsconfig(targetDir))
+
+			envdts := targetDir + "/env.d.ts"
+			if !lib.FileExists(envdts) {
+				lib.WriteFile(envdts, getDataFile("env.d.ts"))
+			}
+		}
+
 		if len(args) > 0 {
-			genTypes(typesTonfigDir, args[0])
+			genTypes(targetDir, args[0])
 		} else {
-			genTypes(typesTonfigDir, "*")
+			genTypes(targetDir, "*")
 		}
 	},
 }
@@ -34,7 +43,8 @@ var typesCommand = &cobra.Command{
 func init() {
 	f := typesCommand.Flags()
 
-	f.StringVarP(&typesTonfigDir, "directory", "d", defaultConfigDir(), "target directory")
+	f.BoolVar(&updateTsconfig, "tsconfig", false, "update tsconfig.json")
+	f.StringVarP(&targetDir, "directory", "d", defaultConfigDir(), "target directory")
 	f.StringArrayVarP(&ignoreModules, "ignore", "i", []string{}, "modules that should be ignored")
 }
 
