@@ -1,3 +1,0 @@
-# Bundling projects
-
-🚧 WIP 🚧

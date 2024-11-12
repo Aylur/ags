@@ -29,11 +29,13 @@ export default defineConfig({
 
 
         sidebar: [
+            { text: "Quick Start", link: "/guide/quick-start" },
             { text: "Installation", link: "/guide/install" },
             { text: "Setting up a project", link: "/guide/init" },
-            { text: "Bundling a project", link: "/guide/bundle" },
+            { text: "Bundling", link: "/guide/bundling" },
             { text: "Generating types", link: "/guide/types" },
             { text: "Astal CLI", link: "/guide/astal-cli" },
+            { text: "Example", link: "/guide/example" },
         ],
 
         socialLinks: [

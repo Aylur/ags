@@ -9,57 +9,22 @@ hero:
   image: https://aylur.github.io/astal/icon.svg
   actions:
     - theme: brand
-      text: Guide
-      link: /guide/install
+      text: Quick Start
+      link: /guide/quick-start
     - theme: alt
       text: Astal Documentation
       link: https://aylur.github.io/astal/
 
 features:
   - title: Initialize projects
-    details: With <code>ags init</code> you can initialize a project, which generates a tsconfig.json and a basic example.
+    details: With <code>ags init</code> you can initialize a project, which generates a basic template.
+  - title: Generate TypeScript types.
+    details: With <code>ags types</code> you can generate types from GObject based libraries.
   - title: Bundle projects
     details: With <code>ags bundle</code> you can bundle your project into a single executable script.
   - title: Run projects
     details: With <code>ags run</code> you can run a projects without bundling them first.
-  - title: Generate TypeScript types.
-    details: With <code>ags types</code> you can generate types from GObject based libraries.
 ---
-
-<br>
-<br>
-
-# Quick Start
-
-1. Install
-
-:::code-group
-
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-yay -S aylurs-gtk-shell-git
-```
-
-```sh [<i class="devicon-nixos-plain"></i> NixOS]
-nix shell github:aylur/ags # ags in a temporary shell
-```
-
-:::
-
-2. Initialize a project
-
-```sh
-ags init
-```
-
-3. Run the project
-
-```sh
-ags run
-```
-
-4. Read the Astal Documentation to start developing
-
-[Astal Documentation](https://aylur.github.io/astal/guide/typescript/first-widgets)
 
 <style>
 :root {
