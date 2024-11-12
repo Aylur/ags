@@ -44,8 +44,5 @@ var bundleCommand = &cobra.Command{
 func init() {
 	f := bundleCommand.Flags()
 	f.StringVar(&tsconfig, "tsconfig", "", "path to tsconfig.json")
-
-	f.StringVar(&workingDir, "cwd", "", `working directory of the bundle
-leaving it empty is same as the root directory of the entryfile
-this flag is useful when the entryfile is not in the root directory`)
+	f.StringVar(&workingDir, "src", "", "source directory of the bundle")
 }

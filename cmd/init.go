@@ -19,9 +19,10 @@ var (
 var initCommand = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize a project directory",
-	Long:  "Initialize a project directory by setting up files needed by TypeScript, generating types and setting up a basic bar example",
-	Args:  cobra.MaximumNArgs(1),
-	Run:   initConfig,
+	Long: `Initialize a project directory by setting up files needed by TypeScript,
+generating types and setting up a basic bar example`,
+	Args: cobra.MaximumNArgs(1),
+	Run:  initConfig,
 }
 
 func init() {

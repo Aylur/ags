@@ -12,12 +12,13 @@ import (
 var (
 	gtk4      bool
 	targetDir string
+	args      []string
 )
 
 var runCommand = &cobra.Command{
 	Use:   "run [file]",
 	Short: "Run an app",
-	Args:  cobra.MaximumNArgs(1),
+	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) > 0 {
 			path, err := filepath.Abs(args[0])
@@ -50,6 +51,7 @@ func init() {
 when no positional argument is given
 `+"\b")
 
+	f.StringArrayVarP(&args, "arg", "a", []string{}, "cli args to pass to gjs")
 	f.StringVar(&tsconfig, "tsconfig", "", "path to tsconfig.json")
 	f.MarkHidden("tsconfig")
 }
@@ -94,7 +96,8 @@ func run(infile string) {
 		os.Setenv("LD_PRELOAD", gtk4LayerShell)
 	}
 
-	gjs := lib.Exec("gjs", "-m", outfile)
+	args = append([]string{"-m", outfile}, args...)
+	gjs := lib.Exec("gjs", args...)
 	gjs.Stdout = os.Stdout
 	gjs.Stderr = os.Stderr
 	gjs.Stdin = os.Stdin
