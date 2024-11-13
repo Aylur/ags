@@ -36,6 +36,7 @@ export default defineConfig({
             { text: "Generating types", link: "/guide/types" },
             { text: "Astal CLI", link: "/guide/astal-cli" },
             { text: "Example", link: "/guide/example" },
+            { text: "Nix", link: "/guide/nix" },
         ],
 
         socialLinks: [
