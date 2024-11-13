@@ -1,33 +1,53 @@
 {
-  description = "A customizable and extensible shell";
-
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    # «https://github.com/nix-systems/nix-systems»
-    systems.url = "github:nix-systems/default-linux";
+    astal = {
+      url = "github:aylur/astal";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
-    nixpkgs,
     self,
-    systems,
+    nixpkgs,
+    astal,
   }: let
-    version = builtins.replaceStrings ["\n"] [""] (builtins.readFile ./version);
-    genSystems = nixpkgs.lib.genAttrs (import systems);
-    pkgs = genSystems (system: import nixpkgs {inherit system;});
-  in {
-    packages = genSystems (system: let
-      inherit (pkgs.${system}) callPackage;
-    in {
-      default = callPackage ./nix {inherit version;};
-      ags = self.packages.${system}.default;
-      agsWithTypes = self.packages.${system}.default; # for backwards compatibility
-      agsNoTypes = callPackage ./nix {
-        inherit version;
-        buildTypes = false;
+    inherit (astal.packages.${system}) astal3 astal4 io gjs;
+
+    system = "x86_64-linux"; # TODO: other architectures
+    pkgs = nixpkgs.legacyPackages.x86_64-linux;
+
+    astal-io = io;
+    astal-gjs = "${gjs}/share/astal/gjs";
+
+    agsPackages = {
+      default = self.packages.${system}.ags;
+      ags = pkgs.callPackage ./nix {
+        inherit astal3 astal4 astal-io astal-gjs;
       };
-    });
+      agsFull = pkgs.callPackage ./nix {
+        inherit astal3 astal4 astal-io astal-gjs;
+        extraPackages = builtins.attrValues (
+          builtins.removeAttrs astal.packages.${system} ["docs"]
+        );
+      };
+    };
+  in {
+    lib.bundle = import ./nix/bundle.nix {inherit self pkgs;};
+
+    packages.${system} = astal.packages.${system} // agsPackages;
+
+    templates.default = {
+      path = ./nix/template;
+      description = "Example flake.nix that shows how to package a project.";
+      welcomeText = ''
+        # Getting Started
+        - run `nix develop` to enter the development environment
+        - run `ags init . -f` to setup an initial ags project
+        - run `ags run .`   to run the project
+      '';
+    };
 
     homeManagerModules = {
       default = self.homeManagerModules.ags;

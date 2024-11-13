@@ -1,114 +1,75 @@
 {
+  astal3,
+  astal4,
+  gtk4-layer-shell,
+  astal-io,
+  astal-gjs,
   lib,
-  stdenv,
-  buildNpmPackage,
-  fetchFromGitLab,
-  nodePackages,
-  meson,
-  pkg-config,
-  ninja,
-  gobject-introspection,
-  gtk3,
-  libpulseaudio,
-  gjs,
+  writers,
+  buildGoModule,
   wrapGAppsHook,
-  upower,
-  gnome-bluetooth,
-  gtk-layer-shell,
-  glib-networking,
-  networkmanager,
-  libdbusmenu-gtk3,
-  gvfs,
-  libsoup_3,
-  libnotify,
-  pam,
+  gobject-introspection,
+  glib,
+  gjs,
+  nodejs,
+  dart-sass,
+  blueprint-compiler,
   extraPackages ? [],
-  version ? "git",
-  buildTypes ? true,
 }: let
-  pname = "ags";
+  inherit (builtins) replaceStrings readFile;
 
-  gvc-src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    owner = "GNOME";
-    repo = "libgnome-volume-control";
-    rev = "8e7a5a4c3e51007ce6579292642517e3d3eb9c50";
-    sha256 = "sha256-FosJwgTCp6/EI6WVbJhPisokRBA6oT0eo7d+Ya7fFX8=";
-  };
+  datadirs = writers.writeNu "datadirs" ''
+    $env.XDG_DATA_DIRS
+    | split row ":"
+    | filter { $"($in)/gir-1.0" | path exists }
+    | str join ":"
+  '';
+
+  bins = [
+    gjs
+    nodejs
+    dart-sass
+    blueprint-compiler
+    astal-io # FIXME: should not be needed after the astal commends are properly implemented using dbus in astal.go
+  ];
+
+  version = replaceStrings ["\n"] [""] (readFile ../version);
+  pname = "ags";
 in
-  stdenv.mkDerivation {
+  buildGoModule {
     inherit pname version;
 
-    src = buildNpmPackage {
-      name = pname;
-
-      src = builtins.path {
-        name = "ags-${version}";
-        path = lib.cleanSource ../.;
-      };
-
-      dontBuild = true;
-
-      npmDepsHash = "sha256-ucWdADdMqAdLXQYKGOXHNRNM9bhjKX4vkMcQ8q/GZ20=";
-
-      installPhase = ''
-        runHook preInstall
-        mkdir $out
-        cp -r * $out
-        runHook postInstall
-      '';
+    src = builtins.path {
+      name = "${pname}-${version}";
+      path = lib.cleanSource ../.;
     };
 
+    vendorHash = "sha256-Pw6UNT5YkDVz4HcH7b5LfOg+K3ohrBGPGB9wYGAQ9F4=";
+    proxyVendor = true;
+
     nativeBuildInputs = [
-      pkg-config
-      meson
-      ninja
-      nodePackages.typescript
       wrapGAppsHook
       gobject-introspection
     ];
 
     buildInputs =
-      [
-        gjs
-        gtk3
-        libpulseaudio
-        upower
-        gnome-bluetooth
-        gtk-layer-shell
-        glib-networking
-        networkmanager
-        libdbusmenu-gtk3
-        gvfs
-        libsoup_3
-        libnotify
-        pam
-      ]
-      ++ extraPackages;
+      extraPackages
+      ++ [
+        glib
+        astal-io
+        astal3
+        astal4
+      ];
 
-    mesonFlags = [
-      (lib.mesonBool "build_types" buildTypes)
+    preFixup = ''
+      gappsWrapperArgs+=(
+        --prefix NIX_GI_DIRS : "$(${datadirs})"
+        --prefix PATH : "${lib.makeBinPath (bins ++ extraPackages)}"
+      )
+    '';
+
+    ldflags = [
+      "-X main.astalGjs=${astal-gjs}"
+      "-X main.gtk4LayerShell=${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
     ];
-
-    prePatch = ''
-      mkdir -p ./subprojects/gvc
-      cp -r ${gvc-src}/* ./subprojects/gvc
-    '';
-
-    postPatch = ''
-      chmod +x post_install.sh
-      patchShebangs post_install.sh
-    '';
-
-    outputs = ["out" "lib"];
-
-    meta = {
-      description = "A customizable and extensible shell";
-      homepage = "https://github.com/Aylur/ags";
-      changelog = "https://github.com/Aylur/ags/blob/${version}/CHANGELOG.md";
-      platforms = ["x86_64-linux" "aarch64-linux"];
-      license = lib.licenses.gpl3;
-      mainProgram = "ags";
-      maintainers = [lib.maintainers.Aylur];
-    };
   }

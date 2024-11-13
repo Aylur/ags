@@ -1,0 +1,126 @@
+/**
+ * https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css
+ */
+
+.VPNavBar .VPNavBarTitle span {
+    font-size: 1.2em;
+    font-weight: bold;
+    background: linear-gradient(120deg, var(--vp-c-brand-3), var(--vp-c-brand-1));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+}
+
+:root {
+    --vp-c-gray-1: #dddde3;
+    --vp-c-gray-2: #e4e4e9;
+    --vp-c-gray-3: #ebebef;
+    --vp-c-gray-soft: rgba(142, 150, 170, 0.14);
+
+    --vp-c-indigo-1: #3451b2;
+    --vp-c-indigo-2: #3a5ccc;
+    --vp-c-indigo-3: #5672cd;
+    --vp-c-indigo-soft: rgba(100, 108, 255, 0.14);
+
+    --vp-c-purple-1: #6f42c1;
+    --vp-c-purple-2: #7e4cc9;
+    --vp-c-purple-3: #8e5cd9;
+    --vp-c-purple-soft: rgba(159, 122, 234, 0.14);
+
+    --vp-c-green-1: #18794e;
+    --vp-c-green-2: #299764;
+    --vp-c-green-3: #30a46c;
+    --vp-c-green-soft: rgba(16, 185, 129, 0.14);
+
+    --vp-c-yellow-1: #915930;
+    --vp-c-yellow-2: #946300;
+    --vp-c-yellow-3: #9f6a00;
+    --vp-c-yellow-soft: rgba(234, 179, 8, 0.14);
+
+    --vp-c-red-1: #b8272c;
+    --vp-c-red-2: #d5393e;
+    --vp-c-red-3: #e0575b;
+    --vp-c-red-soft: rgba(244, 63, 94, 0.14);
+
+    --vp-c-sponsor: #db2777;
+}
+
+.dark {
+    --vp-c-gray-1: #515151;
+    --vp-c-gray-2: #464646;
+    --vp-c-gray-3: #323232;
+    --vp-c-gray-soft: hsla(0, 0%, 36%, 0.16);
+
+    --vp-c-indigo-1: hsl(207, 76%, 61%);
+    --vp-c-indigo-2: hsl(207, 86%, 51%);
+    --vp-c-indigo-3: hsl(207, 96%, 41%);
+    --vp-c-indigo-soft: hsla(207, 76%, 61%, .18);
+
+    --vp-c-purple-1: #c8abfa;
+    --vp-c-purple-2: #a879e6;
+    --vp-c-purple-3: #8e5cd9;
+    --vp-c-purple-soft: rgba(159, 122, 234, 0.16);
+
+    --vp-c-green-1: hsl(158, 100%, 42%);
+    --vp-c-green-2: hsl(158, 95%, 37%);
+    --vp-c-green-3: hsl(158, 90%, 35%);
+    --vp-c-green-soft: hsla(158, 100%, 42%, 0.16);
+
+    --vp-c-yellow-1: #f9b44e;
+    --vp-c-yellow-2: #da8b17;
+    --vp-c-yellow-3: #a46a0a;
+    --vp-c-yellow-soft: rgba(234, 179, 8, 0.16);
+
+    --vp-c-red-1: #f66f81;
+    --vp-c-red-2: #f14158;
+    --vp-c-red-3: #b62a3c;
+    --vp-c-red-soft: rgba(244, 63, 94, 0.16);
+}
+
+/* ---------- *
+ * Background *
+ * ---------- */
+
+:root {
+    --vp-c-bg: #ffffff;
+    --vp-c-bg-alt: #f6f6f7;
+    --vp-c-bg-elv: #ffffff;
+    --vp-c-bg-soft: #f6f6f7;
+}
+
+.dark {
+    --vp-c-bg: #111111;
+    --vp-c-bg-alt: #181818;
+    --vp-c-bg-elv: #202122;
+    --vp-c-bg-soft: #202122;
+}
+
+/** Borders */
+:root {
+    --vp-c-border: #c2c2c4;
+    --vp-c-divider: #e2e2e3;
+    --vp-c-gutter: #e2e2e3;
+}
+
+.dark {
+    --vp-c-border: #3c3d3e;
+    --vp-c-divider: #2e2e2e;
+    --vp-c-gutter: #000000;
+}
+
+/* ---- *
+ * Text *
+ * ---- */
+
+:root {
+    --vp-c-text-1: rgba(60, 60, 67);
+    --vp-c-text-2: rgba(60, 60, 67, 0.78);
+    --vp-c-text-3: rgba(60, 60, 67, 0.56);
+}
+
+.dark {
+    --vp-c-text-1: rgba(255, 255, 245, 0.86);
+    --vp-c-text-2: rgba(235, 235, 245, 0.6);
+    --vp-c-text-3: rgba(235, 235, 245, 0.38);
+}

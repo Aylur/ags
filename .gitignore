@@ -1,6 +1,5 @@
-node_modules
-_build
-build
-run.sh
-tmp
-result
+node_modules/
+build/
+dist/
+result/
+@girs/

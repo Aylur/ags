@@ -1,0 +1,5 @@
+dist/
+result/
+.vitepress/cache/
+node_modules/
+npm-debug.log*
