@@ -18,7 +18,7 @@ export default defineConfig({
         nav: [
             {
                 text: "Guide",
-                link: "/guide/installation",
+                link: "/guide/quick-start",
                 activeMatch: "/guide/",
             },
             {
