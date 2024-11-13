@@ -12,7 +12,7 @@ Usage:
   ags init [flags]
 
 Flags:
-  -d, --directory string   target directory (default "/home/demeter/.config/ags")
+  -d, --directory string   target directory (default "~/.config/ags")
   -f, --force              override existing files
   -g, --gtk int            gtk version to use (default 3)
   -h, --help               help for init

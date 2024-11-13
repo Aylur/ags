@@ -18,7 +18,7 @@ Examples:
   ags types Astal* --ignore Gtk3 --ignore Astal3
 
 Flags:
-  -d, --directory string     target directory (default "/home/demeter/.config/ags")
+  -d, --directory string     target directory (default "~/.config/ags")
   -h, --help                 help for types
   -i, --ignore stringArray   modules that should be ignored
       --tsconfig             update tsconfig.json

@@ -34,7 +34,20 @@
       };
     };
   in {
+    lib.bundle = import ./nix/bundle.nix {inherit self pkgs;};
+
     packages.${system} = astal.packages.${system} // agsPackages;
+
+    templates.default = {
+      path = ./nix/template;
+      description = "Example flake.nix that shows how to package a project.";
+      welcomeText = ''
+        # Getting Started
+        - run `nix develop` to enter the development environment
+        - run `ags init -f` to setup an initial ags project
+        - run `ags run .`   to run the project
+      '';
+    };
 
     homeManagerModules = {
       default = self.homeManagerModules.ags;

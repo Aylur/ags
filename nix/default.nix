@@ -18,13 +18,12 @@
 }: let
   inherit (builtins) replaceStrings readFile;
 
-  datadirs =
-    writers.writeNu "datadirs" /*nu*/ ''
-      $env.XDG_DATA_DIRS
-      | split row ":"
-      | filter { $"($in)/gir-1.0" | path exists }
-      | str join ":"
-    '';
+  datadirs = writers.writeNu "datadirs" ''
+    $env.XDG_DATA_DIRS
+    | split row ":"
+    | filter { $"($in)/gir-1.0" | path exists }
+    | str join ":"
+  '';
 
   bins = [
     gjs
