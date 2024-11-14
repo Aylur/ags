@@ -21,4 +21,3 @@ jobs:
       - name: Build ags
         run: |
           nix build --print-build-logs
-          nix build --print-build-logs .#agsWithTypes
