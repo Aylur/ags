@@ -106,3 +106,23 @@ chmod +x ./bar
 > [!NOTE]
 > On Nix this still has to be done in a derivation
 > as the bundled script is not wrapped.
+
+## Distributing
+
+If you have no data files, you can use `ags bundle`
+and distribute its output JS file as an executable.
+Optionally use a build tool like meson to also declare its runtime dependencies.
+
+When you have data files that you cannot inline as a string, for example icons,
+you should
+
+1. In code refer to data files through the global `SRC` variable
+2. Install data files to a directory, usually `/usr/share/your-project`
+3. Bundle with `--src /usr/share/your-project`
+4. Move the output file to `/usr/bin/your-project`
+
+Optionally you should use a build tool like meson or a makefile
+to let users decide where to install to.
+
+> [!NOTE]
+> On Nix you can use the [lib.bundle](./nix#bundle-and-devshell) function.
