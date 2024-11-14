@@ -1,16 +1,12 @@
 # Installation
 
-<!--TODO: after AUR is updated
-
 ## Arch
 
 maintainer: [@kotontrion](https://github.com/kotontrion)
 
 ```sh
-yay -S aylurs-gtk-shell-git
+yay -S aylurs-gtk-shell
 ```
-
--->
 
 ## Nix
 
