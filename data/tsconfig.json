@@ -18,5 +18,9 @@
                 "@ASTAL_GJS@/*"
             ]
         },
+        "include": [
+            "@girs/**/*"
+        ]
+
     }
 }

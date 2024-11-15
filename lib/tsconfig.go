@@ -30,6 +30,9 @@ func defaultTsconfig() map[string]interface{} {
 				"astal":   {astalGjs},
 				"astal/*": {astalGjs + "/*"},
 			},
+      "include": map[string][]string{ 
+        "@girs/**/*"
+      },
 		},
 	}
 }
