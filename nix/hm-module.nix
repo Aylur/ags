@@ -125,7 +125,7 @@ in {
         };
 
         Service = {
-          ExecStart = "${cfg.finalPackage}/bin/ags";
+          ExecStart = "${cfg.finalPackage}/bin/ags run";
           Restart = "on-failure";
           KillMode = "mixed";
         };
