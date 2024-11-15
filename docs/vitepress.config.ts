@@ -37,6 +37,7 @@ export default defineConfig({
             { text: "Astal CLI", link: "/guide/astal-cli" },
             { text: "Example", link: "/guide/example" },
             { text: "Nix", link: "/guide/nix" },
+            { text: "Migration", link: "/guide/migrate" },
         ],
 
         socialLinks: [
