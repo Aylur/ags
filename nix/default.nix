@@ -72,4 +72,12 @@ in
       "-X main.astalGjs=${astal-gjs}"
       "-X main.gtk4LayerShell=${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
     ];
+
+    meta = {
+      homepage = "https://github.com/Aylur/ags";
+      description = "Scaffolding CLI tool for Astal+TypeScript projects";
+      license = lib.licenses.gpl3Plus;
+      mainProgram = "ags";
+      platforms = lib.platforms.linux;
+    };
   }
