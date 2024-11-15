@@ -4,7 +4,9 @@ Simple dialog example to get a `no`/`yes` answer.
 
 ![2024-11-13_00-45-58](https://github.com/user-attachments/assets/73a20155-fa0e-4156-aff8-3a0d055abb9b)
 
-```tsx
+:::code-group
+
+```tsx [dialog.ts]
 #!/usr/bin/ags run
 import { App, Astal, Gtk, Gdk } from "astal/gtk3"
 
@@ -88,10 +90,12 @@ App.start({
 })
 ```
 
+:::
+
 Then it can be used in any script.
 
 ```sh
-if [[ "$(script -a Shutdown)" == "yes" ]]; then
+if [[ "$(./dialog.ts -a Shutdown)" == "yes" ]]; then
     shutdown now
 fi
 ```

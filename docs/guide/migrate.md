@@ -56,7 +56,7 @@ App.config({
 })
 App.main({ // [!code ++:5]
     main() {
-        Widget.Window()
+        new Widget.Window()
     }
 })
 ```
@@ -186,7 +186,7 @@ is also a lot more flexible.
 
 ## Globals
 
-`App`, `Service`, `Utils`, `Widget`, `Variable` is no longer globally available
+`App`, `Service`, `Utils`, `Widget`, `Variable` are no longer globally available
 
 ```js
 import { Widget, App } from "astal/gtk3"
@@ -199,7 +199,7 @@ import Variable from "astal/variable"
 ## Services
 
 These are no longer called `Service`. There is no longer a distinction
-between a `Service` and `GObject.Object` and they are no longer builtin.
+between a `Service` and `GObject.Object` and there are no longer builtin Services.
 
 These are now simply external [libraries](https://aylur.github.io/astal/guide/libraries/references#astal-libraries)
 that will have to be installed next to AGS. They are now implemented in Vala or C
@@ -254,7 +254,7 @@ File, Process and Time utility functions are available from their own
 Utils.exec("command") // [!code --:3]
 Utils.readFile("file")
 Utils.timeout(1000, callback)
-import { exec, readFile, timeout} from "astal" // [!code ++:4]
+import { exec, readFile, timeout } from "astal" // [!code ++:4]
 exec("command")
 readFile("file")
 timeout(1000, callback)
@@ -282,6 +282,19 @@ Until then see [#26](https://github.com/Aylur/astal/issues/26).
 To make windows toggleable through cli you will have to now
 [pass the `App` instance to `Window`](https://aylur.github.io/astal/guide/typescript/cli-app#toggling-windows-by-their-name) instances instead of passing
 a an array of windows to `App.config`.
+
+```js
+App.config({ // [!code --:5]
+    windows: [
+        Widget.Window({ name: "window-name" })
+    ]
+})
+App.start({ // [!code ++:5]
+    main() {
+        <window name="window-name" application={App}></window>
+    }
+})
+```
 
 `ags --run-js` have been retired in favor of [requests](https://aylur.github.io/astal/guide/typescript/cli-app#messaging-from-cli).
 
