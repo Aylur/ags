@@ -3,6 +3,7 @@ package cmd
 import (
 	"ags/lib"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -12,6 +13,7 @@ import (
 var (
 	gtk4      bool
 	targetDir string
+	logFile   string
 	args      []string
 )
 
@@ -53,6 +55,7 @@ when no positional argument is given
 
 	f.StringArrayVarP(&args, "arg", "a", []string{}, "cli args to pass to gjs")
 	f.StringVar(&tsconfig, "tsconfig", "", "path to tsconfig.json")
+	f.StringVar(&logFile, "log-file", "", "file to redirect the stdout of gjs to")
 	f.MarkHidden("tsconfig")
 }
 
@@ -88,6 +91,20 @@ func getAppEntry(dir string) string {
 	return infile
 }
 
+func logging() (io.Writer, io.Writer, *os.File) {
+	if logFile == "" {
+		return os.Stdout, os.Stderr, nil
+	}
+
+	lib.Mkdir(filepath.Dir(logFile))
+	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		lib.Err(err)
+	}
+
+	return io.MultiWriter(os.Stdout, file), io.MultiWriter(os.Stderr, file), file
+}
+
 func run(infile string) {
 	outfile := getOutfile()
 	lib.Bundle(infile, outfile, tsconfig, "")
@@ -97,14 +114,20 @@ func run(infile string) {
 	}
 
 	args = append([]string{"-m", outfile}, args...)
+	stdout, stderr, file := logging()
 	gjs := lib.Exec("gjs", args...)
-	gjs.Stdout = os.Stdout
-	gjs.Stderr = os.Stderr
 	gjs.Stdin = os.Stdin
 	gjs.Dir = filepath.Dir(infile)
+
+	gjs.Stdout = stdout
+	gjs.Stderr = stderr
 
 	// TODO: watch and restart
 	if err := gjs.Run(); err != nil {
 		lib.Err(err)
+	}
+
+	if file != nil {
+		file.Close()
 	}
 }
