@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1731891022,
-        "narHash": "sha256-Vd9X4nPzRHIVDwO9HJdBvSjDFMinRmpPnMLrPHZJ7dM=",
+        "lastModified": 1731952585,
+        "narHash": "sha256-Sh1E7sJd8JJM3PCU1ZOei/QWz97OLCENIi2rTRoaniw=",
         "owner": "aylur",
         "repo": "astal",
-        "rev": "48692ff557f5f9e95744f939e3fcd1054badb585",
+        "rev": "664c7a4ddfcf48c6e8accd3c33bb94424b0e8609",
         "type": "github"
       },
       "original": {
