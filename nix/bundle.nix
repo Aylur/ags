@@ -55,4 +55,6 @@ pkgs.stdenvNoCC.mkDerivation {
 
     runHook postInstall
   '';
+  
+  meta.mainProgram = name;
 }
