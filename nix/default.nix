@@ -44,7 +44,7 @@ in
       path = lib.cleanSource ../.;
     };
 
-    vendorHash = "sha256-Pw6UNT5YkDVz4HcH7b5LfOg+K3ohrBGPGB9wYGAQ9F4=";
+    vendorHash = "sha256-2CahD2POdmT4Xg+j79YBeDab9mReRB5n4DtDosM8j/I=";
     proxyVendor = true;
 
     nativeBuildInputs = [

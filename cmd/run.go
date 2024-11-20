@@ -4,9 +4,12 @@ import (
 	"ags/lib"
 	"fmt"
 	"io"
+	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +18,7 @@ var (
 	targetDir string
 	logFile   string
 	args      []string
+	watch     bool
 )
 
 var runCommand = &cobra.Command{
@@ -48,6 +52,7 @@ var runCommand = &cobra.Command{
 func init() {
 	f := runCommand.Flags()
 	f.BoolVar(&gtk4, "gtk4", false, "preload Gtk4LayerShell")
+	f.BoolVar(&watch, "watch", false, "restart gjs on file changes")
 	f.StringVarP(&targetDir, "directory", "d", defaultConfigDir(),
 		`directory to search for an "app" entry file
 when no positional argument is given
@@ -115,19 +120,79 @@ func run(infile string) {
 
 	args = append([]string{"-m", outfile}, args...)
 	stdout, stderr, file := logging()
-	gjs := lib.Exec("gjs", args...)
-	gjs.Stdin = os.Stdin
-	gjs.Dir = filepath.Dir(infile)
+	if file != nil {
+		defer file.Close()
+	}
 
-	gjs.Stdout = stdout
-	gjs.Stderr = stderr
+	var gjs *exec.Cmd
+	gjsStart := func() (*exec.Cmd, error) {
+		if gjs != nil {
+			if err := gjs.Process.Kill(); err != nil {
+				log.Printf("Failed to kill process: %v", err)
+			}
+			_ = gjs.Wait()
+		}
 
-	// TODO: watch and restart
-	if err := gjs.Run(); err != nil {
+		gjs = lib.Exec("gjs", args...)
+		gjs.Stdin = os.Stdin
+		gjs.Dir = filepath.Dir(infile)
+
+		gjs.Stdout = stdout
+		gjs.Stderr = stderr
+
+		err := gjs.Start()
+
+		return gjs, err
+	}
+
+	if err := watchRun(gjsStart); err != nil {
 		lib.Err(err)
 	}
+}
 
-	if file != nil {
-		file.Close()
+func watchRun(gjsStart func() (*exec.Cmd, error)) error {
+	cmd, err := gjsStart()
+	if err != nil {
+		return err
 	}
+	if !watch {
+		return cmd.Wait()
+	}
+
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+	defer watcher.Close()
+
+	go func() {
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				log.Println("event:", event)
+				if event.Has(fsnotify.Write) {
+					log.Println("modified file:", event.Name)
+					_, _ = gjsStart()
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				log.Println("error:", err)
+			}
+		}
+	}()
+
+	err = watcher.Add(targetDir)
+	if err != nil {
+		return err
+	}
+
+	// Block main goroutine forever.
+	<-make(chan struct{})
+
+	return nil
 }
