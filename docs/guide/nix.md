@@ -140,9 +140,13 @@ Example content of `home.nix` file
 
     # additional packages to add to gjs's runtime
     extraPackages = with pkgs; [
-      inputs.ags.packages.${pkgs.system}.battery
+      # declare your additional packages here...
       fzf
-    ];
+    ] ++ (with inputs.ags.packages.${pkgs.system}; [
+        # declare your additional libraries here...
+        battery
+        wireplumber
+    ]);
   };
 }
 ```
