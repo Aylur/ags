@@ -173,7 +173,7 @@ func Bundle(infile, outfile, tsconfig, cwd string) {
 		TsconfigRaw:   tsconfig,
 		Write:         true,
 		Define: map[string]string{
-			"SRC": fmt.Sprintf(`"%s"`, srcdir),
+			"SRC": fmt.Sprintf(`"%s"`, cwd),
 		},
 		Loader: map[string]api.Loader{
 			".js":  api.LoaderJSX,
