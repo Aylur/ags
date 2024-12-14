@@ -14,6 +14,7 @@
   nodejs,
   dart-sass,
   blueprint-compiler,
+  installShellFiles,
   extraPackages ? [],
 }: let
   inherit (builtins) replaceStrings readFile;
@@ -50,6 +51,7 @@ in
     nativeBuildInputs = [
       wrapGAppsHook
       gobject-introspection
+      installShellFiles
     ];
 
     buildInputs =
@@ -66,6 +68,14 @@ in
         --prefix NIX_GI_DIRS : "$(${datadirs})"
         --prefix PATH : "${lib.makeBinPath (bins ++ extraPackages)}"
       )
+    '';
+
+    postInstall = ''
+      installShellCompletion \
+        --cmd ags \
+        --bash <($out/bin/ags completion bash) \
+        --fish <($out/bin/ags completion fish) \
+        --zsh <($out/bin/ags completion zsh)
     '';
 
     ldflags = [
