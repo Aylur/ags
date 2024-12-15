@@ -6,6 +6,24 @@ Initialize a directory using the template.
 nix flake init --template github:aylur/ags
 ```
 
+For activating **binary cache** add next lines to your configuration.
+
+```Nix
+{
+  nix.settings = {
+    substituters = [
+      "https://ags.cachix.org"
+    ];
+    trusted-public-keys = [
+      "ags.cachix.org-1:naAvMrz0CuYqeyGNyLgE010iUiuf/qx6kYrUv3NwAJ8="
+    ];
+  };
+}
+```
+
+> [!TIP]
+> This works with `home-manager` too! 
+
 ## Bundle and DevShell
 
 The flake exposes a `lib.bundle` function which can bundle your projects.
