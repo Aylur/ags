@@ -9,14 +9,16 @@ import (
 )
 
 var (
-	tsconfig   string
-	workingDir string
+	defines    []string
+	usePackage bool
+	gtkVersion int
 )
 
 var bundleCommand = &cobra.Command{
-	Use:   "bundle [entryfile] [outfile]",
-	Short: "Bundle an app",
-	Args:  cobra.ExactArgs(2),
+	Use:     "bundle [entryfile] [outfile]",
+	Short:   "Bundle an app",
+	Example: `  bundle app.ts my-shell -d "DATADIR='/usr/share/my-shell'"`,
+	Args:    cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		path, err := filepath.Abs(args[0])
 		if err != nil {
@@ -33,16 +35,31 @@ var bundleCommand = &cobra.Command{
 			lib.Err(err)
 		}
 
-		if info.IsDir() {
-			lib.Bundle(getAppEntry(path), outfile, tsconfig, workingDir)
-		} else {
-			lib.Bundle(path, outfile, tsconfig, workingDir)
+		opts := lib.BundleOpts{
+			Outfile:    outfile,
+			UsePackage: usePackage,
+			Defines:    defines,
+			GtkVersion: gtkVersion,
 		}
+
+		if info.IsDir() {
+			opts.Infile = getAppEntry(path)
+		} else {
+			opts.Infile = path
+		}
+
+		lib.Bundle(opts)
 	},
 }
 
 func init() {
 	f := bundleCommand.Flags()
-	f.StringVar(&tsconfig, "tsconfig", "", "path to tsconfig.json")
-	f.StringVar(&workingDir, "src", "", "source directory of the bundle")
+	f.StringArrayVarP(&defines, "define", "d", []string{}, "replace global identifiers with constant expressions")
+	f.BoolVarP(&usePackage, "package", "p", false, "use astal package as defined in package.json")
+	f.IntVar(&gtkVersion, "gtk", 3, "gtk version")
+	f.MarkHidden("gtk")
+
+	f.String("src", "", "source directory of the bundle")
+	f.MarkHidden("src")
+	f.MarkDeprecated("src", `use cd /path/to/src && bundle --define="SRC='/path/to/src'"`)
 }

@@ -14,10 +14,13 @@ Bundle an app
 Usage:
   ags bundle [entryfile] [outfile] [flags]
 
+Examples:
+  bundle app.ts my-shell -d "DATADIR='/usr/share/my-shell'"
+
 Flags:
-  -h, --help              help for bundle
-      --src string        source directory of the bundle
-      --tsconfig string   path to tsconfig.json
+  -d, --define stringArray   replace global identifiers with constant expressions
+  -h, --help                 help for bundle
+  -p, --package              use astal package as defined in package.json
 ```
 
 Currently there are 3 builtin plugins.
@@ -26,9 +29,10 @@ Currently there are 3 builtin plugins.
 - sass: importing `.scss` files will go through the sass transpiler and be inlined as a string that contains valid css
   - uses the `sass` executable found on $PATH
 - blp: importing `.blp` files will go through [blueprint](https://jwestman.pages.gitlab.gnome.org/blueprint-compiler/) and be inlined as a string that contains valid xml template definitions
+- inline: importing with `inline:/path/to/file` will inline the contents of the file as a string
 
-AGS also defines a global `SRC` variable which will be replaced by the value of the `--src` flag.
-By default it will point to the directory of `entryfile`.
+AGS defines `SRC` by default which by default will point to the directory of `entryfile`.
+It can be overriden with `-d "SRC='/path/to/source'"`
 
 ```js
 #!/usr/bin/ags run
@@ -39,11 +43,11 @@ App.start({
 })
 ```
 
-By default `ags bundle` will look for a `tsconfig.json` in the root directory,
-read it and update it internally so that `paths` and `jsxImportSource` points to
-the correct location of the Astal js package.
-This behavior can be altered by using the `--tsconfig` flag which won't be
-updated internally and will use the paths defined in it.
+By default `ags bundle` will alias the `astal` package for the one defined
+at [installation](./install).
+
+This behavior can be altered by using the `--package` flag which will instead
+use the astal package as defined in `package.json`.
 
 ## Example
 
@@ -114,12 +118,11 @@ and distribute its output JS file as an executable.
 Optionally use a build tool like meson to also declare its runtime dependencies.
 
 When you have data files that you cannot inline as a string, for example icons,
-you should
+a good practice would be to.
 
-1. In code refer to data files through the global `SRC` variable
-2. Install data files to a directory, usually `/usr/share/your-project`
-3. Bundle with `--src /usr/share/your-project`
-4. Move the output file to `/usr/bin/your-project`
+1. Install data files to a directory, usually `/usr/share/your-project`
+2. Define it as `DATADIR` in `env.d.ts` and at bundle time with `--define`
+3. In code you can refer to data files through this `DATADIR` variable
 
 Optionally you should use a build tool like meson or a makefile
 to let users decide where to install to.

@@ -53,5 +53,9 @@
       default = self.homeManagerModules.ags;
       ags = import ./nix/hm-module.nix self;
     };
+
+    devShells.${system}.default = pkgs.mkShell {
+      packages = with pkgs; [go gopls gotools go-tools];
+    };
   };
 }

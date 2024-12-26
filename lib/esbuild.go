@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -118,63 +117,50 @@ var blpPlugin api.Plugin = api.Plugin{
 	},
 }
 
+func sliceToKV(keyValuePairs []string) map[string]string {
+	pairs := make(map[string]string)
+	for _, pair := range keyValuePairs {
+		parts := strings.SplitN(pair, "=", 2)
+		if len(parts) == 2 {
+			pairs[parts[0]] = parts[1]
+		} else {
+			Err("Invalid key-value pair: " + pair)
+		}
+	}
+	return pairs
+}
+
+type BundleOpts struct {
+	Infile     string
+	Outfile    string
+	UsePackage bool // use astal from package.json
+	Defines    []string
+	GtkVersion int
+}
+
 // TODO: bundle plugins
 // svg loader
 // other css preproceccors
 // http plugin with caching
-func Bundle(infile, outfile, tsconfig, cwd string) {
-	srcdir := filepath.Dir(infile)
+func Bundle(opts BundleOpts) {
+	tsconfig := GetTsconfig(Cwd(), opts.GtkVersion)
+	defines := sliceToKV(opts.Defines)
 
-	if cwd == "" {
-		cwd = srcdir
-	} else {
-		var err error
-		cwd, err = filepath.Abs(cwd)
-		if err != nil {
-			Err(err)
-		}
+	if _, ok := defines["SRC"]; !ok {
+		defines["SRC"] = `"` + filepath.Dir(opts.Infile) + `"`
 	}
 
-	if tsconfig != "" {
-		// if a tsconfig file is specified use that
-		path, err := filepath.Abs(tsconfig)
-		if err != nil {
-			Err(err)
-		}
-
-		data, err := os.ReadFile(path)
-		if err != nil {
-			Err(err)
-		}
-
-		tsconfig = string(data)
-	} else if FileExists("tsconfig.json") {
-		// check cwd for tsconfig
-		cwd, err := os.Getwd()
-		if err != nil {
-			Err(err)
-		}
-
-		tsconfig = GetTsconfig(cwd)
-	} else {
-		// fallback to default
-		tsconfig = GetTsconfig(srcdir)
-	}
-
-	result := api.Build(api.BuildOptions{
-		Color:         api.ColorAlways,
-		LogLevel:      api.LogLevelWarning,
-		EntryPoints:   []string{infile},
-		Bundle:        true,
-		Outfile:       outfile,
-		Format:        api.FormatESModule,
-		Platform:      api.PlatformNeutral,
-		AbsWorkingDir: cwd,
-		TsconfigRaw:   tsconfig,
-		Write:         true,
-		Define: map[string]string{
-			"SRC": fmt.Sprintf(`"%s"`, cwd),
-		},
+	buildOpts := api.BuildOptions{
+		Write:       true,
+		Color:       api.ColorAlways,
+		LogLevel:    api.LogLevelWarning,
+		EntryPoints: []string{opts.Infile},
+		Bundle:      true,
+		Outfile:     opts.Outfile,
+		Format:      api.FormatESModule,
+		Platform:    api.PlatformNeutral,
+		TsconfigRaw: tsconfig,
+		Define:      defines,
 		Loader: map[string]api.Loader{
 			".js":  api.LoaderJSX,
 			".css": api.LoaderText,
@@ -193,7 +179,15 @@ func Bundle(infile, outfile, tsconfig, cwd string) {
 			sassPlugin,
 			blpPlugin,
 		},
-	})
+	}
+
+	if !opts.UsePackage {
+		buildOpts.Alias = map[string]string{
+			"astal": astalGjs,
+		}
+	}
+
+	result := api.Build(buildOpts)
 
 	// TODO: custom error logs
 	if len(result.Errors) > 0 {
