@@ -83,7 +83,8 @@ Or define a `devShell` and cherry pick packages.
 
 ## Using home-manager
 
-If you prefer the workflow of AGS v1, you can use the home-manager module.
+If you prefer the workflow of "configuring a program"
+instead of "using a library", you can use the home-manager module.
 
 :::
 
