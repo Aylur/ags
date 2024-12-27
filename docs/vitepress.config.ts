@@ -12,6 +12,13 @@ export default defineConfig({
         ["link", { rel: "icon", href: "https://aylur.github.io/astal/icon.svg" }],
     ],
 
+    markdown: {
+        languageAlias: {
+            meson: "ruby",
+            blp: "c", // TODO: find a better alternative
+        },
+    },
+
     themeConfig: {
         outline: "deep",
 

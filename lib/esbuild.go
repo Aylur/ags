@@ -161,6 +161,11 @@ func Bundle(opts BundleOpts) {
 		Platform:    api.PlatformNeutral,
 		TsconfigRaw: tsconfig,
 		Define:      defines,
+		Target:      api.ES2022,
+		Sourcemap:   api.SourceMapInline,
+		Engines: []api.Engine{
+			{Name: api.EngineFirefox, Version: "115"},
+		},
 		Loader: map[string]api.Loader{
 			".js":  api.LoaderJSX,
 			".css": api.LoaderText,

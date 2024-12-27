@@ -55,7 +55,16 @@
     };
 
     devShells.${system}.default = pkgs.mkShell {
-      packages = with pkgs; [go gopls gotools go-tools];
+      packages = with pkgs; [
+        markdownlint-cli2
+        marksman
+        vtsls
+        vscode-langservers-extracted
+        go
+        gopls
+        gotools
+        go-tools
+      ];
     };
   };
 }

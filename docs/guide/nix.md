@@ -29,6 +29,7 @@ Using nix, you'll technically never have to use the `ags` cli.
       src = ./.;
       name = "my-shell"; # name of executable
       entry = "app.ts";
+      gtk4 = false;
 
       # additional libraries and executables to add to gjs' runtime
       extraPackages = [

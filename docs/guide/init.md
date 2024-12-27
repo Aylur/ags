@@ -26,43 +26,42 @@ It will generate the following files:
 
 ```txt
 .
-├── .gitignore
-├── @girs/              # generated types
+├── @girs/
+├── node_modules/
+│   └── astal
 ├── widget/
 │   └── Bar.tsx
-├── app.ts              # entry proint
-├── env.d.ts            # additional types
+├── app.ts
+├── env.d.ts
 ├── style.scss
-└── tsconfig.json       # needed by LSPs
+├── package.json
+└── tsconfig.json
 ```
 
 The `@girs` directory contains the generated types, which are
 created when running the `init` command or the `types` command.
 
-Assuming this directory will be tracked with git,
-it generates a `.gitignore` file which is set to ignore `@girs` and `node_modules`.
-Initially `node_modules` doesn't exist, but if you decide to install any `npm`
-package it is not needed to track them with git. You can also add `tsconfig.json`
-and `env.d.ts` to this list, as they are only used for developing and can be
-regenerated with the `types` command. Only track `tsconfig.json` if you add
-anything additional to `compilerOptions.paths`.
+:::details Details on TypeScript.
+While `gjs` does not currently support Node.js project structures and its ecosystem
+the JavaScript tooling we are using relies on it. The `node_modules` directory
+contains the `astal` package, but its purpose is only to provide type information.
+The `package.json` is a file describing the project and `tsconfig.json` is a file
+containing settings for TypeScript.
+:::
 
-> [!NOTE]
-> Since the runtime is `gjs`, very few packages will run from `npm`.
+> [!WARNING]
+> Since the runtime is `gjs`, very few packages will run from `npm`,
+since most depends on `node` features.
 
-The `env.d.ts` will tell the LSP that `.css`, `.scss` and `.blp` files can be
-imported and will be inlined as a string. It also tells it that imports
-prefixed with `inline:` will be inlined as well as that a global `SRC` variable
-is available.
+The `env.d.ts` let's the type checker in your editor know about additional
+[features](./bundling) the `ags` bundler provides, for example the ability to inline files.
+This can be also be expanded for variables defined with the `--define` flag at bundling.
 
-The `tsconfig.json` file tells information to the LSP so that
-intellisense can do its thing and provide great DX.
-
-`app.ts` is the entry point of the project which usually contains only
-an `App.start` call where you define [main](https://aylur.github.io/astal/guide/typescript/cli-app#entry-point) and [requestHandler](https://aylur.github.io/astal/guide/typescript/cli-app#messaging-from-cli),
+`app.ts` is the entry point of the project which usually
+contains only an `App.start` call where you define [main](https://aylur.github.io/astal/guide/typescript/cli-app#entry-point) and [requestHandler](https://aylur.github.io/astal/guide/typescript/cli-app#messaging-from-cli),
 but can contain any other code.
 
-> [!NOTE]
+> [!TIP]
 > You could also name the entry file `app.tsx` and write any JSX there.
 
 > [!TIP]
@@ -70,15 +69,14 @@ but can contain any other code.
 > in `tsconfig.json` and optionally `"checkJs": true` will allow
 > JavaScript, although it is very much recommended to TypeScript.
 
-You are not forced into a project structure. You can put
-`style.scss` and `widget/Bar.ts` anywhere you like, only the entry file matters.
-
 ## Running projects
 
 `tsconfig.json`, `env.d.ts` and `@girs` are only significant for the LSP,
 they are not needed to run the project.
 
-:::tip
-You can also use `ags run` as a shebang line for simple scripts.
-See an [simple dialog example](./example.md)
-:::
+> [!TIP]
+> You can also use `ags run` as a shebang line for simple scripts.
+> See an [simple dialog example](./example.md).
+
+> [!IMPORTANT]
+> When using Gtk4 you have to use `--gtk4` flag for [gtk4-layer-shell](https://github.com/wmww/gtk4-layer-shell/issues/3#issuecomment-1502339477).

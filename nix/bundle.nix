@@ -7,6 +7,7 @@
   src,
   name,
   extraPackages ? [],
+  gtk4 ? false,
 }:
 pkgs.stdenvNoCC.mkDerivation {
   inherit src name;
@@ -29,6 +30,7 @@ pkgs.stdenvNoCC.mkDerivation {
 
   preFixup = ''
     gappsWrapperArgs+=(
+      --set LD_PRELOAD "${pkgs.gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
       --prefix PATH : ${with pkgs;
       lib.makeBinPath (extraPackages
         ++ [

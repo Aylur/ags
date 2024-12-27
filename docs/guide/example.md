@@ -106,5 +106,6 @@ fi
 ```
 
 > [!TIP]
-> If you are happy with the script and don't plan to change it anymore [bundle](./bundling.md) it,
+> If you are happy with the script and don't
+> plan to change it anymore [bundle](./bundling.md) it,
 > which will remove the dependency on AGS.
