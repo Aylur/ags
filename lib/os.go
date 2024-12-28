@@ -18,6 +18,26 @@ func Mkdir(path string) {
 	}
 }
 
+func Rm(file string) {
+	if err := os.RemoveAll(file); err != nil {
+		Err(err)
+	}
+}
+
+func Ln(target, linkName string) {
+	if err := os.Symlink(target, linkName); err != nil {
+		Err(err)
+	}
+}
+
+func Cwd() string {
+	cwd, err := os.Getwd()
+	if err != nil {
+		Err(err)
+	}
+	return cwd
+}
+
 func FileExists(filename string) bool {
 	_, err := os.Stat(filename)
 	return !os.IsNotExist(err)
@@ -28,6 +48,14 @@ func WriteFile(path string, content string) {
 	if err != nil {
 		Err(err)
 	}
+}
+
+func ReadFile(path string) []byte {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		Err(err)
+	}
+	return data
 }
 
 func Exec(cmd string, args ...string) *exec.Cmd {

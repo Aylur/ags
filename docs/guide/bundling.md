@@ -14,21 +14,93 @@ Bundle an app
 Usage:
   ags bundle [entryfile] [outfile] [flags]
 
+Examples:
+  bundle app.ts my-shell -d "DATADIR='/usr/share/my-shell'"
+
 Flags:
-  -h, --help              help for bundle
-      --src string        source directory of the bundle
-      --tsconfig string   path to tsconfig.json
+  -d, --define stringArray   replace global identifiers with constant expressions
+  -h, --help                 help for bundle
+  -p, --package              use astal package as defined in package.json
 ```
 
 Currently there are 3 builtin plugins.
 
 - css: import `.css` will be inlined as a string
-- sass: importing `.scss` files will go through the sass transpiler and be inlined as a string that contains valid css
-  - uses the `sass` executable found on $PATH
-- blp: importing `.blp` files will go through [blueprint](https://jwestman.pages.gitlab.gnome.org/blueprint-compiler/) and be inlined as a string that contains valid xml template definitions
+- sass: importing `.scss` files will go through the sass transpiler and be inlined as a string that contains valid css using the `sass` executable found on `$PATH`
+  :::code-group
 
-AGS also defines a global `SRC` variable which will be replaced by the value of the `--src` flag.
-By default it will point to the directory of `entryfile`.
+  ```scss [<i class="devicon-sass-plain"></i>style.scss]
+  $color: white;
+
+  selector {
+      color: $color;
+  }
+  ```
+
+  :::
+  :::code-group
+
+  ```ts [<i class="devicon-typescript-plain"></i> app.ts]
+  import style from "./style.scss"
+
+  print(style)
+  // selector {
+  //   color: white;
+  // }
+  ```
+
+  :::
+
+- blp: importing `.blp` files will go through [blueprint](https://jwestman.pages.gitlab.gnome.org/blueprint-compiler/) and be inlined as a string that contains xml template definitions
+  :::code-group
+
+  ```blp [<i class="devicon-xml-plain"></i> ui.blp]
+  using Gtk 4.0;
+
+  Label {
+      label: _("hello");
+  }
+  ```
+
+  :::
+  :::code-group
+
+  ```ts [<i class="devicon-typescript-plain"></i> app.ts]
+  import ui from "./ui.blp"
+
+  print(ui)
+  // <?xml version="1.0" encoding="UTF-8"?>
+  // <interface>
+  //   <requires lib="gtk" version="4.0"/>
+  //   <object class="GtkLabel">
+  //     <property name="label" translatable="yes">hello</property>
+  //   </object>
+  // </interface>
+  ```
+
+  :::
+
+- inline: importing with `inline:/path/to/file` will inline the contents of the file as a string
+  :::code-group
+
+  ```txt [data.txt]
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
+  ```
+
+  :::
+  :::code-group
+
+  ```ts [<i class="devicon-typescript-plain"></i> app.ts]
+  import data from "inline:./data.txt"
+
+  print(ui)
+  // Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do.
+  ```
+
+  :::
+
+AGS defines `SRC` which by default will point to the directory of `entryfile`.
+It can be overriden with `-d "SRC='/path/to/source'"`
 
 ```js
 #!/usr/bin/ags run
@@ -39,11 +111,11 @@ App.start({
 })
 ```
 
-By default `ags bundle` will look for a `tsconfig.json` in the root directory,
-read it and update it internally so that `paths` and `jsxImportSource` points to
-the correct location of the Astal js package.
-This behavior can be altered by using the `--tsconfig` flag which won't be
-updated internally and will use the paths defined in it.
+By default `ags bundle` will alias the `astal` package for the one defined
+at [installation](./install).
+
+This behavior can be altered by using the `--package` flag which will instead
+use the astal package as defined in `package.json`.
 
 ## Example
 
@@ -114,15 +186,94 @@ and distribute its output JS file as an executable.
 Optionally use a build tool like meson to also declare its runtime dependencies.
 
 When you have data files that you cannot inline as a string, for example icons,
-you should
+a good practice would be to:
 
-1. In code refer to data files through the global `SRC` variable
-2. Install data files to a directory, usually `/usr/share/your-project`
-3. Bundle with `--src /usr/share/your-project`
-4. Move the output file to `/usr/bin/your-project`
+1. Install data files to a directory, usually `/usr/share/your-project`
+2. Define it as `DATADIR` in `env.d.ts` and at bundle time with `--define`
+3. In code you can refer to data files through this `DATADIR` variable
 
-Optionally you should use a build tool like meson or a makefile
-to let users decide where to install to.
+  :::code-group
 
-> [!NOTE]
-> On Nix you can use the [lib.bundle](./nix#bundle-and-devshell) function.
+  ```meson [meson.build]
+  prefix = get_option('prefix')
+  pkgdatadir = prefix / get_option('datadir') / meson.project_name()
+  bindir = prefix / get_option('bindir')
+
+  install_data(
+    files('data/data.txt'),
+    install_dir: pkgdatadir,
+  )
+
+  custom_target(
+    command: [
+      find_program('ags'),
+      'bundle',
+      '--define', 'DATADIR="' + pkgdatadir + '"',
+      meson.project_source_root() / 'app.ts',
+      meson.project_name(),
+    ],
+    output: [meson.project_name()],
+    input: files('app.ts'),
+    install: true,
+    install_dir: bindir,
+  )
+  ```
+
+  ```ts [env.d.ts]
+  declare const DATADIR: string
+  ```
+
+  ```ts [app.ts]
+  const data = `${DATADIR}/data.txt`
+  ```
+
+  :::
+
+> [!TIP]
+> On Nix you can use the [lib.bundle](./nix#bundle-and-devshell) function as well as meson.
+
+## Notice for Gtk4
+
+[`gtk4-layer-shell` needs to be linked before wayland.](https://github.com/wmww/gtk4-layer-shell/issues/3#issuecomment-1502339477)
+When bundling a Gtk4 application you will have to use a wrapper to make it work.
+
+:::code-group
+
+```bash [wrapper.sh]
+#!/bin/bash
+LD_PRELOAD="@LAYER_SHELL_LIBDIR@/libgtk4-layer-shell.so" @MAIN_PROGRAM@ $@
+```
+
+:::
+:::code-group
+
+```meson [meson.build]
+pkgdatadir = get_option('prefix') / get_option('datadir') / meson.project_name()
+main = meson.project_name() + '.wrapped'
+
+custom_target(
+  command: [
+    find_program('ags'),
+    'bundle',
+    meson.project_source_root() / 'app.ts',
+    main,
+  ],
+  output: [meson.project_name()],
+  input: files('app.ts'),
+  install: true,
+  install_dir: pkgdatadir,
+)
+
+configure_file(
+  input: files('wrapper.sh'),
+  output: meson.project_name(),
+  configuration: {
+    'MAIN_PROGRAM': pkgdatadir / main,
+    'LAYER_SHELL_LIBDIR': dependency('gtk4-layer-shell-0').get_variable('libdir'),
+  },
+  install: true,
+  install_dir: get_option('prefix') / get_option('bindir'),
+)
+```
+
+:::

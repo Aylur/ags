@@ -21,12 +21,12 @@ Flags:
   -d, --directory string     target directory (default "~/.config/ags")
   -h, --help                 help for types
   -i, --ignore stringArray   modules that should be ignored
-      --tsconfig             update tsconfig.json
+  -p, --package              update package.json
 ```
 
 You will be using this command when adding libraries already into development
 or when cloning existing projects like [astal/examples/js](https://github.com/Aylur/astal/tree/main/examples/js)
-in which case you will be using the `--tsconfig` flag.
+in which case you will be using the `--package` flag.
 
 > [!NOTE]
 > `ags init` will invoke this command with the default `*` pattern

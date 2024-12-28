@@ -29,6 +29,7 @@ Using nix, you'll technically never have to use the `ags` cli.
       src = ./.;
       name = "my-shell"; # name of executable
       entry = "app.ts";
+      gtk4 = false;
 
       # additional libraries and executables to add to gjs' runtime
       extraPackages = [
@@ -83,7 +84,8 @@ Or define a `devShell` and cherry pick packages.
 
 ## Using home-manager
 
-If you prefer the workflow of AGS v1, you can use the home-manager module.
+If you prefer the workflow of "configuring a program"
+instead of "using a library", you can use the home-manager module.
 
 :::
 

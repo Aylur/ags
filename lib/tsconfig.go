@@ -2,22 +2,23 @@ package lib
 
 import (
 	"encoding/json"
-	"os"
 	"strings"
 
 	"github.com/titanous/json5"
 )
 
-var (
-	astalGjs          string
-	defaultGtkVersion = "gtk3"
-)
+var astalGjs string
 
 func Initialize(_astalGjs string) {
 	astalGjs = _astalGjs
 }
 
-func defaultTsconfig() map[string]interface{} {
+func defaultTsconfig(gtkVersion int) map[string]interface{} {
+	gtk := "gtk3"
+	if gtkVersion == 4 {
+		gtk = "gtk4"
+	}
+
 	return map[string]interface{}{
 		"compilerOptions": map[string]interface{}{
 			"experimentalDecorators": true,
@@ -25,11 +26,7 @@ func defaultTsconfig() map[string]interface{} {
 			"target":                 "ES2022",
 			"moduleResolution":       "Bundler",
 			"jsx":                    "react-jsx",
-			"jsxImportSource":        astalGjs + "/" + defaultGtkVersion,
-			"paths": map[string][]string{
-				"astal":   {astalGjs},
-				"astal/*": {astalGjs + "/*"},
-			},
+			"jsxImportSource":        "astal/" + gtk,
 		},
 	}
 }
@@ -57,40 +54,56 @@ func updateTsconfig(tsconfig map[string]interface{}) {
 	opts["target"] = "ES2022"
 	opts["moduleResolution"] = "Bundler"
 	opts["jsx"] = "react-jsx"
-	opts["jsxImportSource"] = astalGjs + gtk
+	opts["jsxImportSource"] = "astal" + gtk
+}
 
-	paths, ok := opts["paths"].(map[string]interface{})
-	if !ok {
-		paths = map[string]interface{}{
-			"astal":   []string{astalGjs},
-			"astal/*": []string{astalGjs + "/*"},
+func GetPackageJson(srcdir string) string {
+	path := srcdir + "/package.json"
+
+	var pkgjson map[string]interface{}
+	if FileExists(path) {
+		if err := json5.Unmarshal(ReadFile(path), &pkgjson); err != nil {
+			Err(err)
+		}
+
+		deps, ok := pkgjson["dependencies"].(map[string]interface{})
+		if !ok {
+			deps = map[string]interface{}{}
+		}
+
+		deps["astal"] = astalGjs
+	} else {
+		pkgjson = map[string]interface{}{
+			"name": "astal-shell",
+			"dependencies": map[string]string{
+				"astal": astalGjs,
+			},
 		}
 	}
 
-	paths["astal"] = []string{astalGjs}
-	paths["astal/*"] = []string{astalGjs + "/*"}
+	content, err := json.MarshalIndent(pkgjson, "", "    ")
+	if err != nil {
+		Err(err)
+	}
+
+	return string(content)
 }
 
 // if tsconfig.json exists in srcdir returns an updated config
 // otherwise returns a default config
-func GetTsconfig(srcdir string) string {
+func GetTsconfig(srcdir string, gtkVersion int) string {
+	// TODO: look in parent directories recursively
 	path := srcdir + "/tsconfig.json"
 
 	var tsconfig map[string]interface{}
 	if FileExists(path) {
-		data, err := os.ReadFile(path)
-		if err != nil {
-			Err(err)
-		}
-
-		err = json5.Unmarshal(data, &tsconfig)
-		if err != nil {
+		if err := json5.Unmarshal(ReadFile(path), &tsconfig); err != nil {
 			Err(err)
 		}
 
 		updateTsconfig(tsconfig)
 	} else {
-		tsconfig = defaultTsconfig()
+		tsconfig = defaultTsconfig(gtkVersion)
 	}
 
 	conf, err := json.MarshalIndent(tsconfig, "", "    ")

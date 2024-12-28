@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	ignoreModules  []string
-	updateTsconfig bool
+	ignoreModules []string
+	updatePkg     bool
 )
 
 var typesCommand = &cobra.Command{
@@ -23,8 +23,13 @@ var typesCommand = &cobra.Command{
 	Args:    cobra.MaximumNArgs(1),
 	Example: `  ags types Astal* --ignore Gtk3 --ignore Astal3`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if updateTsconfig {
-			lib.WriteFile(targetDir+"/tsconfig.json", lib.GetTsconfig(targetDir))
+		if updatePkg {
+			lib.WriteFile(targetDir+"/tsconfig.json", lib.GetTsconfig(targetDir, 0))
+			lib.WriteFile(targetDir+"/package.json", lib.GetPackageJson(targetDir))
+
+			lib.Mkdir(targetDir + "/node_modules")
+			lib.Rm(targetDir + "/node_modules/astal")
+			lib.Ln(astalGjs, targetDir+"/node_modules/astal")
 
 			envdts := targetDir + "/env.d.ts"
 			if !lib.FileExists(envdts) {
@@ -43,9 +48,13 @@ var typesCommand = &cobra.Command{
 func init() {
 	f := typesCommand.Flags()
 
-	f.BoolVar(&updateTsconfig, "tsconfig", false, "update tsconfig.json")
+	f.BoolVarP(&updatePkg, "package", "p", false, "update package.json")
 	f.StringVarP(&targetDir, "directory", "d", defaultConfigDir(), "target directory")
 	f.StringArrayVarP(&ignoreModules, "ignore", "i", []string{}, "modules that should be ignored")
+
+	f.BoolVar(&updatePkg, "tsconfig", false, "update package.json")
+	f.MarkDeprecated("tsconfig", "use --package instead")
+	f.MarkHidden("tsconfig")
 }
 
 func girDirectories() []string {

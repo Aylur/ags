@@ -16,15 +16,31 @@ nix shell github:aylur/ags # ags in a temporary shell
 
 2. Initialize a project
 
-```sh
-ags init
+:::code-group
+
+```sh [Gtk3]
+ags init --gtk 3
 ```
+
+```sh [Gtk4]
+ags init --gtk 3
+```
+
+:::
 
 3. Run the project
 
-```sh
+:::code-group
+
+```sh [Gtk3]
 ags run
 ```
+
+```sh [Gtk4]
+ags run --gtk4
+```
+
+:::
 
 4. Learn [TypeScript in Y minutes](https://learnxinyminutes.com/docs/typescript/)
 

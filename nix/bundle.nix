@@ -7,6 +7,7 @@
   src,
   name,
   extraPackages ? [],
+  gtk4 ? false,
 }:
 pkgs.stdenvNoCC.mkDerivation {
   inherit src name;
@@ -29,6 +30,7 @@ pkgs.stdenvNoCC.mkDerivation {
 
   preFixup = ''
     gappsWrapperArgs+=(
+      --set LD_PRELOAD "${pkgs.gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
       --prefix PATH : ${with pkgs;
       lib.makeBinPath (extraPackages
         ++ [
@@ -45,7 +47,7 @@ pkgs.stdenvNoCC.mkDerivation {
     mkdir -p $out/bin
     mkdir -p $out/share
     cp -r * $out/share
-    ags bundle ${entry} $out/bin/${name} --src $out/share
+    ags bundle ${entry} $out/bin/${name} -d "SRC='$out/share'"
 
     chmod +x $out/bin/${name}
 
@@ -55,6 +57,6 @@ pkgs.stdenvNoCC.mkDerivation {
 
     runHook postInstall
   '';
-  
+
   meta.mainProgram = name;
 }

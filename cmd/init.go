@@ -12,7 +12,6 @@ import (
 
 var (
 	force         bool
-	gtk           int
 	initDirectory string
 )
 
@@ -28,7 +27,7 @@ generating types and setting up a basic bar example`,
 func init() {
 	f := initCommand.Flags()
 
-	f.IntVarP(&gtk, "gtk", "g", 3, "gtk version to use")
+	f.IntVarP(&gtkVersion, "gtk", "g", 3, "gtk version to use")
 	f.BoolVarP(&force, "force", "f", false, "override existing files")
 	f.StringVarP(&initDirectory, "directory", "d", defaultConfigDir(), "target directory")
 }
@@ -41,10 +40,16 @@ func getDataFile(name string) string {
 	return string(content)
 }
 
+// TODO: interactive init, to ask for
+// project dir
+// project name
+// gtk version
+// eslint
+// prettier or eslint stylistic
 func initConfig(cmd *cobra.Command, args []string) {
-	// TODO: gtk4 template
-	if gtk != 3 {
-		lib.Err("currently only gtk3 is supported")
+	gtk := "gtk3"
+	if gtkVersion == 4 {
+		gtk = "gtk4"
 	}
 
 	initDir, err := filepath.Abs(initDirectory)
@@ -56,15 +61,20 @@ func initConfig(cmd *cobra.Command, args []string) {
 	}
 
 	tsconf := strings.ReplaceAll(getDataFile("tsconfig.json"), "@ASTAL_GJS@", astalGjs)
-	tsconf = strings.ReplaceAll(tsconf, "@GTK_VERSION@", "gtk3")
-	lib.Mkdir(initDir + "/widget")
+	tsconf = strings.ReplaceAll(tsconf, "@GTK_VERSION@", gtk)
+	pkgjson := strings.ReplaceAll(getDataFile("package.json"), "@ASTAL_GJS@", astalGjs)
 
-	lib.WriteFile(initDir+"/.gitignore", "@girs/\nnode_modules/")
+	lib.Mkdir(initDir + "/widget")
+	lib.Mkdir(initDir + "/node_modules")
+
+	lib.WriteFile(initDir+"/.gitignore", getDataFile("gitignore"))
 	lib.WriteFile(initDir+"/tsconfig.json", tsconf)
+	lib.WriteFile(initDir+"/package.json", pkgjson)
 	lib.WriteFile(initDir+"/env.d.ts", getDataFile("env.d.ts"))
 	lib.WriteFile(initDir+"/style.scss", getDataFile("style.scss"))
-	lib.WriteFile(initDir+"/widget/Bar.tsx", getDataFile("gtk3/Bar.tsx"))
-	lib.WriteFile(initDir+"/app.ts", getDataFile("gtk3/app.ts"))
+	lib.WriteFile(initDir+"/widget/Bar.tsx", getDataFile(gtk+"/Bar.tsx"))
+	lib.WriteFile(initDir+"/app.ts", getDataFile(gtk+"/app.ts"))
+	lib.Ln(astalGjs, initDir+"/node_modules/astal")
 
 	genTypes(initDir, "*")
 	fmt.Println(lib.Green("project ready") + " at " + lib.Cyan(initDir))

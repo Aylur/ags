@@ -18,9 +18,10 @@ var (
 )
 
 var runCommand = &cobra.Command{
-	Use:   "run [file]",
-	Short: "Run an app",
-	Args:  cobra.ArbitraryArgs,
+	Use:     "run [file]",
+	Short:   "Run an app",
+	Example: "  run app.ts --define DEBUG=true",
+	Args:    cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) > 0 {
 			path, err := filepath.Abs(args[0])
@@ -53,10 +54,11 @@ func init() {
 when no positional argument is given
 `+"\b")
 
+	f.StringSliceVar(&defines, "define", []string{}, "replace global identifiers with constant expressions")
 	f.StringArrayVarP(&args, "arg", "a", []string{}, "cli args to pass to gjs")
-	f.StringVar(&tsconfig, "tsconfig", "", "path to tsconfig.json")
 	f.StringVar(&logFile, "log-file", "", "file to redirect the stdout of gjs to")
-	f.MarkHidden("tsconfig")
+	f.BoolVarP(&usePackage, "package", "p", false, "use astal package as defined in package.json")
+	f.MarkHidden("package")
 }
 
 func getOutfile() string {
@@ -106,8 +108,19 @@ func logging() (io.Writer, io.Writer, *os.File) {
 }
 
 func run(infile string) {
+	gtk := 3
+	if gtk4 {
+		gtk = 4
+	}
+
 	outfile := getOutfile()
-	lib.Bundle(infile, outfile, tsconfig, "")
+	lib.Bundle(lib.BundleOpts{
+		Infile:     infile,
+		Outfile:    outfile,
+		Defines:    defines,
+		UsePackage: usePackage,
+		GtkVersion: gtk,
+	})
 
 	if gtk4 {
 		os.Setenv("LD_PRELOAD", gtk4LayerShell)

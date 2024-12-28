@@ -1,5 +1,10 @@
 # Dialog Example
 
+This example is meant to shown that `ags` can be used
+to create simple scripts without bundling.
+
+To see examples uses of `Astal` go to the [Astal website](https://aylur.github.io/astal/guide/typescript/examples).
+
 Simple dialog example to get a `no`/`yes` answer.
 
 ![2024-11-13_00-45-58](https://github.com/user-attachments/assets/73a20155-fa0e-4156-aff8-3a0d055abb9b)
@@ -101,5 +106,6 @@ fi
 ```
 
 > [!TIP]
-> If you are happy with the script and don't plan to change it anymore [bundle](./bundling.md) it,
+> If you are happy with the script and don't
+> plan to change it anymore [bundle](./bundling.md) it,
 > which will remove the dependency on AGS.
