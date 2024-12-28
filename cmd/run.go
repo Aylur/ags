@@ -35,13 +35,13 @@ var runCommand = &cobra.Command{
 			}
 
 			if info.IsDir() {
-				run(getAppEntry(path))
+				run(getAppEntry(path), "")
 			} else {
-				run(path)
+				run(path, "")
 			}
 
 		} else {
-			run(getAppEntry(targetDir))
+			run(getAppEntry(targetDir), targetDir)
 		}
 	},
 }
@@ -107,7 +107,7 @@ func logging() (io.Writer, io.Writer, *os.File) {
 	return io.MultiWriter(os.Stdout, file), io.MultiWriter(os.Stderr, file), file
 }
 
-func run(infile string) {
+func run(infile string, rootdir string) {
 	gtk := 3
 	if gtk4 {
 		gtk = 4
@@ -115,11 +115,12 @@ func run(infile string) {
 
 	outfile := getOutfile()
 	lib.Bundle(lib.BundleOpts{
-		Infile:     infile,
-		Outfile:    outfile,
-		Defines:    defines,
-		UsePackage: usePackage,
-		GtkVersion: gtk,
+		Infile:           infile,
+		Outfile:          outfile,
+		Defines:          defines,
+		UsePackage:       usePackage,
+		GtkVersion:       gtk,
+		WorkingDirectory: rootdir,
 	})
 
 	if gtk4 {

@@ -12,6 +12,7 @@ var (
 	defines    []string
 	usePackage bool
 	gtkVersion int
+	workingDir string
 )
 
 var bundleCommand = &cobra.Command{
@@ -36,10 +37,11 @@ var bundleCommand = &cobra.Command{
 		}
 
 		opts := lib.BundleOpts{
-			Outfile:    outfile,
-			UsePackage: usePackage,
-			Defines:    defines,
-			GtkVersion: gtkVersion,
+			Outfile:          outfile,
+			UsePackage:       usePackage,
+			Defines:          defines,
+			GtkVersion:       gtkVersion,
+			WorkingDirectory: workingDir,
 		}
 
 		if info.IsDir() {
@@ -54,12 +56,9 @@ var bundleCommand = &cobra.Command{
 
 func init() {
 	f := bundleCommand.Flags()
+	f.StringVarP(&workingDir, "root", "r", "", "root directory of the project")
 	f.StringArrayVarP(&defines, "define", "d", []string{}, "replace global identifiers with constant expressions")
 	f.BoolVarP(&usePackage, "package", "p", false, "use astal package as defined in package.json")
 	f.IntVar(&gtkVersion, "gtk", 3, "gtk version")
 	f.MarkHidden("gtk")
-
-	f.String("src", "", "source directory of the bundle")
-	f.MarkHidden("src")
-	f.MarkDeprecated("src", `use cd /path/to/src && bundle --define="SRC='/path/to/src'"`)
 }

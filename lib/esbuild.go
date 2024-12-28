@@ -131,11 +131,12 @@ func sliceToKV(keyValuePairs []string) map[string]string {
 }
 
 type BundleOpts struct {
-	Infile     string
-	Outfile    string
-	UsePackage bool // use astal from package.json
-	Defines    []string
-	GtkVersion int
+	Infile           string
+	Outfile          string
+	UsePackage       bool // use astal from package.json
+	Defines          []string
+	GtkVersion       int
+	WorkingDirectory string
 }
 
 // TODO: bundle plugins
@@ -143,7 +144,6 @@ type BundleOpts struct {
 // other css preproceccors
 // http plugin with caching
 func Bundle(opts BundleOpts) {
-	tsconfig := GetTsconfig(Cwd(), opts.GtkVersion)
 	defines := sliceToKV(opts.Defines)
 
 	if _, ok := defines["SRC"]; !ok {
@@ -159,7 +159,6 @@ func Bundle(opts BundleOpts) {
 		Outfile:     opts.Outfile,
 		Format:      api.FormatESModule,
 		Platform:    api.PlatformNeutral,
-		TsconfigRaw: tsconfig,
 		Define:      defines,
 		Target:      api.ES2022,
 		Sourcemap:   api.SourceMapInline,
@@ -184,6 +183,18 @@ func Bundle(opts BundleOpts) {
 			sassPlugin,
 			blpPlugin,
 		},
+	}
+
+	if opts.WorkingDirectory != "" {
+		dir, err := filepath.Abs(opts.WorkingDirectory)
+		if err != nil {
+			Err(err)
+		}
+
+		buildOpts.AbsWorkingDir = dir
+		buildOpts.TsconfigRaw = GetTsconfig(dir, opts.GtkVersion)
+	} else {
+		buildOpts.TsconfigRaw = GetTsconfig(Cwd(), opts.GtkVersion)
 	}
 
 	if !opts.UsePackage {

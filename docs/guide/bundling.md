@@ -21,6 +21,7 @@ Flags:
   -d, --define stringArray   replace global identifiers with constant expressions
   -h, --help                 help for bundle
   -p, --package              use astal package as defined in package.json
+  -r, --root string          root directory of the project
 ```
 
 Currently there are 3 builtin plugins.
@@ -209,6 +210,7 @@ a good practice would be to:
       find_program('ags'),
       'bundle',
       '--define', 'DATADIR="' + pkgdatadir + '"',
+      '--root', meson.project_source_root(),
       meson.project_source_root() / 'app.ts',
       meson.project_name(),
     ],
@@ -255,6 +257,7 @@ custom_target(
   command: [
     find_program('ags'),
     'bundle',
+    '--root', meson.project_source_root(),
     meson.project_source_root() / 'app.ts',
     main,
   ],
