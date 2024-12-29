@@ -30,7 +30,6 @@ pkgs.stdenvNoCC.mkDerivation {
 
   preFixup = ''
     gappsWrapperArgs+=(
-      --set LD_PRELOAD "${pkgs.gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
       --prefix PATH : ${with pkgs;
       lib.makeBinPath (extraPackages
         ++ [
@@ -39,6 +38,16 @@ pkgs.stdenvNoCC.mkDerivation {
           gtk3
         ])}
     )
+
+    ${
+      if gtk4
+      then ''
+        gappsWrapperArgs+=(
+          --set LD_PRELOAD "${pkgs.gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
+        )
+      ''
+      else ""
+    }
   '';
 
   installPhase = ''
