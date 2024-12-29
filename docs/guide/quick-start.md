@@ -23,7 +23,7 @@ ags init --gtk 3
 ```
 
 ```sh [Gtk4]
-ags init --gtk 3
+ags init --gtk 4
 ```
 
 :::
