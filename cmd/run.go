@@ -5,16 +5,19 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
+
 
 var (
 	gtk4      bool
 	targetDir string
 	logFile   string
 	args      []string
+	watch     bool
 )
 
 var runCommand = &cobra.Command{
@@ -58,6 +61,7 @@ when no positional argument is given
 	f.StringArrayVarP(&args, "arg", "a", []string{}, "cli args to pass to gjs")
 	f.StringVar(&logFile, "log-file", "", "file to redirect the stdout of gjs to")
 	f.BoolVarP(&usePackage, "package", "p", false, "use astal package as defined in package.json")
+	f.BoolVarP(&watch, "watch", "w", false, "watch for changes and restart the app")
 	f.MarkHidden("package")
 }
 
@@ -107,41 +111,76 @@ func logging() (io.Writer, io.Writer, *os.File) {
 	return io.MultiWriter(os.Stdout, file), io.MultiWriter(os.Stderr, file), file
 }
 
-func run(infile string, rootdir string) {
-	gtk := 3
-	if gtk4 {
-		gtk = 4
+var gjs *exec.Cmd
+func executeGjs(infile string, stdout io.Writer, stderr io.Writer) *exec.Cmd {
+	if(gjs != nil) {
+		if err := gjs.Process.Kill(); err != nil {
+			lib.Err(err)
+		}
+		gjs.Wait()
 	}
-
-	outfile := getOutfile()
-	lib.Bundle(lib.BundleOpts{
-		Infile:           infile,
-		Outfile:          outfile,
-		Defines:          defines,
-		UsePackage:       usePackage,
-		GtkVersion:       gtk,
-		WorkingDirectory: rootdir,
-	})
 
 	if gtk4 {
 		os.Setenv("LD_PRELOAD", gtk4LayerShell)
 	}
 
-	args = append([]string{"-m", outfile}, args...)
-	stdout, stderr, file := logging()
-	gjs := lib.Exec("gjs", args...)
+	outfile := getOutfile()
+	args := append([]string{"-m", outfile}, args...)
+	gjs = lib.Exec("gjs", args...)
+
 	gjs.Stdin = os.Stdin
 	gjs.Dir = filepath.Dir(infile)
 
 	gjs.Stdout = stdout
 	gjs.Stderr = stderr
 
-	// TODO: watch and restart
-	if err := gjs.Run(); err != nil {
-		lib.Err(err)
+	return gjs
+}
+
+func run(infile string, rootdir string) {
+	gtk := 3
+	if gtk4 {
+		gtk = 4
 	}
 
-	if file != nil {
-		file.Close()
+	bundleOpts := lib.BundleOpts{
+		Infile:           infile,
+		Outfile:          getOutfile(),
+		Defines:          defines,
+		UsePackage:       usePackage,
+		GtkVersion:       gtk,
+		WorkingDirectory: rootdir,
 	}
+
+	stdout, stderr, file := logging()
+
+	if(watch){
+		lib.Watch(lib.WatchOpts{
+			BundleOpts: bundleOpts,
+			ReloadPluginOpts: lib.ReloadPluginOpts{
+				OnBuild: func(){
+					gjs = executeGjs(infile, stdout, stderr)
+					gjs.Start()
+				},
+				OnExit: func(){
+					if file != nil {
+						file.Close()
+					}
+				},
+			},
+		})
+	} else {
+		lib.Bundle(bundleOpts)
+		
+		gjs = executeGjs(infile, stdout, stderr)
+	
+		if err := gjs.Run(); err != nil {
+			lib.Err(err)
+		}
+	
+		if file != nil {
+			file.Close()
+		}
+	}
+
 }
