@@ -117,6 +117,28 @@ var blpPlugin api.Plugin = api.Plugin{
 	},
 }
 
+
+type ReloadPluginOpts struct {
+	OnBuild func()
+	OnExit func()
+}
+
+func makeReloadPlugin(opts ReloadPluginOpts) api.Plugin {
+	return api.Plugin {
+		Name: "reload",
+		Setup: func(build api.PluginBuild) {
+			build.OnEnd(func(result *api.BuildResult) (api.OnEndResult, error) {
+				opts.OnBuild()
+				return api.OnEndResult{}, nil
+			})
+
+			build.OnDispose(func() {
+				opts.OnExit()
+			})
+		},
+	}
+}
+
 func sliceToKV(keyValuePairs []string) map[string]string {
 	pairs := make(map[string]string)
 	for _, pair := range keyValuePairs {
@@ -143,7 +165,7 @@ type BundleOpts struct {
 // svg loader
 // other css preproceccors
 // http plugin with caching
-func Bundle(opts BundleOpts) {
+func Prepare(opts BundleOpts) api.BuildOptions {
 	defines := sliceToKV(opts.Defines)
 
 	if _, ok := defines["SRC"]; !ok {
@@ -203,10 +225,41 @@ func Bundle(opts BundleOpts) {
 		}
 	}
 
-	result := api.Build(buildOpts)
+	return buildOpts
+}
 
-	// TODO: custom error logs
-	if len(result.Errors) > 0 {
-		os.Exit(1)
+
+func Bundle(opts BundleOpts) api.BuildResult {
+	ctx := Prepare(opts)
+	result := api.Build(ctx)
+
+	if result.Errors != nil {
+		Err(result.Errors)
 	}
+
+	return result
+}
+
+type WatchOpts struct {
+	BundleOpts
+	ReloadPluginOpts
+}
+
+func Watch(opts WatchOpts){
+	buildOpts := Prepare(opts.BundleOpts)
+
+	buildOpts.Plugins = append(buildOpts.Plugins, makeReloadPlugin(opts.ReloadPluginOpts))
+
+	ctx, ctxErr := api.Context(buildOpts)
+	if ctxErr != nil {
+		Err(ctxErr)
+	}
+
+	watchErr := ctx.Watch(api.WatchOptions{})
+
+	if watchErr != nil {
+		Err(watchErr)
+	}
+
+	<-make(chan struct{})
 }
