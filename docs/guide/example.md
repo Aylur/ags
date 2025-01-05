@@ -7,7 +7,7 @@ Simple dialog example to get a `no`/`yes` answer.
 :::code-group
 
 ```tsx [dialog.ts]
-#!/usr/bin/ags run
+#!/usr/bin/env -S ags run
 import { App, Astal, Gtk, Gdk } from "astal/gtk3"
 
 const { TOP, BOTTOM, LEFT, RIGHT } = Astal.WindowAnchor
