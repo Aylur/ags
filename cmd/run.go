@@ -72,7 +72,12 @@ func getOutfile() string {
 }
 
 func getAppEntry(dir string) string {
-	infile := filepath.Join(dir, "app")
+	path, err := filepath.Abs(dir)
+	if err != nil {
+		lib.Err(err)
+	}
+
+	infile := filepath.Join(path, "app")
 	valid := []string{"js", "ts", "jsx", "tsx"}
 
 	app := lib.Some(valid, func(ext string) bool {
