@@ -1,8 +1,7 @@
 {
   self,
-  pkgs,
 }: {
-  pkgs ? pkgs,
+  pkgs,
   entry ? "app.ts",
   src,
   name,

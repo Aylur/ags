@@ -105,14 +105,14 @@ in {
     })
     (let
       pkg = cfg.package.override {
-        extraPackages = cfg.extraPackages;
         astal3 = cfg.astal.gtk3Package;
         astal-io = cfg.astal.ioPackage;
         astal-gjs = "${config.home.homeDirectory}/.local/share/ags";
       };
+      wrapped = pkg.wrap { inherit (cfg) extraPackages; };
     in {
-      programs.ags.finalPackage = pkg;
-      home.packages = [pkg];
+      programs.ags.finalPackage = wrapped;
+      home.packages = [wrapped];
       home.file.".local/share/ags".source = "${cfg.astal.gjsPackage}/share/astal/gjs";
     })
     (mkIf cfg.systemd.enable {

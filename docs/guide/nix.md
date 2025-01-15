@@ -71,7 +71,7 @@ Or define a `devShell` and cherry pick packages.
     devShells.${system}.default = pkgs.mkShell {
       buildInputs = [
         # includes astal3 astal4 astal-io by default
-        (ags.packages.${system}.default.override { # [!code focus:5]
+        (ags.packages.${system}.default.wrap { # [!code focus:5]
           extraPackages = [
             # cherry pick packages
           ];
