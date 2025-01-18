@@ -261,7 +261,7 @@ custom_target(
     meson.project_source_root() / 'app.ts',
     main,
   ],
-  output: [meson.project_name()],
+  output: main,
   input: files('app.ts'),
   install: true,
   install_dir: pkgdatadir,
