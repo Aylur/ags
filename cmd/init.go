@@ -76,6 +76,6 @@ func initConfig(cmd *cobra.Command, args []string) {
 	lib.WriteFile(initDir+"/app.ts", getDataFile(gtk+"/app.ts"))
 	lib.Ln(astalGjs, initDir+"/node_modules/astal")
 
-	genTypes(initDir, "*")
+	genTypes(initDir, "*", false)
 	fmt.Println(lib.Green("project ready") + " at " + lib.Cyan(initDir))
 }

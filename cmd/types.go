@@ -15,6 +15,7 @@ import (
 var (
 	ignoreModules []string
 	updatePkg     bool
+	verbose       bool
 )
 
 var typesCommand = &cobra.Command{
@@ -38,9 +39,9 @@ var typesCommand = &cobra.Command{
 		}
 
 		if len(args) > 0 {
-			genTypes(targetDir, args[0])
+			genTypes(targetDir, args[0], verbose)
 		} else {
-			genTypes(targetDir, "*")
+			genTypes(targetDir, "*", verbose)
 		}
 	},
 }
@@ -48,6 +49,7 @@ var typesCommand = &cobra.Command{
 func init() {
 	f := typesCommand.Flags()
 
+	f.BoolVarP(&verbose, "verbose", "v", false, "print ts-for-gir logs")
 	f.BoolVarP(&updatePkg, "package", "p", false, "update package.json")
 	f.StringVarP(&targetDir, "directory", "d", defaultConfigDir(), "target directory")
 	f.StringArrayVarP(&ignoreModules, "ignore", "i", []string{}, "modules that should be ignored")
@@ -94,7 +96,7 @@ func showCursor() {
 	fmt.Print("\033[?25h")
 }
 
-func genTypes(configDir, pattern string) {
+func genTypes(configDir, pattern string, verbose bool) {
 	lib.Mkdir(configDir)
 
 	npx, err := exec.LookPath("npx")
@@ -116,13 +118,19 @@ func genTypes(configDir, pattern string) {
 
 	cmd := exec.Command(npx, flags...)
 
-	stopChan := make(chan bool)
-	go spinner(stopChan)
+	if verbose {
+		fmt.Fprintln(os.Stderr, lib.Blue("executing: ")+strings.Join(cmd.Args, " "))
 
-	err = cmd.Run()
-	stopChan <- true
-
-	showCursor()
+		cmd.Stderr = os.Stderr
+		cmd.Stdout = os.Stdout
+		err = cmd.Run()
+	} else {
+		stopChan := make(chan bool)
+		go spinner(stopChan)
+		err = cmd.Run()
+		stopChan <- true
+		showCursor()
+	}
 
 	if err != nil {
 		lib.Err("type generation failed, try running\n" +
