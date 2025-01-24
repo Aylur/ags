@@ -59,18 +59,6 @@ func init() {
 	f.MarkHidden("tsconfig")
 }
 
-func girDirectories() []string {
-	dataDirs := append([]string{
-		"/usr/local/share",
-		"/usr/share",
-		"/usr/share/*",
-	}, strings.Split(os.Getenv("NIX_GI_DIRS"), ":")...)
-
-	return lib.Map(dataDirs, func(dir string) string {
-		return filepath.Join(dir, "gir-1.0")
-	})
-}
-
 func spinner(stopChan chan bool) {
 	chars := []string{"⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷"}
 
@@ -110,7 +98,13 @@ func genTypes(configDir, pattern string, verbose bool) {
 		"--outdir", filepath.Join(configDir, "@girs"),
 	}
 
-	for _, path := range girDirectories() {
+	dataDirs := append([]string{
+		"/usr/local/share/gir-1.0",
+		"/usr/share/gir-1.0",
+		"/usr/share/*/gir-1.0",
+	}, strings.Split(os.Getenv("EXTRA_GIR_DIRS"), ":")...)
+
+	for _, path := range dataDirs {
 		flags = append(flags, "-g", path)
 	}
 
