@@ -16,10 +16,7 @@
     systems = ["x86_64-linux" "aarch64-linux"];
     forAllSystems = nixpkgs.lib.genAttrs systems;
   in {
-    lib.bundle = import ./nix/bundle.nix {
-      inherit self;
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    };
+    lib.bundle = import ./nix/bundle.nix {inherit self;};
 
     packages = forAllSystems (
       system: let
@@ -29,13 +26,13 @@
         astal-io = io;
         astal-gjs = "${gjs}/share/astal/gjs";
 
-        agsPackages = {
-          default = self.packages.${system}.ags;
-          ags = pkgs.callPackage ./nix {
+        agsPackages = rec {
+          default = ags;
+          ags = pkgs.callPackage ./nix/default.nix {
             inherit astal3 astal4 astal-io astal-gjs;
+            wrap = import ./nix/wrap.nix { inherit pkgs ags; };
           };
-          agsFull = pkgs.callPackage ./nix {
-            inherit astal3 astal4 astal-io astal-gjs;
+          agsFull = ags.wrap {
             extraPackages = builtins.attrValues (
               builtins.removeAttrs astal.packages.${system} ["docs"]
             );

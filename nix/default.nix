@@ -15,7 +15,7 @@
   dart-sass,
   blueprint-compiler,
   installShellFiles,
-  extraPackages ? [],
+  wrap,
 }: let
   inherit (builtins) replaceStrings readFile;
 
@@ -33,12 +33,10 @@
     blueprint-compiler
     astal-io # FIXME: should not be needed after the astal commends are properly implemented using dbus in astal.go
   ];
-
-  version = replaceStrings ["\n"] [""] (readFile ../version);
-  pname = "ags";
 in
-  buildGoModule {
-    inherit pname version;
+  buildGoModule rec {
+    pname = "ags";
+    version = replaceStrings ["\n"] [""] (readFile ../version);
 
     src = builtins.path {
       name = "${pname}-${version}";
@@ -54,19 +52,17 @@ in
       installShellFiles
     ];
 
-    buildInputs =
-      extraPackages
-      ++ [
-        glib
-        astal-io
-        astal3
-        astal4
-      ];
+    buildInputs = [
+      glib
+      astal-io
+      astal3
+      astal4
+    ];
 
     preFixup = ''
       gappsWrapperArgs+=(
         --prefix NIX_GI_DIRS : "$(${datadirs})"
-        --prefix PATH : "${lib.makeBinPath (bins ++ extraPackages)}"
+        --prefix PATH : "${lib.makeBinPath bins}"
       )
     '';
 
@@ -82,6 +78,8 @@ in
       "-X main.astalGjs=${astal-gjs}"
       "-X main.gtk4LayerShell=${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
     ];
+
+    passthru = { inherit wrap; };
 
     meta = {
       homepage = "https://github.com/Aylur/ags";

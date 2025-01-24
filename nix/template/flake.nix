@@ -2,7 +2,7 @@
   description = "My Awesome Desktop Shell";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     ags = {
       url = "github:aylur/ags";
@@ -11,9 +11,9 @@
   };
 
   outputs = {
-    self,
     nixpkgs,
     ags,
+    ...
   }: let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
@@ -37,7 +37,7 @@
       default = pkgs.mkShell {
         buildInputs = [
           # includes astal3 astal4 astal-io by default
-          (ags.packages.${system}.default.override {
+          (ags.packages.${system}.default.wrap {
             extraPackages = [
               # cherry pick packages
             ];
