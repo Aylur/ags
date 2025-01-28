@@ -1,11 +1,11 @@
 {
+  symlinkJoin,
   astal3,
   astal4,
   gtk4-layer-shell,
   astal-io,
   astal-gjs,
   lib,
-  writers,
   buildGoModule,
   wrapGAppsHook,
   gobject-introspection,
@@ -18,27 +18,42 @@
   extraPackages ? [],
 }: let
   inherit (builtins) replaceStrings readFile;
+  version = replaceStrings ["\n"] [""] (readFile ../version);
+  pname = "ags";
 
-  datadirs = writers.writeNu "datadirs" ''
-    $env.XDG_DATA_DIRS
-    | split row ":"
-    | filter { $"($in)/gir-1.0" | path exists }
-    | str join ":"
-  '';
+  buildInputs =
+    extraPackages
+    ++ [
+      glib
+      astal-io
+      astal3
+      astal4
+      gobject-introspection # needed for type generation
+    ];
 
   bins = [
     gjs
     nodejs
     dart-sass
     blueprint-compiler
-    astal-io # FIXME: should not be needed after the astal commends are properly implemented using dbus in astal.go
+    astal-io # FIXME: should not be needed after the astal commands are properly implemented using dbus in astal.go
   ];
 
-  version = replaceStrings ["\n"] [""] (readFile ../version);
-  pname = "ags";
+  girDirs = let
+    # gir files are usually in `dev` output.
+    # `propagatedBuildInputs` are also available in the gjs runtime
+    # so we also want to generate types for these.
+    depsOf = pkg:
+      [(pkg.dev or pkg)]
+      ++ (map depsOf (pkg.propagatedBuildInputs or []));
+  in
+    symlinkJoin {
+      name = "gir-dirs";
+      paths = lib.flatten (map depsOf buildInputs);
+    };
 in
   buildGoModule {
-    inherit pname version;
+    inherit pname version buildInputs;
 
     src = builtins.path {
       name = "${pname}-${version}";
@@ -54,18 +69,9 @@ in
       installShellFiles
     ];
 
-    buildInputs =
-      extraPackages
-      ++ [
-        glib
-        astal-io
-        astal3
-        astal4
-      ];
-
     preFixup = ''
       gappsWrapperArgs+=(
-        --prefix NIX_GI_DIRS : "$(${datadirs})"
+        --prefix EXTRA_GIR_DIRS : "${girDirs}/share/gir-1.0"
         --prefix PATH : "${lib.makeBinPath (bins ++ extraPackages)}"
       )
     '';
