@@ -55,9 +55,18 @@ in
   buildGoModule {
     inherit pname version buildInputs;
 
-    src = builtins.path {
-      name = "${pname}-${version}";
-      path = lib.cleanSource ../.;
+    src = lib.fileset.toSource {
+      root = ../.;
+      fileset = lib.fileset.unions [
+        ../go.mod
+        ../go.sum
+        ../version
+
+        ../main.go
+        ../cmd
+        ../lib
+        ../data
+      ];
     };
 
     vendorHash = "sha256-Pw6UNT5YkDVz4HcH7b5LfOg+K3ohrBGPGB9wYGAQ9F4=";
