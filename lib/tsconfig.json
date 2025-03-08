@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "module": "ES2022",
+        "target": "ES2023",
+        "strict": true,
+        "moduleResolution": "Bundler",
+        "skipLibCheck": true
+    }
+}

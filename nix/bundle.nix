@@ -23,10 +23,13 @@ pkgs.stdenvNoCC.mkDerivation {
     extraPackages
     ++ [
       pkgs.gjs
-      self.packages.${pkgs.system}.astal4
-      self.packages.${pkgs.system}.astal3
       self.packages.${pkgs.system}.io
-    ];
+    ]
+    ++ (
+      if gtk4
+      then [self.packages.${pkgs.system}.astal4]
+      else [self.packages.${pkgs.system}.astal3]
+    );
 
   preFixup = ''
     gappsWrapperArgs+=(

@@ -1,0 +1,43 @@
+{
+    "name": "ags",
+    "version": "3.0.0",
+    "type": "module",
+    "author": "Aylur",
+    "license": "LGPL-2.1",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aylur/ags.git",
+        "directory": "ags/js"
+    },
+    "funding": {
+        "type": "kofi",
+        "url": "https://ko-fi.com/aylur"
+    },
+    "exports": {
+        "./gtk4": "./src/gtk4/index.ts",
+        "./gtk4/app": "./src/gtk4/app.ts",
+        "./gtk4/jsx-runtime": "./src/gtk4/jsx-runtime.ts",
+        "./file": "./src/file.ts",
+        "./gobject": "./src/gobject.ts",
+        "./process": "./src/process.ts",
+        "./state": "./src/state.ts",
+        "./time": "./src/time.ts"
+    },
+    "engines": {
+        "gjs": ">=1.79.0"
+    },
+    "os": [
+        "linux"
+    ],
+    "devDependencies": {
+        "@eslint/js": "latest",
+        "@types/eslint__js": "latest",
+        "eslint": "latest",
+        "typescript": "latest",
+        "typescript-eslint": "latest"
+    },
+    "scripts": {
+        "lint": "eslint . --fix",
+        "types": "npx @ts-for-gir generate -o @girs --ignoreVersionConflicts"
+    }
+}
