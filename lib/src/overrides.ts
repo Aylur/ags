@@ -83,3 +83,7 @@ await suppress(import("gi://AstalWp"), ({ Wp, Audio, Video }) => {
     patch(Video.prototype, "sources")
     patch(Video.prototype, "devices")
 })
+
+await suppress(import("gi://AstalTray"), ({ Tray }) => {
+    patch(Tray.prototype, "items")
+})
