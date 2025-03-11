@@ -15,7 +15,7 @@ var (
 
 	// should be overriden with -ldflags
 	gtk4LayerShell = "/usr/lib/libgtk4-layer-shell.so"
-	agsJsPackage   = "/usr/share/ags/gjs"
+	agsJsPackage   = "/usr/share/ags/js"
 	tsForGir       = "@ts-for-gir/cli"
 )
 

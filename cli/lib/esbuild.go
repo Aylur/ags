@@ -158,7 +158,7 @@ func Bundle(opts BundleOpts) {
 	}
 
 	if _, ok := alias["ags"]; !ok {
-		alias["ags"] = agsJsPackage
+		alias["ags"] = agsJsPackage + "/src"
 	}
 
 	buildOpts := api.BuildOptions{

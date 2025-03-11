@@ -81,7 +81,7 @@ in
     '';
 
     ldflags = [
-      "-X main.agsJsPackage=${agsJsPackage}/share/ags/js/src"
+      "-X main.agsJsPackage=${agsJsPackage}/share/ags/js"
       "-X main.gtk4LayerShell=${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
     ];
 
