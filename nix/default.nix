@@ -14,6 +14,7 @@
   gjs,
   nodejs,
   dart-sass,
+  libsoup_3,
   blueprint-compiler,
   installShellFiles,
   extraPackages ? [],
@@ -28,6 +29,7 @@
       astal3
       astal4
       gobject-introspection # needed for type generation
+      libsoup_3 # needed by the fetch impl
     ];
 
   bins = [

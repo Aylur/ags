@@ -21,7 +21,8 @@
         "./gobject": "./src/gobject.ts",
         "./process": "./src/process.ts",
         "./state": "./src/state.ts",
-        "./time": "./src/time.ts"
+        "./time": "./src/time.ts",
+        "./fetch": "./src/fetch.ts"
     },
     "engines": {
         "gjs": ">=1.79.0"
