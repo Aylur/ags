@@ -98,6 +98,11 @@ export class Poll<T> extends State<T> {
     toString(): string {
         return `Poll<${typeof this.get()}>`
     }
+
+    destroy() {
+        this.stop()
+        super.destroy()
+    }
 }
 
 export class Watch<T> extends State<T> {
@@ -118,6 +123,7 @@ export class Watch<T> extends State<T> {
         transform: Transform<T> = out => out as T,
         onError: ErrHandler<T> = err => console.error(err),
     ) {
+        this.stop()
         this.proc = process.subprocess({
             cmd: exec,
             out: out => this.set(transform(out, this.get())),
@@ -132,5 +138,10 @@ export class Watch<T> extends State<T> {
 
     toString(): string {
         return `Watch<${typeof this.get()}>`
+    }
+
+    destroy() {
+        this.stop()
+        super.destroy()
     }
 }
