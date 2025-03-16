@@ -23,11 +23,6 @@
     forAllSystems = nixpkgs.lib.genAttrs systems;
     version = builtins.replaceStrings ["\n"] [""] (builtins.readFile ./cli/version);
   in {
-    lib.bundle = import ./nix/bundle.nix {
-      inherit self;
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    };
-
     packages = forAllSystems (
       system: let
         inherit (astal.packages.${system}) astal3 astal4 io;
@@ -64,7 +59,7 @@
       welcomeText = ''
         # Getting Started
         - run `nix develop` to enter the development environment
-        - run `ags init -d . -f` to setup an initial ags project
+        - run `ags init -d . -f --gtk 4` to setup an initial ags project
         - run `ags run .`   to run the project
       '';
     };
