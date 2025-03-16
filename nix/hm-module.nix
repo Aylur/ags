@@ -9,12 +9,12 @@ self: {
   inherit (lib.options) mkOption mkEnableOption literalExpression;
 
   cfg = config.programs.ags;
-  default = {
-    agsPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
-    gtk3Package = self.packages.${pkgs.stdenv.hostPlatform.system}.astal3;
-    gtk4Package = self.packages.${pkgs.stdenv.hostPlatform.system}.astal4;
-    ioPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.io;
-    gjsPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.gjsPackage;
+  default = with self.packages.${pkgs.stdenv.hostPlatform.system}; {
+    agsPackage = ags;
+    gtk3Package = astal3;
+    gtk4Package = astal4;
+    ioPackage = io;
+    gjsPackage = gjsPackage;
   };
 in {
   options.programs.ags = {
@@ -120,7 +120,7 @@ in {
         extraPackages = cfg.extraPackages;
         astal3 = cfg.astal.gtk3Package;
         astal-io = cfg.astal.ioPackage;
-        astal-gjs = "${config.home.homeDirectory}/.local";
+        agsJsPackage = "${config.home.homeDirectory}/.local";
       };
     in {
       programs.ags.finalPackage = pkg;
