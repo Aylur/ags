@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -57,6 +56,7 @@ when no positional argument is given
 	f.StringSliceVar(&defines, "define", []string{}, "replace global identifiers with constant expressions")
 	f.StringArrayVar(&alias, "alias", []string{}, "alias packages")
 	f.StringArrayVarP(&args, "arg", "a", []string{}, "cli args to pass to gjs")
+	f.UintVarP(&gtkVersion, "gtk", "g", 0, "gtk version")
 	f.StringVar(&logFile, "log-file", "", "file to redirect the stdout of gjs to")
 	f.MarkHidden("package")
 	f.MarkHidden("alias")
@@ -114,29 +114,22 @@ func logging() (io.Writer, io.Writer, *os.File) {
 }
 
 func run(infile string, rootdir string) {
-	outfile := getOutfile()
-
-	jscode, err := os.ReadFile(infile)
-	if err != nil {
-		lib.Err(err)
+	if gtkVersion == 0 {
+		gtkVersion = inferGtkVersion(infile)
 	}
 
-	opts := lib.BundleOpts{
+	outfile := getOutfile()
+
+	lib.Bundle(lib.BundleOpts{
 		Infile:           infile,
 		Outfile:          outfile,
 		Defines:          defines,
 		Alias:            alias,
-		GtkVersion:       4,
+		GtkVersion:       gtkVersion,
 		WorkingDirectory: rootdir,
-	}
+	})
 
-	if strings.Contains(string(jscode), "from gi://Gtk?version=3.0") {
-		opts.GtkVersion = 3
-	}
-
-	lib.Bundle(opts)
-
-	if opts.GtkVersion == 4 {
+	if gtkVersion == 4 {
 		os.Setenv("LD_PRELOAD", gtk4LayerShell)
 	}
 
