@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"os"
 	"path/filepath"
-	"strings"
+	"regexp"
 	"text/template"
 
 	"github.com/spf13/cobra"
@@ -49,19 +49,13 @@ func inferGtkVersion(entryfile string) uint {
 		lib.Err(err)
 	}
 
-	gtk3 := strings.Contains(string(content), `from "gi://Gtk?version=3.0"`) ||
-		strings.Contains(string(content), `import "gi://Gtk?version=3.0"`) ||
-		strings.Contains(string(content), `from "ags/gtk3/app"`)
-
-	if gtk3 {
+	gtk3 := `(?:from|import)\s+["'](?:gi://Gtk\?version=3\.0|ags/gtk3/app)["']`
+	if regexp.MustCompile(gtk3).Match(content) {
 		return 3
 	}
 
-	gtk4 := strings.Contains(string(content), `from "gi://Gtk?version=4.0"`) ||
-		strings.Contains(string(content), `import "gi://Gtk?version=4.0"`) ||
-		strings.Contains(string(content), `from "ags/gtk4/app"`)
-
-	if gtk4 {
+	gtk4 := `(?:from|import)\s+["'](?:gi://Gtk\?version=4\.0|ags/gtk4/app)["']`
+	if regexp.MustCompile(gtk4).Match(content) {
 		return 4
 	}
 
