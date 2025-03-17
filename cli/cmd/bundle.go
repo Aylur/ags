@@ -17,7 +17,7 @@ cat <<EOF | base64 --decode > {{.JsOutput}}
 {{.JsCode}}
 EOF
 
-LD_PRELOAD={{.Gtk4LayerShell}} {{.Gjs}} -m {{.JsOutput}}`
+LD_PRELOAD="{{.Gtk4LayerShell}}" {{.Gjs}} -m {{.JsOutput}}`
 
 type WrapperArgs struct {
 	Bash           string
@@ -65,7 +65,7 @@ func inferGtkVersion(entryfile string) uint {
 		return 4
 	}
 
-	lib.Err("Could not infer Gtk version from entry file.\n" +
+	lib.Err("Failed to infer Gtk version from entry file.\n" +
 		lib.Magenta("tip: ") + "specify it with the --gtk flag")
 	return 0
 }
