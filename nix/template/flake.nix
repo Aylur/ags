@@ -46,13 +46,6 @@
 
         buildInputs = extraPackages ++ [pkgs.gjs];
 
-        # remove when using gtk3
-        preFixup = ''
-          gappsWrapperArgs+=(
-            --set LD_PRELOAD "${pkgs.gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
-          )
-        '';
-
         installPhase = ''
           runHook preInstall
 
@@ -60,12 +53,6 @@
           mkdir -p $out/share
           cp -r * $out/share
           ags bundle ${entry} $out/bin/${pname} -d "SRC='$out/share'"
-          chmod +x $out/bin/${pname}
-
-          # make sure entry file has gjs shebang
-          if ! head -n 1 "$out/bin/${pname}" | grep -q "^#!"; then
-            ${pkgs.gnused}/bin/sed -i '1i #!/gjs/bin/gjs -m' "$out/bin/${pname}"
-          fi
 
           runHook postInstall
         '';

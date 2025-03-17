@@ -12,6 +12,7 @@
   gobject-introspection,
   glib,
   gjs,
+  bash,
   nodejs,
   dart-sass,
   libsoup_3,
@@ -85,6 +86,8 @@ in
     ldflags = [
       "-X main.agsJsPackage=${agsJsPackage}/share/ags/js"
       "-X main.gtk4LayerShell=${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
+      "-X main.gjs=${gjs}/bin/gjs"
+      "-X main.bash=${bash}/bin/bash"
     ];
 
     meta = {

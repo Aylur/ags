@@ -19,6 +19,8 @@ var (
 	defines        []string
 	alias          []string
 	workingDir     string
+	bash           string
+	gjs            string
 )
 
 var rootCmd = &cobra.Command{
@@ -33,6 +35,8 @@ type Variables struct {
 	Gtk4LayerShell string
 	AgsJsPackage   string
 	TsForGir       string
+	Bash           string
+	Gjs            string
 }
 
 func Initialize(vars Variables) {
@@ -41,6 +45,8 @@ func Initialize(vars Variables) {
 	gtk4LayerShell = vars.Gtk4LayerShell
 	agsJsPackage = vars.AgsJsPackage
 	tsForGir = vars.TsForGir
+	bash = vars.Bash
+	gjs = vars.Gjs
 
 	rootCmd.Version = version
 }

@@ -27,7 +27,7 @@ generating types and setting up a basic bar example`,
 func init() {
 	f := initCommand.Flags()
 
-	f.UintVarP(&gtkVersion, "gtk", "g", 3, "gtk version to use")
+	f.UintVarP(&gtkVersion, "gtk", "g", 4, "gtk version")
 	f.BoolVarP(&force, "force", "f", false, "override existing files")
 	f.StringVarP(&initDirectory, "directory", "d", defaultConfigDir(), "target directory")
 }
@@ -47,9 +47,9 @@ func getDataFile(name string) string {
 // eslint
 // prettier or eslint stylistic
 func initConfig(cmd *cobra.Command, args []string) {
-	gtk := "gtk3"
-	if gtkVersion == 4 {
-		gtk = "gtk4"
+	gtk := "gtk4"
+	if gtkVersion == 3 {
+		gtk = "gtk3"
 	}
 
 	initDir, err := filepath.Abs(initDirectory)

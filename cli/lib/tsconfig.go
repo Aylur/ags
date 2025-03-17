@@ -2,19 +2,18 @@ package lib
 
 import (
 	"encoding/json"
-	"strings"
 
 	"github.com/titanous/json5"
 )
 
-func defaultTsconfig(gtkVersion uint) map[string]interface{} {
-	gtk := "gtk3"
-	if gtkVersion == 4 {
-		gtk = "gtk4"
+func defaultTsconfig(gtkVersion uint) map[string]any {
+	gtk := "gtk4"
+	if gtkVersion == 3 {
+		gtk = "gtk3"
 	}
 
-	return map[string]interface{}{
-		"compilerOptions": map[string]interface{}{
+	return map[string]any{
+		"compilerOptions": map[string]any{
 			"experimentalDecorators": true,
 			"module":                 "ES2022",
 			"target":                 "ES2022",
@@ -26,30 +25,27 @@ func defaultTsconfig(gtkVersion uint) map[string]interface{} {
 	}
 }
 
-func updateTsconfig(tsconfig map[string]interface{}) {
-	opts, ok := tsconfig["compilerOptions"].(map[string]interface{})
+// if jsxImportSource is not present update it to `gtkVersion`
+func updateTsconfig(tsconfig map[string]any, gtkVersion uint) {
+	compilerOptions, ok := tsconfig["compilerOptions"].(map[string]any)
 	if !ok {
-		opts = map[string]interface{}{}
+		compilerOptions = map[string]any{}
 	}
 
-	src, ok := opts["jsxImportSource"].(string)
+	jsxImportSource, ok := compilerOptions["jsxImportSource"].(string)
 	if !ok {
-		src = "gtk3"
+		jsxImportSource = "ags/gtk4"
+		if gtkVersion == 3 {
+			jsxImportSource = "ags/gtk3"
+		}
 	}
 
-	var gtk string
-	if strings.HasSuffix(src, "gtk4") {
-		gtk = "gtk4"
-	} else {
-		gtk = "gtk3"
-	}
-
-	opts["experimentalDecorators"] = true
-	opts["module"] = "ES2022"
-	opts["target"] = "ES2022"
-	opts["moduleResolution"] = "Bundler"
-	opts["jsx"] = "react-jsx"
-	opts["jsxImportSource"] = "ags/" + gtk
+	compilerOptions["experimentalDecorators"] = true
+	compilerOptions["module"] = "ES2022"
+	compilerOptions["target"] = "ES2022"
+	compilerOptions["moduleResolution"] = "Bundler"
+	compilerOptions["jsx"] = "react-jsx"
+	compilerOptions["jsxImportSource"] = jsxImportSource
 }
 
 // if tsconfig.json exists in srcdir returns an updated config
@@ -58,18 +54,18 @@ func GetTsconfig(srcdir string, gtkVersion uint) string {
 	// TODO: look in parent directories recursively
 	path := srcdir + "/tsconfig.json"
 
-	var tsconfig map[string]interface{}
+	var tsconfig map[string]any
 	if FileExists(path) {
 		if err := json5.Unmarshal(ReadFile(path), &tsconfig); err != nil {
 			Err(err)
 		}
 
-		updateTsconfig(tsconfig)
+		updateTsconfig(tsconfig, gtkVersion)
 	} else {
 		tsconfig = defaultTsconfig(gtkVersion)
 	}
 
-	conf, err := json.MarshalIndent(tsconfig, "", "    ")
+	conf, err := json.MarshalIndent(tsconfig, "", "  ")
 	if err != nil {
 		Err(err)
 	}

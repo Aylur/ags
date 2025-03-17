@@ -14,9 +14,11 @@ var (
 	data embed.FS
 
 	// should be overriden with -ldflags
+	tsForGir       = "@ts-for-gir/cli"
 	gtk4LayerShell = "/usr/lib/libgtk4-layer-shell.so"
 	agsJsPackage   = "/usr/share/ags/js"
-	tsForGir       = "@ts-for-gir/cli"
+	bash           = "/bin/sh"
+	gjs            = "/bin/gjs"
 )
 
 func main() {
@@ -27,6 +29,8 @@ func main() {
 		Gtk4LayerShell: gtk4LayerShell,
 		AgsJsPackage:   agsJsPackage,
 		TsForGir:       tsForGir,
+		Gjs:            gjs,
+		Bash:           bash,
 	})
 	cmd.Execute()
 }

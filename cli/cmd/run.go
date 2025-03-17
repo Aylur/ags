@@ -6,12 +6,13 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
 var (
-	gtk4      bool
 	targetDir string
 	logFile   string
 	args      []string
@@ -48,7 +49,6 @@ var runCommand = &cobra.Command{
 
 func init() {
 	f := runCommand.Flags()
-	f.BoolVar(&gtk4, "gtk4", false, "preload Gtk4LayerShell")
 	f.StringVarP(&targetDir, "directory", "d", defaultConfigDir(),
 		`directory to search for an "app" entry file
 when no positional argument is given
@@ -81,7 +81,7 @@ func getAppEntry(dir string) string {
 	infile := filepath.Join(path, "app")
 	valid := []string{"js", "ts", "jsx", "tsx"}
 
-	app := lib.Some(valid, func(ext string) bool {
+	app := slices.ContainsFunc(valid, func(ext string) bool {
 		_, err := os.Stat(infile + "." + ext)
 		return !os.IsNotExist(err)
 	})
@@ -114,22 +114,29 @@ func logging() (io.Writer, io.Writer, *os.File) {
 }
 
 func run(infile string, rootdir string) {
-	var gtk uint = 3
-	if gtk4 {
-		gtk = 4
+	outfile := getOutfile()
+
+	jscode, err := os.ReadFile(infile)
+	if err != nil {
+		lib.Err(err)
 	}
 
-	outfile := getOutfile()
-	lib.Bundle(lib.BundleOpts{
+	opts := lib.BundleOpts{
 		Infile:           infile,
 		Outfile:          outfile,
 		Defines:          defines,
 		Alias:            alias,
-		GtkVersion:       gtk,
+		GtkVersion:       4,
 		WorkingDirectory: rootdir,
-	})
+	}
 
-	if gtk4 {
+	if strings.Contains(string(jscode), "from gi://Gtk?version=3.0") {
+		opts.GtkVersion = 3
+	}
+
+	lib.Bundle(opts)
+
+	if opts.GtkVersion == 4 {
 		os.Setenv("LD_PRELOAD", gtk4LayerShell)
 	}
 
