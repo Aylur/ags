@@ -149,7 +149,7 @@ type BundleOpts struct {
 // svg loader
 // other css preproceccors
 // http plugin with caching
-func Bundle(opts BundleOpts) {
+func Bundle(opts BundleOpts) api.BuildResult {
 	defines := sliceToKV(opts.Defines)
 	alias := sliceToKV(opts.Alias)
 
@@ -162,7 +162,6 @@ func Bundle(opts BundleOpts) {
 	}
 
 	buildOpts := api.BuildOptions{
-		Write:       true,
 		Color:       api.ColorAlways,
 		LogLevel:    api.LogLevelWarning,
 		EntryPoints: []string{opts.Infile},
@@ -197,6 +196,10 @@ func Bundle(opts BundleOpts) {
 		},
 	}
 
+	if opts.Outfile != "" {
+		buildOpts.Write = true
+	}
+
 	if opts.WorkingDirectory != "" {
 		dir, err := filepath.Abs(opts.WorkingDirectory)
 		if err != nil {
@@ -215,4 +218,6 @@ func Bundle(opts BundleOpts) {
 	if len(result.Errors) > 0 {
 		os.Exit(1)
 	}
+
+	return result
 }

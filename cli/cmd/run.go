@@ -89,7 +89,7 @@ func getAppEntry(dir string) string {
 	if !app {
 		msg := "no such file or directory: " +
 			fmt.Sprintf("\"%s\"\n", lib.Cyan(dir+"/app")) +
-			lib.Magenta("tip: ") + "valid names are: "
+			lib.Cyan("tip: ") + "valid names are: "
 		for _, v := range valid {
 			msg = msg + fmt.Sprintf(` "%s"`, lib.Cyan("app."+v))
 		}

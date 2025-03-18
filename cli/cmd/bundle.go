@@ -60,7 +60,7 @@ func inferGtkVersion(entryfile string) uint {
 	}
 
 	lib.Err("Failed to infer Gtk version from entry file.\n" +
-		lib.Magenta("tip: ") + "specify it with the --gtk flag")
+		lib.Cyan("tip: ") + "specify it with the --gtk flag")
 	return 0
 }
 
@@ -96,8 +96,8 @@ func bundle(cmd *cobra.Command, args []string) {
 
 	tmpfile := filepath.Join(rundir, "ags.js")
 
-	lib.Bundle(lib.BundleOpts{
-		Outfile:          tmpfile,
+	result := lib.Bundle(lib.BundleOpts{
+		Outfile:          "",
 		Infile:           infile,
 		Alias:            alias,
 		Defines:          defines,
@@ -105,14 +105,13 @@ func bundle(cmd *cobra.Command, args []string) {
 		WorkingDirectory: workingDir,
 	})
 
-	jscode, err := os.ReadFile(tmpfile)
-	if err != nil {
-		lib.Err(err)
+	if len(result.OutputFiles) != 1 {
+		lib.Err("internal error")
 	}
 
 	wrapperArgs := WrapperArgs{
 		JsOutput:       tmpfile,
-		JsCode:         base64.StdEncoding.EncodeToString(jscode),
+		JsCode:         base64.StdEncoding.EncodeToString(result.OutputFiles[0].Contents),
 		Gtk4LayerShell: gtk4LayerShell,
 		Bash:           bash,
 		Gjs:            gjs,
