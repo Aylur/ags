@@ -17,7 +17,7 @@ cat <<EOF | base64 --decode > {{.JsOutput}}
 {{.JsCode}}
 EOF
 
-LD_PRELOAD="{{.Gtk4LayerShell}}" {{.Gjs}} -m {{.JsOutput}}`
+LD_PRELOAD="{{.Gtk4LayerShell}}" {{.Gjs}} -m {{.JsOutput}} $@`
 
 type WrapperArgs struct {
 	Bash           string
