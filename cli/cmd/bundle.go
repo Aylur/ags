@@ -89,13 +89,6 @@ func bundle(cmd *cobra.Command, args []string) {
 		gtkVersion = inferGtkVersion(infile)
 	}
 
-	rundir, found := os.LookupEnv("XDG_RUNTIME_DIR")
-	if !found {
-		rundir = "/tmp"
-	}
-
-	tmpfile := filepath.Join(rundir, "ags.js")
-
 	result := lib.Bundle(lib.BundleOpts{
 		Outfile:          "",
 		Infile:           infile,
@@ -108,6 +101,15 @@ func bundle(cmd *cobra.Command, args []string) {
 	if len(result.OutputFiles) != 1 {
 		lib.Err("internal error")
 	}
+
+	rundir, found := os.LookupEnv("XDG_RUNTIME_DIR")
+	if !found {
+		rundir = "/tmp"
+	}
+
+	jscode := result.OutputFiles[0].Contents
+	id := base64.RawURLEncoding.EncodeToString(jscode)[:6]
+	tmpfile := filepath.Join(rundir, id+"-ags.js")
 
 	wrapperArgs := WrapperArgs{
 		JsOutput:       tmpfile,
