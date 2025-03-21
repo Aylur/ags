@@ -14,6 +14,8 @@ export class Poll<T> extends State<T> {
 
     isPolling() { return !!this.time }
 
+    constructor(init: T)
+
     constructor(
         init: T,
         interval: number,
@@ -31,25 +33,28 @@ export class Poll<T> extends State<T> {
 
     constructor(
         init: T,
-        interval: number,
-        execOrCallback: Exec | Callback<T>,
+        interval?: number,
+        execOrCallback?: Exec | Callback<T>,
         transformOrErrHandler?: Transform<T> | ErrHandler<T>,
         onError?: ErrHandler<T>,
     ) {
         super(init)
-        if (typeof execOrCallback === "function") {
-            this.pollFn(
-                interval,
-                execOrCallback,
-                transformOrErrHandler as ErrHandler<T>,
-            )
-        } else {
-            this.pollExec(
-                interval,
-                execOrCallback,
-                transformOrErrHandler as Transform<T>,
-                onError,
-            )
+        if (typeof interval === "number") {
+            if (typeof execOrCallback === "function") {
+                this.pollFn(
+                    interval,
+                    execOrCallback,
+                    transformOrErrHandler as ErrHandler<T>,
+                )
+            }
+            else if (typeof execOrCallback === "string") {
+                this.pollExec(
+                    interval,
+                    execOrCallback,
+                    transformOrErrHandler as Transform<T>,
+                    onError,
+                )
+            }
         }
     }
 
@@ -108,14 +113,20 @@ export class Poll<T> extends State<T> {
 export class Watch<T> extends State<T> {
     private proc?: process.Process
 
+    isWatcing() { return !!this.proc }
+
+    constructor(init: T)
+
     constructor(
         init: T,
-        exec: Exec,
+        exec?: Exec,
         transform?: Transform<T>,
         onError?: ErrHandler<T>,
     ) {
         super(init)
-        this.watch(exec, transform, onError)
+        if (typeof exec === "string") {
+            this.watch(exec, transform, onError)
+        }
     }
 
     watch(
