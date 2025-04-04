@@ -79,24 +79,24 @@ func getAppEntry(dir string) string {
 	}
 
 	infile := filepath.Join(path, "app")
-	valid := []string{"js", "ts", "jsx", "tsx"}
+	exts := []string{"js", "ts", "jsx", "tsx"}
 
-	app := slices.ContainsFunc(valid, func(ext string) bool {
+	i := slices.IndexFunc(exts, func(ext string) bool {
 		_, err := os.Stat(infile + "." + ext)
 		return !os.IsNotExist(err)
 	})
 
-	if !app {
+	if i == -1 {
 		msg := "no such file or directory: " +
 			fmt.Sprintf("\"%s\"\n", lib.Cyan(dir+"/app")) +
 			lib.Cyan("tip: ") + "valid names are: "
-		for _, v := range valid {
+		for _, v := range exts {
 			msg = msg + fmt.Sprintf(` "%s"`, lib.Cyan("app."+v))
 		}
 		lib.Err(msg)
 	}
 
-	return infile
+	return infile + "." + exts[i]
 }
 
 func logging() (io.Writer, io.Writer, *os.File) {
