@@ -25,6 +25,7 @@
     go
     gopls
     gotools
+    gofumpt
     go-tools
     meson
     ninja
