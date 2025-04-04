@@ -1,1 +1,1 @@
-export * from "../gjsx/src/fetch.ts"
+export * from "../gjsx/src/fetch.js"

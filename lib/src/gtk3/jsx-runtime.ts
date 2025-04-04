@@ -5,13 +5,21 @@ import { CCProps } from "../../gjsx/src/jsx/index.js"
 import { intrinsicElements } from "../../gjsx/src/gtk3/jsx-runtime.js"
 
 Object.defineProperty(Astal.Box.prototype, "children", {
-    get() { return this.get_children() },
-    set(v) { this.set_children(v) },
+    get() {
+        return this.get_children()
+    },
+    set(v) {
+        this.set_children(v)
+    },
 })
 
 Object.defineProperty(Astal.Overlay.prototype, "overlays", {
-    get() { return this.get_overlays() },
-    set(v) { this.set_overlays(v) },
+    get() {
+        return this.get_overlays()
+    },
+    set(v) {
+        this.set_overlays(v)
+    },
 })
 
 Object.assign(intrinsicElements, {
@@ -39,6 +47,7 @@ Object.assign(intrinsicElements, {
 
 declare global {
     namespace JSX {
+        // prettier-ignore
         interface IntrinsicElements {
             box: CCProps<Astal.Box, Omit<Astal.Box.ConstructorProps, "children">>
             button: CCProps<Astal.Button, Astal.Button.ConstructorProps>

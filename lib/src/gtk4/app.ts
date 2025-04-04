@@ -11,8 +11,6 @@ GLib.unsetenv("LD_PRELOAD")
 
 // users might want to use Adwaita in which case it has to be initialized
 // it might be common pitfall to forget it because `App` is not `Adw.Application`
-await import("gi://Adw?version=1")
-    .then(({ default: Adw }) => Adw.init())
-    .catch(() => void 0)
+await import("gi://Adw?version=1").then(({ default: Adw }) => Adw.init()).catch(() => void 0)
 
 export default mkApp(Astal.Application)

@@ -2,20 +2,24 @@
  * Workaround for "Can't convert non-null pointer to JS value "
  */
 
-export { }
+export {}
 
-const snakeify = (str: string) => str
-    .replace(/([a-z])([A-Z])/g, "$1_$2")
-    .replaceAll("-", "_")
-    .toLowerCase()
+function snakeify(str: string) {
+    return str
+        .replace(/([a-z])([A-Z])/g, "$1_$2")
+        .replaceAll("-", "_")
+        .toLowerCase()
+}
 
 async function suppress<T>(mod: Promise<{ default: T }>, patch: (m: T) => void) {
-    return mod.then(m => patch(m.default)).catch(() => void 0)
+    return mod.then((m) => patch(m.default)).catch(() => void 0)
 }
 
 function patch<P extends object>(proto: P, prop: Extract<keyof P, string>) {
     Object.defineProperty(proto, prop, {
-        get() { return this[`get_${snakeify(prop)}`]() },
+        get() {
+            return this[`get_${snakeify(prop)}`]()
+        },
     })
 }
 

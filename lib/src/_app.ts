@@ -44,7 +44,9 @@ export function mkApp<App extends App4>(App: App): Astal4JS
 
 export function mkApp(App: App3 | App4) {
     return new (class AstalJS extends App {
-        static { GObject.registerClass({ GTypeName: "AstalJS" }, this as any) }
+        static {
+            GObject.registerClass({ GTypeName: "AstalJS" }, this as any)
+        }
 
         eval(body: string): Promise<any> {
             return new Promise((res, rej) => {
@@ -64,9 +66,7 @@ export function mkApp(App: App3 | App4) {
         vfunc_request(msg: string, conn: Gio.SocketConnection): void {
             if (typeof this.requestHandler === "function") {
                 this.requestHandler(msg, (response) => {
-                    IO.write_sock(conn, String(response), (_, res) =>
-                        IO.write_sock_finish(res),
-                    )
+                    IO.write_sock(conn, String(response), (_, res) => IO.write_sock_finish(res))
                 })
             } else {
                 super.vfunc_request(msg, conn)
@@ -101,20 +101,17 @@ export function mkApp(App: App3 | App4) {
             try {
                 app.acquire_socket()
             } catch (error) {
-                return client(msg => IO.send_request(app.instanceName, msg)!, ...programArgs)
+                return client((msg) => IO.send_request(app.instanceName, msg)!, ...programArgs)
             }
 
-            if (css)
-                this.apply_css(css, false)
+            if (css) this.apply_css(css, false)
 
-            if (icons)
-                app.add_icons(icons)
+            if (icons) app.add_icons(icons)
 
             hold ??= true
-            if (hold)
-                app.hold()
+            if (hold) app.hold()
 
             app.runAsync([])
         }
-    })
+    })()
 }

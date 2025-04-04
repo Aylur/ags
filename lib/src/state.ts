@@ -12,7 +12,9 @@ type Callback<T> = (prev: T) => T | Promise<T>
 export class Poll<T> extends State<T> {
     private time?: time.Time
 
-    isPolling() { return !!this.time }
+    isPolling() {
+        return !!this.time
+    }
 
     constructor(init: T)
 
@@ -24,12 +26,7 @@ export class Poll<T> extends State<T> {
         onError?: ErrHandler<T>,
     )
 
-    constructor(
-        init: T,
-        interval: number,
-        callback: Callback<T>,
-        onError?: ErrHandler<T>,
-    )
+    constructor(init: T, interval: number, callback: Callback<T>, onError?: ErrHandler<T>)
 
     constructor(
         init: T,
@@ -41,13 +38,8 @@ export class Poll<T> extends State<T> {
         super(init)
         if (typeof interval === "number") {
             if (typeof execOrCallback === "function") {
-                this.pollFn(
-                    interval,
-                    execOrCallback,
-                    transformOrErrHandler as ErrHandler<T>,
-                )
-            }
-            else if (typeof execOrCallback === "string") {
+                this.pollFn(interval, execOrCallback, transformOrErrHandler as ErrHandler<T>)
+            } else if (typeof execOrCallback === "string") {
                 this.pollExec(
                     interval,
                     execOrCallback,
@@ -66,8 +58,8 @@ export class Poll<T> extends State<T> {
     pollExec(
         interval: number,
         exec: Exec,
-        transform: Transform<T> = out => out as T,
-        onError: ErrHandler<T> = err => console.error(err),
+        transform: Transform<T> = (out) => out as T,
+        onError: ErrHandler<T> = (err) => console.error(err),
     ): void {
         this.stop()
         this.time = time.interval(interval, async () => {
@@ -83,7 +75,7 @@ export class Poll<T> extends State<T> {
     pollFn(
         interval: number,
         callback: Callback<T>,
-        onError: ErrHandler<T> = err => console.error(err),
+        onError: ErrHandler<T> = (err) => console.error(err),
     ): void {
         this.stop()
         this.time = time.interval(interval, async () => {
@@ -113,16 +105,13 @@ export class Poll<T> extends State<T> {
 export class Watch<T> extends State<T> {
     private proc?: process.Process
 
-    isWatcing() { return !!this.proc }
+    isWatcing() {
+        return !!this.proc
+    }
 
     constructor(init: T)
 
-    constructor(
-        init: T,
-        exec?: Exec,
-        transform?: Transform<T>,
-        onError?: ErrHandler<T>,
-    ) {
+    constructor(init: T, exec?: Exec, transform?: Transform<T>, onError?: ErrHandler<T>) {
         super(init)
         if (typeof exec === "string") {
             this.watch(exec, transform, onError)
@@ -131,14 +120,14 @@ export class Watch<T> extends State<T> {
 
     watch(
         exec: Exec,
-        transform: Transform<T> = out => out as T,
-        onError: ErrHandler<T> = err => console.error(err),
+        transform: Transform<T> = (out) => out as T,
+        onError: ErrHandler<T> = (err) => console.error(err),
     ) {
         this.stop()
         this.proc = process.subprocess({
             cmd: exec,
-            out: out => this.set(transform(out, this.get())),
-            err: err => onError(err, this.get()),
+            out: (out) => this.set(transform(out, this.get())),
+            err: (err) => onError(err, this.get()),
         })
     }
 

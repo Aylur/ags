@@ -40,9 +40,7 @@ export function subprocess(
 
 /** @throws {GLib.Error} Throws stderr */
 export function exec(cmd: string | string[]) {
-    return Array.isArray(cmd)
-        ? AstalIO.Process.execv(cmd)
-        : AstalIO.Process.exec(cmd)
+    return Array.isArray(cmd) ? AstalIO.Process.execv(cmd) : AstalIO.Process.exec(cmd)
 }
 
 export function execAsync(cmd: string | string[]): Promise<string> {
