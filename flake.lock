@@ -23,11 +23,11 @@
     "gjsx": {
       "flake": false,
       "locked": {
-        "lastModified": 1743941834,
-        "narHash": "sha256-gerrB/hVJ+vg85PH649ByfjvNC9h9o0UgNeYVKFF2BU=",
+        "lastModified": 1744032495,
+        "narHash": "sha256-vH65cXkiuZ9Q+F02mPmtisexgGjMrO8OiTqJPmUqyxg=",
         "owner": "aylur",
         "repo": "gjsx",
-        "rev": "d41d320970734c4d698bbcfb22d565edb67f205b",
+        "rev": "a5c3db04cddb4141377fb13bc299537ee3faee55",
         "type": "github"
       },
       "original": {
