@@ -5,7 +5,7 @@ import { CCProps } from "../../gjsx/src/jsx/index.js"
 import { intrinsicElements } from "../../gjsx/src/gtk4/jsx-runtime.js"
 
 Object.assign(intrinsicElements, {
-    box: Astal.Box,
+    box: Gtk.Box,
     button: Gtk.Button,
     centerbox: Gtk.CenterBox,
     // circularprogress: Astal.CircularProgress,
@@ -29,7 +29,7 @@ Object.assign(intrinsicElements, {
 declare global {
     namespace JSX {
         interface IntrinsicElements {
-            box: CCProps<Astal.Box, Omit<Astal.Box.ConstructorProps, "children">>
+            box: CCProps<Gtk.Box, Gtk.Box.ConstructorProps>
             button: CCProps<Gtk.Button, Gtk.Button.ConstructorProps>
             centerbox: CCProps<Gtk.CenterBox, Gtk.CenterBox.ConstructorProps>
             // circularprogress: CCProps<Astal.CircularProgress, Astal.CircularProgress.ConstructorProps>
