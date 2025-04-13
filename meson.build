@@ -18,7 +18,6 @@ install_subdir(
 
 install_subdir(
   'lib/gjsx/src',
-  exclude_directories: 'gnome',
   install_dir: pkgdatadir / 'js' / 'gjsx',
 )
 
