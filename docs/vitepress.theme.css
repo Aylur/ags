@@ -55,7 +55,7 @@
     --vp-c-indigo-1: hsl(207, 76%, 61%);
     --vp-c-indigo-2: hsl(207, 86%, 51%);
     --vp-c-indigo-3: hsl(207, 96%, 41%);
-    --vp-c-indigo-soft: hsla(207, 76%, 61%, .18);
+    --vp-c-indigo-soft: hsla(207, 76%, 61%, 0.18);
 
     --vp-c-purple-1: #c8abfa;
     --vp-c-purple-2: #a879e6;

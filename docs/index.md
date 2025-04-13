@@ -3,28 +3,30 @@ layout: home
 pageClass: home-page
 
 hero:
-  name: "AGS"
-  text: "Scaffolding CLI for Astal+TypeScript"
-  tagline: Initialize, bundle, or run Astal projects written in TypeScript/JavaScript with a single command
-  image: https://aylur.github.io/astal/icon.svg
-  actions:
-    - theme: brand
-      text: Quick Start
-      link: /guide/quick-start
-    - theme: alt
-      text: Astal Documentation
-      link: https://aylur.github.io/astal/
+    name: "AGS"
+    text: 'Scaffolding tool for <a href="https://github.com/aylur/astal">Astal</a>+<a href="https://github.com/aylur/gjsx">Gjsx</a>'
+    tagline: Initialize, run, or bundle Astal+Gjsx projects written in TypeScript/JavaScript with a single command
+    image: https://aylur.github.io/astal/icon.svg
+    actions:
+        - theme: brand
+          text: Quick Start
+          link: /guide/quick-start
+        - theme: alt
+          text: Resources
+          link: /guide/resources
 
 features:
-  - title: Initialize projects
-    details: With <code>ags init</code> you can initialize a project, which generates a basic template.
-  - title: Generate TypeScript types.
-    details: With <code>ags types</code> you can generate types from GObject based libraries.
-  - title: Bundle projects
-    details: With <code>ags bundle</code> you can bundle your project into a single executable script.
-  - title: Run projects
-    details: With <code>ags run</code> you can run a projects without bundling them first.
+    - title: Initialize projects
+      details: With <code>ags init</code> you can initialize a project, which generates a basic template.
+    - title: Generate TypeScript types.
+      details: With <code>ags types</code> you can generate types from GObject based libraries.
+    - title: Bundle projects
+      details: With <code>ags bundle</code> you can bundle your project into a single executable script.
+    - title: Run projects
+      details: With <code>ags run</code> you can run a projects without bundling them first.
 ---
+
+<!--TODO: add a few screenshots of desktops-->
 
 <style>
 :root {
