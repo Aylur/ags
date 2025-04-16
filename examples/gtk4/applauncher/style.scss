@@ -1,0 +1,15 @@
+// https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/theme/Adwaita/_colors-public.scss
+$fg-color: #{"@theme_fg_color"};
+$bg-color: #{"@theme_bg_color"};
+
+window#launcher {
+  background: transparent;
+  color: $fg-color;
+
+  box#launcher-content {
+    background: $bg-color;
+    min-width: 400px;
+    border-radius: 12px;
+    padding: 6px;
+  }
+}
