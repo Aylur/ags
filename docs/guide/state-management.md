@@ -7,14 +7,14 @@ It's main purpose is to substitute class properties and
 hold state in Function Components.
 
 ```ts
-import { State, bind } from "ags/state"
+import { type Binding, State, bind } from "ags/state"
 
 const state = new State<string>("0")
 
-bind(state).as((value) => parseInt(value))
+const binding: Binding<number> = bind(state).as((value) => parseInt(value))
 
 // shorthand for the above
-state((value) => parseInt(value))
+const binding: Binding<number> = state((value) => parseInt(value))
 
 // value getters
 state.get()
@@ -45,8 +45,8 @@ You can run any side effect by subscribing to a Binding or State.
 ```ts
 let observable: State<any> | Binding<any>
 
-const unsubscribe = observable.subscribe((someProp) => {
-    console.log(someProp)
+const unsubscribe = observable.subscribe((value) => {
+    console.log(value)
 })
 
 unsubscribe()
@@ -56,8 +56,8 @@ Optionally, it is possible to pass in another object to limit
 the lifetime of the subscription.
 
 ```ts
-observable.subscribe(gobject, (someProp) => {
-    console.log(someProp)
+observable.subscribe(gobject, (value) => {
+    console.log(value)
 })
 ```
 
@@ -93,9 +93,9 @@ const derived: State<string> = derive(
 It is possible to observe a list of signals and capture their values in State.
 
 ```ts
-import { observe } from "ags/state"
+import { State, observe } from "ags/state"
 
-const state = observe(
+const state: State<string> = observe(
     "initial value",
     [obj1, "some-signal", (arg: string) => `captured ${arg}`],
     [obj2, "some-signal", (arg: number) => `captured ${arg}`],
@@ -147,7 +147,7 @@ const watch = new Watch(
 )
 ```
 
-## Limiting to life cycle
+## Limiting state lifetime to widgets
 
 :::warning
 Don't forget to limit the lifetime of derived states to widgets

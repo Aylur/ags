@@ -100,8 +100,8 @@ Lowercase tags are builtin widgets, while capital letter is for custom widgets.
 
 For a list of builtin widgets refer to the source code:
 
-- [gtk3](https://github.com/Aylur/ags/blob/v3/lib/src/gtk3/jsx-runtime.ts)
 - [gtk4](https://github.com/Aylur/ags/blob/v3/lib/src/gtk4/jsx-runtime.ts)
+- [gtk3](https://github.com/Aylur/ags/blob/v3/lib/src/gtk3/jsx-runtime.ts)
 
 ## Displaying Data
 
@@ -273,8 +273,6 @@ re-renders when that state changes.
 Use the `bind` function to create a `Binding` object from a `State` or a
 regular `GObject` and one of its properties.
 
-Here is an example of a Counter widget that uses a `State` as its state:
-
 :::code-group
 
 ```tsx [State example]
@@ -335,34 +333,19 @@ a string, so it needs to be turned to a string first.
 `State` has a shorthand for `bind(state).as(transform)`
 
 ```tsx
-const s = new State(0)
+const state = new State(0)
 const transform = (v: number) => v.toString()
 
 return (
     <box>
         {/* these two are equivalent */}
-        <label label={bind(v).as(transform)} />
-        <label label={v(transform)} />
+        <label label={bind(state).as(transform)} />
+        <label label={state(transform)} />
     </box>
 )
 ```
 
 :::
-
-Here is an example of a battery percent label that binds the `percentage`
-property of the Battery object from the
-[Battery Library](/guide/libraries/battery):
-
-```tsx
-import AstalBattery from "gi://AstalBattery"
-import { bind } from "astal"
-
-function BatteryPercentage() {
-    const bat = AstalBattery.get_default()
-
-    return <label label={bind(bat, "percentage").as((p) => p * 100 + " %")} />
-}
-```
 
 ## Dynamic rendering
 
@@ -388,8 +371,6 @@ return (
 > [!TIP]
 > In a lot of cases it is better to always render the component and set its
 > `visible` property instead
-
-<!-- -->
 
 > [!WARNING]
 > When the value changes and the widget is re-rendered the previous one is removed

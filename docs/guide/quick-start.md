@@ -28,7 +28,7 @@ import { Poll } from "ags/state"
 app.start({
     main() {
         const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
-        const clock = new Poll("", 1000, "data")
+        const clock = new Poll("", 1000, "date")
 
         return (
             <window visible anchor={TOP | LEFT | RIGHT}>

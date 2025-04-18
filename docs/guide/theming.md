@@ -3,10 +3,12 @@
 Since the widget toolkit is **GTK** theming is done with **CSS**.
 
 - [CSS tutorial](https://www.w3schools.com/css/)
-- [GTK3 CSS Overview wiki](https://docs.gtk.org/gtk3/css-overview.html)
-- [GTK3 CSS Properties Overview wiki](https://docs.gtk.org/gtk3/css-properties.html)
-- [GTK4 CSS Overview wiki](https://docs.gtk.org/gtk4/css-overview.html)
-- [GTK4 CSS Properties Overview wiki](https://docs.gtk.org/gtk4/css-properties.html)
+- Gtk4
+  - [GTK4 CSS Overview wiki](https://docs.gtk.org/gtk4/css-overview.html)
+  - [GTK4 CSS Properties Overview wiki](https://docs.gtk.org/gtk4/css-properties.html)
+- Gtk3
+  - [GTK3 CSS Overview wiki](https://docs.gtk.org/gtk3/css-overview.html)
+  - [GTK3 CSS Properties Overview wiki](https://docs.gtk.org/gtk3/css-properties.html)
 
 :::warning GTK is not the web
 While most features are implemented in GTK,
@@ -84,10 +86,14 @@ You can reset stylesheets with `reset_css()`
 If you are not sure about the widget hierarchy or any CSS selector,
 you can use the [GTK inspector](https://wiki.gnome.org/Projects/GTK/Inspector)
 
-```sh
-# to bring up the inspector run
-ags inspect
+:::code-group
 
-# or using astal cli
+```sh [ags]
+ags inspect
+```
+
+```sh [astal]
 astal --inspector
 ```
+
+:::

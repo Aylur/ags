@@ -1,4 +1,4 @@
-import App from "ags/gtk3/app"
+import app from "ags/gtk3/app"
 import { Astal, Gtk, Gdk } from "ags/gtk3"
 import { execAsync } from "ags/process"
 import { Poll } from "ags/state"
@@ -14,7 +14,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
             gdkmonitor={gdkmonitor}
             exclusivity={Astal.Exclusivity.EXCLUSIVE}
             anchor={TOP | LEFT | RIGHT}
-            application={App}
+            application={app}
         >
             <centerbox>
                 <button

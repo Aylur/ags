@@ -171,3 +171,22 @@ exec("bash -c 'command $VAR' && command")
 ```
 
 :::
+
+## Http requests
+
+```ts
+import { fetch, URL } from "ags/fetch"
+
+const url = new URL("https://some-site.com/api")
+url.searchParams.set("hello", "world")
+
+const res = await fetch(url, {
+    method: "POST",
+    body: JSON.stringify({ hello: "world" }),
+    headers: {
+        "Content-Type": "application/json",
+    },
+})
+
+const json = await res.json()
+```
