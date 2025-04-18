@@ -1,18 +1,26 @@
 # Quick Start
 
-## What will you be using
-
-- [Gnome JavaScript (GJS)](https://gjs.guide/) is the JavaScript runtime
-- [Astal](https://aylur.github.io/astal/) is a suite of libraries which lets you query, monitor and interact with parts of your system
-- [Gjsx](https://aylur.github.io/gjsx/) is a set of convinience libraries for GJS, which allows you to write widgets using JSX syntax
-- [AGS](https://aylur.github.io/ags/) is a CLI tool which lets you skip setting up a dev environment and jump straight into writing your Desktop Shell in TypeScript
-
-## Get Started
-
 It's as easy as a few lines to get a bar running on your screen.
 
+:::details What will you be using
+
+- [Gnome JavaScript (GJS)](https://gjs.guide/) is the JavaScript runtime
+- [Astal](https://aylur.github.io/astal/) is a suite of libraries which lets
+  you query, monitor and interact with parts of your system
+- [Gjsx](https://aylur.github.io/gjsx/) is a set of convinience libraries
+  for GJS, which allows you to write widgets using JSX syntax and is reexported
+  from the `ags` namespace
+- [AGS](https://aylur.github.io/ags/) is a CLI tool which lets you skip
+  setting up a dev environment and jump straight into writing your Desktop
+  Shell in TypeScript
+
+:::
+
+## Single file start
+
+First create a file anywhere on your system.
+
 ```tsx [mybar.tsx]
-#!/usr/bin/env ags run
 import app from "ags/gtk4/app"
 import { Astal } from "ags/gtk4"
 import { Poll } from "ags/state"
@@ -31,10 +39,39 @@ app.start({
 })
 ```
 
-Alternatively you can get started using a template
+And run it using the following command:
 
 ```sh
-ags init
+ags run ./mybar.tsx
+```
+
+Alternatively, you can add a shebang and make it executable
+
+```ts [mybar.tsx]
+#!/usr/bin/env ags run
+import app from "ags/gtk4/app"
+
+app.start({
+    main() {
+        // entry point
+    },
+})
+```
+
+```sh
+chmod +x mybar.tsx
+./mybar.tsx
+```
+
+## Using a template
+
+It is recommended to start with a template which will setup
+files needed for TypeScript development environments.
+
+You can get started using a template with this simple command
+
+```sh
+ags init -d /path/to/project
 ```
 
 If you are on nix, there is also a flake template

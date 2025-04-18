@@ -1,1 +1,182 @@
 # App and CLI
+
+`app` is a singleton **instance** of an
+[Astal.Application](https://aylur.github.io/libastal/astal4/class.Application.html).
+
+Depending on Gtk version import paths will differ
+
+```ts
+import app from "astal/gtk3/app"
+import app from "astal/gtk4/app"
+```
+
+## Entry point
+
+:::code-group
+
+```ts [app.ts]
+app.start({
+    main() {
+        // setup anything
+        // instantiate widgets
+    },
+})
+```
+
+:::
+
+## Instance identifier
+
+You can run multiple instances by defining a unique instance name.
+
+```ts
+app.start({
+    instanceName: "my-instance", // defaults to "astal"
+    main() {},
+})
+```
+
+## Messaging from CLI
+
+If you want to interact with an instance from the CLI,
+you can do so by sending a message.
+
+```ts
+app.start({
+    requestHandler(request: string, res: (response: any) => void) {
+        if (request == "say hi") {
+            return res("hi cli")
+        }
+        res("unknown command")
+    },
+    main() {},
+})
+```
+
+:::code-group
+
+```sh [ags cli]
+ags request "say hi"
+# hi cli
+```
+
+```sh [astal cli]
+astal say hi
+# hi cli
+```
+
+:::
+
+If you want to run arbitrary JavaScript from CLI, you can use the `eval()`
+method which will evaluate the passed string as the body of an `async` function.
+
+```ts
+app.start({
+    main() {},
+    requestHandler(js, res) {
+        app.eval(js).then(res).catch(res)
+    },
+})
+```
+
+If the string does not contain a semicolon, a single expression is assumed
+and returned implicitly.
+
+```sh
+astal "'hello'"
+# hello
+```
+
+If the string contains a semicolon, you have to return explicitly.
+
+```sh
+astal "'hello';"
+# undefined
+
+astal "return 'hello';"
+# hello
+```
+
+## Toggling Windows by their name
+
+In order for the application to know about your windows, you have to
+register them.
+You can do this by specifying a **unique** `name` and calling `app.add_window()`
+
+```tsx {4}
+import app from "astal/gtk4/app"
+
+function Bar() {
+    return (
+        <window name="Bar" $={(self) => app.add_window(self)}>
+            <box />
+        </window>
+    )
+}
+```
+
+You can also invoke `app.add_window()` by simply passing `app` to the
+`application` prop.
+
+```tsx {4}
+import app from "astal/gtk4/app"
+
+function Bar() {
+    return (
+        <window name="Bar" application={app}>
+            <box />
+        </window>
+    )
+}
+```
+
+:::warning
+When assigning the `application` prop make sure `name` comes before.
+Props are set sequentially and if name is applied after application it won't
+work.
+:::
+
+```sh [astal]
+astal -t Bar
+```
+
+:::tip
+In JavaScript you can get a window instance and toggle it using
+`app.get_window()`
+
+```ts
+const bar = app.get_window("Bar")
+if (bar) bar.visible = true
+```
+
+:::
+
+## Client
+
+The first time you invoke `app.start()` the `main` block gets executed.
+While that instance is running any subsequent execution of the app will
+execute the `client` block.
+
+:::code-group
+
+```ts [main.ts]
+app.start({
+    // main instance
+    main(...args: Array<string>) {
+        print(...args)
+    },
+
+    // every subsequent calls
+    client(message: (msg: string) => string, ...args: Array<string>) {
+        const res = message("you can message the main instance")
+        print(res)
+    },
+
+    // this runs in the main instance
+    requestHandler(request: string, res: (response: any) => void) {
+        res("response from main")
+    },
+})
+```
+
+:::

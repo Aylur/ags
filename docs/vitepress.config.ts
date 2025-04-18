@@ -8,7 +8,12 @@ export default defineConfig({
     base: "/ags/",
     lastUpdated: true,
 
-    head: [["link", { rel: "icon", href: "https://aylur.github.io/astal/icon.svg" }]],
+    head: [
+        [
+            "link",
+            { rel: "icon", href: "https://aylur.github.io/astal/icon.svg" },
+        ],
+    ],
 
     markdown: {
         languageAlias: {
@@ -30,8 +35,12 @@ export default defineConfig({
                 text: "References",
                 items: [
                     {
-                        text: "gjs.guide",
+                        text: "Gjs Guide",
                         link: "https://gjs.guide/",
+                    },
+                    {
+                        text: "Gjs References",
+                        link: "https://gjs-docs.gnome.org/",
                     },
                     {
                         text: "Astal",
@@ -52,7 +61,8 @@ export default defineConfig({
             { text: "Theming", link: "/guide/theming" },
             { text: "State Management", link: "/guide/state-management" },
             { text: "App and CLI", link: "/guide/app-cli" },
-            { text: "FAQ", link: "/guide/faq" },
+            { text: "Utilities", link: "/guide/utilities" },
+            { text: "Resources", link: "/guide/resources" },
             { text: "Examples", link: "/guide/examples" },
             { text: "Nix", link: "/guide/nix" },
             { text: "Migration Guide", link: "/guide/migration-guide" },

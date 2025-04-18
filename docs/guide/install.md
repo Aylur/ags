@@ -16,7 +16,8 @@ Read more about it on the [nix page](./nix)
 
 ## From Source
 
-1. Install [Astal packages](https://aylur.github.io/astal/guide/getting-started/installation)
+1. Install
+   [Astal packages](https://aylur.github.io/astal/guide/getting-started/installation)
 
     - astal-io
     - astal3
