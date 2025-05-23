@@ -131,6 +131,7 @@ in {
           Documentation = "https://github.com/Aylur/ags";
           PartOf = ["graphical-session.target"];
           After = ["graphical-session-pre.target"];
+          X-SwitchMethod = "restart";
         };
 
         Service = {
