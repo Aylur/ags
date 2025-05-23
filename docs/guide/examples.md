@@ -158,7 +158,7 @@ Use `Gtk.Window`.
 By default `Gtk.Window` is destroyed on close.
 To prevent this add a handler for `delete-event`.
 
-```tsx {4-7}
+```tsx {3-6}
 return (
     <Gtk.Window
         $delete-event={(self) => {
