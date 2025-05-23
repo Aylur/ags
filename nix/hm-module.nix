@@ -97,6 +97,15 @@ in {
         Enable systemd integration.
       '';
     };
+
+    systemd.gtk4 = mkOption {
+      type = types.bool;
+      default = false;
+      example = true;
+      description = ''
+        Switch from gtk3 to gtk4.
+      '';
+    };
   };
 
   config = mkIf cfg.enable (mkMerge [
@@ -122,10 +131,15 @@ in {
           Documentation = "https://github.com/Aylur/ags";
           PartOf = ["graphical-session.target"];
           After = ["graphical-session-pre.target"];
+          X-SwitchMethod = "restart";
         };
 
         Service = {
-          ExecStart = "${cfg.finalPackage}/bin/ags run";
+          ExecStart = "${cfg.finalPackage}/bin/ags run ${
+            if cfg.systemd.gtk4
+            then "--gtk4"
+            else ""
+          }";
           Restart = "on-failure";
           KillMode = "mixed";
         };
