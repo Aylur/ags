@@ -137,6 +137,8 @@ type BundleOpts struct {
 	Defines          []string
 	GtkVersion       int
 	WorkingDirectory string
+	SourceMap        api.SourceMap
+	Minify           bool
 }
 
 // TODO: bundle plugins
@@ -161,7 +163,7 @@ func Bundle(opts BundleOpts) {
 		Platform:    api.PlatformNeutral,
 		Define:      defines,
 		Target:      api.ES2022,
-		Sourcemap:   api.SourceMapInline,
+		Sourcemap:   opts.SourceMap,
 		Engines: []api.Engine{
 			{Name: api.EngineFirefox, Version: "115"},
 		},
@@ -183,6 +185,11 @@ func Bundle(opts BundleOpts) {
 			sassPlugin,
 			blpPlugin,
 		},
+	}
+
+	if opts.Minify {
+		buildOpts.MinifySyntax = true
+		buildOpts.MinifyWhitespace = true
 	}
 
 	if opts.WorkingDirectory != "" {
