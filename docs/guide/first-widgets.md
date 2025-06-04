@@ -1,8 +1,7 @@
 # First Widgets
 
-On this page you will learn about the JSX syntax.
-To learn about it more in depth
-you can read the [Gjsx docs](https://aylur.github.io/gjsx/jsx.html).
+On this page you will learn about the JSX syntax. To learn about it more in
+depth you can read the [Gjsx docs](https://aylur.github.io/gjsx/jsx.html).
 
 ## Entry point of applications
 
@@ -10,20 +9,16 @@ Every application's entry point is an `app.start` invocation. `app` is a
 singleton instance of
 [Astal.Application](https://aylur.github.io/libastal/astal4/class.Application.html).
 
-:::code-group
-
-```ts [app.ts]
+```ts [<i class="devicon-typescript-plain"></i> app.ts]
 import app from "ags/gtk4/app"
 
 app.start({
-    main() {
-        // you will instantiate Widgets here
-        // and setup anything else if you need
-    },
+  main() {
+    // you will instantiate Widgets here
+    // and setup anything else if you need
+  },
 })
 ```
-
-:::
 
 ## Root of every shell component: Window
 
@@ -36,11 +31,11 @@ top level - also known as a root - widget is always a
 
 ```tsx [widget/Bar.tsx]
 function Bar(monitor = 0) {
-    return (
-        <window class="Bar" monitor={monitor}>
-            <box>Content of the widget</box>
-        </window>
-    )
+  return (
+    <window class="Bar" monitor={monitor}>
+      <box>Content of the widget</box>
+    </window>
+  )
 }
 ```
 
@@ -52,10 +47,10 @@ function Bar(monitor = 0) {
 import Bar from "./widget/Bar"
 
 App.start({
-    main() {
-        Bar(0)
-        Bar(1) // instantiate for each monitor
-    },
+  main() {
+    Bar(0)
+    Bar(1) // instantiate for each monitor
+  },
 })
 ```
 
@@ -70,11 +65,11 @@ JSX expressions.
 
 ```tsx [MyButton.tsx]
 function MyButton() {
-    return (
-        <button $clicked={(self) => console.log(self, "clicked")}>
-            <label label="Click me!" />
-        </button>
-    )
+  return (
+    <button $clicked={(self) => console.log(self, "clicked")}>
+      <label label="Click me!" />
+    </button>
+  )
 }
 ```
 
@@ -84,14 +79,14 @@ Now that you have declared `MyButton`, you can nest it into another component.
 
 ```tsx
 function MyBar() {
-    return (
-        <window>
-            <box>
-                Click The button:
-                <MyButton />
-            </box>
-        </window>
-    )
+  return (
+    <window>
+      <box>
+        Click The button:
+        <MyButton />
+      </box>
+    </window>
+  )
 }
 ```
 
@@ -110,9 +105,9 @@ JavaScript so that you can embed some variable from your code and display it.
 
 ```tsx
 function MyWidget() {
-    const label = "hello"
+  const label = "hello"
 
-    return <button>{label}</button>
+  return <button>{label}</button>
 }
 ```
 
@@ -120,9 +115,9 @@ You can also pass JavaScript to markup attributes
 
 ```tsx
 function MyWidget() {
-    const label = "hello"
+  const label = "hello"
 
-    return <button label={label} />
+  return <button label={label} />
 }
 ```
 
@@ -133,15 +128,15 @@ For example, you can use an if statement to conditionally include JSX:
 
 ```tsx
 function MyWidget() {
-    let content
+  let content
 
-    if (condition) {
-        content = <True />
-    } else {
-        content = <False />
-    }
+  if (condition) {
+    content = <True />
+  } else {
+    content = <False />
+  }
 
-    return <box>{content}</box>
+  return <box>{content}</box>
 }
 ```
 
@@ -151,7 +146,7 @@ You can also inline a
 
 ```tsx
 function MyWidget() {
-    return <box>{condition ? <True /> : <False />}</box>
+  return <box>{condition ? <True /> : <False />}</box>
 }
 ```
 
@@ -160,13 +155,14 @@ When you don’t need the `else` branch, you can also use a shorter
 
 ```tsx
 function MyWidget() {
-    return <box>{condition && <True />}</box>
+  return <box>{condition && <True />}</box>
 }
 ```
 
-:::tip
-[falsy](https://developer.mozilla.org/en-US/docs/Glossary/Falsy) values are not rendered.
-:::
+> [!TIP]
+>
+> [falsy](https://developer.mozilla.org/en-US/docs/Glossary/Falsy) values are
+> not rendered.
 
 ## Rendering lists
 
@@ -202,29 +198,30 @@ widget:
 import Gtk from "gi://Gtk"
 
 function MyButton() {
-    function onClicked(self: Gtk.Button) {
-        console.log(self, "was clicked")
-    }
+  function onClicked(self: Gtk.Button) {
+    console.log(self, "was clicked")
+  }
 
-    return <button $clicked={onClicked} />
+  return <button $clicked={onClicked} />
 }
 ```
 
-:::info
-Attributes prefixed with `$` will connect to a `signal` of the widget.
-Their types unfortunately can not be generated.
-Refer to the Gtk docs on what signals are available.
-:::
+> [!INFO]
+>
+> Attributes prefixed with `$` will connect to a `signal` of the widget. Their
+> types unfortunately can not be generated. Refer to the Gtk docs on what
+> signals are available.
 
-:::tip
-Attributes prefixed with `$$` will connect to a `notify::` signal
-of the widget.
+<!--  -->
+
+> [!TIP]
+>
+> Attributes prefixed with `$$` will connect to a `notify::` signal of the
+> widget.
 
 ```tsx
 <switch $$active={(self) => print("switched to", self.active)} />
 ```
-
-:::
 
 ## How properties are passed
 
@@ -232,12 +229,12 @@ Using JSX, a custom widget will always have a single object as its parameter.
 
 ```ts
 type Props = {
-    myprop: string
-    children?: JSX.Element | Array<JSX.Element>
+  myprop: string
+  children?: JSX.Element | Array<JSX.Element>
 }
 
 function MyWidget({ myprop, children }: Props) {
-    //
+  //
 }
 ```
 
@@ -247,19 +244,19 @@ given in the JSX expression.
 ```tsx
 // `children` prop of MyWidget is the box
 return (
-    <MyWidget myprop="hello">
-        <box />
-    </MyWidget>
+  <MyWidget myprop="hello">
+    <box />
+  </MyWidget>
 )
 ```
 
 ```tsx
 // `children` prop of MyWidget is [box, box]
 return (
-    <MyWidget myprop="hello">
-        <box />
-        <box />
-    </MyWidget>
+  <MyWidget myprop="hello">
+    <box />
+    <box />
+  </MyWidget>
 )
 ```
 
@@ -270,8 +267,8 @@ connect the state of an
 [object](./binding#subscribable-and-connectable-interface) to a widget so it
 re-renders when that state changes.
 
-Use the `bind` function to create a `Binding` object from a `State` or a
-regular `GObject` and one of its properties.
+Use the `bind` function to create a `Binding` object from a `State` or a regular
+`GObject` and one of its properties.
 
 :::code-group
 
@@ -279,20 +276,20 @@ regular `GObject` and one of its properties.
 import { State, bind } from "ags/state"
 
 function CounterWith() {
-    const count = new State(0)
+  const count = new State(0)
 
-    function increment() {
-        count.value += 1
-    }
+  function increment() {
+    count.value += 1
+  }
 
-    const label = bind(count).as((num) => num.toString())
+  const label = bind(count).as((num) => num.toString())
 
-    return (
-        <box>
-            <label label={label} />
-            <button $clicked={increment}>Click to increment</button>
-        </box>
-    )
+  return (
+    <box>
+      <label label={label} />
+      <button $clicked={increment}>Click to increment</button>
+    </box>
+  )
 }
 ```
 
@@ -302,50 +299,49 @@ import { bind } from "ags/state"
 
 @register()
 class CountStore extends GObject.Object {
-    @property(Number) declare counter: number
+  @property(Number) declare counter: number
 }
 
 function CounterWith() {
-    const count = new CountStore()
+  const count = new CountStore()
 
-    function increment() {
-        count.counter += 1
-    }
+  function increment() {
+    count.counter += 1
+  }
 
-    const label = bind(count, "counter").as((num) => num.toString())
+  const label = bind(count, "counter").as((num) => num.toString())
 
-    return (
-        <box>
-            <label label={label} />
-            <button $clicked={increment}>Click to increment</button>
-        </box>
-    )
+  return (
+    <box>
+      <label label={label} />
+      <button $clicked={increment}>Click to increment</button>
+    </box>
+  )
 }
 ```
 
 :::
 
-Bindings have an `.as()` method which lets you transform the assigned
-value. In the case of a `Gtk.Label` in this example, its label property expects
-a string, so it needs to be turned to a string first.
+Bindings have an `.as()` method which lets you transform the assigned value. In
+the case of a `Gtk.Label` in this example, its label property expects a string,
+so it needs to be turned to a string first.
 
-:::tip
-`State` has a shorthand for `bind(state).as(transform)`
-
-```tsx
-const state = new State(0)
-const transform = (v: number) => v.toString()
-
-return (
-    <box>
-        {/* these two are equivalent */}
-        <label label={bind(state).as(transform)} />
-        <label label={state(transform)} />
-    </box>
-)
-```
-
-:::
+> [!TIP]
+>
+> `State` has a shorthand for `bind(state).as(transform)`
+>
+> ```tsx
+> const state = new State(0)
+> const transform = (v: number) => v.toString()
+>
+> return (
+>   <box>
+>     {/* these two are equivalent */}
+>     <label label={bind(state).as(transform)} />
+>     <label label={state(transform)} />
+>   </box>
+> )
+> ```
 
 ## Dynamic rendering
 
@@ -356,33 +352,37 @@ import { With } from "ags/gtk4"
 import { State } from "ags/state"
 
 const value = new State<{ member: string } | null>({
-    member: "hello",
+  member: "hello",
 })
 
 return (
-    <box>
-        <With value={value()} cleanup={(label) => label.run_dispose()}>
-            {(value) => value && <label label={value.member} />}
-        </With>
-    </box>
+  <box>
+    <With value={value()} cleanup={(label) => label.run_dispose()}>
+      {(value) => value && <label label={value.member} />}
+    </With>
+  </box>
 )
 ```
 
 > [!TIP]
+>
 > In a lot of cases it is better to always render the component and set its
 > `visible` property instead
 
+<!-- -->
+
 > [!WARNING]
-> When the value changes and the widget is re-rendered the previous one is removed
-> from the parent component and the new one is **appended**. Order of widgets are
-> not kept so make sure to wrap `<With>` in a container to avoid this.
+>
+> When the value changes and the widget is re-rendered the previous one is
+> removed from the parent component and the new one is **appended**. Order of
+> widgets are not kept so make sure to wrap `<With>` in a container to avoid
+> this.
 
 ## Dynamic list rendering
 
-The `<For>` component let's you render based on an array dynamically.
-Each time the array changes it is compared with its previous state.
-Widgets for new items are inserted while widgets associated with removed items
-are removed.
+The `<For>` component let's you render based on an array dynamically. Each time
+the array changes it is compared with its previous state. Widgets for new items
+are inserted while widgets associated with removed items are removed.
 
 ```tsx
 import { For } from "ags/gtk4"
@@ -390,17 +390,18 @@ import { For } from "ags/gtk4"
 let list: Binding<Array<object>>
 
 return (
-    <box>
-        <For each={list} cleanup={(label) => label.run_dispose()}>
-            {(item, index: Binding<number>) => (
-                <label label={index.as((i) => `${i}. ${item}`)} />
-            )}
-        </For>
-    </box>
+  <box>
+    <For each={list} cleanup={(label) => label.run_dispose()}>
+      {(item, index: Binding<number>) => (
+        <label label={index.as((i) => `${i}. ${item}`)} />
+      )}
+    </For>
+  </box>
 )
 ```
 
 > [!WARNING]
-> Similarly to `<With>`, when the list changes and a new item
-> is added it is simply **appended** to the parent. Order of widgets
-> are not kept so make sure to wrap `<For>` in a container to avoid this.
+>
+> Similarly to `<With>`, when the list changes and a new item is added it is
+> simply **appended** to the parent. Order of widgets are not kept so make sure
+> to wrap `<For>` in a container to avoid this.

@@ -30,8 +30,8 @@ If `path` is a directory it will be recursively monitored.
 import { monitorFile } from "ags/file"
 
 function monitorFile(
-    path: string,
-    callback: (file: string, event: Gio.FileMonitorEvent) => void,
+  path: string,
+  callback: (file: string, event: Gio.FileMonitorEvent) => void,
 ): Gio.FileMonitor
 ```
 
@@ -41,10 +41,9 @@ function monitorFile(
 import { interval, timeout, idle } from "astal/time"
 ```
 
-You can use javascript native `setTimeout` or `setInterval`
-they return a [GLib.Source](https://docs.gtk.org/glib/struct.Source.html) instance.
-Alternatively you can use these functions provided by Astal,
-which return an
+You can use javascript native `setTimeout` or `setInterval` they return a
+[GLib.Source](https://docs.gtk.org/glib/struct.Source.html) instance.
+Alternatively you can use these functions provided by Astal, which return an
 [AstalIO.Time](https://aylur.github.io/libastal/io/class.Time.html) instance.
 
 `AstalIO.Time` has a `now` signal and a `cancelled` signal.
@@ -77,15 +76,15 @@ Example:
 
 ```ts
 const timer = interval(1000, () => {
-    console.log("optional callback")
+  console.log("optional callback")
 })
 
 timer.connect("now", () => {
-    console.log("tick")
+  console.log("tick")
 })
 
 timer.connect("cancelled", () => {
-    console.log("cancelled")
+  console.log("cancelled")
 })
 
 timer.cancel()
@@ -103,20 +102,20 @@ import { subprocess, exec, execAsync } from "astal/process"
 
 You can start a subprocess and run callback functions whenever it outputs to
 stdout or stderr.
-[AstalIO.Process](https://aylur.github.io/libastal/io/class.Process.html)
-has a `stdout` and `stderr` signal.
+[AstalIO.Process](https://aylur.github.io/libastal/io/class.Process.html) has a
+`stdout` and `stderr` signal.
 
 ```ts
 function subprocess(args: {
-    cmd: string | string[]
-    out?: (stdout: string) => void
-    err?: (stderr: string) => void
+  cmd: string | string[]
+  out?: (stdout: string) => void
+  err?: (stderr: string) => void
 }): AstalIO.Process
 
 function subprocess(
-    cmd: string | string[],
-    onOut?: (stdout: string) => void,
-    onErr?: (stderr: string) => void,
+  cmd: string | string[],
+  onOut?: (stdout: string) => void,
+  onErr?: (stderr: string) => void,
 ): AstalIO.Process
 ```
 
@@ -124,9 +123,9 @@ Example:
 
 ```ts
 const proc = subprocess(
-    "some-command",
-    (out) => console.log(out), // optional
-    (err) => console.error(out), // optional
+  "some-command",
+  (out) => console.log(out), // optional
+  (err) => console.error(out), // optional
 )
 
 // or with signals
@@ -146,31 +145,30 @@ Example:
 
 ```ts
 try {
-    const out = exec("/path/to/script")
-    console.log(out)
+  const out = exec("/path/to/script")
+  console.log(out)
 } catch (err) {
-    console.error(err)
+  console.error(err)
 }
 
 execAsync(["bash", "-c", "/path/to/script.sh"])
-    .then((out) => console.log(out))
-    .catch((err) => console.error(err))
+  .then((out) => console.log(out))
+  .catch((err) => console.error(err))
 ```
 
-:::warning
-`subprocess`, `exec`, and `execAsync` executes the passed executable as is.
-They are **not** executed in a shell environment,
-they do **not** expand ENV variables like `$HOME`,
-and they do **not** handle logical operators like `&&` and `||`.
-
-If you want bash, run them with bash.
-
-```ts
-exec(["bash", "-c", "command $VAR && command"])
-exec("bash -c 'command $VAR' && command")
-```
-
-:::
+> [!WARNING]
+>
+> `subprocess`, `exec`, and `execAsync` executes the passed executable as is.
+> They are **not** executed in a shell environment, they do **not** expand ENV
+> variables like `$HOME`, and they do **not** handle logical operators like `&&`
+> and `||`.
+>
+> If you want bash, run them with bash.
+>
+> ```ts
+> exec(["bash", "-c", "command $VAR && command"])
+> exec("bash -c 'command $VAR' && command")
+> ```
 
 ## Http requests
 
@@ -181,11 +179,11 @@ const url = new URL("https://some-site.com/api")
 url.searchParams.set("hello", "world")
 
 const res = await fetch(url, {
-    method: "POST",
-    body: JSON.stringify({ hello: "world" }),
-    headers: {
-        "Content-Type": "application/json",
-    },
+  method: "POST",
+  body: JSON.stringify({ hello: "world" }),
+  headers: {
+    "Content-Type": "application/json",
+  },
 })
 
 const json = await res.json()

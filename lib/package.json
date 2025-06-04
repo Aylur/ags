@@ -25,7 +25,8 @@
         "./process": "./src/process.ts",
         "./state": "./src/state.ts",
         "./time": "./src/time.ts",
-        "./fetch": "./gjsx/src/fetch.ts"
+        "./fetch": "./gjsx/src/fetch.ts",
+        "./dbus": "./gjsx/src/dbus.ts"
     },
     "engines": {
         "gjs": ">=1.79.0"

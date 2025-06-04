@@ -1,21 +1,22 @@
 {
-    "name": "ags-docs",
-    "type": "module",
-    "devDependencies": {
-        "vitepress": "^1.5.0"
-    },
-    "scripts": {
-        "dev": "vitepress dev .",
-        "build": "vitepress build .",
-        "preview": "vitepress preview ."
-    },
-    "dependencies": {
-        "devicon": "^2.16.0"
-    },
-    "prettier": {
-        "semi": false,
-        "singleQuote": false,
-        "tabWidth": 4,
-        "printWidth": 80
-    }
+  "name": "ags-docs",
+  "type": "module",
+  "devDependencies": {
+    "vitepress": "^1.5.0"
+  },
+  "scripts": {
+    "dev": "vitepress dev .",
+    "build": "vitepress build .",
+    "preview": "vitepress preview ."
+  },
+  "dependencies": {
+    "devicon": "^2.16.0"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": false,
+    "tabWidth": 2,
+    "printWidth": 80,
+    "proseWrap": "always"
+  }
 }

@@ -10,16 +10,16 @@ Since the widget toolkit is **GTK** theming is done with **CSS**.
   - [GTK3 CSS Overview wiki](https://docs.gtk.org/gtk3/css-overview.html)
   - [GTK3 CSS Properties Overview wiki](https://docs.gtk.org/gtk3/css-properties.html)
 
-:::warning GTK is not the web
-While most features are implemented in GTK,
-you can't assume anything that works on the web will work with GTK.
-Refer to the GTK docs to see what is available.
-:::
+> [!WARNING]
+>
+> GTK is not the web While most features are implemented in GTK, you can't
+> assume anything that works on the web will work with GTK. Refer to the GTK
+> docs to see what is available.
 
 ## Loading static stylesheets
 
-You can import any `css` or `scss` file which will be inlined as a string
-which you can pass to the css property.
+You can import any `css` or `scss` file which will be inlined as a string which
+you can pass to the css property.
 
 :::code-group
 
@@ -34,9 +34,9 @@ const inlineCss = `
 `
 
 app.start({
-    css: css,
-    css: scss,
-    css: inlineCss,
+  css: css,
+  css: scss,
+  css: inlineCss,
 })
 ```
 
@@ -44,17 +44,17 @@ app.start({
 
 ## Css Property on Widgets
 
-You should always prefer to style using class names and stylesheets.
-But in those rare cases when you need apply a style based on a JavaScript value
-you can use the `css` property.
+You should always prefer to style using class names and stylesheets. But in
+those rare cases when you need apply a style based on a JavaScript value you can
+use the `css` property.
 
 ```tsx
 return <box css="padding 1em; border: 1px solid red;" />
 ```
 
-:::warning
-The `css` property of a widget will not cascade to its children.
-:::
+> [!WARNING]
+>
+> The `css` property of a widget will not cascade to its children.
 
 ## Apply Stylesheets at Runtime
 
@@ -76,15 +76,15 @@ window {
 app.reset_css() // reset if need
 ```
 
-:::warning
-`apply_css()` will apply on top of other stylesheets applied before.
-You can reset stylesheets with `reset_css()`
-:::
+> [!WARNING]
+>
+> `apply_css()` will apply on top of other stylesheets applied before. You can
+> reset stylesheets with `reset_css()`
 
 ## Inspector
 
-If you are not sure about the widget hierarchy or any CSS selector,
-you can use the [GTK inspector](https://wiki.gnome.org/Projects/GTK/Inspector)
+If you are not sure about the widget hierarchy or any CSS selector, you can use
+the [GTK inspector](https://wiki.gnome.org/Projects/GTK/Inspector)
 
 :::code-group
 

@@ -100,7 +100,7 @@ export function mkApp(App: App3 | App4) {
 
             try {
                 app.acquire_socket()
-            } catch (error) {
+            } catch {
                 return client((msg) => IO.send_request(app.instanceName, msg)!, ...programArgs)
             }
 

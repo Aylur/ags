@@ -19,34 +19,34 @@ Read more about it on the [nix page](./nix)
 1. Install
    [Astal packages](https://aylur.github.io/astal/guide/getting-started/installation)
 
-    - astal-io
-    - astal3
-    - astal4
+   - astal-io
+   - astal3
+   - astal4
 
 2. Install dependencies
 
-    :::code-group
+   :::code-group
 
-    ```sh [<i class="devicon-archlinux-plain"></i> Arch]
-    sudo pacman -Syu \
-        meson ninja go gobject-introspection \
-        gtk3 gtk-layer-shell \
-        gtk4 gtk4-layer-shell
-    ```
+   ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+   sudo pacman -Syu \
+       meson ninja go gobject-introspection \
+       gtk3 gtk-layer-shell \
+       gtk4 gtk4-layer-shell
+   ```
 
-    ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-    sudo dnf install \
-        meson ninja golang gobject-introspection-devel \
-        gtk3-devel gtk-layer-shell-devel \
-        gtk4-devel gtk4-layer-shell-devel
-    ```
+   ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+   sudo dnf install \
+       meson ninja golang gobject-introspection-devel \
+       gtk3-devel gtk-layer-shell-devel \
+       gtk4-devel gtk4-layer-shell-devel
+   ```
 
-    :::
+   :::
 
 3. Clone and install AGS
 
-    ```sh
-    git clone https://github.com/aylur/ags
-    meson setup --prefix /usr build
-    meson install -C build
-    ```
+   ```sh
+   git clone https://github.com/aylur/ags
+   meson setup build
+   meson install -C build
+   ```

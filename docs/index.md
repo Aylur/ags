@@ -3,34 +3,34 @@ layout: home
 pageClass: home-page
 
 hero:
-    name: AGS
-    text: A modern framework for crafting Wayland Desktop Shells
-    image: https://aylur.github.io/astal/icon.svg
-    actions:
-        - theme: brand
-          text: Get Started
-          link: /guide/install
-        - theme: alt
-          text: Resources
-          link: /guide/resources
+  name: AGS
+  text: A framework for crafting Wayland Desktop Shells
+  image: https://aylur.github.io/astal/icon.svg
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /guide/install
+    - theme: alt
+      text: Resources
+      link: /guide/resources
 
 features:
-    - title: Initialize projects
-      details:
-          With <code>ags init</code> you can initialize a project, which
-          generates a basic template.
-    - title: Generate TypeScript types.
-      details:
-          With <code>ags types</code> you can generate types from GObject based
-          libraries.
-    - title: Bundle projects
-      details:
-          With <code>ags bundle</code> you can bundle your project into a single
-          executable script.
-    - title: Run projects
-      details:
-          With <code>ags run</code> you can run a projects without bundling them
-          first.
+  - title: Initialize projects
+    details:
+      With <code>ags init</code> you can initialize a project, which generates a
+      basic template.
+  - title: Generate TypeScript types.
+    details:
+      With <code>ags types</code> you can generate types from GObject based
+      libraries.
+  - title: Bundle projects
+    details:
+      With <code>ags bundle</code> you can bundle your project into a single
+      executable script.
+  - title: Run projects
+    details:
+      With <code>ags run</code> you can run a projects without bundling them
+      first.
 ---
 
 <!--TODO: add a few screenshots of desktops-->
