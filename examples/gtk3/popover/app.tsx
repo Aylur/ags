@@ -22,7 +22,7 @@ app.start({
     const [visible1, setVisible1] = createState(false)
     const [visible2, setVisible2] = createState(false)
 
-    void (
+    const _popover1 = (
       <Popover
         class="Popup"
         onClose={() => setVisible1(false)}
@@ -42,7 +42,7 @@ app.start({
       </Popover>
     )
 
-    void (
+    const _popover2 = (
       <Popover2
         class="Popup"
         onClose={() => setVisible2(false)}

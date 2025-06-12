@@ -44,9 +44,11 @@
           agsFull = pkgs.callPackage ./nix {
             inherit version astal3 astal4 agsJsPackage;
             astal-io = io;
-            extraPackages = builtins.attrValues (
-              builtins.removeAttrs astal.packages.${system} ["docs"]
-            );
+            extraPackages =
+              builtins.attrValues (
+                builtins.removeAttrs astal.packages.${system} ["docs"]
+              )
+              ++ [pkgs.libadwaita];
           };
         };
       in

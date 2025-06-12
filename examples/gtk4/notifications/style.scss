@@ -1,0 +1,110 @@
+@use "sass:string";
+
+@function gtkalpha($c, $a) {
+  @return string.unquote("alpha(#{$c},#{$a})");
+}
+
+// https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/theme/Adwaita/_colors-public.scss
+$fg-color: #{"@theme_fg_color"};
+$bg-color: #{"@theme_bg_color"};
+$error: red;
+
+window.NotificationPopups {
+  all: unset;
+}
+
+.Notification {
+  border-radius: 13px;
+  background-color: $bg-color;
+  margin: 0.5rem 1rem 0.5rem 1rem;
+  box-shadow: 2px 3px 8px 0 gtkalpha(black, 0.4);
+  border: 1pt solid gtkalpha($fg-color, 0.03);
+
+  &.critical {
+    border: 1pt solid gtkalpha($error, 0.4);
+
+    .header {
+      .app-name {
+        color: gtkalpha($error, 0.8);
+      }
+
+      .app-icon {
+        color: gtkalpha($error, 0.6);
+      }
+    }
+  }
+
+  .header {
+    padding: 0.5rem;
+    color: gtkalpha($fg-color, 0.5);
+
+    .app-icon {
+      margin: 0 0.4rem;
+    }
+
+    .app-name {
+      margin-right: 0.3rem;
+      font-weight: bold;
+
+      &:first-child {
+        margin-left: 0.4rem;
+      }
+    }
+
+    .time {
+      margin: 0 0.4rem;
+    }
+
+    button {
+      padding: 0.2rem;
+      min-width: 0;
+      min-height: 0;
+    }
+  }
+
+  separator {
+    margin: 0 0.4rem;
+    background-color: gtkalpha($fg-color, 0.1);
+  }
+
+  .content {
+    margin: 1rem;
+    margin-top: 0.5rem;
+
+    .summary {
+      font-size: 1.2em;
+      color: $fg-color;
+    }
+
+    .body {
+      color: gtkalpha($fg-color, 0.8);
+    }
+
+    .image {
+      border: 1px solid gtkalpha($fg-color, 0.02);
+      margin-right: 0.5rem;
+      border-radius: 9px;
+      min-width: 100px;
+      min-height: 100px;
+      background-size: cover;
+      background-position: center;
+    }
+  }
+
+  .actions {
+    margin: 1rem;
+    margin-top: 0;
+
+    button {
+      margin: 0 0.3rem;
+
+      &:first-child {
+        margin-left: 0;
+      }
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+}
