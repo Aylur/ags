@@ -27,8 +27,6 @@ own logic and style. A widget can be as small as a button or an entire bar. The
 top level - also known as a root - widget is always a
 [Window](https://aylur.github.io/libastal/astal4/class.Window.html) instance.
 
-::: code-group
-
 ```tsx [widget/Bar.tsx]
 function Bar(monitor = 0) {
   return (
@@ -37,24 +35,14 @@ function Bar(monitor = 0) {
     </window>
   )
 }
-```
 
-:::
-
-::: code-group
-
-```ts [app.ts]
-import Bar from "./widget/Bar"
-
-App.start({
+app.start({
   main() {
     Bar(0)
     Bar(1) // instantiate for each monitor
   },
 })
 ```
-
-:::
 
 ## Creating and nesting widgets
 

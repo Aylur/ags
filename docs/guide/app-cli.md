@@ -111,7 +111,7 @@ In order for the application to know about your windows, you have to register
 them. You can do this by specifying a **unique** `name` and calling
 `app.add_window()`
 
-```tsx {4}
+```tsx {5}
 import app from "astal/gtk4/app"
 
 function Bar() {
@@ -126,7 +126,7 @@ function Bar() {
 You can also invoke `app.add_window()` by simply passing `app` to the
 `application` prop.
 
-```tsx {4}
+```tsx {5}
 import app from "astal/gtk4/app"
 
 function Bar() {

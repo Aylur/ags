@@ -1,6 +1,6 @@
 import AstalIO from "gi://AstalIO"
-import { Accessor } from "../gjsx/src/jsx"
-import { execAsync } from "./process"
+import { Accessor } from "../gjsx/src/jsx/index.js"
+import { execAsync } from "./process.js"
 
 export type Time = AstalIO.Time
 export const Time = AstalIO.Time

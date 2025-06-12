@@ -113,7 +113,7 @@ To have Window widgets appear on a monitor when its plugged in, listen to
 :::code-group
 
 ```tsx [Bar.tsx]
-export default function Bar(gdkmonitor: Gdk.Monitor) {
+function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
   return <window gdkmonitor={gdkmonitor} />
 }
 ```
@@ -122,27 +122,19 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
 
 :::code-group
 
-```ts [app.ts]
+```tsx [app.ts]
 import Gtk from "gi://Gtk"
-import Gdk from "gi://Gdk"
 import Bar from "./Bar"
+import { For, createBinding } from "ags"
 
 function main() {
-  const bars = new Map<Gdk.Monitor, Gtk.Widget>()
+  const monitors = createBinding(app, "monitors")
 
-  // initialize
-  for (const gdkmonitor of app.get_monitors()) {
-    bars.set(gdkmonitor, Bar(gdkmonitor))
-  }
-
-  app.connect("monitor-added", (_, gdkmonitor) => {
-    bars.set(gdkmonitor, Bar(gdkmonitor))
-  })
-
-  app.connect("monitor-removed", (_, gdkmonitor) => {
-    bars.get(gdkmonitor)?.destroy()
-    bars.delete(gdkmonitor)
-  })
+  return (
+    <For each={monitors} cleanup={(win) => (win as Gtk.Window).destroy()}>
+      {(monitor) => <Bar gdkmonitor={monitor} />}
+    </For>
+  )
 }
 
 app.start({ main })

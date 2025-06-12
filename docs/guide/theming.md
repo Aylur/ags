@@ -28,9 +28,9 @@ import css from "./style.css"
 import scss from "./style.scss"
 
 const inlineCss = `
-    window {
-        background-color: transparent;
-    }
+  window {
+    background-color: transparent;
+  }
 `
 
 app.start({
@@ -49,7 +49,7 @@ those rare cases when you need apply a style based on a JavaScript value you can
 use the `css` property.
 
 ```tsx
-return <box css="padding 1em; border: 1px solid red;" />
+<box css="padding 1em; border: 1px solid red;" />
 ```
 
 > [!WARNING]
@@ -66,9 +66,9 @@ app.apply_css("/path/to/file.css")
 
 ```ts
 app.apply_css(`
-window {
+  window {
     background-color: transparent;
-}
+  }
 `)
 ```
 

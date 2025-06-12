@@ -14,6 +14,7 @@
         "url": "https://ko-fi.com/aylur"
     },
     "exports": {
+        ".": "./src/index.ts",
         "./gtk4": "./src/gtk4/index.ts",
         "./gtk4/app": "./src/gtk4/app.ts",
         "./gtk4/jsx-runtime": "./src/gtk4/jsx-runtime.ts",
@@ -21,12 +22,11 @@
         "./gtk3/app": "./src/gtk3/app.ts",
         "./gtk3/jsx-runtime": "./src/gtk3/jsx-runtime.ts",
         "./file": "./src/file.ts",
-        "./gobject": "./gjsx/src/gobject.ts",
         "./process": "./src/process.ts",
         "./time": "./src/time.ts",
-        "./fetch": "./gjsx/src/fetch.ts",
-        "./dbus": "./gjsx/src/dbus.ts",
-        ".": "./gjsx/src/jsx/index.ts"
+        "./gobject": "./src/gobject.ts",
+        "./dbus": "./src/dbus.ts",
+        "./fetch": "./src/fetch.ts"
     },
     "engines": {
         "gjs": ">=1.79.0"
