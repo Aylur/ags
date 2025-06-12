@@ -1,6 +1,7 @@
 import "./overrides.js"
 import { setConsoleLogDomain } from "console"
 import { exit, programArgs } from "system"
+import { createRoot } from "../gjsx/src/jsx/scope.js"
 import IO from "gi://AstalIO"
 import GObject from "gi://GObject"
 import Gio from "gi://Gio?version=2.0"
@@ -95,7 +96,7 @@ export function mkApp(App: App3 | App4) {
 
             this.requestHandler = requestHandler
             app.connect("activate", () => {
-                main?.(...programArgs)
+                createRoot(() => main?.(...programArgs))
             })
 
             try {

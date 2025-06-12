@@ -61,7 +61,6 @@ export default defineConfig({
       { text: "Quick Start", link: "/guide/quick-start" },
       { text: "First Widgets", link: "/guide/first-widgets" },
       { text: "Theming", link: "/guide/theming" },
-      { text: "State Management", link: "/guide/state-management" },
       { text: "App and CLI", link: "/guide/app-cli" },
       { text: "Utilities", link: "/guide/utilities" },
       { text: "Resources", link: "/guide/resources" },

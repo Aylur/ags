@@ -24,16 +24,16 @@ First create a file anywhere on your system.
 ```tsx [<i class="devicon-typescript-plain"></i> mybar.tsx]
 import app from "ags/gtk4/app"
 import { Astal } from "ags/gtk4"
-import { Poll } from "ags/state"
+import { createPoll } from "ags/time"
 
 app.start({
   main() {
     const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
-    const clock = new Poll("", 1000, "date")
+    const clock = createPoll("", 1000, "date")
 
     return (
       <window visible anchor={TOP | LEFT | RIGHT}>
-        <label label={clock()} />
+        <label label={clock} />
       </window>
     )
   },
@@ -51,7 +51,7 @@ ags run ./mybar.tsx
 Alternatively, you can add a shebang and make it executable
 
 ```ts [mybar.tsx]
-#!/usr/bin/env ags run
+#!/usr/bin/env -S ags run
 import app from "ags/gtk4/app"
 
 app.start({

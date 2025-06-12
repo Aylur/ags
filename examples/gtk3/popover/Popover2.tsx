@@ -1,5 +1,5 @@
 import { Astal, Gdk } from "ags/gtk3"
-import { State } from "ags/state"
+import { createState } from "ags"
 
 type Popover2Props = Pick<
   JSX.IntrinsicElements["window"],
@@ -22,7 +22,7 @@ export default function Popover2({
 }: Popover2Props) {
   let win: Astal.Window
 
-  const width = new State(1000)
+  const [width, setWidth] = createState(1000)
   const hide = () => (win.visible = false)
 
   return (
@@ -37,7 +37,7 @@ export default function Popover2({
         // instead of anchoring to all sides we set the width explicitly
         // otherwise label wrapping won't work correctly without setting their width
         if (self.visible) {
-          width.set(self.get_current_monitor().workarea.width)
+          setWidth(self.get_current_monitor().workarea.width)
         } else {
           onClose?.(self)
         }

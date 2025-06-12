@@ -23,10 +23,10 @@
         "./file": "./src/file.ts",
         "./gobject": "./gjsx/src/gobject.ts",
         "./process": "./src/process.ts",
-        "./state": "./src/state.ts",
         "./time": "./src/time.ts",
         "./fetch": "./gjsx/src/fetch.ts",
-        "./dbus": "./gjsx/src/dbus.ts"
+        "./dbus": "./gjsx/src/dbus.ts",
+        ".": "./gjsx/src/jsx/index.ts"
     },
     "engines": {
         "gjs": ">=1.79.0"
@@ -36,7 +36,6 @@
     ],
     "devDependencies": {
         "@eslint/js": "latest",
-        "@types/eslint__js": "latest",
         "eslint": "latest",
         "typescript": "latest",
         "typescript-eslint": "latest"

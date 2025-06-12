@@ -1,10 +1,6 @@
-import { For } from "ags/gtk4"
-import { State } from "ags/state"
-
-import Astal from "gi://Astal?version=4.0"
+import { For, createState } from "ags"
+import { Astal, Gtk, Gdk } from "ags/gtk4"
 import AstalApps from "gi://AstalApps"
-import Gtk from "gi://Gtk?version=4.0"
-import Gdk from "gi://Gdk?version=4.0"
 import Graphene from "gi://Graphene"
 
 const { TOP, BOTTOM, LEFT, RIGHT } = Astal.WindowAnchor
@@ -15,11 +11,11 @@ export default function Applauncher() {
   let win: Astal.Window
 
   const apps = new AstalApps.Apps()
-  const list = new State(new Array<AstalApps.Application>())
+  const [list, setList] = createState(new Array<AstalApps.Application>())
 
   function search(text: string) {
-    if (text === "") list.set([])
-    else list.set(apps.fuzzy_query(text).slice(0, 8))
+    if (text === "") setList([])
+    else setList(apps.fuzzy_query(text).slice(0, 8))
   }
 
   function launch(app?: AstalApps.Application) {
@@ -90,7 +86,7 @@ export default function Applauncher() {
         />
         <Gtk.Separator visible={list((l) => l.length > 0)} />
         <box orientation={Gtk.Orientation.VERTICAL}>
-          <For each={list()}>
+          <For each={list}>
             {(app, index) => (
               <button $clicked={() => launch(app)}>
                 <box>
@@ -99,7 +95,7 @@ export default function Applauncher() {
                   <label
                     hexpand
                     halign={Gtk.Align.END}
-                    label={index.as((i) => `󰘳${i + 1}`)}
+                    label={index((i) => `󰘳${i + 1}`)}
                   />
                 </box>
               </button>

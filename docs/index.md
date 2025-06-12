@@ -18,19 +18,19 @@ features:
   - title: Initialize projects
     details:
       With <code>ags init</code> you can initialize a project, which generates a
-      basic template.
-  - title: Generate TypeScript types.
+      basic template
+  - title: Generate TypeScript types
     details:
       With <code>ags types</code> you can generate types from GObject based
-      libraries.
+      libraries
   - title: Bundle projects
     details:
       With <code>ags bundle</code> you can bundle your project into a single
-      executable script.
+      executable script
   - title: Run projects
     details:
       With <code>ags run</code> you can run a projects without bundling them
-      first.
+      first
 ---
 
 <!--TODO: add a few screenshots of desktops-->

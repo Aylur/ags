@@ -1,4 +1,5 @@
 import AstalIO from "gi://AstalIO"
+import { Accessor } from "../gjsx/src/jsx"
 
 type Args = {
     cmd: string | string[]
@@ -63,4 +64,46 @@ export function execAsync(cmd: string | string[]): Promise<string> {
             })
         }
     })
+}
+
+export function createSubprocess(init: string, exec: string | string[]): Accessor<string>
+
+export function createSubprocess<T>(
+    init: T,
+    exec: string | string[],
+    transform: (stdout: string, prev: T) => T,
+): Accessor<T>
+
+export function createSubprocess<T>(
+    init: T,
+    exec: string | string[],
+    transform?: (stdout: string, prev: T) => T,
+): Accessor<T> {
+    let currentValue = init
+    let proc: AstalIO.Process | null = null
+    const subscribers = new Set<() => void>()
+
+    function subscribe(callback: () => void): () => void {
+        if (subscribers.size === 0) {
+            proc = subprocess(exec, (stdout) => {
+                const value = transform ? transform(stdout, currentValue) : (stdout as T)
+                if (currentValue !== value) {
+                    currentValue = value
+                    callback()
+                }
+            })
+        }
+
+        subscribers.add(callback)
+
+        return () => {
+            subscribers.delete(callback)
+            if (subscribers.size === 0) {
+                proc?.kill()
+                proc = null
+            }
+        }
+    }
+
+    return new Accessor(() => currentValue, subscribe)
 }

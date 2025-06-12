@@ -1,8 +1,8 @@
 import app from "ags/gtk3/app"
 import { Astal, Gtk } from "ags/gtk3"
-import { State } from "ags/state"
 import Popover from "./Popover"
 import Popover2 from "./Popover2"
+import { createState } from "ags"
 
 const { TOP, RIGHT, LEFT } = Astal.WindowAnchor
 const lorem =
@@ -19,14 +19,14 @@ app.start({
     }
   `,
   main() {
-    const visible1 = new State(false)
-    const visible2 = new State(false)
+    const [visible1, setVisible1] = createState(false)
+    const [visible2, setVisible2] = createState(false)
 
-    const _popover1 = (
+    void (
       <Popover
         class="Popup"
-        onClose={() => visible1.set(false)}
-        visible={visible1()}
+        onClose={() => setVisible1(false)}
+        visible={visible1}
         marginTop={36}
         marginRight={60}
         valign={Gtk.Align.START}
@@ -35,23 +35,23 @@ app.start({
         <box class="popup" vertical>
           {/* maxWidthChars is needed to make wrap work */}
           <label label={lorem} wrap maxWidthChars={8} />
-          <button $clicked={() => visible1.set(false)}>
+          <button $clicked={() => setVisible1(false)}>
             Click me to close the popup
           </button>
         </box>
       </Popover>
     )
 
-    const _popover2 = (
+    void (
       <Popover2
         class="Popup"
-        onClose={() => visible2.set(false)}
-        visible={visible2()}
+        onClose={() => setVisible2(false)}
+        visible={visible2}
       >
         <box class="popup" vertical>
           {/* maxWidthChars is needed, wrap will work as intended */}
           <label label={lorem} wrap />
-          <button $clicked={() => visible2.set(false)}>
+          <button $clicked={() => setVisible2(false)}>
             Click me to close the popup
           </button>
         </box>
@@ -64,10 +64,10 @@ app.start({
         exclusivity={Astal.Exclusivity.EXCLUSIVE}
       >
         <box halign={Gtk.Align.END}>
-          <button $clicked={() => visible2.set(true)} halign={Gtk.Align.END}>
+          <button $clicked={() => setVisible2(true)} halign={Gtk.Align.END}>
             Click to open popover2
           </button>
-          <button $clicked={() => visible1.set(true)} halign={Gtk.Align.END}>
+          <button $clicked={() => setVisible1(true)} halign={Gtk.Align.END}>
             Click to open popover
           </button>
         </box>

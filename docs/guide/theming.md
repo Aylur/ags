@@ -10,11 +10,11 @@ Since the widget toolkit is **GTK** theming is done with **CSS**.
   - [GTK3 CSS Overview wiki](https://docs.gtk.org/gtk3/css-overview.html)
   - [GTK3 CSS Properties Overview wiki](https://docs.gtk.org/gtk3/css-properties.html)
 
-> [!WARNING]
+> [!WARNING] GTK is not the web
 >
-> GTK is not the web While most features are implemented in GTK, you can't
-> assume anything that works on the web will work with GTK. Refer to the GTK
-> docs to see what is available.
+> While most features are implemented in GTK, you can't assume anything that
+> works on the web will work with GTK. Refer to the GTK docs to see what is
+> supported.
 
 ## Loading static stylesheets
 

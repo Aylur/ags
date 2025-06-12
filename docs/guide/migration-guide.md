@@ -64,7 +64,7 @@ class MyObj extends GObject.Object {
 
 ### Variable
 
-`Variable` has been removed in favor of [`State`](./state-management)
+`Variable` has been removed in favor of `Accessor` and `createState`
 
 ### Dynamic rendering
 
@@ -76,22 +76,22 @@ const value: Binding<object>
 const list: Binding<Array<object>>
 
 <box>
-    {value.as(value => ( // [!code --:3]
-        <></>
-    ))}
-    <With value={value}>  // [!code ++:5]
-        {value => (
-            <></>
-        )}
-    </For>
-    {list.as(list => list.map(item => ( // [!code --:3]
-        <></>
-    )))}
-    <For each={list}>  // [!code ++:5]
-        {item => (
-            <></>
-        )}
-    </For>
+  {value.as(value => ( // [!code --:3]
+    <></>
+  ))}
+  <With value={value}>  // [!code ++:5]
+    {value => (
+      <></>
+    )}
+  </With>
+  {list.as(list => list.map(item => ( // [!code --:3]
+    <></>
+  )))}
+  <For each={list}>  // [!code ++:5]
+    {item => (
+      <></>
+    )}
+  </For>
 </box>
 ```
 
@@ -114,9 +114,9 @@ by default.
 
 The entry point in code changed from `App.config` to `app.start`
 
+<!-- prettier-ignore -->
 ```js
-App.config({
-  // [!code --:5]
+App.config({ // [!code --:5]
   windows: [
     // window instances
   ],
@@ -137,14 +137,14 @@ run in
 [client mode](https://aylur.github.io/astal/guide/typescript/cli-app#client) and
 it is recommended to only execute code in either `main` or `client` blocks.
 
+<!-- prettier-ignore -->
 ```js
 const win = Widget.Window() // [!code --:5]
 
 App.config({
   windows: [win],
 })
-app.main({
-  // [!code ++:5]
+app.main({ // [!code ++:5]
   main() {
     new Widget.Window()
   },
@@ -156,16 +156,14 @@ app.main({
 AGS now supports and recommends the usage of
 [JSX](./first-widgets#creating-and-nesting-widgets).
 
+<!-- prettier-ignore -->
 ```jsx
-const _ = Widget.Box({
-  // [!code --:6]
+const _ = Widget.Box({ // [!code --:4]
   vertical: true,
   children: [Widget.Label("hello")],
 })
-const _ = (
-  <box vertical>
-    {" "}
-    // [!code ++:3]
+const _ = ( // [!code ++:5]
+  <box vertical> 
     <label label="hello" />
   </box>
 )
@@ -173,8 +171,7 @@ const _ = (
 
 ### Reactivity
 
-`Variable` has been removed with `State` as its successor. `bind` is now a top
-level function instead of method on each instance.
+`Variable` has been removed in favor of signals.
 
 ```jsx
 const label = Variable("hello") // [!code --:5]
@@ -182,43 +179,47 @@ const label = Variable("hello") // [!code --:5]
 Label({
   label: label.bind().as((hello) => `${hello} world`),
 })
-import { State, bind } from "ags/state" // [!code ++:6]
-const label = new State("hello")
-return <label label={bind(label).as((hello) => `${hello} world`)} />
+import { createState } from "ags" // [!code ++:6]
+const [label, setLabel] = createState("hello")
+return <label label={label((hello) => `${hello} world`)} />
 ```
 
 ### Hooks
 
 Widgets are no longer subclassed, added methods have been removed.
 
+<!-- prettier-ignore -->
 ```jsx
-Widget.Button({
-  // [!code --:6]
+Widget.Button({ // [!code --:6]
   setup: (self) => {
     self.on("signal-name", handler)
     self.hook(obj, handler, "changed")
   },
 })
-import { hook } from "ags/state" // [!code ++:9]
+import { onCleanup } from "ags" // [!code ++:14]
 
-return (
-  <button
-    $signal-name={handler}
-    $={(self) => {
-      hook(self, obj, "signal-name", handler)
-    }}
-  />
-)
+function MyWidget() {
+  const id = obj.connect("signal-name", callback)
+
+  onCleanup(() => {
+    obj.disconnect(id)
+  })
+
+  return (
+    <button $signal-name={handler} />
+  )
+
+}
 ```
 
-> [!NOTE] > `.keybind` and `.poll` hooks have been removed. Polling should be
-> done in `State`. Keybinds should be done using the intended Gtk APIs.
+> [!NOTE]
+>
+> `.keybind` and `.poll` hooks have been removed. Polling should be done using
+> `createPoll`. Keybinds should be done using the intended Gtk APIs.
 
 ### Widgets
 
-`JSX` handles everything, it is no longer needed to subclass widgets. Some
-widgets are no longer builtin, you'll have to make a
-[subclass](https://aylur.github.io/astal/guide/typescript/widget#how-to-use-non-builtin-gtk-widgets).
+`JSX` handles everything, it is no longer needed to subclass widgets.
 
 ```jsx
 import Gtk from "gi://Gtk"
@@ -227,7 +228,7 @@ const calendar = <Gtk.Calendar />
 
 ### Variable
 
-`Variable` has been removed in favor of [`State`](./state-management)
+`Variable` has been removed in favor of signals.
 
 ### Globals
 
@@ -260,33 +261,40 @@ import Battery from "gi://AstalBattery" // [!code ++:2]
 const battery = Battery.get_default()
 
 // binding
-const b = battery.bind("percentage").as() // [!code --]
-import { bind } from "ags" // [!code ++:2]
-const b = bind(battery, "percentage").as()
+const b = battery.bind("percentage") // [!code --]
+import { createBinding } from "ags" // [!code ++:2]
+const b = createBinding(battery, "percentage")
 ```
 
 Creating custom "Services" now simply means creating a `GObject.Object`
 subclass.
 
+<!-- prettier-ignore -->
 ```ts
-class MyService extends Service { // [!code --:12]
-    static {
-        Service.register(this, {
-            'my-signal': ['float'],
-        }, {
-            'my-value': ['float', 'rw'],
-        });
-    }
+class MyService extends Service { // [!code --:16]
+  static {
+    Service.register(
+      this,
+      {
+        "my-signal": ["float"],
+      },
+      {
+        "my-value": ["float", "rw"],
+      },
+    )
+  }
 
-    get my_value(): number
-    set my_value(v: number)
+  get my_value(): number
+  set my_value(v: number)
 }
-import GObject, { register, signal, property } from "ags/gobject" // [!code ++:7]
+import GObject, { register, signal, property } from "ags/gobject" // [!code ++:9]
 
 @register()
 class MyService extends GObject.Object {
-    @property(Number) declare myValue: number
-    @signal(Number) declare mySignal: (n: number): void
+  @property(Number) myValue = 0
+
+  @signal(Number)
+  mySignal(n: number): void {}
 }
 ```
 
@@ -306,7 +314,7 @@ class MyService extends GObject.Object {
   import { fetch } from "ags/fetch"
   ```
 
-- Icon lookup is has no alternative use `Gtk.IconTheme`.
+- Icon lookup is has no alternative. Use `Gtk.IconTheme`.
 
 - Authenticating have been moved to
   [AstalAuth](https://aylur.github.io/astal/guide/libraries/auth)
@@ -321,13 +329,12 @@ To make windows toggleable through CLI you will have to now
 [pass the `app` instance to `Window`](./app-cli#toggling-windows-by-their-name)
 instances instead of passing an array of windows to `App.config`.
 
+<!-- prettier-ignore -->
 ```js
-App.config({
-  // [!code --:5]
+App.config({ // [!code --:3]
   windows: [Widget.Window({ name: "window-name" })],
 })
-app.start({
-  // [!code ++:5]
+app.start({ // [!code ++:5]
   main() {
     return <window name="window-name" application={App}></window>
   },
@@ -337,13 +344,12 @@ app.start({
 `ags --run-js` have been retired in favor of
 [requests](./app-cli#messaging-from-cli).
 
+<!-- prettier-ignore -->
 ```ts
-globalThis.myfunction = () => {
-  // [!code --:3]
+globalThis.myfunction = () => { // [!code --:3]
   print("hello")
 }
-app.start({
-  // [!code ++:8]
+app.start({ // [!code ++:8]
   requestHandler(request: string, res: (response: any) => void) {
     if (request == "myfunction") {
       res("hello")

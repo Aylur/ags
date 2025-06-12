@@ -82,7 +82,7 @@ function MyBar() {
   return (
     <window>
       <box>
-        Click The button:
+        Click The button
         <MyButton />
       </box>
     </window>
@@ -173,19 +173,15 @@ or
 
 ```tsx
 function MyWidget() {
-    const labels = [
-        "label1"
-        "label2"
-        "label3"
-    ]
+  const labels = ["label1", "label2", "label3"]
 
-    return (
-        <box>
-            {labels.map(label => (
-                <label label={label} />
-            ))}
-        </box>
-    )
+  return (
+    <box>
+      {labels.map((label) => (
+        <label label={label} />
+      ))}
+    </box>
+  )
 }
 ```
 
@@ -209,8 +205,8 @@ function MyButton() {
 > [!INFO]
 >
 > Attributes prefixed with `$` will connect to a `signal` of the widget. Their
-> types unfortunately can not be generated. Refer to the Gtk docs on what
-> signals are available.
+> types unfortunately can not be generated at the moment due to TypeScript
+> limitations. Refer to the Gtk docs on what signals are available.
 
 <!--  -->
 
@@ -238,6 +234,10 @@ function MyWidget({ myprop, children }: Props) {
 }
 ```
 
+> [!TIP]
+>
+> `JSX.Element` is an alias to `GObject.Object`
+
 The `children` property is a special one which is used to pass the children
 given in the JSX expression.
 
@@ -262,27 +262,23 @@ return (
 
 ## State management
 
-The state of widgets are handled with Bindings. A [Binding](./binding) lets you
-connect the state of an
-[object](./binding#subscribable-and-connectable-interface) to a widget so it
-re-renders when that state changes.
-
-Use the `bind` function to create a `Binding` object from a `State` or a regular
-`GObject` and one of its properties.
+State is managed using signals. The most common signal you will use is
+`createState` and `createBinding`. `createState` is a writable signal while
+`createBinding` will be used to hook into GObject properties.
 
 :::code-group
 
 ```tsx [State example]
-import { State, bind } from "ags/state"
+import { createState } from "ags"
 
-function CounterWith() {
-  const count = new State(0)
+function Counter() {
+  const [count, setCount] = createState(0)
 
   function increment() {
-    count.value += 1
+    setCount((v) => v + 1)
   }
 
-  const label = bind(count).as((num) => num.toString())
+  const label = count((num) => num.toString())
 
   return (
     <box>
@@ -294,22 +290,23 @@ function CounterWith() {
 ```
 
 ```tsx [GObject example]
-import GObject, { register, property } from "ags/state"
-import { bind } from "ags/state"
+import GObject, { register, property } from "ags/gobject"
+import { createBinding } from "ags"
 
 @register()
 class CountStore extends GObject.Object {
-  @property(Number) declare counter: number
+  @property(Number) counter = 0
 }
 
-function CounterWith() {
+function Counter() {
   const count = new CountStore()
 
   function increment() {
     count.counter += 1
   }
 
-  const label = bind(count, "counter").as((num) => num.toString())
+  const counter = createBinding(count, "counter")
+  const label = counter((num) => num.toString())
 
   return (
     <box>
@@ -322,42 +319,22 @@ function CounterWith() {
 
 :::
 
-Bindings have an `.as()` method which lets you transform the assigned value. In
-the case of a `Gtk.Label` in this example, its label property expects a string,
-so it needs to be turned to a string first.
-
-> [!TIP]
->
-> `State` has a shorthand for `bind(state).as(transform)`
->
-> ```tsx
-> const state = new State(0)
-> const transform = (v: number) => v.toString()
->
-> return (
->   <box>
->     {/* these two are equivalent */}
->     <label label={bind(state).as(transform)} />
->     <label label={state(transform)} />
->   </box>
-> )
-> ```
+Signals can be called as a function which lets you transform its value. In the
+case of a `Gtk.Label` in this example, its label property expects a string, so
+it needs to be turned to a string first.
 
 ## Dynamic rendering
 
 When you want to render based on a value, you can use the `<With>` component.
 
 ```tsx
-import { With } from "ags/gtk4"
-import { State } from "ags/state"
+import { With, Accessor } from "ags"
 
-const value = new State<{ member: string } | null>({
-  member: "hello",
-})
+let value = Accessor<{ member: string } | null>
 
 return (
   <box>
-    <With value={value()} cleanup={(label) => label.run_dispose()}>
+    <With value={value}>
       {(value) => value && <label label={value.member} />}
     </With>
   </box>
@@ -374,9 +351,9 @@ return (
 > [!WARNING]
 >
 > When the value changes and the widget is re-rendered the previous one is
-> removed from the parent component and the new one is **appended**. Order of
-> widgets are not kept so make sure to wrap `<With>` in a container to avoid
-> this.
+> removed from the parent component and the new one is _appended_. Order of
+> widgets are _not_ kept so make sure to wrap `<With>` in a container to avoid
+> it. This is due to Gtk not having a generic API on containers to sort widgets.
 
 ## Dynamic list rendering
 
@@ -385,13 +362,13 @@ the array changes it is compared with its previous state. Widgets for new items
 are inserted while widgets associated with removed items are removed.
 
 ```tsx
-import { For } from "ags/gtk4"
+import { For, Accessor } from "ags"
 
-let list: Binding<Array<object>>
+let list: Accessor<Array<any>>
 
 return (
   <box>
-    <For each={list} cleanup={(label) => label.run_dispose()}>
+    <For each={list}>
       {(item, index: Binding<number>) => (
         <label label={index.as((i) => `${i}. ${item}`)} />
       )}
