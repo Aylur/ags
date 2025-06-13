@@ -1,1 +1,1 @@
-export * from "../gjsx/src/jsx/index.js"
+export * from "../gnim/src/jsx/index.js"

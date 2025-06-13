@@ -7,8 +7,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    gjsx = {
-      url = "github:aylur/gjsx";
+    gnim = {
+      url = "github:aylur/gnim";
       flake = false;
     };
   };
@@ -17,7 +17,7 @@
     self,
     nixpkgs,
     astal,
-    gjsx,
+    gnim,
   }: let
     systems = ["x86_64-linux" "aarch64-linux"];
     forAllSystems = nixpkgs.lib.genAttrs systems;
@@ -30,7 +30,7 @@
         pkgs = nixpkgs.legacyPackages.${system};
 
         agsJsPackage = pkgs.callPackage ./nix/gjs-package.nix {
-          inherit gjsx version;
+          inherit gnim version;
         };
 
         agsPackages = {

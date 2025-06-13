@@ -17,8 +17,8 @@ install_subdir(
 )
 
 install_subdir(
-  'lib/gjsx/src',
-  install_dir: pkgdatadir / 'js' / 'gjsx',
+  'lib/gnim/src',
+  install_dir: pkgdatadir / 'js' / 'gnim',
 )
 
 # without introducing meson_options when these two

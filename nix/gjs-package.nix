@@ -3,7 +3,7 @@
   ninja,
   pkg-config,
   stdenv,
-  gjsx,
+  gnim,
   version,
   runCommand,
 }:
@@ -13,10 +13,10 @@ stdenv.mkDerivation {
 
   # FIXME: how do I pull submodules without "?submodules=1"?
   src = runCommand "ags" {} ''
-    mkdir -p $out/lib/gjsx
+    mkdir -p $out/lib/gnim
     cp ${../meson.build} $out/meson.build
     cp -r ${../lib}/* $out/lib
-    cp -r ${gjsx}/* $out/lib/gjsx
+    cp -r ${gnim}/* $out/lib/gnim
     chmod -R u+w $out
   '';
 

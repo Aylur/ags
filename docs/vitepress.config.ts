@@ -49,8 +49,8 @@ export default defineConfig({
             link: "https://aylur.github.io/astal/",
           },
           {
-            text: "Gjsx",
-            link: "https://aylur.github.io/gjsx/",
+            text: "Gnim",
+            link: "https://aylur.github.io/gnim/",
           },
         ],
       },

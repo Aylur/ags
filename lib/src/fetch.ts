@@ -1,1 +1,1 @@
-export * from "../gjsx/src/fetch.js"
+export * from "../gnim/src/fetch.js"

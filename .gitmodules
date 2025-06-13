@@ -1,3 +1,3 @@
-[submodule "lib/gjsx"]
-	path = lib/gjsx
-	url = https://github.com/Aylur/gjsx.git
+[submodule "lib/gnim"]
+	path = lib/gnim
+	url = https://github.com/Aylur/gnim.git

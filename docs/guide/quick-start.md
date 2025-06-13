@@ -7,8 +7,8 @@ It's as easy as a few lines to get a bar running on your screen.
 - [Gnome JavaScript (GJS)](https://gjs.guide/) is the JavaScript runtime
 - [Astal](https://aylur.github.io/astal/) is a suite of libraries which lets you
   query, monitor and interact with parts of your system
-- [Gjsx](https://aylur.github.io/gjsx/) is a set of convinience libraries for
-  GJS, which allows you to write widgets using JSX syntax
+- [Gnim](https://aylur.github.io/gnim/) is a for GJS, which allows you to write
+  widgets using JSX syntax
 - [AGS](https://aylur.github.io/ags/) is a CLI tool which lets you skip setting
   up a dev environment and jump straight into writing your Desktop Shell in
   TypeScript

@@ -28,8 +28,8 @@ Box({
 
 ### GObject decorators
 
-They were updated to the stage 3 proposal. You can read more about them on
-[Gjsx](https://aylur.github.io/gjsx/gobject.html)
+They were updated to the stage 3 proposal. You can read more about them on the
+[Gnim](https://aylur.github.io/gnim/gobject.html) documentation.
 
 ```ts
 @register()
@@ -75,22 +75,30 @@ Dynamic children rendering is done with `<With>` and `<For>` components.
 const value: Binding<object>
 const list: Binding<Array<object>>
 
-<box>
-  {value.as(value => ( // [!code --:3]
-    <></>
-  ))}
-  <With value={value}>  // [!code ++:5]
-    {value => (
+;<box>
+  {value.as(
+    (
+      value, // [!code --:3]
+    ) => (
       <></>
-    )}
+    ),
+  )}
+  <With value={value}>
+    {" "}
+    // [!code ++:5]
+    {(value) => <></>}
   </With>
-  {list.as(list => list.map(item => ( // [!code --:3]
-    <></>
-  )))}
-  <For each={list}>  // [!code ++:5]
-    {item => (
-      <></>
-    )}
+  {list.as((list) =>
+    list.map(
+      (
+        item, // [!code --:3]
+      ) => <></>,
+    ),
+  )}
+  <For each={list}>
+    {" "}
+    // [!code ++:5]
+    {(item) => <></>}
   </For>
 </box>
 ```

@@ -1,1 +1,1 @@
-export * from "../gjsx/src/gobject.js"
+export * from "../gnim/src/gobject.js"

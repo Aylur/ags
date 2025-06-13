@@ -1,5 +1,5 @@
 import AstalIO from "gi://AstalIO"
-import { Accessor } from "../gjsx/src/jsx/index.js"
+import { Accessor } from "../gnim/src/jsx/index.js"
 
 type Args = {
     cmd: string | string[]

@@ -1,7 +1,7 @@
 import "./overrides.js"
 import { setConsoleLogDomain } from "console"
 import { exit, programArgs } from "system"
-import { createRoot } from "../gjsx/src/jsx/scope.js"
+import { createRoot } from "../gnim/src/jsx/scope.js"
 import IO from "gi://AstalIO"
 import GObject from "gi://GObject"
 import Gio from "gi://Gio?version=2.0"

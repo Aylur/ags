@@ -1,1 +1,1 @@
-export * from "../gjsx/src/dbus.js"
+export * from "../gnim/src/dbus.js"

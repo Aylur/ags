@@ -92,7 +92,7 @@ in
 
     meta = {
       homepage = "https://github.com/Aylur/ags";
-      description = "Scaffolding CLI tool for Astal+Gjsx projects";
+      description = "Scaffolding CLI tool for Astal+Gnim projects";
       license = lib.licenses.gpl3Plus;
       mainProgram = "ags";
       platforms = lib.platforms.linux;

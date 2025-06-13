@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import Gtk from "gi://Gtk?version=4.0"
 import Astal from "gi://Astal?version=4.0"
-import { CCProps } from "../../gjsx/src/jsx/index.js"
-import { intrinsicElements } from "../../gjsx/src/gtk4/jsx-runtime.js"
+import { CCProps } from "../../gnim/src/jsx/index.js"
+import { intrinsicElements } from "../../gnim/src/gtk4/jsx-runtime.js"
 
 Object.assign(intrinsicElements, {
     box: Gtk.Box,
@@ -52,4 +52,4 @@ declare global {
     }
 }
 
-export * from "../../gjsx/src/gtk4/jsx-runtime.js"
+export * from "../../gnim/src/gtk4/jsx-runtime.js"

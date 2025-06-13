@@ -1,7 +1,7 @@
 # First Widgets
 
 On this page you will learn about the JSX syntax. To learn about it more in
-depth you can read the [Gjsx docs](https://aylur.github.io/gjsx/jsx.html).
+depth you can read the [Gnim docs](https://aylur.github.io/gnim/jsx.html).
 
 ## Entry point of applications
 
