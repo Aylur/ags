@@ -14,13 +14,12 @@ func defaultTsconfig(gtkVersion uint) map[string]any {
 
 	return map[string]any{
 		"compilerOptions": map[string]any{
-			"experimentalDecorators": true,
-			"module":                 "ES2022",
-			"target":                 "ES2022",
-			"strict":                 true,
-			"moduleResolution":       "Bundler",
-			"jsx":                    "react-jsx",
-			"jsxImportSource":        "ags/" + gtk,
+			"module":           "ES2022",
+			"target":           "ES2020",
+			"strict":           true,
+			"moduleResolution": "Bundler",
+			"jsx":              "react-jsx",
+			"jsxImportSource":  "ags/" + gtk,
 		},
 	}
 }
@@ -40,9 +39,8 @@ func updateTsconfig(tsconfig map[string]any, gtkVersion uint) {
 		}
 	}
 
-	compilerOptions["experimentalDecorators"] = true
 	compilerOptions["module"] = "ES2022"
-	compilerOptions["target"] = "ES2022"
+	compilerOptions["target"] = "ES2020"
 	compilerOptions["moduleResolution"] = "Bundler"
 	compilerOptions["jsx"] = "react-jsx"
 	compilerOptions["jsxImportSource"] = jsxImportSource
