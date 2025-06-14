@@ -42,7 +42,7 @@
     },
     "scripts": {
         "lint": "eslint . --fix",
-        "types": "npx @ts-for-gir generate -o @girs --ignoreVersionConflicts"
+        "types": "npx @ts-for-gir/cli generate -o @girs --ignoreVersionConflicts"
     },
     "prettier": {
         "semi": false,
