@@ -45,6 +45,8 @@ export function mkApp<App extends App4>(App: App): Astal4JS
 
 export function mkApp(App: App3 | App4) {
     return new (class AstalJS extends App {
+        private disposeRoot?: () => void
+
         static {
             GObject.registerClass({ GTypeName: "AstalJS" }, this as any)
         }
@@ -63,6 +65,11 @@ export function mkApp(App: App3 | App4) {
         }
 
         requestHandler?: Config["requestHandler"]
+
+        vfunc_shutdown(): void {
+            super.vfunc_shutdown()
+            this.disposeRoot?.()
+        }
 
         vfunc_request(msg: string, conn: Gio.SocketConnection): void {
             if (typeof this.requestHandler === "function") {
@@ -96,7 +103,10 @@ export function mkApp(App: App3 | App4) {
 
             this.requestHandler = requestHandler
             app.connect("activate", () => {
-                createRoot(() => main?.(...programArgs))
+                createRoot((dispose) => {
+                    this.disposeRoot = dispose
+                    main?.(...programArgs)
+                })
             })
 
             try {
