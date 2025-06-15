@@ -27,6 +27,9 @@ export default function NotificationPopups() {
     setNotifications((ns) => ns.filter((n) => n.id !== id))
   })
 
+  // technically, we don't need to cleanup because in this example this is a root component
+  // and this cleanup function is only called when the program exits, but exiting will cleanup either way
+  // but it's here to remind you that you should not forget to cleanup signal connections
   onCleanup(() => {
     notifd.disconnect(notifiedHandler)
     notifd.disconnect(resolvedHandler)
