@@ -65,13 +65,13 @@ export default function Applauncher() {
       anchor={TOP | BOTTOM | LEFT | RIGHT}
       exclusivity={Astal.Exclusivity.IGNORE}
       keymode={Astal.Keymode.EXCLUSIVE}
-      $$visible={({ visible }) => {
+      onNotifyVisible={({ visible }) => {
         if (visible) searchentry.grab_focus()
         else searchentry.set_text("")
       }}
     >
-      <Gtk.EventControllerKey $key-pressed={onKey} />
-      <Gtk.GestureClick $pressed={onClick} />
+      <Gtk.EventControllerKey onKeyPressed={onKey} />
+      <Gtk.GestureClick onPressed={onClick} />
       <box
         $={(ref) => (contentbox = ref)}
         name="launcher-content"
@@ -81,14 +81,14 @@ export default function Applauncher() {
       >
         <entry
           $={(ref) => (searchentry = ref)}
-          $$text={({ text }) => search(text)}
+          onNotifyText={({ text }) => search(text)}
           placeholderText="Start typing to search"
         />
         <Gtk.Separator visible={list((l) => l.length > 0)} />
         <box orientation={Gtk.Orientation.VERTICAL}>
           <For each={list}>
             {(app, index) => (
-              <button $clicked={() => launch(app)}>
+              <button onClicked={() => launch(app)}>
                 <box>
                   <image iconName={app.iconName} />
                   <label label={app.name} maxWidthChars={40} wrap />

@@ -54,7 +54,7 @@ JSX expressions.
 ```tsx [MyButton.tsx]
 function MyButton() {
   return (
-    <button $clicked={(self) => console.log(self, "clicked")}>
+    <button onClicked={(self) => console.log(self, "clicked")}>
       <label label="Click me!" />
     </button>
   )
@@ -186,25 +186,8 @@ function MyButton() {
     console.log(self, "was clicked")
   }
 
-  return <button $clicked={onClicked} />
+  return <button onClicked={onClicked} />
 }
-```
-
-> [!INFO]
->
-> Attributes prefixed with `$` will connect to a `signal` of the widget. Their
-> types unfortunately can not be generated at the moment due to TypeScript
-> limitations. Refer to the Gtk docs on what signals are available.
-
-<!--  -->
-
-> [!TIP]
->
-> Attributes prefixed with `$$` will connect to a `notify::` signal of the
-> widget.
-
-```tsx
-<switch $$active={(self) => print("switched to", self.active)} />
 ```
 
 ## How properties are passed
@@ -271,7 +254,7 @@ function Counter() {
   return (
     <box>
       <label label={label} />
-      <button $clicked={increment}>Click to increment</button>
+      <button onClicked={increment}>Click to increment</button>
     </box>
   )
 }
@@ -299,7 +282,7 @@ function Counter() {
   return (
     <box>
       <label label={label} />
-      <button $clicked={increment}>Click to increment</button>
+      <button onClicked={increment}>Click to increment</button>
     </box>
   )
 }

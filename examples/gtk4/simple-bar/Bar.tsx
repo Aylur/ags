@@ -49,13 +49,13 @@ function Mpris() {
                 </box>
                 <box hexpand halign={Gtk.Align.END}>
                   <button
-                    $clicked={() => player.previous()}
+                    onClicked={() => player.previous()}
                     visible={createBinding(player, "canGoPrevious")}
                   >
                     <image iconName="media-seek-backward-symbolic" />
                   </button>
                   <button
-                    $clicked={() => player.play_pause()}
+                    onClicked={() => player.play_pause()}
                     visible={createBinding(player, "canControl")}
                   >
                     <box>
@@ -76,7 +76,7 @@ function Mpris() {
                     </box>
                   </button>
                   <button
-                    $clicked={() => player.next()}
+                    onClicked={() => player.next()}
                     visible={createBinding(player, "canGoNext")}
                   >
                     <image iconName="media-seek-forward-symbolic" />
@@ -146,7 +146,7 @@ function Wireless() {
                 <box orientation={Gtk.Orientation.VERTICAL}>
                   <For each={createBinding(wifi, "accessPoints")(sorted)}>
                     {(ap: AstalNetwork.AccessPoint) => (
-                      <button $clicked={() => connect(ap)}>
+                      <button onClicked={() => connect(ap)}>
                         <box spacing={4}>
                           <image iconName={createBinding(ap, "iconName")} />
                           <label label={createBinding(ap, "ssid")} />
@@ -181,7 +181,7 @@ function AudioOutput() {
         <box>
           <slider
             widthRequest={260}
-            $changeValue={({ value }) => speaker.set_volume(value)}
+            onChangeValue={({ value }) => speaker.set_volume(value)}
             value={createBinding(speaker, "volume")}
           />
         </box>
@@ -212,7 +212,7 @@ function Battery() {
       <popover>
         <box orientation={Gtk.Orientation.VERTICAL}>
           {powerprofiles.get_profiles().map(({ profile }) => (
-            <button $clicked={() => setProfile(profile)}>
+            <button onClicked={() => setProfile(profile)}>
               <label label={profile} xalign={0} />
             </button>
           ))}
@@ -250,11 +250,11 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
       application={app}
     >
       <centerbox>
-        <box _type="start">
+        <box $type="start">
           <Clock />
           <Mpris />
         </box>
-        <box _type="end">
+        <box $type="end">
           <Tray />
           <Wireless />
           <AudioOutput />

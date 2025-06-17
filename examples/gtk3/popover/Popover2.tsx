@@ -33,7 +33,7 @@ export default function Popover2({
       keymode={Astal.Keymode.EXCLUSIVE}
       anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.BOTTOM}
       exclusivity={Astal.Exclusivity.IGNORE}
-      $$visible={(self) => {
+      onNotifyVisible={(self) => {
         // instead of anchoring to all sides we set the width explicitly
         // otherwise label wrapping won't work correctly without setting their width
         if (self.visible) {
@@ -43,20 +43,21 @@ export default function Popover2({
         }
       }}
       // close when hitting Escape
-      $key-press-event={(self, event: Gdk.Event) => {
+      onKeyPressEvent={(self, e) => {
+        const event = e as unknown as Gdk.Event
         if (event.get_keyval()[1] === Gdk.KEY_Escape) {
           self.visible = false
         }
       }}
     >
       <box>
-        <eventbox widthRequest={width((w) => w / 2)} expand $click={hide} />
+        <eventbox widthRequest={width((w) => w / 2)} expand onClick={hide} />
         <box hexpand={false} vertical>
-          <eventbox expand $click={hide} />
+          <eventbox expand onClick={hide} />
           {children}
-          <eventbox expand $click={hide} />
+          <eventbox expand onClick={hide} />
         </box>
-        <eventbox widthRequest={width((w) => w / 2)} expand $click={hide} />
+        <eventbox widthRequest={width((w) => w / 2)} expand onClick={hide} />
       </box>
     </window>
   )

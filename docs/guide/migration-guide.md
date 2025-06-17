@@ -53,13 +53,11 @@ class MyObj extends GObject.Object {
 
 ### Syntax changes
 
-- `onSignal` -> `$signal`
-- `onNotifyProp` -> `$$prop`
 - `setup` -> `$`
 - `className` -> `class`
 
 ```tsx
-<button $clicked={() => print("clicked")} />
+<button class="my-button" $={(self) => print("ref", self)} />
 ```
 
 ### Variable
@@ -74,7 +72,6 @@ Dynamic children rendering is done with `<With>` and `<For>` components.
 ```tsx
 const value: Binding<object>
 const list: Binding<Array<object>>
-
 ;<box>
   {value.as(
     (
@@ -214,7 +211,7 @@ function MyWidget() {
   })
 
   return (
-    <button $signal-name={handler} />
+    <button onClicked={handler} />
   )
 
 }

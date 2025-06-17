@@ -170,7 +170,7 @@ By default `Gtk.Window` is destroyed on close. To prevent this add a handler for
 ```tsx {3-6}
 return (
   <Gtk.Window
-    $delete-event={(self) => {
+    onDeleteEvent={(self) => {
       self.hide()
       return true
     }}
@@ -198,7 +198,7 @@ capture events. To make a window focusable set its keymode.
 ```tsx [gtk3]
 <window
   keymode={Astal.Keymode.ON_DEMAND}
-  $key-press-event={(self, event: Gdk.Event) => {
+  onKeyPressEvent={(self, event: Gdk.Event) => {
     if (event.get_keyval()[1] === Gdk.KEY_Escape) {
       self.hide()
     }
@@ -209,7 +209,7 @@ capture events. To make a window focusable set its keymode.
 ```tsx [gtk4]
 <window keymode={Astal.Keymode.ON_DEMAND}>
   <Gtk.EventControllerKey
-    $key-pressed={({ widget }, keyval: number) => {
+    onKeyPressed={({ widget }, keyval: number) => {
       if (keyval === Gdk.KEY_Escape) {
         widget.hide()
       }

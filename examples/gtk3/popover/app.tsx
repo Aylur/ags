@@ -35,7 +35,7 @@ app.start({
         <box class="popup" vertical>
           {/* maxWidthChars is needed to make wrap work */}
           <label label={lorem} wrap maxWidthChars={8} />
-          <button $clicked={() => setVisible1(false)}>
+          <button onClicked={() => setVisible1(false)}>
             Click me to close the popup
           </button>
         </box>
@@ -51,7 +51,7 @@ app.start({
         <box class="popup" vertical>
           {/* maxWidthChars is needed, wrap will work as intended */}
           <label label={lorem} wrap />
-          <button $clicked={() => setVisible2(false)}>
+          <button onClicked={() => setVisible2(false)}>
             Click me to close the popup
           </button>
         </box>
@@ -64,10 +64,10 @@ app.start({
         exclusivity={Astal.Exclusivity.EXCLUSIVE}
       >
         <box halign={Gtk.Align.END}>
-          <button $clicked={() => setVisible2(true)} halign={Gtk.Align.END}>
+          <button onClicked={() => setVisible2(true)} halign={Gtk.Align.END}>
             Click to open popover2
           </button>
-          <button $clicked={() => setVisible1(true)} halign={Gtk.Align.END}>
+          <button onClicked={() => setVisible1(true)} halign={Gtk.Align.END}>
             Click to open popover
           </button>
         </box>

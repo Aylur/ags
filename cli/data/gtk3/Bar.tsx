@@ -17,16 +17,16 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
     >
       <centerbox>
         <button
-          _type="start"
-          $clicked={() => execAsync("echo hello")}
+          $type="start"
+          onClicked={() => execAsync("echo hello").then(console.log)}
           halign={Gtk.Align.CENTER}
         >
           <label label="Welcome to AGS!" />
         </button>
-        <box _type="center" />
+        <box $type="center" />
         <button
-          _type="end"
-          $clicked={() => print("hello")}
+          $type="end"
+          onClicked={() => print("hello")}
           halign={Gtk.Align.CENTER}
         >
           <label label={time} />

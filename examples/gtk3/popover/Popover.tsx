@@ -46,11 +46,12 @@ export default function Popover({
       keymode={Astal.Keymode.EXCLUSIVE}
       anchor={TOP | BOTTOM | LEFT | RIGHT}
       exclusivity={Astal.Exclusivity.IGNORE}
-      $$visible={(self) => {
+      onNotifyVisible={(self) => {
         if (!self.visible) onClose?.(self)
       }}
       // close when click occurs otside of child
-      $button-press-event={(self, event: Gdk.Event) => {
+      onButtonPressEvent={(self, e) => {
+        const event = e as unknown as Gdk.Event
         const [, _x, _y] = event.get_coords()
         const { x, y, width, height } = self.get_child()!.get_allocation()
 
@@ -63,7 +64,8 @@ export default function Popover({
         }
       }}
       // close when hitting Escape
-      $key-press-event={(self, event: Gdk.Event) => {
+      onKeyPressEvent={(self, e) => {
+        const event = e as unknown as Gdk.Event
         if (event.get_keyval()[1] === Gdk.KEY_Escape) {
           self.visible = false
         }
@@ -71,7 +73,7 @@ export default function Popover({
     >
       <box
         // make sure click event does not bubble up
-        $button-press-event={() => true}
+        onButtonPressEvent={() => true}
         // child can be positioned with `halign`, `valign` and margins
         expand
         halign={halign}

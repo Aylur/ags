@@ -45,7 +45,7 @@ export default function Notification({
         class={`Notification ${urgency(n)}`}
         orientation={Gtk.Orientation.VERTICAL}
       >
-        <Gtk.EventControllerMotion $leave={onHoverLost} />
+        <Gtk.EventControllerMotion onLeave={onHoverLost} />
         <box class="header">
           {(n.appIcon || isIcon(n.desktopEntry)) && (
             <image
@@ -66,7 +66,7 @@ export default function Notification({
             halign={Gtk.Align.END}
             label={time(n.time)}
           />
-          <button $clicked={() => n.dismiss()}>
+          <button onClicked={() => n.dismiss()}>
             <image iconName="window-close-symbolic" />
           </button>
         </box>
@@ -108,7 +108,7 @@ export default function Notification({
         {n.actions.length > 0 && (
           <box class="actions">
             {n.actions.map(({ label, id }) => (
-              <button hexpand $clicked={() => n.invoke(id)}>
+              <button hexpand onClicked={() => n.invoke(id)}>
                 <label label={label} halign={Gtk.Align.CENTER} hexpand />
               </button>
             ))}

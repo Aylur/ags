@@ -19,15 +19,15 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
     >
       <centerbox cssName="centerbox">
         <button
-          _type="start"
-          $clicked={() => execAsync("echo hello")}
+          $type="start"
+          onClicked={() => execAsync("echo hello").then(console.log)}
           hexpand
           halign={Gtk.Align.CENTER}
         >
           <label label="Welcome to AGS!" />
         </button>
-        <box _type="center" />
-        <menubutton _type="end" hexpand halign={Gtk.Align.CENTER}>
+        <box $type="center" />
+        <menubutton $type="end" hexpand halign={Gtk.Align.CENTER}>
           <label label={time} />
           <popover>
             <Gtk.Calendar />
