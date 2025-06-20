@@ -18,6 +18,63 @@ import app from "astal/gtk4/app"
 > while also following the
 > [packaging conventions](https://gjs.guide/guides/gtk/application-packaging.html)
 
+::: details Example App implementation
+
+```tsx
+import Astal from "gi://Astal?version=4.0"
+import Gio from "gi://Gio?version=2.0"
+import GObject from "gi://GObject?version=2.0"
+import Gtk from "gi://Gtk?version=4.0"
+import { programInvocationName, programArgs } from "system"
+import { createRoot } from "gnim"
+
+class App extends Gtk.Application {
+  static {
+    GObject.registerClass(this)
+  }
+
+  constructor() {
+    super({
+      applicationId: "my.awesome.app",
+      flags: Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
+    })
+  }
+
+  vfunc_command_line(cmd: Gio.ApplicationCommandLine): number {
+    const [, ...args]: string[] = cmd.get_arguments()
+
+    if (cmd.isRemote) {
+      console.log("invoked from remote instance")
+      cmd.print_literal("hello from primary instance")
+      cmd.done()
+    } else {
+      this.main(args)
+    }
+
+    return 0
+  }
+
+  private main(args: string[]) {
+    createRoot((dispose) => {
+      this.connect("shutdown", dispose)
+
+      return (
+        <Astal.Window name="bar" application={this}>
+          <Gtk.CenterBox>
+            <Gtk.Label $type="center" label="My Awesome Bar" />
+          </Gtk.CenterBox>
+        </Astal.Window>
+      )
+    })
+  }
+}
+
+const app = new App()
+app.runAsync([programInvocationName, ...programArgs])
+```
+
+:::
+
 ## Entry point
 
 :::code-group

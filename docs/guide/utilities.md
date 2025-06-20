@@ -38,7 +38,7 @@ function monitorFile(
 ## Timeouts and Intervals
 
 ```ts
-import { interval, timeout, idle } from "astal/time"
+import { interval, timeout, idle, createPoll } from "astal/time"
 ```
 
 You can use javascript native `setTimeout` or `setInterval` they return a
@@ -90,12 +90,48 @@ timer.connect("cancelled", () => {
 timer.cancel()
 ```
 
+### createPoll
+
+`createPoll` creates a signal that only polls when there is at least one
+subscriber.
+
+```ts
+function createPoll(
+  init: string,
+  interval: number,
+  exec: string | string[],
+): Accessor<string>
+
+function createPoll<T>(
+  init: T,
+  interval: number,
+  exec: string | string[],
+  transform: (stdout: string, prev: T) => T,
+): Accessor<T>
+
+function createPoll<T>(
+  init: T,
+  interval: number,
+  fn: (prev: T) => T | Promise<T>,
+): Accessor<T>
+```
+
+Example:
+
+```tsx
+function Counter() {
+  const conuter = createPoll(0, 1000, (prev) => prev + 1)
+
+  return <label label={counter((c) => c.toString())} />
+}
+```
+
 ## Process functions
 
 Import from `astal` or `astal/process`
 
 ```ts
-import { subprocess, exec, execAsync } from "astal/process"
+import { subprocess, exec, execAsync, createSubprocess } from "astal/process"
 ```
 
 ### Subprocess
@@ -169,6 +205,35 @@ execAsync(["bash", "-c", "/path/to/script.sh"])
 > exec(["bash", "-c", "command $VAR && command"])
 > exec("bash -c 'command $VAR' && command")
 > ```
+
+### createSubprocess
+
+`createSubprocess` creates a signal that starts a subprocess when the first
+subscriber appears and kills the subprocess when number of subscribers drop to
+zero.
+
+```ts
+export function createSubprocess(
+  init: string,
+  exec: string | string[],
+): Accessor<string>
+
+export function createSubprocess<T>(
+  init: T,
+  exec: string | string[],
+  transform: (stdout: string, prev: T) => T,
+): Accessor<T>
+```
+
+Example:
+
+```tsx
+function Log() {
+  const log = createSubprocess("", "journalctl -f")
+
+  return <label label={log} />
+}
+```
 
 ## Http requests
 

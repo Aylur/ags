@@ -89,7 +89,7 @@ export function createSubprocess<T>(
                 const value = transform ? transform(stdout, currentValue) : (stdout as T)
                 if (currentValue !== value) {
                     currentValue = value
-                    callback()
+                    subscribers.forEach((cb) => cb())
                 }
             })
         }

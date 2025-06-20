@@ -50,7 +50,7 @@ export function createPoll<T>(
         function set(value: T) {
             if (value !== currentValue) {
                 currentValue = value
-                callback()
+                subscribers.forEach((cb) => cb())
             }
         }
 
