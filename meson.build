@@ -34,8 +34,12 @@ if layer_shell.found() and go.found()
       '-ldflags',
       '-X main.gtk4LayerShell='
       + layer_shell.get_variable('libdir') / 'libgtk4-layer-shell.so'
-      + ' -X main.gjsPackage='
-      + pkgdatadir / 'gjs',
+      + ' -X main.agsJsPackage='
+      + pkgdatadir / 'js'
+      + ' -X main.gjs='
+      + find_program('gjs').full_path()
+      + ' -X main.bash='
+      + find_program('bash').full_path(),
     ],
     output: 'ags',
     install: true,
