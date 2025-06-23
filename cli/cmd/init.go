@@ -69,6 +69,7 @@ func initConfig(cmd *cobra.Command, args []string) {
 
 	lib.WriteFile(initDir+"/.gitignore", getDataFile("gitignore"))
 	lib.WriteFile(initDir+"/tsconfig.json", tsconf)
+	lib.WriteFile(initDir+"/package.json", getDataFile("package.json"))
 	lib.WriteFile(initDir+"/env.d.ts", getDataFile("env.d.ts"))
 	lib.WriteFile(initDir+"/style.scss", getDataFile("style.scss"))
 	lib.WriteFile(initDir+"/widget/Bar.tsx", getDataFile(gtk+"/Bar.tsx"))
