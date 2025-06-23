@@ -41,7 +41,7 @@ class App extends Gtk.Application {
   }
 
   vfunc_command_line(cmd: Gio.ApplicationCommandLine): number {
-    const [, ...args]: string[] = cmd.get_arguments()
+    const args: string[] = cmd.get_arguments()
 
     if (cmd.isRemote) {
       console.log("invoked from remote instance")

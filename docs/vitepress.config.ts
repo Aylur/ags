@@ -64,6 +64,7 @@ export default defineConfig({
       { text: "App and CLI", link: "/guide/app-cli" },
       { text: "Utilities", link: "/guide/utilities" },
       { text: "Resources", link: "/guide/resources" },
+      { text: "Intrinsics", link: "/guide/intrinsics" },
       { text: "FAQ", link: "/guide/faq" },
       { text: "Nix", link: "/guide/nix" },
       { text: "Migration Guide", link: "/guide/migration-guide" },

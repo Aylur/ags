@@ -79,12 +79,8 @@ function MyBar() {
 ```
 
 Notice that widgets you defined start with a capital letter `<MyButton />`.
-Lowercase tags are builtin widgets, while capital letter is for custom widgets.
-
-For a list of builtin widgets refer to the source code:
-
-- [gtk4](https://github.com/Aylur/ags/blob/v3/lib/src/gtk4/jsx-runtime.ts)
-- [gtk3](https://github.com/Aylur/ags/blob/v3/lib/src/gtk3/jsx-runtime.ts)
+Lowercase tags are builtin [intrinsic](./intrinsics) widgets, while capital
+letter is for custom widgets.
 
 ## Displaying Data
 
