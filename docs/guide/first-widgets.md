@@ -25,7 +25,7 @@ app.start({
 Desktop Shells are composed of widgets. A widget is a piece of UI that has its
 own logic and style. A widget can be as small as a button or an entire bar. The
 top level - also known as a root - widget is always a
-[Window](https://aylur.github.io/libastal/astal4/class.Window.html) instance.
+[Window](https://aylur.github.io/libastal/astal4/class.Window.html).
 
 ```tsx [widget/Bar.tsx]
 function Bar(monitor = 0) {
@@ -46,8 +46,8 @@ app.start({
 
 ## Creating and nesting widgets
 
-Widgets are JavaScript functions which return `Gtk.Widget` instances by using
-JSX expressions.
+Widgets are JavaScript functions which return `GObject.Object` (usually
+`Gtk.Widget`) instances by using JSX expressions.
 
 :::code-group
 
@@ -297,7 +297,7 @@ When you want to render based on a value, you can use the `<With>` component.
 ```tsx
 import { With, Accessor } from "ags"
 
-let value = Accessor<{ member: string } | null>
+let value: Accessor<{ member: string } | null>
 
 return (
   <box>

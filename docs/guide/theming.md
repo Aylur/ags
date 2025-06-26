@@ -54,7 +54,8 @@ use the `css` property.
 
 > [!WARNING]
 >
-> The `css` property of a widget will not cascade to its children.
+> The `css` property of a widget will not cascade to its children. You should
+> generally avoid using `css` and instead use `class` and stylesheets.
 
 ## Apply Stylesheets at Runtime
 

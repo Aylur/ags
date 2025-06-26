@@ -107,8 +107,8 @@ printerr("print this line to stderr")
 
 ## Auto create Window for each Monitor
 
-To have Window widgets appear on a monitor when its plugged in, listen to
-`app.monitor-added`.
+You can use the `<For>` component to auto create/destroy a top-level widget
+automatically for each monitor.
 
 :::code-group
 
@@ -190,8 +190,8 @@ return (
 
 ## How do I register keybindings?
 
-If you want global keybindings use your compositor. Only **focused** windows can
-capture events. To make a window focusable set its keymode.
+Only **focused** windows can capture events. To make a window focusable set its
+keymode.
 
 ::: code-group
 
@@ -219,6 +219,12 @@ capture events. To make a window focusable set its keymode.
 ```
 
 :::
+
+> [!TIP]
+>
+> If you want global keybindings you have to use your compositor keybinding
+> settings. You can define a [request handler](./app-cli#messaging-from-cli) and
+> invoke it using a compositor keybinding.
 
 ## How to create a Popup
 

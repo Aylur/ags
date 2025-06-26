@@ -1,7 +1,7 @@
 # Builtin Intrinsic Elements
 
-These are just Gtk which can be used without explicitly importing. For example
-`<box />` and `<Gtk.Box />` are exactly the same thing.
+These are just Gtk widgets which can be used without explicitly importing. For
+example `<box />` and `<Gtk.Box />` are exactly the same thing.
 
 ## Gtk4
 

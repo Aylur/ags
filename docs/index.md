@@ -29,8 +29,7 @@ features:
       executable script
   - title: Run projects
     details:
-      With <code>ags run</code> you can run a projects without bundling them
-      first
+      With <code>ags run</code> you can run projects without bundling them first
 ---
 
 <!--TODO: add a few screenshots of desktops-->

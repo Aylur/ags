@@ -1,12 +1,13 @@
 # Installation
 
-## Arch
-
-maintainer: [@kotontrion](https://github.com/kotontrion)
-
-```sh
-yay -S aylurs-gtk-shell
-```
+<!-- TODO: uncomment once the AUR package is updated -->
+<!-- ## Arch -->
+<!---->
+<!-- maintainer: [@kotontrion](https://github.com/kotontrion) -->
+<!---->
+<!-- ```sh -->
+<!-- yay -S aylurs-gtk-shell -->
+<!-- ``` -->
 
 ## Nix
 

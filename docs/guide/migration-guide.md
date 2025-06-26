@@ -21,7 +21,7 @@ type BoxProps = CCProps<Gtk.Box, Gtk.Box.ConstructorProps>
 const Box = (props: BoxProps) => jsx(Gtk.Box, props)
 
 Box({
-  orientation: bind(state),
+  orientation: state,
   children: [Box()],
 })
 ```
@@ -62,42 +62,36 @@ class MyObj extends GObject.Object {
 
 ### Variable
 
-`Variable` has been removed in favor of `Accessor` and `createState`
+`Variable` has been removed in favor of `Accessor` and `createState`. You can
+read more about them on the
+[Gnim](https://aylur.github.io/gnim/jsx.html#state-management) documentation.
 
 ### Dynamic rendering
 
 Dynamic children rendering is done with `<With>` and `<For>` components.
 `children` prop can no longer take a `Binding`.
 
+<!-- prettier-ignore -->
 ```tsx
 const value: Binding<object>
 const list: Binding<Array<object>>
-;<box>
-  {value.as(
-    (
-      value, // [!code --:3]
-    ) => (
+
+return (
+  <box>
+    {value.as((value) => ( // [!code --:3]
       <></>
-    ),
-  )}
-  <With value={value}>
-    {" "}
-    // [!code ++:5]
-    {(value) => <></>}
-  </With>
-  {list.as((list) =>
-    list.map(
-      (
-        item, // [!code --:3]
-      ) => <></>,
-    ),
-  )}
-  <For each={list}>
-    {" "}
-    // [!code ++:5]
-    {(item) => <></>}
-  </For>
-</box>
+    ))}
+    <With value={value}> // [!code ++:3]
+      {(value) => <></>}
+    </With>
+    {list.as(list => list.map(item => ( // [!code --:3]
+      <></>
+    )))}
+    <For each={list}> // [!code ++:3]
+      {(item) => <></>}
+    </For>
+  </box>
+)
 ```
 
 ## From v1
@@ -231,20 +225,16 @@ import Gtk from "gi://Gtk"
 const calendar = <Gtk.Calendar />
 ```
 
-### Variable
-
-`Variable` has been removed in favor of signals.
-
 ### Globals
 
 `App`, `Service`, `Utils`, `Widget`, `Variable` are no longer globally available
 
 ```js
-import app from "astal/gtk3/app"
-import * as fileUtils from "astal/file"
-import * as procUtils from "astal/process"
-import * as timeUtils from "astal/time"
-import { State, bind } from "astal/state"
+import app from "ags/gtk4/app"
+import * as fileUtils from "ags/file"
+import * as procUtils from "ags/process"
+import * as timeUtils from "ags/time"
+import { createBinding, createState } from "ags"
 ```
 
 ### Services
@@ -341,12 +331,12 @@ App.config({ // [!code --:3]
 })
 app.start({ // [!code ++:5]
   main() {
-    return <window name="window-name" application={App}></window>
+    return <window name="window-name" application={app}></window>
   },
 })
 ```
 
-`ags --run-js` have been retired in favor of
+`ags --run-js` have been removed in favor of
 [requests](./app-cli#messaging-from-cli).
 
 <!-- prettier-ignore -->
