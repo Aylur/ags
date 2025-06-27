@@ -14,11 +14,11 @@ import (
 var (
 	targetDir string
 	logFile   string
-	args      []string
+	gjsArgs   []string
 )
 
 var runCommand = &cobra.Command{
-	Use:     "run [file]",
+	Use:     "run [file] [gjsArgs...]",
 	Short:   "Run an app",
 	Example: "  run app.ts --define DEBUG=true",
 	Args:    cobra.ArbitraryArgs,
@@ -34,6 +34,7 @@ var runCommand = &cobra.Command{
 				lib.Err(err)
 			}
 
+			gjsArgs = args[1:]
 			if info.IsDir() {
 				run(getAppEntry(path), "")
 			} else {
@@ -55,7 +56,6 @@ when no positional argument is given
 
 	f.StringSliceVar(&defines, "define", []string{}, "replace global identifiers with constant expressions")
 	f.StringArrayVar(&alias, "alias", []string{}, "alias packages")
-	f.StringArrayVarP(&args, "arg", "a", []string{}, "cli args to pass to gjs")
 	f.UintVarP(&gtkVersion, "gtk", "g", 0, "gtk version")
 	f.StringVar(&logFile, "log-file", "", "file to redirect the stdout of gjs to")
 	f.MarkHidden("package")
@@ -133,7 +133,7 @@ func run(infile string, rootdir string) {
 		os.Setenv("LD_PRELOAD", gtk4LayerShell)
 	}
 
-	args = append([]string{"-m", outfile}, args...)
+	args := append([]string{"-m", outfile}, gjsArgs...)
 	stdout, stderr, file := logging()
 	gjs := lib.Exec("gjs", args...)
 	gjs.Stdin = os.Stdin
