@@ -11,5 +11,12 @@
   },
   "dependencies": {
     "devicon": "^2.16.0"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": false,
+    "tabWidth": 2,
+    "printWidth": 80,
+    "proseWrap": "always"
   }
 }

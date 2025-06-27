@@ -6,39 +6,49 @@
       url = "github:aylur/astal";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    gnim = {
+      url = "github:aylur/gnim";
+      flake = false;
+    };
   };
 
   outputs = {
     self,
     nixpkgs,
     astal,
+    gnim,
   }: let
     systems = ["x86_64-linux" "aarch64-linux"];
     forAllSystems = nixpkgs.lib.genAttrs systems;
+    version = builtins.replaceStrings ["\n"] [""] (builtins.readFile ./cli/version);
   in {
-    lib.bundle = import ./nix/bundle.nix {
-      inherit self;
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    };
-
     packages = forAllSystems (
       system: let
-        inherit (astal.packages.${system}) astal3 astal4 io gjs;
+        inherit (astal.packages.${system}) astal3 astal4 io;
 
         pkgs = nixpkgs.legacyPackages.${system};
-        astal-io = io;
-        astal-gjs = "${gjs}/share/astal/gjs";
+
+        agsJsPackage = pkgs.callPackage ./nix/gjs-package.nix {
+          inherit gnim version;
+        };
 
         agsPackages = {
           default = self.packages.${system}.ags;
+          gjsPackage = agsJsPackage;
+
           ags = pkgs.callPackage ./nix {
-            inherit astal3 astal4 astal-io astal-gjs;
+            inherit version astal3 astal4 agsJsPackage;
+            astal-io = io;
           };
           agsFull = pkgs.callPackage ./nix {
-            inherit astal3 astal4 astal-io astal-gjs;
-            extraPackages = builtins.attrValues (
-              builtins.removeAttrs astal.packages.${system} ["docs"]
-            );
+            inherit version astal3 astal4 agsJsPackage;
+            astal-io = io;
+            extraPackages =
+              builtins.attrValues (
+                builtins.removeAttrs astal.packages.${system} ["docs"]
+              )
+              ++ [pkgs.libadwaita];
           };
         };
       in
@@ -61,21 +71,10 @@
       ags = import ./nix/hm-module.nix self;
     };
 
-    devShells = forAllSystems (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
-    in {
-      default = pkgs.mkShell {
-        packages = with pkgs; [
-          markdownlint-cli2
-          marksman
-          vtsls
-          vscode-langservers-extracted
-          go
-          gopls
-          gotools
-          go-tools
-        ];
-      };
-    });
+    devShells = forAllSystems (system:
+      import ./nix/devshell.nix {
+        inherit self astal;
+        pkgs = nixpkgs.legacyPackages.${system};
+      });
   };
 }

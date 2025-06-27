@@ -9,11 +9,12 @@ self: {
   inherit (lib.options) mkOption mkEnableOption literalExpression;
 
   cfg = config.programs.ags;
-  default = {
-    agsPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
-    gtk3Package = self.packages.${pkgs.stdenv.hostPlatform.system}.astal3;
-    ioPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.io;
-    gjsPackage = self.packages.${pkgs.stdenv.hostPlatform.system}.gjs;
+  default = with self.packages.${pkgs.stdenv.hostPlatform.system}; {
+    agsPackage = ags;
+    gtk3Package = astal3;
+    gtk4Package = astal4;
+    ioPackage = io;
+    gjsPackage = gjsPackage;
   };
 in {
   options.programs.ags = {
@@ -41,6 +42,17 @@ in {
       '';
     };
 
+    astal.gtk4Package = mkOption {
+      type = types.package;
+      default = default.gtk4Package;
+      defaultText = literalExpression "inputs.ags.packages.${pkgs.stdenv.hostPlatform.system}.astal4";
+      description = ''
+        The GTK4 Astal package to use.
+
+        By default, this option will use the `packages.astal4` as exposed by this flake.
+      '';
+    };
+
     astal.ioPackage = mkOption {
       type = types.package;
       default = default.ioPackage;
@@ -56,9 +68,9 @@ in {
       type = types.package;
       default = default.gjsPackage;
       description = ''
-        The Astal Gjs package to use.
+        The AGS Gjs package to use.
 
-        By default, this option will use the `packages.gjs` as exposed by this flake.
+        By default, this option will use the `packages.gjsPackage` as exposed by this flake.
       '';
     };
 
@@ -108,12 +120,12 @@ in {
         extraPackages = cfg.extraPackages;
         astal3 = cfg.astal.gtk3Package;
         astal-io = cfg.astal.ioPackage;
-        astal-gjs = "${config.home.homeDirectory}/.local/share/ags";
+        agsJsPackage = "${config.home.homeDirectory}/.local";
       };
     in {
       programs.ags.finalPackage = pkg;
       home.packages = [pkg];
-      home.file.".local/share/ags".source = "${cfg.astal.gjsPackage}/share/astal/gjs";
+      home.file.".local/share/ags".source = "${cfg.astal.gjsPackage}/share/ags";
     })
     (mkIf cfg.systemd.enable {
       systemd.user.services.ags = {

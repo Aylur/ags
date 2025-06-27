@@ -1,50 +1,57 @@
 # Installation
 
-## Arch
-
-maintainer: [@kotontrion](https://github.com/kotontrion)
-
-```sh
-yay -S aylurs-gtk-shell
-```
+<!-- TODO: uncomment once the AUR package is updated -->
+<!-- ## Arch -->
+<!---->
+<!-- maintainer: [@kotontrion](https://github.com/kotontrion) -->
+<!---->
+<!-- ```sh -->
+<!-- yay -S aylurs-gtk-shell -->
+<!-- ``` -->
 
 ## Nix
 
 maintainer: [@Aylur](https://github.com/Aylur)
 
-Read more about it on the [nix page](./nix)
+```sh
+nix shell github:aylur/ags
+```
+
+Read more about running AGS on [Nix](./nix)
 
 ## From Source
 
-1. Install [Astal](https://aylur.github.io/astal/guide/getting-started/installation)
+1. Install these three
+   [Astal packages](https://aylur.github.io/astal/guide/getting-started/installation)
 
-2. Install the Astal js package
+   - astal-io
+   - astal3
+   - astal4
 
-```sh
-git clone https://github.com/aylur/astal
-cd astal/lang/gjs
-meson setup --prefix /usr build
-meson install -C build
-```
+2. Install dependencies
 
-2. Install AGS
+   :::code-group
 
-```sh
-git clone https://github.com/aylur/ags.git
-cd ags
+   ```sh [<i class="devicon-archlinux-plain" /> Arch]
+   sudo pacman -Syu \
+       meson ninja go gobject-introspection \
+       gtk3 gtk-layer-shell \
+       gtk4 gtk4-layer-shell
+   ```
 
-go install -ldflags "\
-    -X 'main.gtk4LayerShell=$(pkg-config --variable=libdir gtk4-layer-shell-0)/libgtk4-layer-shell.so' \
-    -X 'main.astalGjs=$(pkg-config --variable=srcdir astal-gjs)'"
-```
+   ```sh [<i class="devicon-fedora-plain" /> Fedora]
+   sudo dnf install \
+       meson ninja golang gobject-introspection-devel \
+       gtk3-devel gtk-layer-shell-devel \
+       gtk4-devel gtk4-layer-shell-devel
+   ```
 
-:::tip
-`go install` will install to `$GOPATH/bin/ags` or `$HOME/go/bin/ags`.
-You might wish to move the binary to more traditional linux directories.
+   :::
 
-```sh
-sudo mv $GOPATH/bin/ags /usr/bin/ags
-mv $GOPATH/bin/ags ~/.local/bin/ags
-```
+3. Clone and install AGS
 
-:::
+   ```sh
+   git clone https://github.com/aylur/ags
+   meson setup build
+   meson install -C build
+   ```

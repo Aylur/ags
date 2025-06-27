@@ -1,24 +1,25 @@
 {
+  version,
   symlinkJoin,
   astal3,
   astal4,
   gtk4-layer-shell,
   astal-io,
-  astal-gjs,
+  agsJsPackage,
   lib,
   buildGoModule,
   wrapGAppsHook,
   gobject-introspection,
   glib,
   gjs,
+  bash,
   nodejs,
   dart-sass,
+  libsoup_3,
   blueprint-compiler,
   installShellFiles,
   extraPackages ? [],
 }: let
-  inherit (builtins) replaceStrings readFile;
-  version = replaceStrings ["\n"] [""] (readFile ../version);
   pname = "ags";
 
   buildInputs =
@@ -29,6 +30,7 @@
       astal3
       astal4
       gobject-introspection # needed for type generation
+      libsoup_3 # needed by the fetch impl
     ];
 
   bins = [
@@ -55,19 +57,7 @@ in
   buildGoModule {
     inherit pname version buildInputs;
 
-    src = lib.fileset.toSource {
-      root = ../.;
-      fileset = lib.fileset.unions [
-        ../go.mod
-        ../go.sum
-        ../version
-
-        ../main.go
-        ../cmd
-        ../lib
-        ../data
-      ];
-    };
+    src = ../cli;
 
     vendorHash = "sha256-Pw6UNT5YkDVz4HcH7b5LfOg+K3ohrBGPGB9wYGAQ9F4=";
     proxyVendor = true;
@@ -94,13 +84,15 @@ in
     '';
 
     ldflags = [
-      "-X main.astalGjs=${astal-gjs}"
+      "-X main.agsJsPackage=${agsJsPackage}/share/ags/js"
       "-X main.gtk4LayerShell=${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
+      "-X main.gjs=${gjs}/bin/gjs"
+      "-X main.bash=${bash}/bin/bash"
     ];
 
     meta = {
       homepage = "https://github.com/Aylur/ags";
-      description = "Scaffolding CLI tool for Astal+TypeScript projects";
+      description = "Scaffolding CLI tool for Astal+Gnim projects";
       license = lib.licenses.gpl3Plus;
       mainProgram = "ags";
       platforms = lib.platforms.linux;

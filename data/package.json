@@ -1,6 +1,0 @@
-{
-    "name": "astal-shell",
-    "dependencies": {
-        "astal": "@ASTAL_GJS@"
-    }
-}

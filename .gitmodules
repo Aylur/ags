@@ -1,0 +1,3 @@
+[submodule "lib/gnim"]
+	path = lib/gnim
+	url = https://github.com/Aylur/gnim.git

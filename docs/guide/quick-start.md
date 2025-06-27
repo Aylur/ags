@@ -1,47 +1,84 @@
 # Quick Start
 
-1. Install
+It's as easy as a few lines to get a bar running on your screen.
 
-:::code-group
+:::details What will you be using
 
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-yay -S aylurs-gtk-shell-git
-```
+- [Gnome JavaScript (GJS)](https://gjs.guide/) is the JavaScript runtime
+- [Astal](https://aylur.github.io/astal/) is a suite of libraries which lets you
+  query and interact with parts of your system
+- [Gnim](https://aylur.github.io/gnim/) is a library for GJS, which allows you
+  to write widgets using JSX
+- [AGS](https://aylur.github.io/ags/) is a CLI tool which lets you skip setting
+  up a dev environment and jump straight into writing your Desktop Shell in
+  TypeScript
 
-```sh [<i class="devicon-nixos-plain"></i> NixOS]
-nix shell github:aylur/ags # ags in a temporary shell
+:::
+
+## Single file start
+
+First create a file anywhere on your system.
+
+::: code-group
+
+```tsx [<i class="devicon-typescript-plain"></i> mybar.tsx]
+import app from "ags/gtk4/app"
+import { Astal } from "ags/gtk4"
+import { createPoll } from "ags/time"
+
+app.start({
+  main() {
+    const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
+    const clock = createPoll("", 1000, "date")
+
+    return (
+      <window visible anchor={TOP | LEFT | RIGHT}>
+        <label label={clock} />
+      </window>
+    )
+  },
+})
 ```
 
 :::
 
-2. Initialize a project
+And run it using the following command:
 
-:::code-group
-
-```sh [Gtk3]
-ags init --gtk 3
+```sh
+ags run ./mybar.tsx
 ```
 
-```sh [Gtk4]
-ags init --gtk 4
+Alternatively, you can add a shebang and make it executable
+
+```ts [mybar.tsx]
+#!/usr/bin/env -S ags run
+import app from "ags/gtk4/app"
+
+app.start({
+  main() {
+    // entry point
+  },
+})
 ```
 
-:::
-
-3. Run the project
-
-:::code-group
-
-```sh [Gtk3]
-ags run
+```sh
+chmod +x mybar.tsx
+./mybar.tsx
 ```
 
-```sh [Gtk4]
-ags run --gtk4
+## Using a template
+
+It is recommended to start with a template which will setup files needed for
+TypeScript development environments.
+
+You can get started using a template with this simple command
+
+```sh
+ags init -d /path/to/project
 ```
 
-:::
+If you are on nix, there is also a flake template
 
-4. Learn [TypeScript in Y minutes](https://learnxinyminutes.com/docs/typescript/)
-
-5. Read the [Astal Documentation](https://aylur.github.io/astal/guide/typescript/first-widgets) to start developing
+```sh
+nix flake init --template github:aylur/ags
+```

@@ -1,0 +1,53 @@
+{
+    "name": "ags",
+    "version": "3.0.0",
+    "type": "module",
+    "author": "Aylur",
+    "license": "LGPL-2.1",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aylur/ags.git",
+        "directory": "ags/lib"
+    },
+    "funding": {
+        "type": "kofi",
+        "url": "https://ko-fi.com/aylur"
+    },
+    "exports": {
+        ".": "./src/index.ts",
+        "./gtk4": "./src/gtk4/index.ts",
+        "./gtk4/app": "./src/gtk4/app.ts",
+        "./gtk4/jsx-runtime": "./src/gtk4/jsx-runtime.ts",
+        "./gtk3": "./src/gtk3/index.ts",
+        "./gtk3/app": "./src/gtk3/app.ts",
+        "./gtk3/jsx-runtime": "./src/gtk3/jsx-runtime.ts",
+        "./file": "./src/file.ts",
+        "./process": "./src/process.ts",
+        "./time": "./src/time.ts",
+        "./gobject": "./src/gobject.ts",
+        "./dbus": "./src/dbus.ts",
+        "./fetch": "./src/fetch.ts"
+    },
+    "engines": {
+        "gjs": ">=1.79.0"
+    },
+    "os": [
+        "linux"
+    ],
+    "devDependencies": {
+        "@eslint/js": "latest",
+        "eslint": "latest",
+        "typescript": "latest",
+        "typescript-eslint": "latest"
+    },
+    "scripts": {
+        "lint": "eslint . --fix",
+        "types": "npx @ts-for-gir/cli generate -o @girs --ignoreVersionConflicts"
+    },
+    "prettier": {
+        "semi": false,
+        "singleQuote": false,
+        "tabWidth": 4,
+        "printWidth": 100
+    }
+}
