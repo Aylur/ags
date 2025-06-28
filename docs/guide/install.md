@@ -1,13 +1,12 @@
 # Installation
 
-<!-- TODO: uncomment once the AUR package is updated -->
-<!-- ## Arch -->
-<!---->
-<!-- maintainer: [@kotontrion](https://github.com/kotontrion) -->
-<!---->
-<!-- ```sh -->
-<!-- yay -S aylurs-gtk-shell -->
-<!-- ``` -->
+## Arch
+
+maintainer: [@kotontrion](https://github.com/kotontrion)
+
+```sh
+yay -S aylurs-gtk-shell-git
+```
 
 ## Nix
 
@@ -51,7 +50,7 @@ Read more about running AGS on [Nix](./nix)
 3. Clone and install AGS
 
    ```sh
-   git clone https://github.com/aylur/ags
+   git clone --recurse-submodules https://github.com/aylur/ags
    meson setup build
    meson install -C build
    ```
