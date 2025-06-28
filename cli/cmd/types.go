@@ -48,7 +48,7 @@ func init() {
 	f := typesCommand.Flags()
 
 	f.BoolVarP(&verbose, "verbose", "v", false, "print ts-for-gir logs")
-	f.BoolVarP(&updatePkg, "update", "u", false, "update existing project")
+	f.BoolVarP(&updatePkg, "update", "u", false, "update tsconfig and linked ags package")
 	f.StringVarP(&targetDir, "directory", "d", defaultConfigDir(), "target directory")
 	f.StringArrayVarP(&ignoreModules, "ignore", "i", []string{}, "modules that should be ignored")
 }

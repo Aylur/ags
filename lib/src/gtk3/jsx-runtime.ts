@@ -4,6 +4,8 @@ import Astal from "gi://Astal?version=3.0"
 import { CCProps } from "../../gnim/src/jsx/index.js"
 import { intrinsicElements } from "../../gnim/src/gtk3/jsx-runtime.js"
 
+type Props<T extends Gtk.Widget, Props> = CCProps<T, Partial<Props>>
+
 Object.defineProperty(Astal.Box.prototype, "children", {
     get() {
         return this.get_children()
@@ -49,26 +51,26 @@ declare global {
     namespace JSX {
         // prettier-ignore
         interface IntrinsicElements {
-            box: CCProps<Astal.Box, Omit<Astal.Box.ConstructorProps, "children">>
-            button: CCProps<Astal.Button, Astal.Button.ConstructorProps>
-            centerbox: CCProps<Astal.CenterBox, Astal.CenterBox.ConstructorProps>
-            circularprogress: CCProps<Astal.CircularProgress, Astal.CircularProgress.ConstructorProps>
-            drawingarea: CCProps<Gtk.DrawingArea, Gtk.DrawingArea.ConstructorProps>
-            entry: CCProps<Gtk.Entry, Gtk.Entry.ConstructorProps>
-            eventbox: CCProps<Astal.EventBox, Astal.EventBox.ConstructorProps>
-            icon: CCProps<Astal.Icon, Astal.Icon.ConstructorProps>
-            label: CCProps<Astal.Label, Astal.Label.ConstructorProps>
-            levelbar: CCProps<Astal.LevelBar, Astal.LevelBar.ConstructorProps>
-            menubutton: CCProps<Gtk.MenuButton, Gtk.MenuButton.ConstructorProps>
-            overlay: CCProps<Astal.Overlay, Astal.Overlay.ConstructorProps>
-            popover: CCProps<Gtk.Popover, Gtk.Popover.ConstructorProps>
-            revealer: CCProps<Gtk.Revealer, Gtk.Revealer.ConstructorProps>
-            scrollable: CCProps<Astal.Scrollable, Astal.Scrollable.ConstructorProps>
-            slider: CCProps<Astal.Slider, Astal.Slider.ConstructorProps>
-            stack: CCProps<Astal.Stack, Astal.Stack.ConstructorProps>
-            switch: CCProps<Gtk.Switch, Gtk.Switch.ConstructorProps>
-            togglebutton: CCProps<Gtk.ToggleButton, Gtk.ToggleButton.ConstructorProps>
-            window: CCProps<Astal.Window, Astal.Window.ConstructorProps>
+            box: Props<Astal.Box, Omit<Astal.Box.ConstructorProps, "children">>
+            button: Props<Astal.Button, Astal.Button.ConstructorProps>
+            centerbox: Props<Astal.CenterBox, Astal.CenterBox.ConstructorProps>
+            circularprogress: Props<Astal.CircularProgress, Astal.CircularProgress.ConstructorProps>
+            drawingarea: Props<Gtk.DrawingArea, Gtk.DrawingArea.ConstructorProps>
+            entry: Props<Gtk.Entry, Gtk.Entry.ConstructorProps>
+            eventbox: Props<Astal.EventBox, Astal.EventBox.ConstructorProps>
+            icon: Props<Astal.Icon, Astal.Icon.ConstructorProps>
+            label: Props<Astal.Label, Astal.Label.ConstructorProps>
+            levelbar: Props<Astal.LevelBar, Astal.LevelBar.ConstructorProps>
+            menubutton: Props<Gtk.MenuButton, Gtk.MenuButton.ConstructorProps>
+            overlay: Props<Astal.Overlay, Astal.Overlay.ConstructorProps>
+            popover: Props<Gtk.Popover, Gtk.Popover.ConstructorProps>
+            revealer: Props<Gtk.Revealer, Gtk.Revealer.ConstructorProps>
+            scrollable: Props<Astal.Scrollable, Astal.Scrollable.ConstructorProps>
+            slider: Props<Astal.Slider, Astal.Slider.ConstructorProps>
+            stack: Props<Astal.Stack, Astal.Stack.ConstructorProps>
+            switch: Props<Gtk.Switch, Gtk.Switch.ConstructorProps>
+            togglebutton: Props<Gtk.ToggleButton, Gtk.ToggleButton.ConstructorProps>
+            window: Props<Astal.Window, Astal.Window.ConstructorProps>
         }
     }
 }
