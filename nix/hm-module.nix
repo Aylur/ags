@@ -125,6 +125,8 @@ in {
     in {
       programs.ags.finalPackage = pkg;
       home.packages = [pkg];
+      # this is supposed to make the linked js package in node_modules persistent across updates
+      # without this it links directly into nix store which will result in types being out of date
       home.file.".local/share/ags".source = "${cfg.astal.gjsPackage}/share/ags";
     })
     (mkIf cfg.systemd.enable {
