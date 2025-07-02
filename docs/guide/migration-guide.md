@@ -2,6 +2,20 @@
 
 ## From v2
 
+### Import paths
+
+`astal` namespace have been dropped. AGS is now using
+[Gnim](https://github.com/aylur/gnim) which is reexported from the `ags`
+namespace.
+
+```ts
+import { App, Gtk } from "astal/gtk3" // [!code --:2]
+import { bind, Variable } from "astal/state"
+import app from "ags/gtk3/app" // [!code ++:3]
+import Gtk from "gi://Gtk?version=3.0"
+import { createBinding, createState } from "ags"
+```
+
 ### Subclassing
 
 `astalify` has been removed, `jsx` function and JSX expressions handle
@@ -65,6 +79,39 @@ class MyObj extends GObject.Object {
 `Variable` has been removed in favor of `Accessor` and `createState`. You can
 read more about them on the
 [Gnim](https://aylur.github.io/gnim/jsx.html#state-management) documentation.
+
+```tsx
+const v = Variable("") // [!code --:3]
+return <label label={v()} />
+v.set("new value")
+const [v, setV] = createState("") // [!code ++:3]
+return <label label={v} />
+setV("new value")
+```
+
+Variable methods have a matching Accessor create functions
+
+- `.poll`: [`createPoll`](./utilities.md#createpoll)
+- `.watch`: [`createSubprocess`](./utilities.md#createsubprocess)
+- `.observe`:
+  [`createConnection`](https://aylur.github.io/gnim/jsx#createconnection)
+- `.derive`: [`createComputed`](https://aylur.github.io/gnim/jsx#createcomputed)
+
+- `.drop`: Accessors cannot be explicitly cleaned up. Use the intended create
+  functions which will be cleaned up automatically.
+
+### Binding
+
+`Binding` and `bind` has been removed but the API is identical with the only
+difference being that you need to use an Accessor creator function.
+
+```ts
+import { bind } from "astal" // [!code --:2]
+const v = bind(object, "prop")
+import { createBinding } from "ags" // [!code ++:2]
+const v = createBinding(object, "prop")
+return <label label={v(v => `transformed ${v}`)} />
+```
 
 ### Dynamic rendering
 
