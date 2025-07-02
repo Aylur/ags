@@ -3,6 +3,10 @@
 On this page you will learn about the JSX syntax. To learn about it more in
 depth you can read the [Gnim docs](https://aylur.github.io/gnim/jsx.html).
 
+> [!TIP]
+>
+> `gnim` is reexported from the `ags` module.
+
 ## Entry point of applications
 
 Every application's entry point is an `app.start` invocation. `app` is a
