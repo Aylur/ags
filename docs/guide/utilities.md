@@ -128,10 +128,10 @@ function Counter() {
 
 ## Process functions
 
-Import from `astal` or `astal/process`
+Import from `ags/process`
 
 ```ts
-import { subprocess, exec, execAsync, createSubprocess } from "astal/process"
+import { subprocess, exec, execAsync, createSubprocess } from "ags/process"
 ```
 
 ### Subprocess
@@ -161,7 +161,7 @@ Example:
 const proc = subprocess(
   "some-command",
   (out) => console.log(out), // optional
-  (err) => console.error(out), // optional
+  (err) => console.error(err), // optional
 )
 
 // or with signals
