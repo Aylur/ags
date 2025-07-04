@@ -120,7 +120,7 @@ Example:
 
 ```tsx
 function Counter() {
-  const conuter = createPoll(0, 1000, (prev) => prev + 1)
+  const counter = createPoll(0, 1000, (prev) => prev + 1)
 
   return <label label={counter((c) => c.toString())} />
 }
