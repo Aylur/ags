@@ -30,7 +30,8 @@ const _ = <Gtk.Calendar /> // [!code ++:1]
 If you still prefer to use regular JS functions instead of JSX, you can do
 
 ```ts
-import { CCProps } from "ags/gtk4"
+import { CCProps } from "ags"
+import { Gtk } from "ags/gtk4"
 type BoxProps = CCProps<Gtk.Box, Gtk.Box.ConstructorProps>
 const Box = (props: BoxProps) => jsx(Gtk.Box, props)
 
