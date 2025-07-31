@@ -340,7 +340,7 @@ let list: Accessor<Array<any>>
 return (
   <box>
     <For each={list}>
-      {(item, index: Binding<number>) => (
+      {(item, index: Accessor<number>) => (
         <label label={index.as((i) => `${i}. ${item}`)} />
       )}
     </For>
