@@ -16,7 +16,7 @@ export default function NotificationPopups() {
   const notifiedHandler = notifd.connect("notified", (_, id, replaced) => {
     const notification = notifd.get_notification(id)
 
-    if (replaced && notifications.get().some(n => n.id === id)) {
+    if (replaced && notifications.get().some((n) => n.id === id)) {
       setNotifications((ns) => ns.map((n) => (n.id === id ? notification : n)))
     } else {
       setNotifications((ns) => [notification, ...ns])
@@ -27,18 +27,16 @@ export default function NotificationPopups() {
     setNotifications((ns) => ns.filter((n) => n.id !== id))
   })
 
-  // technically, we don't need to cleanup because in this example this is a root component
-  // and this cleanup function is only called when the program exits, but exiting will cleanup either way
-  // but it's here to remind you that you should not forget to cleanup signal connections
   onCleanup(() => {
     notifd.disconnect(notifiedHandler)
     notifd.disconnect(resolvedHandler)
   })
 
   return (
-    <For each={monitors} cleanup={(win) => (win as Gtk.Window).destroy()}>
+    <For each={monitors}>
       {(monitor) => (
         <window
+          $={(self) => onCleanup(() => self.destroy())}
           class="NotificationPopups"
           gdkmonitor={monitor}
           visible={notifications((ns) => ns.length > 0)}
@@ -46,16 +44,7 @@ export default function NotificationPopups() {
         >
           <box orientation={Gtk.Orientation.VERTICAL}>
             <For each={notifications}>
-              {(notification) => (
-                <Notification
-                  notification={notification}
-                  onHoverLost={() =>
-                    setNotifications((ns) =>
-                      ns.filter((n) => n.id !== notification.id),
-                    )
-                  }
-                />
-              )}
+              {(notification) => <Notification notification={notification} />}
             </For>
           </box>
         </window>

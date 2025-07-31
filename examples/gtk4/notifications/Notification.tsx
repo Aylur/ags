@@ -31,13 +31,11 @@ function urgency(n: AstalNotifd.Notification) {
   }
 }
 
-export default function Notification({
-  notification: n,
-  onHoverLost,
-}: {
+interface NotificationProps {
   notification: AstalNotifd.Notification
-  onHoverLost: () => void
-}) {
+}
+
+export default function Notification({ notification: n }: NotificationProps) {
   return (
     <Adw.Clamp maximumSize={400}>
       <box
@@ -45,7 +43,6 @@ export default function Notification({
         class={`Notification ${urgency(n)}`}
         orientation={Gtk.Orientation.VERTICAL}
       >
-        <Gtk.EventControllerMotion onLeave={onHoverLost} />
         <box class="header">
           {(n.appIcon || isIcon(n.desktopEntry)) && (
             <image
