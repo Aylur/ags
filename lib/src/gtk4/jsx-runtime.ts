@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import Gtk from "gi://Gtk?version=4.0"
 import Astal from "gi://Astal?version=4.0"
-import { CCProps } from "../../gnim/src/jsx/index.js"
+import { CCProps } from "../../gnim/src/index.js"
 import { intrinsicElements } from "../../gnim/src/gtk4/jsx-runtime.js"
 
 type Props<T extends Gtk.Widget, Props> = CCProps<T, Partial<Props>>

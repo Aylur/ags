@@ -1,5 +1,5 @@
 import AstalIO from "gi://AstalIO"
-import { Accessor } from "../gnim/src/jsx/index.js"
+import { Accessor } from "../gnim/src/index.js"
 import { execAsync } from "./process.js"
 
 export type Time = AstalIO.Time
