@@ -4,18 +4,18 @@ pkgdatadir = get_option('prefix') / get_option('datadir') / meson.project_name()
 bindir = get_option('prefix') / get_option('bindir')
 
 install_data(
-  'lib/package.json',
-  'lib/package-json.json',
+  'package.json',
+  'package-lock.json',
   install_dir: pkgdatadir / 'js',
 )
 
 install_subdir(
-  'lib/lib',
+  'lib',
   install_dir: pkgdatadir / 'js',
 )
 
 install_subdir(
-  'lib/node_modules/gnim',
+  'node_modules/gnim',
   install_dir: pkgdatadir / 'js/node_modules',
 )
 
