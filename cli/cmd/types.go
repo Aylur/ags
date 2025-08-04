@@ -29,7 +29,9 @@ var typesCommand = &cobra.Command{
 
 			lib.Mkdir(targetDir + "/node_modules")
 			lib.Rm(targetDir + "/node_modules/ags")
+			lib.Rm(targetDir + "/node_modules/gnim")
 			lib.Ln(agsJsPackage, targetDir+"/node_modules/ags")
+			lib.Ln(agsJsPackage+"/node_modules/gnim", targetDir+"/node_modules/gnim")
 
 			if envdts := targetDir + "/env.d.ts"; !lib.FileExists(envdts) {
 				lib.WriteFile(envdts, getDataFile("env.d.ts"))

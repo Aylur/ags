@@ -157,8 +157,12 @@ func Bundle(opts BundleOpts) api.BuildResult {
 		defines["SRC"] = `"` + filepath.Dir(opts.Infile) + `"`
 	}
 
+	if _, ok := alias["gnim"]; !ok {
+		alias["gnim"] = agsJsPackage + "/node_modules/gnim/dist"
+	}
+
 	if _, ok := alias["ags"]; !ok {
-		alias["ags"] = agsJsPackage + "/src"
+		alias["ags"] = agsJsPackage + "/lib"
 	}
 
 	buildOpts := api.BuildOptions{

@@ -5,17 +5,18 @@ bindir = get_option('prefix') / get_option('bindir')
 
 install_data(
   'lib/package.json',
+  'lib/package-json.json',
   install_dir: pkgdatadir / 'js',
 )
 
 install_subdir(
-  'lib/src',
+  'lib/lib',
   install_dir: pkgdatadir / 'js',
 )
 
 install_subdir(
-  'lib/gnim/src',
-  install_dir: pkgdatadir / 'js' / 'gnim',
+  'lib/node_modules/gnim',
+  install_dir: pkgdatadir / 'js/node_modules',
 )
 
 custom_target(
