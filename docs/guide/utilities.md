@@ -38,7 +38,7 @@ function monitorFile(
 ## Timeouts and Intervals
 
 ```ts
-import { interval, timeout, idle, createPoll } from "astal/time"
+import { interval, timeout, idle, createPoll } from "ags/time"
 ```
 
 You can use javascript native `setTimeout` or `setInterval` they return a
