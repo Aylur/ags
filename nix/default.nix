@@ -5,9 +5,9 @@
   astal4,
   gtk4-layer-shell,
   astal-io,
-  agsJsPackage,
   lib,
   buildGoModule,
+  buildNpmPackage,
   wrapGAppsHook,
   gobject-introspection,
   glib,
@@ -53,6 +53,31 @@
       name = "gir-dirs";
       paths = lib.flatten (map depsOf buildInputs);
     };
+
+  gjsPackage = buildNpmPackage {
+    name = "ags-js-lib";
+    src = lib.cleanSourceWith {
+      src = ../.;
+      filter = path: type: let
+        relPath = lib.removePrefix (toString ../.) (toString path);
+      in
+        builtins.any (p: lib.hasPrefix p relPath) [
+          "/lib"
+          "/package.json"
+          "/package-lock.json"
+        ];
+    };
+    dontBuild = true;
+    npmDepsHash = "sha256-DxEYK/AvtutASjcIqPxex3aWW3BJmnmceLLJtZk1f2Q=";
+    installPhase = ''
+      mkdir -p $out/lib
+      mkdir -p $out/node_modules
+      cp -r lib/* $out/lib
+      cp -r node_modules/gnim $out/node_modules
+      cp -r package.json $out/package.json
+      cp -r package-lock.json $out/package-lock.json
+    '';
+  };
 in
   buildGoModule {
     inherit pname version buildInputs;
@@ -81,14 +106,21 @@ in
         --bash <($out/bin/ags completion bash) \
         --fish <($out/bin/ags completion fish) \
         --zsh <($out/bin/ags completion zsh)
+
+      mkdir -p $out/share/ags/js
+      cp -r ${gjsPackage}/* $out/share/ags/js
     '';
 
     ldflags = [
-      "-X main.agsJsPackage=${agsJsPackage}/share/ags/js"
+      "-X main.agsJsPackage=${gjsPackage}"
       "-X main.gtk4LayerShell=${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
       "-X main.gjs=${gjs}/bin/gjs"
       "-X main.bash=${bash}/bin/bash"
     ];
+
+    passthru = {
+      jsPackage = gjsPackage;
+    };
 
     meta = {
       homepage = "https://github.com/Aylur/ags";

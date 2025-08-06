@@ -13,20 +13,23 @@
         "type": "kofi",
         "url": "https://ko-fi.com/aylur"
     },
+    "peerDependencies": {
+        "gnim": "latest"
+    },
     "exports": {
-        ".": "./src/index.ts",
-        "./gtk4": "./src/gtk4/index.ts",
-        "./gtk4/app": "./src/gtk4/app.ts",
-        "./gtk4/jsx-runtime": "./src/gtk4/jsx-runtime.ts",
-        "./gtk3": "./src/gtk3/index.ts",
-        "./gtk3/app": "./src/gtk3/app.ts",
-        "./gtk3/jsx-runtime": "./src/gtk3/jsx-runtime.ts",
-        "./file": "./src/file.ts",
-        "./process": "./src/process.ts",
-        "./time": "./src/time.ts",
-        "./gobject": "./src/gobject.ts",
-        "./dbus": "./src/dbus.ts",
-        "./fetch": "./src/fetch.ts"
+        ".": "./lib/index.ts",
+        "./gtk4": "./lib/gtk4/index.ts",
+        "./gtk4/app": "./lib/gtk4/app.ts",
+        "./gtk4/jsx-runtime": "./lib/gtk4/jsx-runtime.ts",
+        "./gtk3": "./lib/gtk3/index.ts",
+        "./gtk3/app": "./lib/gtk3/app.ts",
+        "./gtk3/jsx-runtime": "./lib/gtk3/jsx-runtime.ts",
+        "./file": "./lib/file.ts",
+        "./process": "./lib/process.ts",
+        "./time": "./lib/time.ts",
+        "./gobject": "./lib/gobject.ts",
+        "./dbus": "./lib/dbus.ts",
+        "./fetch": "./lib/fetch.ts"
     },
     "engines": {
         "gjs": ">=1.79.0"

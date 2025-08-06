@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "lib": ["es2024"],
         "module": "ES2022",
         "target": "ES2020",
         "strict": true,

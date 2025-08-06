@@ -74,7 +74,6 @@ await suppress(import("gi://AstalPowerProfiles"), ({ PowerProfiles }) => {
 })
 
 await suppress(import("gi://AstalWp"), ({ Wp, Audio, Video }) => {
-    patch(Wp.prototype, "endpoints")
     patch(Wp.prototype, "devices")
     patch(Audio.prototype, "streams")
     patch(Audio.prototype, "recorders")

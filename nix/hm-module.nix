@@ -14,7 +14,6 @@ self: {
     gtk3Package = astal3;
     gtk4Package = astal4;
     ioPackage = io;
-    gjsPackage = gjsPackage;
   };
 in {
   options.programs.ags = {
@@ -64,16 +63,6 @@ in {
       '';
     };
 
-    astal.gjsPackage = mkOption {
-      type = types.package;
-      default = default.gjsPackage;
-      description = ''
-        The AGS Gjs package to use.
-
-        By default, this option will use the `packages.gjsPackage` as exposed by this flake.
-      '';
-    };
-
     finalPackage = mkOption {
       type = types.package;
       readOnly = true;
@@ -98,7 +87,7 @@ in {
       description = ''
         Additional packages to add to gjs's runtime.
       '';
-      example = literalExpression "[ pkgs.libsoup_3 ]";
+      example = literalExpression "[ pkgs.libadwaita ]";
     };
 
     systemd.enable = mkOption {
@@ -116,18 +105,21 @@ in {
       xdg.configFile."ags".source = cfg.configDir;
     })
     (let
-      pkg = cfg.package.override {
-        extraPackages = cfg.extraPackages;
-        astal3 = cfg.astal.gtk3Package;
-        astal-io = cfg.astal.ioPackage;
-        agsJsPackage = "${config.home.homeDirectory}/.local";
-      };
+      pkg =
+        (cfg.package.overrideAttrs (prev: {
+          # this is supposed to make the linked js package in node_modules persistent across updates.
+          # without this it links directly into nix store which will result in types being out of date
+          ldflags =
+            (lib.lists.drop 1 prev.ldflags) ++ ["-X main.agsJsPackage=${config.home.homeDirectory}/.local/share/ags"];
+        })).override {
+          extraPackages = cfg.extraPackages;
+          astal3 = cfg.astal.gtk3Package;
+          astal-io = cfg.astal.ioPackage;
+        };
     in {
       programs.ags.finalPackage = pkg;
       home.packages = [pkg];
-      # this is supposed to make the linked js package in node_modules persistent across updates
-      # without this it links directly into nix store which will result in types being out of date
-      home.file.".local/share/ags".source = "${cfg.astal.gjsPackage}/share/ags";
+      home.file.".local/share/ags".source = pkg.jsPackage;
     })
     (mkIf cfg.systemd.enable {
       systemd.user.services.ags = {
