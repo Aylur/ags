@@ -6,18 +6,12 @@
       url = "github:aylur/astal";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    gnim = {
-      url = "github:aylur/gnim";
-      flake = false;
-    };
   };
 
   outputs = {
     self,
     nixpkgs,
     astal,
-    gnim,
   }: let
     systems = ["x86_64-linux" "aarch64-linux"];
     forAllSystems = nixpkgs.lib.genAttrs systems;
@@ -29,20 +23,16 @@
 
         pkgs = nixpkgs.legacyPackages.${system};
 
-        agsJsPackage = pkgs.callPackage ./nix/gjs-package.nix {
-          inherit gnim version;
-        };
-
         agsPackages = {
           default = self.packages.${system}.ags;
-          gjsPackage = agsJsPackage;
 
           ags = pkgs.callPackage ./nix {
-            inherit version astal3 astal4 agsJsPackage;
+            inherit version astal3 astal4;
             astal-io = io;
           };
+
           agsFull = pkgs.callPackage ./nix {
-            inherit version astal3 astal4 agsJsPackage;
+            inherit version astal3 astal4;
             astal-io = io;
             extraPackages =
               builtins.attrValues (

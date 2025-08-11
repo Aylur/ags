@@ -1,5 +1,5 @@
 import AstalIO from "gi://AstalIO"
-import { Accessor } from "../gnim/src/index.js"
+import { Accessor } from "gnim"
 
 type Args = {
     cmd: string | string[]

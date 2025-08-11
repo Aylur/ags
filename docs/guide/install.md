@@ -33,14 +33,14 @@ Read more about running AGS on [Nix](./nix)
 
    ```sh [<i class="devicon-archlinux-plain" /> Arch]
    sudo pacman -Syu \
-       meson ninja go gobject-introspection \
+       npm meson ninja go gobject-introspection \
        gtk3 gtk-layer-shell \
        gtk4 gtk4-layer-shell
    ```
 
    ```sh [<i class="devicon-fedora-plain" /> Fedora]
    sudo dnf install \
-       meson ninja golang gobject-introspection-devel \
+       npm meson ninja golang gobject-introspection-devel \
        gtk3-devel gtk-layer-shell-devel \
        gtk4-devel gtk4-layer-shell-devel
    ```
@@ -50,7 +50,13 @@ Read more about running AGS on [Nix](./nix)
 3. Clone and install AGS
 
    ```sh
-   git clone --recurse-submodules https://github.com/aylur/ags
+   git clone https://github.com/aylur/ags.git
+   cd ags
+   npm install
    meson setup build
    meson install -C build
    ```
+
+> [!IMPORTANT]
+>
+> By default, meson installs to `/usr/local`.

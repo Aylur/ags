@@ -75,6 +75,7 @@ func initConfig(cmd *cobra.Command, args []string) {
 	lib.WriteFile(initDir+"/widget/Bar.tsx", getDataFile(gtk+"/Bar.tsx"))
 	lib.WriteFile(initDir+"/app.ts", getDataFile(gtk+"/app.ts"))
 	lib.Ln(agsJsPackage, initDir+"/node_modules/ags")
+	lib.Ln(agsJsPackage+"/node_modules/gnim", initDir+"/node_modules/gnim")
 
 	genTypes(initDir, "*", false)
 	fmt.Println(lib.Green("project ready") + " at " + lib.Cyan(initDir))
