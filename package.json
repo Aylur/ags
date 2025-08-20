@@ -14,7 +14,7 @@
         "url": "https://ko-fi.com/aylur"
     },
     "peerDependencies": {
-        "gnim": "latest"
+        "gnim": "^1.5.5"
     },
     "exports": {
         ".": "./lib/index.ts",
