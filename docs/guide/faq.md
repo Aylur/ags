@@ -110,37 +110,32 @@ printerr("print this line to stderr")
 You can use the `<For>` component to auto create/destroy a top-level widget
 automatically for each monitor.
 
-:::code-group
-
-```tsx [Bar.tsx]
-function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
-  return <window gdkmonitor={gdkmonitor} />
-}
-```
-
-:::
-
-:::code-group
-
 ```tsx [app.ts]
 import Gtk from "gi://Gtk"
 import Bar from "./Bar"
-import { For, createBinding } from "ags"
+import { For, This, createBinding } from "ags"
 
 function main() {
   const monitors = createBinding(app, "monitors")
 
   return (
-    <For each={monitors} cleanup={(win) => (win as Gtk.Window).destroy()}>
-      {(monitor) => <Bar gdkmonitor={monitor} />}
+    <For each={monitors}>
+      {(monitor) => (
+        <This this={app}>
+          <window
+            name="MyWindow"
+            gdkmonitor={monitor}
+            $={(self) => onCleanup(() => self.destroy())}
+          />
+          {otherWindows}
+        </This>
+      )}
     </For>
   )
 }
 
 app.start({ main })
 ```
-
-:::
 
 ## Error: Can't convert non-null pointer to JS value
 
