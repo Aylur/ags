@@ -41,9 +41,7 @@ export class AppDBus extends Service {
             insector() {},
             toggleWindow() {},
             quit() {},
-            request() {
-                return Promise.reject()
-            },
+            request: () => Promise.reject(),
         })
 
         return app.proxy({

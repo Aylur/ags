@@ -38,7 +38,6 @@
     nodejs
     dart-sass
     blueprint-compiler
-    astal-io # FIXME: should not be needed after the astal commands are properly implemented using dbus in astal.go
   ];
 
   girDirs = let
@@ -68,7 +67,7 @@
         ];
     };
     dontBuild = true;
-    npmDepsHash = "sha256-/LITsflJzFSmIYoQMlElszFjrgyIVom44lV7EFGVuKo=";
+    npmDepsHash = "sha256-NWLE7AWN0/CDKYOusP6zG0mu9y5dNVKuGb2xcMWrhCg=";
     installPhase = ''
       mkdir -p $out/lib
       mkdir -p $out/node_modules
@@ -84,7 +83,7 @@ in
 
     src = ../cli;
 
-    vendorHash = "sha256-Pw6UNT5YkDVz4HcH7b5LfOg+K3ohrBGPGB9wYGAQ9F4=";
+    vendorHash = "sha256-lK6TuPJWPXfuCDB5bEsWOngk5ApPYxkbMTLci4oZA1g=";
     proxyVendor = true;
 
     nativeBuildInputs = [

@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"ags/lib"
+	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -11,6 +13,6 @@ var listCommand = &cobra.Command{
 	Short: "List running instances",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		lib.Astal("--list")
+		fmt.Print(strings.Join(lib.GetInstanceNames(), "\n"))
 	},
 }
