@@ -6,18 +6,18 @@
     "license": "LGPL-2.1",
     "repository": {
         "type": "git",
-        "url": "https://github.com/aylur/ags.git",
-        "directory": "ags/lib"
+        "url": "https://github.com/aylur/ags.git"
     },
     "funding": {
         "type": "kofi",
         "url": "https://ko-fi.com/aylur"
     },
     "peerDependencies": {
-        "gnim": "^1.5.5"
+        "gnim": "^1.6.3"
     },
     "exports": {
         ".": "./lib/index.ts",
+        "./app": "./lib/app/index.ts",
         "./gtk4": "./lib/gtk4/index.ts",
         "./gtk4/app": "./lib/gtk4/app.ts",
         "./gtk4/jsx-runtime": "./lib/gtk4/jsx-runtime.ts",
