@@ -60,16 +60,10 @@ class App extends Gtk.Application {
         return this.#instanceName
     }
 
-    @signal(Gtk.Window)
-    private windowToggled(window: Gtk.Window) {
-        void window
-    }
-
     /**
      * Get all monitors from {@link Gdk.Display}.
      */
-    @getter(Array)
-    get minitors(): Array<Gdk.Monitor> {
+    get_monitors() {
         const mons = this.#display.get_monitors() as Gio.ListModel<Gdk.Monitor>
         const list = new Array<Gdk.Monitor>()
 
@@ -81,6 +75,19 @@ class App extends Gtk.Application {
         }
 
         return list
+    }
+
+    @signal(Gtk.Window)
+    private windowToggled(window: Gtk.Window) {
+        void window
+    }
+
+    /**
+     * Get all monitors from {@link Gdk.Display}.
+     */
+    @getter(Array)
+    get monitors(): Array<Gdk.Monitor> {
+        return this.get_monitors()
     }
 
     /**

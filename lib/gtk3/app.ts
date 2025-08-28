@@ -9,7 +9,7 @@ import { setConsoleLogDomain } from "console"
 import { exit, programArgs } from "system"
 import { createRoot } from "gnim"
 
-Gtk.init()
+Gtk.init(null)
 
 type StartConfig = Partial<{
     instanceName: string
@@ -58,6 +58,17 @@ class App extends Gtk.Application {
         return this.#instanceName
     }
 
+    /**
+     * Get all monitors from {@link Gdk.Display}.
+     */
+    get_monitors() {
+        const mons = Array.from({ length: this.#display.get_n_monitors() }, (_, i) =>
+            this.#display.get_monitor(i),
+        )
+
+        return mons.filter((mon) => mon !== null)
+    }
+
     @signal(Gtk.Window)
     private windowToggled(window: Gtk.Window) {
         void window
@@ -67,10 +78,8 @@ class App extends Gtk.Application {
      * Get all monitors from {@link Gdk.Display}.
      */
     @getter(Array)
-    get minitors(): Array<Gdk.Monitor> {
-        return Array.from({ length: this.#display.get_n_monitors() }, (_, i) =>
-            this.#display.get_monitor(i),
-        ).filter((mon) => mon !== null)
+    get monitors(): Array<Gdk.Monitor> {
+        return this.get_monitors()
     }
 
     /**
