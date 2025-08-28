@@ -92,7 +92,7 @@ export class Process extends GObject.Object {
      *
      * @param str String to be written to stdin
      */
-    public async writeAsync(str: string): Promise<void> {
+    async writeAsync(str: string): Promise<void> {
         return new Promise((resolve, reject) => {
             this.#inStream.write_all_async(
                 this.#encoder.encode(str),

@@ -8,7 +8,7 @@ import (
 )
 
 var reqCommand = &cobra.Command{
-	Use:   "request [message]",
+	Use:   "request [argv...]",
 	Short: "Send a request to an instance",
 	Args:  cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {

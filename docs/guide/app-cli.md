@@ -1,7 +1,7 @@
 # App and CLI
 
 `app` is a singleton **instance** of an
-[Astal.Application](https://aylur.github.io/libastal/astal4/class.Application.html).
+[Gtk.Application](https://docs.gtk.org/gtk4/class.Application.html).
 
 Depending on Gtk version import paths will differ
 
@@ -12,11 +12,11 @@ import app from "astal/gtk4/app"
 
 > [!TIP]
 >
-> `Astal.Application`'s DBus name is prefixed with `io.Astal`. If you are
-> writing a shell which is meant to be distributed you might want to avoid using
-> `app` and instead create a subclass of `Gtk.Application` or `Adw.Application`
-> while also following the
-> [packaging conventions](https://gjs.guide/guides/gtk/application-packaging.html)
+> The `app` instance's DBus name is prefixed with `io.Astal`. If you are writing
+> a shell which is meant to be distributed you might want to avoid using `app`
+> and instead create a subclass of `Gtk.Application` or `Adw.Application` while
+> also following the
+> [packaging conventions](https://gjs.guide/guides/gtk/application-packaging.html).
 
 ::: details Example App implementation
 
@@ -96,7 +96,7 @@ You can run multiple instances by defining a unique instance name.
 
 ```ts
 app.start({
-  instanceName: "my-instance", // defaults to "astal"
+  instanceName: "my-instance", // defaults to "ags"
   main() {},
 })
 ```
@@ -104,62 +104,37 @@ app.start({
 ## Messaging from CLI
 
 If you want to interact with an instance from the CLI, you can do so by sending
-a message.
+a request. A request is an argument array.
 
 ```ts
 app.start({
-  requestHandler(request: string, res: (response: any) => void) {
-    if (request == "say hi") {
-      return res("hi cli")
+  requestHandler(argv: string[], response: (response: string) => void) {
+    const [cmd, arg, ...rest] = argv
+    if (cmd == "say") {
+      return response(arg)
     }
-    res("unknown command")
+    response("unknown command")
   },
   main() {},
 })
 ```
 
-:::code-group
+The `response` function can be called once per request. `ags request` command
+will wait until a response is given at which point it will print it and exit.
 
-```sh [ags cli]
-ags request "say hi"
-# hi cli
+```sh
+ags request say hi
+# hi
 ```
 
-```sh [astal cli]
-astal say hi
-# hi cli
-```
-
-:::
-
-If you want to run arbitrary JavaScript from CLI, you can use the `eval()`
-method which will evaluate the passed string as the body of an `async` function.
+A request handler can also be defined by connecting to the `request` signal.
 
 ```ts
-app.start({
-  main() {},
-  requestHandler(js, res) {
-    app.eval(js).then(res).catch(res)
-  },
+app.connect("reqeust", (app, [cmd, arg, ...rest], response) => {
+  if (cmd === "say") {
+    response(arg)
+  }
 })
-```
-
-If the string does not contain a semicolon, a single expression is assumed and
-returned implicitly.
-
-```sh
-astal "'hello'"
-# hello
-```
-
-If the string contains a semicolon, you have to return explicitly.
-
-```sh
-astal "'hello';"
-# undefined
-
-astal "return 'hello';"
-# hello
 ```
 
 ## Toggling Windows by their name
@@ -200,8 +175,10 @@ function Bar() {
 > When assigning the `application` prop make sure `name` comes before. Props are
 > set sequentially and if name is applied after application it won't work.
 
-```sh [astal]
-astal -t Bar
+Toggle the visibility of windows using the `ags` CLI.
+
+```sh
+ags toggle Bar
 ```
 
 > [!TIP]
@@ -214,30 +191,23 @@ astal -t Bar
 > if (bar) bar.visible = true
 > ```
 
-## Client
+## Clients
 
-The first time you invoke `app.start()` the `main` block gets executed. While
-that instance is running any subsequent execution of the app will execute the
-`client` block.
+The first time you invoke `app.start()` (for example with `ags run`) the `main`
+block gets executed. While that instance is running any subsequent execution of
+the app will simply invoke a [request](#messaging-from-cli). For example running
+`ags run` again will be the equivalent of running `ags request`
 
 :::code-group
 
-```ts [main.ts]
+```ts [app.ts]
 app.start({
-  // main instance
-  main(...args: Array<string>) {
-    print(...args)
+  requestHandler(argv, response) {
+    console.log("request", ...argv)
+    response("hello from main instance")
   },
-
-  // every subsequent calls
-  client(message: (msg: string) => string, ...args: Array<string>) {
-    const res = message("you can message the main instance")
-    print(res)
-  },
-
-  // this runs in the main instance
-  requestHandler(request: string, res: (response: any) => void) {
-    res("response from main")
+  main(...argv: string[]) {
+    console.log(...argv)
   },
 })
 ```

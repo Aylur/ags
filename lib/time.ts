@@ -125,7 +125,7 @@ export function createPoll<T>(
     function subscribe(callback: () => void): () => void {
         if (subscribers.size === 0) {
             setTimeout(compute)
-            timer = setInterval(callback, ival)
+            timer = setInterval(compute, ival)
         }
 
         subscribers.add(callback)

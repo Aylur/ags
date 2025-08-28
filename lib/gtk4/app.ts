@@ -1,3 +1,4 @@
+import "../overrides.js"
 import GObject, { register, signal, setter } from "gnim/gobject"
 import GLib from "gi://GLib?version=2.0"
 import Gtk from "gi://Gtk?version=4.0"
