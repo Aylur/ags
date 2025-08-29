@@ -63,22 +63,21 @@ Put the svgs in a directory following the freedesktop spec, name them
 `<icon-name>-symbolic.svg` and use `app.add_icons()` or `icons` parameter in
 `app.start()`
 
-```
+```txt
 .
 ├── icons
 │   └── hicolor
 │       └── scalable
 │           └── actions
 │               └── custom-symbolic.svg
-└── src/
-    └── app.ts
+└── app.ts
 ```
 
 :::code-group
 
 ```ts [app.ts]
 app.start({
-  icons: `/absolute/path/to/icons`,
+  icons: `${SRC}/icons`, // SRC will point to the root
   main() {
     new Gtk.Image({
       iconName: "custom-symbolic",

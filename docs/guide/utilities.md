@@ -41,19 +41,28 @@ function monitorFile(
 import { interval, timeout, idle, createPoll } from "ags/time"
 ```
 
-You can use javascript native `setTimeout` or `setInterval` they return a
-[GLib.Source](https://docs.gtk.org/glib/struct.Source.html) instance.
-Alternatively you can use these functions provided by Astal, which return an
-[AstalIO.Time](https://aylur.github.io/libastal/io/class.Time.html) instance.
+You can use JavaScript native `setTimeout` or `setInterval` functions which
+return a [GLib.Source](https://docs.gtk.org/glib/struct.Source.html) instance.
+Alternatively you can use these functions provided by AGS, which return a
+`Timer` instance.
 
-`AstalIO.Time` has a `now` signal and a `cancelled` signal.
+```ts
+class Timer extends GObject.Object {
+  declare $signals: {
+    now(): void
+    cancelled(): void
+  }
+
+  cancel(): void
+}
+```
 
 ### Interval
 
 Will immediately execute the function and every `interval` millisecond.
 
 ```ts
-function interval(interval: number, callback?: () => void): AstalIO.Time
+function interval(interval: number, callback?: () => void): Timer
 ```
 
 ### Timeout
@@ -61,7 +70,7 @@ function interval(interval: number, callback?: () => void): AstalIO.Time
 Will execute the `callback` after `timeout` millisecond.
 
 ```ts
-function timeout(timeout: number, callback?: () => void): AstalIO.Time
+function timeout(timeout: number, callback?: () => void): Timer
 ```
 
 ### Idle
@@ -69,7 +78,7 @@ function timeout(timeout: number, callback?: () => void): AstalIO.Time
 Executes `callback` whenever there are no higher priority events pending.
 
 ```ts
-function idle(callback?: () => void): AstalIO.Time
+function idle(callback?: () => void): Timer
 ```
 
 Example:
@@ -137,22 +146,33 @@ import { subprocess, exec, execAsync, createSubprocess } from "ags/process"
 ### Subprocess
 
 You can start a subprocess and run callback functions whenever it outputs to
-stdout or stderr.
-[AstalIO.Process](https://aylur.github.io/libastal/io/class.Process.html) has a
-`stdout` and `stderr` signal.
+stdout or stderr. The returned `Process` instance has an `stdout` and `stderr`
+signal.
 
 ```ts
+class Process extends GObject.Object {
+  declare $signals: {
+    stdout(out: string): void
+    stderr(err: string): void
+    exit(code: number, signaled: boolean): void
+  }
+
+  kill(): void
+  write(str: string): void
+  async writeAsync(str: string): Promise<void>
+}
+
 function subprocess(args: {
   cmd: string | string[]
   out?: (stdout: string) => void
   err?: (stderr: string) => void
-}): AstalIO.Process
+}): Process
 
 function subprocess(
   cmd: string | string[],
   onOut?: (stdout: string) => void,
   onErr?: (stderr: string) => void,
-): AstalIO.Process
+): Process
 ```
 
 Example:

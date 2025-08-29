@@ -10,7 +10,7 @@ import AstalNetwork from "gi://AstalNetwork"
 import AstalTray from "gi://AstalTray"
 import AstalMpris from "gi://AstalMpris"
 import AstalApps from "gi://AstalApps"
-import { For, With, createBinding } from "ags"
+import { For, With, createBinding, onCleanup } from "ags"
 import { createPoll } from "ags/time"
 import { execAsync } from "ags/process"
 
@@ -237,13 +237,23 @@ function Clock({ format = "%H:%M" }) {
   )
 }
 
-export default function Bar(gdkmonitor: Gdk.Monitor) {
+export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
+  let win: Astal.Window
   const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
+
+  onCleanup(() => {
+    // Root components (windows) are not automatically destroyed.
+    // When the monitor is disconnected from the system, this callback
+    // is run from the parent <For> which allows us to destroy the window
+    win.destroy()
+  })
 
   return (
     <window
+      $={(self) => (win = self)}
       visible
-      name="bar"
+      namespace="my-bar"
+      name={`bar-${gdkmonitor.connector}`}
       gdkmonitor={gdkmonitor}
       exclusivity={Astal.Exclusivity.EXCLUSIVE}
       anchor={TOP | LEFT | RIGHT}

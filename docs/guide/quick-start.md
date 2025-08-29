@@ -2,7 +2,7 @@
 
 It's as easy as a few lines to get a bar running on your screen.
 
-:::details What will you be using
+## What will you be using
 
 - [Gnome JavaScript (GJS)](https://gjs.guide/) is the JavaScript runtime
 - [Astal](https://aylur.github.io/astal/) is a suite of libraries which lets you
@@ -12,8 +12,6 @@ It's as easy as a few lines to get a bar running on your screen.
 - [AGS](https://aylur.github.io/ags/) is a CLI tool which lets you skip setting
   up a dev environment and jump straight into writing your Desktop Shell in
   TypeScript
-
-:::
 
 ## Single file start
 
@@ -64,6 +62,12 @@ app.start({
 ```sh
 chmod +x mybar.tsx
 ./mybar.tsx
+```
+
+To setup a TypeScript environment use the `types` command
+
+```sh
+ags types -u -d /path/to/project/root
 ```
 
 ## Using a template
