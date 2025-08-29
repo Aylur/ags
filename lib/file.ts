@@ -79,4 +79,62 @@ export function writeFileAsync(file: string | Gio.File, content: string): Promis
     })
 }
 
-// TODO: monitor file
+// make sure monitor file ref count does not drop to 0
+const monitorFiles = new Set<Gio.FileMonitor>()
+
+export function monitorFile(
+    path: string,
+    callback: (file: string, event: Gio.FileMonitorEvent) => void,
+): Gio.FileMonitor {
+    const monitoredFile = Gio.File.new_for_path(path)
+
+    const mon = monitoredFile.monitor(
+        Gio.FileMonitorFlags.WATCH_HARD_LINKS |
+            Gio.FileMonitorFlags.WATCH_MOUNTS |
+            Gio.FileMonitorFlags.WATCH_MOVES,
+        null,
+    )
+
+    mon.connect("changed", (_, file, _file, event) => {
+        const path = file.get_path()
+        if (path) {
+            if (event === Gio.FileMonitorEvent.CREATED && path) {
+                monitorFile(path, callback)
+            }
+
+            if (event === Gio.FileMonitorEvent.DELETED && path === monitoredFile.get_path()) {
+                mon.cancel()
+            }
+
+            callback(path, event)
+        }
+    })
+
+    if (GLib.file_test(path, GLib.FileTest.IS_DIR)) {
+        const enumerator = monitoredFile.enumerate_children(
+            Gio.FILE_ATTRIBUTE_STANDARD_TYPE,
+            Gio.FileQueryInfoFlags.NONE,
+            null,
+        )
+
+        let i: Gio.FileInfo | null
+        while ((i = enumerator.next_file(null)) !== null) {
+            if (i.get_file_type() == Gio.FileType.DIRECTORY) {
+                const filepath = monitoredFile.get_child(i.get_name()).get_path()
+                if (filepath != null) {
+                    const m = monitorFile(filepath, callback)
+                    mon.connect("notify::cancelled", () => {
+                        m.cancel()
+                    })
+                }
+            }
+        }
+    }
+
+    monitorFiles.add(mon)
+    mon.connect("notify::cancelled", () => {
+        print(path, "cancelled")
+        monitorFiles.delete(mon)
+    })
+    return mon
+}
