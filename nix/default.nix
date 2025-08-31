@@ -67,7 +67,7 @@
         ];
     };
     dontBuild = true;
-    npmDepsHash = "sha256-NWLE7AWN0/CDKYOusP6zG0mu9y5dNVKuGb2xcMWrhCg=";
+    npmDepsHash = "sha256-U+mnakBGQYwR81DftV5iNszF0GsMV7yudhlkU7XgbcA=";
     installPhase = ''
       mkdir -p $out/lib
       mkdir -p $out/node_modules
