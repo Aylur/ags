@@ -3,6 +3,8 @@ import GLib from "gi://GLib?version=2.0"
 import GObject, { register, signal } from "gnim/gobject"
 import { Accessor } from "gnim"
 
+const encoder = new TextEncoder()
+
 export namespace Process {
     export interface SignalSignatures extends GObject.Object.SignalSignatures {
         stdout: Process["stdout"]
@@ -80,11 +82,25 @@ export class Process extends GObject.Object {
 
     /**
      * Write a line to the subprocess' stdin synchronously.
+     * See {@link Gio.DataOutputStream.prototype.write_bytes_async}
      *
      * @param str String to be written to stdin
      */
-    write(str: string): void {
-        this.#inStream.put_string(str)
+    write(str: string): Promise<[boolean, number]> {
+        return new Promise((resolve, reject) => {
+            this.#inStream.write_bytes_async(
+                encoder.encode(str),
+                GLib.PRIORITY_DEFAULT,
+                null,
+                (_, res) => {
+                    try {
+                        resolve(this.#inStream.write_all_finish(res))
+                    } catch (error) {
+                        reject(error)
+                    }
+                },
+            )
+        })
     }
 
     /**
