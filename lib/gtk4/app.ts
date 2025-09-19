@@ -32,7 +32,8 @@ type StartConfig = Partial<{
 }>
 
 interface AppSignals extends Gtk.Application.SignalSignatures {
-    request: App["request"]
+    "request": App["request"]
+    "window-toggled": App["windowToggled"]
 }
 
 @register()
