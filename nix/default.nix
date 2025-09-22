@@ -17,6 +17,7 @@
   dart-sass,
   libsoup_3,
   blueprint-compiler,
+  coreutils,
   installShellFiles,
   extraPackages ? [],
 }: let
@@ -38,6 +39,7 @@
     nodejs
     dart-sass
     blueprint-compiler
+    coreutils # base64
   ];
 
   girDirs = let
