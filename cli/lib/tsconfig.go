@@ -46,7 +46,7 @@ func updateTsconfig(tsconfig map[string]any, gtkVersion uint) {
 	compilerOptions["jsxImportSource"] = jsxImportSource
 }
 
-// if tsconfig.json exists in srcdir returns an updated config
+// GetTsconfig if tsconfig.json exists in srcdir returns an updated config
 // otherwise returns a default config
 func GetTsconfig(srcdir string, gtkVersion uint) string {
 	// TODO: look in parent directories recursively

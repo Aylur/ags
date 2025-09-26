@@ -15,7 +15,7 @@ import (
 var bashWrapper = `#!{{.Bash}}
 file="${XDG_RUNTIME_DIR:-/tmp}/{{.Hash}}-ags.js"
 
-cat <<EOF | base64 --decode > $file
+{{.Cat}} <<EOF | {{.Base64}} --decode > $file
 {{.JsCode}}
 EOF
 
@@ -25,6 +25,8 @@ type WrapperArgs struct {
 	Bash           string
 	Hash           string
 	JsCode         string
+	Cat            string
+	Base64         string
 	Gtk4LayerShell string
 	Gjs            string
 }
@@ -109,9 +111,11 @@ func bundle(cmd *cobra.Command, args []string) {
 	wrapperArgs := WrapperArgs{
 		Hash:           base64.RawURLEncoding.EncodeToString(jscode)[:6],
 		JsCode:         base64.StdEncoding.EncodeToString(jscode),
-		Gtk4LayerShell: gtk4LayerShell,
-		Bash:           bash,
-		Gjs:            gjs,
+		Gtk4LayerShell: env.Gtk4LayerShell,
+		Bash:           env.Bash,
+		Gjs:            env.Gjs,
+		Cat:            env.Cat,
+		Base64:         env.Base64,
 	}
 
 	if gtkVersion == 3 {

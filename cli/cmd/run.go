@@ -130,7 +130,7 @@ func run(infile string, rootdir string) {
 	})
 
 	if gtkVersion == 4 {
-		os.Setenv("LD_PRELOAD", gtk4LayerShell)
+		os.Setenv("LD_PRELOAD", env.Gtk4LayerShell)
 	}
 
 	args := append([]string{"-m", outfile}, gjsArgs...)

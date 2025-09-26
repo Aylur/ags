@@ -39,7 +39,8 @@
     nodejs
     dart-sass
     blueprint-compiler
-    coreutils # base64
+    bash
+    coreutils
   ];
 
   girDirs = let
@@ -117,6 +118,8 @@ in
       "-X main.gtk4LayerShell=${gtk4-layer-shell}/lib/libgtk4-layer-shell.so"
       "-X main.gjs=${gjs}/bin/gjs"
       "-X main.bash=${bash}/bin/bash"
+      "-X main.cat=${coreutils}/bin/cat"
+      "-X main.base64=${coreutils}/bin/base64"
     ];
 
     passthru = {

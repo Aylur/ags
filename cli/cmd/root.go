@@ -9,18 +9,12 @@ import (
 )
 
 var (
-	version        string
-	data           embed.FS
-	gtk4LayerShell string
-	tsForGir       string
-	gtkVersion     uint
-	agsJsPackage   string
-	instance       string
-	defines        []string
-	alias          []string
-	workingDir     string
-	bash           string
-	gjs            string
+	gtkVersion uint
+	instance   string
+	defines    []string
+	alias      []string
+	workingDir string
+	env        Env
 )
 
 var rootCmd = &cobra.Command{
@@ -29,26 +23,21 @@ var rootCmd = &cobra.Command{
 	Args:  cobra.NoArgs,
 }
 
-type Variables struct {
+type Env struct {
 	Version        string
 	Data           embed.FS
 	Gtk4LayerShell string
 	AgsJsPackage   string
-	TsForGir       string
+	TSForGir       string
 	Bash           string
 	Gjs            string
+	Cat            string
+	Base64         string
 }
 
-func Initialize(vars Variables) {
-	version = vars.Version
-	data = vars.Data
-	gtk4LayerShell = vars.Gtk4LayerShell
-	agsJsPackage = vars.AgsJsPackage
-	tsForGir = vars.TsForGir
-	bash = vars.Bash
-	gjs = vars.Gjs
-
-	rootCmd.Version = version
+func Initialize(_env Env) {
+	env = _env
+	rootCmd.Version = env.Version
 }
 
 func init() {

@@ -34,7 +34,7 @@ func init() {
 }
 
 func getDataFile(name string) string {
-	content, err := data.ReadFile("data/" + name)
+	content, err := env.Data.ReadFile("data/" + name)
 	if err != nil {
 		lib.Err(err)
 	}
@@ -62,7 +62,7 @@ func initConfig(cmd *cobra.Command, args []string) {
 	}
 
 	tsconf := getDataFile("tsconfig.json")
-	tsconf = strings.ReplaceAll(tsconf, "@AGS_JS_PACKAGE@", agsJsPackage)
+	tsconf = strings.ReplaceAll(tsconf, "@AGS_JS_PACKAGE@", env.AgsJsPackage)
 	tsconf = strings.ReplaceAll(tsconf, "@GTK_VERSION@", gtk)
 
 	lib.Mkdir(initDir + "/widget")
@@ -75,8 +75,8 @@ func initConfig(cmd *cobra.Command, args []string) {
 	lib.WriteFile(initDir+"/style.scss", getDataFile("style.scss"))
 	lib.WriteFile(initDir+"/widget/Bar.tsx", getDataFile(gtk+"/Bar.tsx"))
 	lib.WriteFile(initDir+"/app.ts", getDataFile(gtk+"/app.ts"))
-	lib.Ln(agsJsPackage, initDir+"/node_modules/ags")
-	lib.Ln(agsJsPackage+"/node_modules/gnim", initDir+"/node_modules/gnim")
+	lib.Ln(env.AgsJsPackage, initDir+"/node_modules/ags")
+	lib.Ln(env.AgsJsPackage+"/node_modules/gnim", initDir+"/node_modules/gnim")
 
 	genTypes(initDir, "*", false)
 	fmt.Println(lib.Green("project ready") + " at " + lib.Cyan(initDir))

@@ -1,3 +1,4 @@
+// Package lib
 package lib
 
 import (
@@ -149,6 +150,7 @@ type BundleOpts struct {
 // svg loader
 // other css preproceccors
 // http plugin with caching
+
 func Bundle(opts BundleOpts) api.BuildResult {
 	defines := sliceToKV(opts.Defines)
 	alias := sliceToKV(opts.Alias)

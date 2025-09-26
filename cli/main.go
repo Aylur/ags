@@ -19,18 +19,22 @@ var (
 	agsJsPackage   = "/usr/share/ags/js"
 	bash           = "/bin/sh"
 	gjs            = "/bin/gjs"
+	cat            = "/bin/cat"
+	base64         = "/bin/base64"
 )
 
 func main() {
 	lib.Initialize(agsJsPackage)
-	cmd.Initialize(cmd.Variables{
+	cmd.Initialize(cmd.Env{
 		Version:        version,
 		Data:           data,
 		Gtk4LayerShell: gtk4LayerShell,
 		AgsJsPackage:   agsJsPackage,
-		TsForGir:       tsForGir,
+		TSForGir:       tsForGir,
 		Gjs:            gjs,
 		Bash:           bash,
+		Cat:            cat,
+		Base64:         base64,
 	})
 	cmd.Execute()
 }
