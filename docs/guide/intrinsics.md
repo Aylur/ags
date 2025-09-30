@@ -167,7 +167,7 @@ example `<box />` and `<Gtk.Box />` are exactly the same thing.
 [Gtk.Stack](https://docs.gtk.org/gtk4/class.Stack.html)
 
 ```tsx
-<stack $={(self) => (self.visibleChildName = "child2")}>
+<stack visibleChildName="child2">
   <Child $type="named" name="child1" />
   <Child $type="named" name="child2" />
 </stack>
@@ -380,7 +380,7 @@ icon {
 [Astal.Stack](https://aylur.github.io/libastal/astal3/class.Stack.html)
 
 ```tsx
-<stack $={(self) => (self.visibleChildName = "child2")}>
+<stack visibleChildName="child2">
   <Child name="child1" />
   <Child name="child2" />
 </stack>
