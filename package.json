@@ -13,7 +13,7 @@
         "url": "https://ko-fi.com/aylur"
     },
     "peerDependencies": {
-        "gnim": "^1.6.3"
+        "gnim": "^1.8.0"
     },
     "exports": {
         ".": "./lib/index.ts",

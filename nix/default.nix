@@ -70,7 +70,7 @@
         ];
     };
     dontBuild = true;
-    npmDepsHash = "sha256-m79EFy4n8yEscBzePtuAVBLQYj9nZra0WC+rPgLLdug=";
+    npmDepsHash = "sha256-kMqhLf/+lLMSpqlFeAxTb9JRnPiAakkxaHoQ8tIskTM=";
     installPhase = ''
       mkdir -p $out/lib
       mkdir -p $out/node_modules
@@ -86,7 +86,7 @@ in
 
     src = ../cli;
 
-    vendorHash = "sha256-lK6TuPJWPXfuCDB5bEsWOngk5ApPYxkbMTLci4oZA1g=";
+    vendorHash = "sha256-UHMHbUGqJeUTw0AHHyTdQ8ed5z+SFyPcdXs4shC+hoI=";
     proxyVendor = true;
 
     nativeBuildInputs = [
