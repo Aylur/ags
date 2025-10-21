@@ -189,24 +189,8 @@ added to the gjs runtime.
 
 ## Using Astal CLI tools
 
-The home-manager module does not expose the `astal` CLI to the home environment,
-you have to do that yourself if you want:
-
-:::code-group
-
-```nix [<i class="devicon-nixos-plain"></i> home.nix]
-home.packages = [ inputs.astal.packages.${pkgs.system}.io ];
-```
-
-```sh [<i class="devicon-bash-plain"></i> sh]
-astal --help
-```
-
-:::
-
-Same applies to the `extraPackages` option, it does not expose the passed
-packages to the home environment. To make astal cli tools available to home
-environment, you have to add them yourself:
+The home-manager module does not expose Astal CLIs to the home environment, you
+have to do that yourself if you want:
 
 :::code-group
 

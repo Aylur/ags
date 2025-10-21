@@ -11,7 +11,7 @@ depth you can read the [Gnim docs](https://aylur.github.io/gnim/jsx.html).
 
 Every application's entry point is an `app.start` invocation. `app` is a
 singleton instance of
-[Astal.Application](https://aylur.github.io/libastal/astal4/class.Application.html).
+[Gtk.Application](https://docs.gtk.org/gtk4/class.Application.html).
 
 ```ts [<i class="devicon-typescript-plain"></i> app.ts]
 import app from "ags/gtk4/app"
@@ -190,6 +190,22 @@ function MyButton() {
 }
 ```
 
+> [!TIP]
+>
+> Using Gtk4, you can use
+> [EventControllers](https://docs.gtk.org/gtk4/class.EventController.html) for
+> more complex event handling.
+>
+> ```tsx
+> <box>
+>   <Gtk.GestureClick
+>     propagationPhase={Gtk.PropagationPhase.CAPTURE}
+>     button={Gdk.BUTTON_PRIMARY}
+>     onPressed={() => print("clicked with primary button")}
+>   />
+> </box>
+> ```
+
 ## How properties are passed
 
 Using JSX, a custom widget will always have a single object as its parameter.
@@ -314,8 +330,9 @@ return (
 
 > [!TIP]
 >
-> In a lot of cases it is better to always render the component and set its
-> `visible` property instead
+> In most cases it is better to always render the component and set its
+> `visible` property instead. Use `<With>` in cases when you need to unpack a
+> nullable object or when you need to access nested values.
 
 <!-- -->
 
@@ -341,7 +358,7 @@ return (
   <box>
     <For each={list}>
       {(item, index: Accessor<number>) => (
-        <label label={index.as((i) => `${i}. ${item}`)} />
+        <label label={index((i) => `${i}. ${item}`)} />
       )}
     </For>
   </box>

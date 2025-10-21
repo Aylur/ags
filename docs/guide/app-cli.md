@@ -77,13 +77,24 @@ app.runAsync([programInvocationName, ...programArgs])
 
 ## Entry point
 
+You should generally avoid creating resources in the top level of modules and
+instead create everything in the scope of the `main` function. This is due to
+the possibility of running as a [client](./app-cli#clients) process.
+
 :::code-group
 
-```ts [app.ts]
+```tsx [app.tsx]
+const globalInstance = SomeLibrary.get_default() // [!code --]
+
+function Bar() {
+  const globalInstance = SomeLibrary.get_default() // [!code ++]
+
+  return <></>
+}
+
 app.start({
   main() {
-    // setup anything
-    // instantiate widgets
+    Bar()
   },
 })
 ```

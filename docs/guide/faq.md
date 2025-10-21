@@ -8,6 +8,51 @@ You can find some full examples on the
 GJS does not include Node.js APIs you might be used to. You can find the
 alternative for most APIs in `GLib` and `Gio`.
 
+## Avoid JSX
+
+JSX syntax is entirely optional. Under the hood it is just syntactic sugar for
+[function composition](https://aylur.github.io/gnim/jsx#jsx-expressions-and-jsx-function).
+
+```tsx
+function Bar() {
+  // [!code --:5]
+  return (
+    <window name="Bar">
+      <box />
+    </window>
+  )
+  // [!code ++:4]
+  return jsx(Astal.Window, {
+    name: "Bar",
+    children: [jsx(Gtk.Box, {})],
+  })
+}
+```
+
+> [!TIP]
+>
+> You can wrap Gtk/Astal widgets in a simple function to achieve the syntax used
+> in AGSv1:
+>
+> ```ts
+> import { CCProps, jsx } from "ags"
+> import { Gtk, Astal } from "ags/gtk4"
+>
+> const Box = (props: Partial<CCProps<Gtk.Box, Gtk.Box.ConstructorProps>>) =>
+>   jsx(Gtk.Box, props)
+>
+> const Window = (
+>   props: Partial<CCProps<Astal.Window, Astal.Window.ConstructorProps>>,
+> ) => jsx(Astal.Window, props)
+>
+> function Bar() {
+>   return Window({
+>     name: "Bar",
+>     children: [Box({ children: ["Hello There"] })],
+>   })
+> }
+> ```
+
 ## Monitor id does not match compositor
 
 The monitor id property that windows expect is mapped by Gdk, which is not
