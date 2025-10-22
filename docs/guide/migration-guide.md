@@ -9,9 +9,11 @@
 namespace.
 
 ```ts
-import { App, Gtk } from "astal/gtk3" // [!code --:2]
+// [!code --:2]
+import { App, Gtk } from "astal/gtk3"
 import { bind, Variable } from "astal/state"
-import app from "ags/gtk3/app" // [!code ++:3]
+// [!code ++:3]
+import app from "ags/gtk3/app"
 import Gtk from "gi://Gtk?version=3.0"
 import { createBinding, createState } from "ags"
 ```
@@ -22,9 +24,11 @@ import { createBinding, createState } from "ags"
 everything. It is possible to use Gtk widgets directly without any prior setup.
 
 ```tsx
-const Calendar = astalify(Gtk.Calendar) // [!code --:2]
+// [!code --:2]
+const Calendar = astalify(Gtk.Calendar)
 const _ = <Calendar />
-const _ = <Gtk.Calendar /> // [!code ++:1]
+// [!code ++:1]
+const _ = <Gtk.Calendar />
 ```
 
 If you still prefer to use regular JS functions instead of JSX, you can do
@@ -32,7 +36,7 @@ If you still prefer to use regular JS functions instead of JSX, you can do
 ```ts
 import { CCProps } from "ags"
 import { Gtk } from "ags/gtk4"
-type BoxProps = CCProps<Gtk.Box, Gtk.Box.ConstructorProps>
+type BoxProps = Partial<CCProps<Gtk.Box, Gtk.Box.ConstructorProps>>
 const Box = (props: BoxProps) => jsx(Gtk.Box, props)
 
 Box({
@@ -82,10 +86,12 @@ read more about them on the
 [Gnim](https://aylur.github.io/gnim/jsx.html#state-management) documentation.
 
 ```tsx
-const v = Variable("") // [!code --:3]
+// [!code --:3]
+const v = Variable("")
 return <label label={v()} />
 v.set("new value")
-const [v, setV] = createState("") // [!code ++:3]
+// [!code ++:3]
+const [v, setV] = createState("")
 return <label label={v} />
 setV("new value")
 ```
@@ -106,12 +112,14 @@ Variable methods have a matching Accessor create functions
 `Binding` and `bind` has been removed but the API is identical with the only
 difference being that you need to use an Accessor creator function.
 
-```ts
-import { bind } from "astal" // [!code --:2]
+```tsx
+// [!code --:2]
+import { bind } from "astal"
 const v = bind(object, "prop")
-import { createBinding } from "ags" // [!code ++:2]
+// [!code ++:2]
+import { createBinding } from "ags"
 const v = createBinding(object, "prop")
-return <label label={v(v => `transformed ${v}`)} />
+return <label label={v((v) => `transformed ${v}`)} />
 ```
 
 ### Dynamic rendering
@@ -126,16 +134,20 @@ const list: Binding<Array<object>>
 
 return (
   <box>
-    {value.as((value) => ( // [!code --:3]
+    {/* [!code --:3] */}
+    {value.as((value) => (
       <></>
     ))}
-    <With value={value}> // [!code ++:3]
+    {/* [!code ++:3] */}
+    <With value={value}>
       {(value) => <></>}
     </With>
-    {list.as(list => list.map(item => ( // [!code --:3]
+    {/* [!code --:3] */}
+    {list.as(list => list.map(item => (
       <></>
     )))}
-    <For each={list}> // [!code ++:3]
+    {/* [!code ++:3] */}
+    <For each={list}>
       {(item) => <></>}
     </For>
   </box>
@@ -161,14 +173,15 @@ by default.
 
 The entry point in code changed from `App.config` to `app.start`
 
-<!-- prettier-ignore -->
 ```js
-App.config({ // [!code --:5]
+// [!code --:5]
+App.config({
   windows: [
     // window instances
   ],
 })
-import app from "astal/gtk4/app" // [!code ++:7]
+// [!code ++:7]
+import app from "astal/gtk4/app"
 
 app.start({
   main() {
@@ -184,14 +197,15 @@ run in
 [client mode](https://aylur.github.io/astal/guide/typescript/cli-app#client) and
 it is recommended to only execute code in either `main` or `client` blocks.
 
-<!-- prettier-ignore -->
 ```js
-const win = Widget.Window() // [!code --:5]
+// [!code --:5]
+const win = Widget.Window()
 
 App.config({
   windows: [win],
 })
-app.main({ // [!code ++:5]
+// [!code ++:5]
+app.main({
   main() {
     new Widget.Window()
   },
@@ -203,14 +217,15 @@ app.main({ // [!code ++:5]
 AGS now supports and recommends the usage of
 [JSX](./first-widgets#creating-and-nesting-widgets).
 
-<!-- prettier-ignore -->
 ```jsx
-const _ = Widget.Box({ // [!code --:4]
+// [!code --:4]
+const _ = Widget.Box({
   vertical: true,
   children: [Widget.Label("hello")],
 })
-const _ = ( // [!code ++:5]
-  <box vertical> 
+// [!code ++:5]
+const _ = (
+  <box vertical>
     <label label="hello" />
   </box>
 )
@@ -235,9 +250,9 @@ return <label label={label((hello) => `${hello} world`)} />
 
 Widgets are no longer subclassed, added methods have been removed.
 
-<!-- prettier-ignore -->
 ```jsx
-Widget.Button({ // [!code --:6]
+// [!code --:6]
+Widget.Button({
   setup: (self) => {
     self.on("signal-name", handler)
     self.hook(obj, handler, "changed")
@@ -252,10 +267,7 @@ function MyWidget() {
     obj.disconnect(id)
   })
 
-  return (
-    <button onClicked={handler} />
-  )
-
+  return <button onClicked={handler} />
 }
 ```
 
@@ -312,9 +324,9 @@ const b = createBinding(battery, "percentage")
 Creating custom "Services" now simply means creating a `GObject.Object`
 subclass.
 
-<!-- prettier-ignore -->
 ```ts
-class MyService extends Service { // [!code --:16]
+// [!code --:16]
+class MyService extends Service {
   static {
     Service.register(
       this,
@@ -372,12 +384,13 @@ To make windows toggleable through CLI you will have to now
 [pass the `app` instance to `Window`](./app-cli#toggling-windows-by-their-name)
 instances instead of passing an array of windows to `App.config`.
 
-<!-- prettier-ignore -->
 ```js
-App.config({ // [!code --:3]
+// [!code --:3]
+App.config({
   windows: [Widget.Window({ name: "window-name" })],
 })
-app.start({ // [!code ++:5]
+// [!code ++:5]
+app.start({
   main() {
     return <window name="window-name" application={app}></window>
   },
@@ -387,12 +400,13 @@ app.start({ // [!code ++:5]
 `ags --run-js` have been removed in favor of
 [requests](./app-cli#messaging-from-cli).
 
-<!-- prettier-ignore -->
 ```ts
-globalThis.myfunction = () => { // [!code --:3]
+// [!code --:3]
+globalThis.myfunction = () => {
   print("hello")
 }
-app.start({ // [!code ++:8]
+// [!code ++:8]
+app.start({
   requestHandler(request: string, res: (response: any) => void) {
     if (request == "myfunction") {
       res("hello")
