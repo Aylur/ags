@@ -1,8 +1,5 @@
 # Frequently Asked Questions
 
-You can find some full examples on the
-[repository](https://github.com/Aylur/ags/tree/main/examples).
-
 ## Standard Library
 
 GJS does not include Node.js APIs you might be used to. You can find the

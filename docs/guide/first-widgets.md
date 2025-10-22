@@ -34,7 +34,7 @@ top level - also known as a root - widget is always a
 ```tsx [widget/Bar.tsx]
 function Bar(monitor = 0) {
   return (
-    <window class="Bar" monitor={monitor}>
+    <window visible class="Bar" monitor={monitor}>
       <box>Content of the widget</box>
     </window>
   )
@@ -47,6 +47,11 @@ app.start({
   },
 })
 ```
+
+> [!IMPORTANT]
+>
+> In Gtk4 unlike other widgets, window widgets are not visible by default. Don't
+> forget to explicitly make it `visible`.
 
 ## Creating and nesting widgets
 
@@ -72,7 +77,7 @@ Now that you have declared `MyButton`, you can nest it into another component.
 ```tsx
 function MyBar() {
   return (
-    <window>
+    <window visible>
       <box>
         Click The button
         <MyButton />

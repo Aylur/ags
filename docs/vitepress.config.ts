@@ -66,6 +66,7 @@ export default defineConfig({
       { text: "Resources", link: "/guide/resources" },
       { text: "Intrinsics", link: "/guide/intrinsics" },
       { text: "FAQ", link: "/guide/faq" },
+      { text: "Examples", link: "/guide/examples" },
       { text: "Nix", link: "/guide/nix" },
       { text: "Migration Guide", link: "/guide/migration-guide" },
     ],

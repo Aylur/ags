@@ -32,64 +32,159 @@ features:
       With <code>ags run</code> you can run projects without bundling them first
 ---
 
-<!--TODO: add a few screenshots of desktops-->
+## Features
 
-<style>
-:root {
-  --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, var(--vp-c-purple-3), var(--vp-c-brand-3));
+<article class="feature feature-3-2">
+  <div class="feature-text">
+  <h3>Use a familiar language</h3>
 
-  --vp-home-hero-image-background-image: linear-gradient(-45deg, var(--vp-c-purple-3), var(--vp-c-brand-3));
-  --vp-home-hero-image-filter: blur(44px);
+  <span>
+    AGS uses the world's most used langauge: <i>JavaScript/TypeScript</i>. The rendering
+    library which let's you use an XML like syntax in JavaScript is inspired by web
+    frameworks such as React and Solid.
+  </span>
+  </div>
+
+  <div class="feature-code feature-row-1">
+
+```tsx
+function Bar() {
+  const [counter, setCounter] = createState(0)
+  const time = createPoll("", 1000, "date")
+
+  return (
+    <window visible anchor={TOP | LEFT | RIGHT}>
+      <centerbox>
+        <label $type="start" label={time} />
+        <button $type="end" onClicked={() => setCounter((c) => c + 1)}>
+          <label label={counter((c) => `clicked ${c} times`)} />
+        </button>
+      </centerbox>
+    </window>
+  )
+}
+```
+
+  </div>
+</article>
+
+<article class="feature feature-2-3">
+  <div class="feature-text">
+  <h3>Batteries included</h3>
+
+  <span>
+    Most common operations and queries you want to do are available from <a href="https://aylur.github.io/astal/" target="_blank">Astal</a> libraries. With most of the backend code provided, all you have to worry about is building the UI.
+  </span>
+
+  </div>
+
+  <div class="feature-code">
+
+```tsx
+function BatteryLabel() {
+  const percentage = createBinding(Battery.get_default(), "percentage")
+  return <label label={percentage((p) => `${Math.round(p * 100)}%`)} />
 }
 
-:root {
-  --overlay-gradient: color-mix(in srgb, var(--vp-c-brand-1), transparent 55%);
+function MediaPlayers() {
+  const players = createBinding(Mpris.get_default(), "players")
+  return (
+    <For each={players}>
+      {(player) => (
+        <button
+          label={createBinding(player, "title")}
+          onClicked={() => player.play_pause()}
+        />
+      )}
+    </For>
+  )
 }
+```
 
-.dark {
-  --overlay-gradient: color-mix(in srgb, var(--vp-c-brand-1), transparent 85%);
+  </div>
+</article>
+
+<article class="feature feature-3-2">
+  <div class="feature-text">
+  <h3>Styled with css</h3>
+
+  <span>
+    GTK supports styling with CSS. AGS also provides support for <a href="https://sass-lang.com/" target="_blank">SASS</a>. Although it's only a subset of what you can do on the web, most things you'd want are supported, such as CSS variables, keyframes, transforms, and more.
+  </span>
+
+  <div class="feature-gtk-css">
+    <a href="https://docs.gtk.org/gtk4/css-properties.html" target="_blank">List of supported CSS features</a>
+  </div>
+
+  </div>
+
+  <div class="feature-code feature-row-1">
+
+<!-- prettier-ignore -->
+```css
+button {
+  animation: wiggle 2s linear infinite;
 }
-
-.home-page {
-  background:
-    linear-gradient(215deg, var(--overlay-gradient), transparent 40%),
-    radial-gradient(var(--overlay-gradient), transparent 40%) no-repeat -60vw -40vh / 105vw 200vh,
-    radial-gradient(var(--overlay-gradient), transparent 65%) no-repeat 50% calc(100% + 20rem) / 60rem 30rem;
-
-  .VPFeature code {
-    background-color: var(--vp-code-line-highlight-color);
-    color: var(--vp-code-color);
-    padding: 2px;
-    border-radius: 4px;
-    padding: 3px 6px;
-  }
-
-  .VPFooter {
-    background-color: transparent !important;
-    border: none;
-  }
-
-  .VPNavBar:not(.top) {
-    background-color: transparent !important;
-    -webkit-backdrop-filter: blur(16px);
-    backdrop-filter: blur(16px);
-
-    div.divider {
-      display: none;
-    }
-  }
+@keyframes wiggle {
+  0% { transform: rotateZ(0); }
+  7% { transform: rotateZ(0); }
+  15% { transform: rotateZ(-15deg); }
+  20% { transform: rotateZ(10deg); }
+  25% { transform: rotateZ(-10deg); }
+  30% { transform: rotateZ(6deg); }
+  35% { transform: rotateZ(-4deg); }
+  40% { transform: rotateZ(0); }
+  100% { transform: rotateZ(0); }
 }
+```
 
-@media (min-width: 640px) {
-  :root {
-    --vp-home-hero-image-filter: blur(56px);
-  }
-}
+  </div>
+</article>
 
-@media (min-width: 960px) {
-  :root {
-    --vp-home-hero-image-filter: blur(68px);
-  }
-}
-</style>
+## Showcases
+
+<div class="showcase">
+
+![delta-shell](https://camo.githubusercontent.com/2fd68c89d85693877273d403f8d7de989839c28b38691bdecc4b3399941189cd/68747470733a2f2f692e696d6775722e636f6d2f684264626743652e706e67)
+
+  <div class="showcase-title">
+
+[Delta Shell](https://github.com/Sinomor/delta-shell) by delta-shell
+
+  </div>
+
+</div>
+
+<div class="showcase">
+
+![epik-shell](https://private-user-images.githubusercontent.com/100193740/407863454-1fa2dc55-41f8-46d6-bfac-afef2e83c32c.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NjEwOTE5MTcsIm5iZiI6MTc2MTA5MTYxNywicGF0aCI6Ii8xMDAxOTM3NDAvNDA3ODYzNDU0LTFmYTJkYzU1LTQxZjgtNDZkNi1iZmFjLWFmZWYyZTgzYzMyYy5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUxMDIyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MTAyMlQwMDA2NTdaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0zMmFkOGVjZWRkOGY0MTlmYjEzOTY0Y2Y0OGQ5NTMyOTE5NjljYTEzMzA1YzRhMGFmYTYxZmM1ZTgyNTBjMTRjJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.vBup2DRF70isIVSZ-q8CWbcDlUxPvvFbH6ChMJtbEhs)
+
+  <div class="showcase-title">
+
+[Epik Shell](https://github.com/ezerinz/epik-shell) by ezerinz
+
+  </div>
+
+</div>
+
+<div class="showcase">
+
+![colorshell](https://raw.githubusercontent.com/retrozinndev/colorshell/238fde6e287c79dbcbe5df9f478aa4b71c602e37/repo/shots/center-window-control-center.png)
+
+  <div class="showcase-title">
+
+[colorshell](https://github.com/retrozinndev/colorshell) by retrozinndev
+
+  </div>
+</div>
+
+<div class="showcase">
+
+![marble-shell](https://marble-shell.pages.dev/full.png)
+
+  <div class="showcase-title">
+
+[Marble Shell](https://github.com/Aylur/marble-shell) by Aylur
+
+  </div>
+</div>

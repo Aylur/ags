@@ -1,3 +1,320 @@
+@media (min-width: 960px) {
+  .feature {
+    margin-top: 24px;
+    border-radius: 12px;
+    background-color: var(--vp-c-bg-soft);
+
+    display: grid;
+
+    &.feature-2-3 {
+      grid-template-columns: 2fr 3fr;
+    }
+
+    &.feature-3-2 {
+      grid-template-columns: 3fr 2fr;
+    }
+
+    div.feature-text {
+      padding: 24px;
+      margin: auto 0;
+
+      h3 {
+        border: none;
+        margin: 0;
+        padding: 0;
+        margin-bottom: 12px;
+        font-size: 1.6rem;
+      }
+
+      span {
+        i {
+          white-space: nowrap;
+        }
+      }
+    }
+
+    div.feature-code div {
+      margin: 1px;
+      border-radius: 12px;
+    }
+
+    .feature-row-1 {
+      grid-row: 1;
+    }
+  }
+}
+
+.feature-gtk-css {
+  display: flex;
+  margin-top: 24px;
+
+  a {
+    margin: 0 auto;
+    padding: 8px 18px;
+    border-radius: 20px;
+    text-decoration: none !important;
+    animation: wiggle 2s linear infinite;
+
+    border-color: var(--vp-button-brand-border);
+    color: var(--vp-button-brand-text);
+    background-color: var(--vp-button-brand-bg);
+
+    &:hover {
+      border-color: var(--vp-button-brand-hover-border);
+      color: var(--vp-button-brand-hover-text);
+      background-color: var(--vp-button-brand-hover-bg);
+    }
+
+    &:active {
+      border-color: var(--vp-button-brand-active-border);
+      color: var(--vp-button-brand-active-text);
+      background-color: var(--vp-button-brand-active-bg);
+    }
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  7% {
+    transform: rotateZ(0);
+  }
+  15% {
+    transform: rotateZ(-8deg);
+  }
+  20% {
+    transform: rotateZ(5deg);
+  }
+  25% {
+    transform: rotateZ(-8deg);
+  }
+  30% {
+    transform: rotateZ(3deg);
+  }
+  35% {
+    transform: rotateZ(-2deg);
+  }
+  40%,
+  100% {
+    transform: rotateZ(0);
+  }
+}
+
+.showcase {
+  margin-bottom: 2rem;
+  padding: 4px;
+  border-radius: 12px;
+  background-color: var(--vp-c-bg-soft);
+  box-shadow: 1px 2px 5px 0 rgba(0, 0, 0, 0.3);
+
+  p {
+    margin: 0;
+    text-align: center;
+  }
+
+  .showcase-title {
+    padding: 2px;
+  }
+
+  img {
+    border-radius: 8px;
+    border: 1px solid var(--vp-c-bg);
+  }
+}
+
+:root {
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(
+    120deg,
+    var(--vp-c-purple-3),
+    var(--vp-c-brand-3)
+  );
+
+  --vp-home-hero-image-background-image: linear-gradient(
+    -45deg,
+    var(--vp-c-purple-3),
+    var(--vp-c-brand-3)
+  );
+  --vp-home-hero-image-filter: blur(44px);
+}
+
+:root {
+  --overlay-gradient: color-mix(in srgb, var(--vp-c-brand-1), transparent 55%);
+}
+
+.dark {
+  --overlay-gradient: color-mix(in srgb, var(--vp-c-brand-1), transparent 85%);
+}
+
+.home-page {
+  background:
+    linear-gradient(215deg, var(--overlay-gradient), transparent 40%),
+    radial-gradient(var(--overlay-gradient), transparent 40%)
+      no-repeat -60vw -40vh / 105vw 200vh,
+    radial-gradient(var(--overlay-gradient), transparent 65%) no-repeat 50%
+      calc(100% + 20rem) / 60rem 30rem;
+
+  .VPFeature code {
+    background-color: var(--vp-code-line-highlight-color);
+    color: var(--vp-code-color);
+    padding: 2px;
+    border-radius: 4px;
+    padding: 3px 6px;
+  }
+
+  .VPFooter {
+    background-color: transparent !important;
+    border: none;
+  }
+
+  .VPNavBar:not(.top) {
+    background-color: transparent !important;
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+
+    div.divider {
+      display: none;
+    }
+  }
+}
+
+@media (min-width: 640px) {
+  :root {
+    --vp-home-hero-image-filter: blur(56px);
+  }
+}
+
+@media (min-width: 960px) {
+  :root {
+    --vp-home-hero-image-filter: blur(68px);
+  }
+}
+
+/**
+ * https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css
+ */
+
+.VPNavBar .VPNavBarTitle span {
+  font-size: 1.2em;
+  font-weight: bold;
+  background: linear-gradient(120deg, var(--vp-c-brand-3), var(--vp-c-brand-1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+:root {
+  --vp-c-gray-1: #dddde3;
+  --vp-c-gray-2: #e4e4e9;
+  --vp-c-gray-3: #ebebef;
+  --vp-c-gray-soft: rgba(142, 150, 170, 0.14);
+
+  --vp-c-indigo-1: #3451b2;
+  --vp-c-indigo-2: #3a5ccc;
+  --vp-c-indigo-3: #5672cd;
+  --vp-c-indigo-soft: rgba(100, 108, 255, 0.14);
+
+  --vp-c-purple-1: #6f42c1;
+  --vp-c-purple-2: #7e4cc9;
+  --vp-c-purple-3: #8e5cd9;
+  --vp-c-purple-soft: rgba(159, 122, 234, 0.14);
+
+  --vp-c-green-1: #18794e;
+  --vp-c-green-2: #299764;
+  --vp-c-green-3: #30a46c;
+  --vp-c-green-soft: rgba(16, 185, 129, 0.14);
+
+  --vp-c-yellow-1: #915930;
+  --vp-c-yellow-2: #946300;
+  --vp-c-yellow-3: #9f6a00;
+  --vp-c-yellow-soft: rgba(234, 179, 8, 0.14);
+
+  --vp-c-red-1: #b8272c;
+  --vp-c-red-2: #d5393e;
+  --vp-c-red-3: #e0575b;
+  --vp-c-red-soft: rgba(244, 63, 94, 0.14);
+
+  --vp-c-sponsor: #db2777;
+}
+
+.dark {
+  --vp-c-gray-1: #515151;
+  --vp-c-gray-2: #464646;
+  --vp-c-gray-3: #323232;
+  --vp-c-gray-soft: hsla(0, 0%, 36%, 0.16);
+
+  --vp-c-indigo-1: hsl(207, 76%, 61%);
+  --vp-c-indigo-2: hsl(207, 86%, 51%);
+  --vp-c-indigo-3: hsl(207, 96%, 41%);
+  --vp-c-indigo-soft: hsla(207, 76%, 61%, 0.18);
+
+  --vp-c-purple-1: #c8abfa;
+  --vp-c-purple-2: #a879e6;
+  --vp-c-purple-3: #8e5cd9;
+  --vp-c-purple-soft: rgba(159, 122, 234, 0.16);
+
+  --vp-c-green-1: hsl(158, 100%, 42%);
+  --vp-c-green-2: hsl(158, 95%, 37%);
+  --vp-c-green-3: hsl(158, 90%, 35%);
+  --vp-c-green-soft: hsla(158, 100%, 42%, 0.16);
+
+  --vp-c-yellow-1: #f9b44e;
+  --vp-c-yellow-2: #da8b17;
+  --vp-c-yellow-3: #a46a0a;
+  --vp-c-yellow-soft: rgba(234, 179, 8, 0.16);
+
+  --vp-c-red-1: #f66f81;
+  --vp-c-red-2: #f14158;
+  --vp-c-red-3: #b62a3c;
+  --vp-c-red-soft: rgba(244, 63, 94, 0.16);
+}
+
+/* ---------- *
+ * Background *
+ * ---------- */
+
+:root {
+  --vp-c-bg: #ffffff;
+  --vp-c-bg-alt: #f6f6f7;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-soft: #f6f6f7;
+}
+
+.dark {
+  --vp-c-bg: #111111;
+  --vp-c-bg-alt: #181818;
+  --vp-c-bg-elv: #202122;
+  --vp-c-bg-soft: #202122;
+}
+
+/** Borders */
+:root {
+  --vp-c-border: #c2c2c4;
+  --vp-c-divider: #e2e2e3;
+  --vp-c-gutter: #e2e2e3;
+}
+
+.dark {
+  --vp-c-border: #3c3d3e;
+  --vp-c-divider: #2e2e2e;
+  --vp-c-gutter: #000000;
+}
+
+/* ---- *
+ * Text *
+ * ---- */
+
+:root {
+  --vp-c-text-1: rgba(60, 60, 67);
+  --vp-c-text-2: rgba(60, 60, 67, 0.78);
+  --vp-c-text-3: rgba(60, 60, 67, 0.56);
+}
+
+.dark {
+  --vp-c-text-1: rgba(255, 255, 245, 0.86);
+  --vp-c-text-2: rgba(235, 235, 245, 0.6);
+  --vp-c-text-3: rgba(235, 235, 245, 0.38);
+}
 /**
  * https://github.com/vuejs/vitepress/blob/main/src/client/theme-default/styles/vars.css
  */
