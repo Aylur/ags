@@ -145,7 +145,7 @@ button {
 
 <div class="showcase">
 
-![delta-shell](https://camo.githubusercontent.com/2fd68c89d85693877273d403f8d7de989839c28b38691bdecc4b3399941189cd/68747470733a2f2f692e696d6775722e636f6d2f684264626743652e706e67)
+![delta-shell](https://github.com/user-attachments/assets/6432dec3-91dc-42b8-8545-24cf45c47003)
 
   <div class="showcase-title">
 
