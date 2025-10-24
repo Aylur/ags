@@ -145,7 +145,7 @@ button {
 
 <div class="showcase">
 
-![delta-shell](https://github.com/user-attachments/assets/6432dec3-91dc-42b8-8545-24cf45c47003)
+![delta-shell](https://i.imgur.com/rnEX49B.png)
 
   <div class="showcase-title">
 
