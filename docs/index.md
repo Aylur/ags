@@ -149,7 +149,7 @@ button {
 
   <div class="showcase-title">
 
-[Delta Shell](https://github.com/Sinomor/delta-shell) by delta-shell
+[Delta Shell](https://github.com/Sinomor/delta-shell) by Sinomor
 
   </div>
 
