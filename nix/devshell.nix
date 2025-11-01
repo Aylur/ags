@@ -10,7 +10,7 @@
   ];
 
   packages = with pkgs; [
-    wrapGAppsHook
+    wrapGAppsHook3
     gobject-introspection
     libadwaita
   ];
