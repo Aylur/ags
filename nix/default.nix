@@ -8,7 +8,7 @@
   lib,
   buildGoModule,
   buildNpmPackage,
-  wrapGAppsHook,
+  wrapGAppsHook3,
   gobject-introspection,
   glib,
   gjs,
@@ -90,7 +90,7 @@ in
     proxyVendor = true;
 
     nativeBuildInputs = [
-      wrapGAppsHook
+      wrapGAppsHook3
       gobject-introspection
       installShellFiles
     ];

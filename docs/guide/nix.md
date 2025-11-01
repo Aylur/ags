@@ -39,7 +39,7 @@ To build a derivation you can use the `ags bundle` command.
       src = ./.;
 
       nativeBuildInputs = with pkgs; [
-        wrapGAppsHook
+        wrapGAppsHook3
         gobject-introspection
         ags.packages.${system}.default
       ];
