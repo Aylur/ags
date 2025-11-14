@@ -70,6 +70,17 @@ class MyObj extends GObject.Object {
 }
 ```
 
+Make sure to also update `tsconfig.json`
+
+```jsonc
+{
+  "compilerOptions": {
+    "experimentalDecorators": false, // [!code ++]
+    "target": "ES2020", // [!code ++]
+  },
+}
+```
+
 ### Syntax changes
 
 - `setup` -> `$`
