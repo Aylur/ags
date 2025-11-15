@@ -271,3 +271,55 @@ keymode.
   [Astal.Window](https://aylur.github.io/libastal/astal3/class.Window.html)
   instance, position it and handle click events. Checkout
   [examples/gtk3/popover](https://github.com/Aylur/ags/tree/main/examples/gtk3/popover)
+
+## Nested reactive values
+
+You might want to access deeply nested objects reactively which you can do using
+the [`<With>`](https://aylur.github.io/gnim/jsx#dynamic-rendering) component or
+by using [`createComputed`](https://aylur.github.io/gnim/jsx#createcomputed).
+
+```ts
+interface Nested extends GObject.Object {
+  value: string
+}
+
+interface MyObject extends GObject.Object {
+  nested: null | Nested
+}
+```
+
+Using the `<With>` component you can conditionally access and bind nested
+objects.
+
+```tsx
+function Component() {
+  const nested: Accessor<Nested | null> = createBinding(object, "nested")
+
+  return (
+    <With value={nested}>
+      {(nested) =>
+        nested && (
+          <box>
+            <label label={createBinding(nested, "value")} />
+          </box>
+        )
+      }
+    </With>
+  )
+}
+```
+
+Using `createComputed` you can flatten accessors.
+
+```tsx
+const nested = createBinding(object, "nested")
+const value = nested((n) => (n ? createBinding(n, "value") : null))
+const flattened = createComputed((get) => {
+  const v = get(value)
+  return v ? get(v) : null
+})
+
+function Component() {
+  return <label label={flattened((v) => v ?? "")} />
+}
+```
