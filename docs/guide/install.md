@@ -18,6 +18,15 @@ nix shell github:aylur/ags
 
 Read more about running AGS on [Nix](./nix)
 
+## Fedora
+
+maintainer: [@solopasha](https://github.com/solopasha)
+
+```sh
+sudo dnf copr enable solopasha/hyprland
+sudo dnf install aylurs-gtk-shell2
+```
+
 ## From Source
 
 1. Install these three
