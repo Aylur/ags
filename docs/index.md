@@ -188,3 +188,14 @@ button {
 
   </div>
 </div>
+
+<div class="showcase">
+
+![OkPanel](https://raw.githubusercontent.com/JohnOberhauser/OkPanelScreenshots/refs/heads/main/menu.png)
+
+  <div class="showcase-title">
+
+[OkPanel](https://github.com/JohnOberhauser/OkPanel) by John Oberhauser
+
+  </div>
+</div>
