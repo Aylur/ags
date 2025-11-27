@@ -6,6 +6,12 @@ Initialize a directory using the template.
 nix flake init --template github:aylur/ags
 ```
 
+> [!TIP]
+>
+> If you are new to NixOS and are not yet familiar with flakes, derivations or
+> development shells the recommended way to use AGS is the
+> [home-manager](#using-home-manager) module.
+
 ## Bundle and DevShell
 
 To build a derivation you can use the `ags bundle` command.

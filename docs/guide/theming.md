@@ -87,14 +87,6 @@ app.reset_css() // reset if need
 If you are not sure about the widget hierarchy or any CSS selector, you can use
 the [GTK inspector](https://wiki.gnome.org/Projects/GTK/Inspector)
 
-:::code-group
-
 ```sh [ags]
 ags inspect
 ```
-
-```sh [astal]
-astal --inspector
-```
-
-:::

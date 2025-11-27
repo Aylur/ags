@@ -207,6 +207,10 @@ example `<box />` and `<Gtk.Box />` are exactly the same thing.
 />
 ```
 
+> [!WARNING]
+>
+> In Gtk4 windows are invisible by default, so don't forget to pass `visible`.
+
 ## Gtk3
 
 ### box
@@ -420,7 +424,6 @@ icon {
 
 ```tsx
 <window
-  visible
   namespace="bar"
   class="Bar"
   monitor={0}

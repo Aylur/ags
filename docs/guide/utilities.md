@@ -135,6 +135,19 @@ function Counter() {
 }
 ```
 
+> [!WARNING]
+>
+> Under the hood when passing a command as the third argument it uses
+> [`execAsync`](#subprocess) which runs the given programs as is. They are
+> **not** executed in a shell environment, they do **not** expand ENV variables
+> like `$HOME`, and they do **not** handle logical operators like `&&` and `||`.
+>
+> If you want bash, run them with bash.
+>
+> ```ts
+> createPoll("", 1000, "bash -c 'command $ENV_VAR && command'")
+> ```
+
 ## Process functions
 
 Import from `ags/process`
@@ -197,6 +210,12 @@ function exec(cmd: string | string[]): string
 function execAsync(cmd: string | string[]): Promise<string>
 ```
 
+> [!WARNING]
+>
+> You should generally avoid `exec` and use its async variant `execAsync` as the
+> former will block IO, meaning the whole shell will freeze and will be
+> unresponsive until it returns.
+
 Example:
 
 ```ts
@@ -222,8 +241,8 @@ execAsync(["bash", "-c", "/path/to/script.sh"])
 > If you want bash, run them with bash.
 >
 > ```ts
-> exec(["bash", "-c", "command $VAR && command"])
-> exec("bash -c 'command $VAR' && command")
+> exec(["bash", "-c", "command $ENV_VAR && command"])
+> exec("bash -c 'command $ENV_VAR' && command")
 > ```
 
 ### createSubprocess

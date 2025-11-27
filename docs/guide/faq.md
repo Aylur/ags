@@ -3,9 +3,10 @@
 ## Standard Library
 
 GJS does not include Node.js APIs you might be used to. You can find the
-alternative for most APIs in `GLib` and `Gio`.
+alternative for most APIs in [GLib](https://docs.gtk.org/glib/) and
+[Gio](https://docs.gtk.org/gio/).
 
-## Avoid JSX
+## Avoiding JSX
 
 JSX syntax is entirely optional. Under the hood it is just syntactic sugar for
 [function composition](https://aylur.github.io/gnim/jsx#jsx-expressions-and-jsx-function).
@@ -193,8 +194,8 @@ notifd.get_notifications() // [!code ++]
 
 > [!TIP]
 >
-> Open up an issue/PR to add a
-> [workaround](https://github.com/Aylur/ags/blob/main/lib/src/overrides.ts).
+> Open up an issue/PR to add an
+> [override](https://github.com/Aylur/ags/blob/main/lib/src/overrides.ts).
 
 ## How to create regular floating windows
 
@@ -276,7 +277,7 @@ keymode.
 
 You might want to access deeply nested objects reactively which you can do using
 the [`<With>`](https://aylur.github.io/gnim/jsx#dynamic-rendering) component or
-by using [`createComputed`](https://aylur.github.io/gnim/jsx#createcomputed).
+by using [`createBinding`](https://aylur.github.io/gnim/jsx#createbinding).
 
 ```ts
 interface Nested extends GObject.Object {
@@ -309,17 +310,18 @@ function Component() {
 }
 ```
 
-Using `createComputed` you can flatten accessors.
+Using `createBinding` you can specify multiple properties which will be have as
+a "path" to the target property. Note that if any property in the path is
+nullable the result will be nullable.
 
 ```tsx
-const nested = createBinding(object, "nested")
-const value = nested((n) => (n ? createBinding(n, "value") : null))
-const flattened = createComputed((get) => {
-  const v = get(value)
-  return v ? get(v) : null
-})
-
 function Component() {
-  return <label label={flattened((v) => v ?? "")} />
+  const value: Accessor<string | null> = createBinding(
+    object,
+    "nested",
+    "value",
+  )
+
+  return <label label={value((v) => v ?? "")} />
 }
 ```

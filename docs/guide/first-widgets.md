@@ -5,7 +5,7 @@ depth you can read the [Gnim docs](https://aylur.github.io/gnim/jsx.html).
 
 > [!TIP]
 >
-> `gnim` is reexported from the `ags` module.
+> `gnim` symbols is reexported from the `ags` module.
 
 ## Entry point of applications
 
@@ -254,14 +254,17 @@ return (
 
 ## State management
 
-State is managed using signals. The most common signal you will use is
-`createState` and `createBinding`. `createState` is a writable signal while
-`createBinding` will be used to hook into GObject properties.
+State is managed using signals which are called
+[`Accessor`](https://aylur.github.io/gnim/jsx#state-management).
+
+- with `createState` you can instantiate a writable reactive value
+- with `createBinding` you can hook into GObject properties.
+- with `createComputed` you can derive reactive values
 
 :::code-group
 
 ```tsx [State example]
-import { createState } from "ags"
+import { createState, createComputed } from "ags"
 
 function Counter() {
   const [count, setCount] = createState(0)
@@ -270,7 +273,7 @@ function Counter() {
     setCount((v) => v + 1)
   }
 
-  const label = count((num) => num.toString())
+  const label = createComputed(() => count().toString())
 
   return (
     <box>
@@ -283,22 +286,22 @@ function Counter() {
 
 ```tsx [GObject example]
 import GObject, { register, property } from "ags/gobject"
-import { createBinding } from "ags"
+import { createBinding, createComputed } from "ags"
 
 @register()
-class CountStore extends GObject.Object {
-  @property(Number) counter = 0
+class CounterStore extends GObject.Object {
+  @property(Number) count = 0
 }
 
 function Counter() {
-  const count = new CountStore()
+  const counter = new CounterStore()
 
   function increment() {
-    count.counter += 1
+    counter.count += 1
   }
 
-  const counter = createBinding(count, "counter")
-  const label = counter((num) => num.toString())
+  const count = createBinding(count, "count")
+  const label = createComputed(() => count().toString())
 
   return (
     <box>
@@ -311,9 +314,60 @@ function Counter() {
 
 :::
 
-Signals can be called as a function which lets you transform its value. In the
-case of a `Gtk.Label` in this example, its label property expects a string, so
-it needs to be turned to a string first.
+Notice how in the `createComputed` body `count` is called as a function to track
+it automatically as a dependency for the derived `label` property.
+
+> [!TIP]
+>
+> There is a shorthand for `createComputed`.
+>
+> ```ts
+> // these two lines mean and do the same thing
+> const label = createComputed(() => count().toString())
+> const label = count((c) => c.toString())
+> ```
+
+## Integrating external programs
+
+Other than the aforementioned functions to manage state, AGS provides ways to
+integrate CLI tools you might be already familiar with:
+[`createPoll`](./utilities#createpoll) which polls a program at each given
+interval and [`createSubprocess`](./utilities#createsubprocess) which launches a
+given program and monitors its standard output.
+
+As an example let's say you want to use the `date` CLI command to get a
+formatted date.
+
+```tsx
+const date = createPoll("", 1000, `bash -c "date +%H:%M"`)
+
+return <label label={date} />
+```
+
+> [!WARNING]
+>
+> Running subprocesses are relatively expensive, so always prefer to use a
+> [library](./resources.html#astal-libraries) when available.
+
+In reality you would use
+[`GLib.DateTime`](https://docs.gtk.org/glib/struct.DateTime.html) or
+JavaScript's
+[`Date`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date).
+In newer version of GJS (1.85.2 >=) you can also use the new
+[`Temporal`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal)
+JavaScript builtin.
+
+```tsx
+const date = createPoll("", 1000, () => new Date().toString())
+
+return <label label={date} />
+```
+
+> [!WARNING] Avoid polling when possible.
+>
+> Keep in mind that polling is generally considered bad practice. You should use
+> events and signals whenever possible which will only do operations when
+> necessary.
 
 ## Dynamic rendering
 

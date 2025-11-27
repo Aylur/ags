@@ -50,12 +50,12 @@ features:
 ```tsx
 function Bar() {
   const [counter, setCounter] = createState(0)
-  const time = createPoll("", 1000, "date")
+  const date = createPoll("", 1000, `date "+%H:%M - %A %e."`)
 
   return (
     <window visible anchor={TOP | LEFT | RIGHT}>
       <centerbox>
-        <label $type="start" label={time} />
+        <label $type="start" label={date} />
         <button $type="end" onClicked={() => setCounter((c) => c + 1)}>
           <label label={counter((c) => `clicked ${c} times`)} />
         </button>
