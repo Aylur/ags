@@ -13,7 +13,7 @@
         "url": "https://ko-fi.com/aylur"
     },
     "peerDependencies": {
-        "gnim": "^1.8.2"
+        "gnim": "^1.9.0"
     },
     "exports": {
         ".": "./lib/index.ts",
@@ -39,9 +39,9 @@
     ],
     "devDependencies": {
         "@eslint/js": "latest",
-        "eslint": "latest",
-        "typescript": "latest",
-        "typescript-eslint": "latest"
+        "eslint": "^9.39.1",
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.48.0"
     },
     "scripts": {
         "lint": "eslint . --fix",
