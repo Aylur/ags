@@ -300,7 +300,7 @@ function Counter() {
     counter.count += 1
   }
 
-  const count = createBinding(count, "count")
+  const count = createBinding(counter, "count")
   const label = createComputed(() => count().toString())
 
   return (
