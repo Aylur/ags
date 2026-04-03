@@ -141,7 +141,7 @@ ags request say hi
 A request handler can also be defined by connecting to the `request` signal.
 
 ```ts
-app.connect("reqeust", (app, [cmd, arg, ...rest], response) => {
+app.connect("request", (app, [cmd, arg, ...rest], response) => {
   if (cmd === "say") {
     response(arg)
   }
