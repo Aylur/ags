@@ -98,6 +98,16 @@ in {
         Enable systemd integration.
       '';
     };
+
+    systemd.defines = mkOption {
+      type = types.attrsOf types.str;
+      default = {};
+      description = "defines for the systemd module. Will be passed into the ags service's ExecStart.";
+      example = {
+        DEBUG = "true";
+        RUNTIME = "\\'systemd\\'";
+      };
+    };
   };
 
   config = mkIf cfg.enable (mkMerge [
@@ -131,7 +141,12 @@ in {
         };
 
         Service = {
-          ExecStart = "${cfg.finalPackage}/bin/ags run";
+          ExecStart = let
+            defines =
+              lib.concatStringsSep " "
+              (lib.mapAttrsToList (key: value: "--define ${key}=${toString value}") cfg.systemd.defines);
+          in
+            "${cfg.finalPackage}/bin/ags run " + defines;
           Restart = "on-failure";
           KillMode = "mixed";
         };
