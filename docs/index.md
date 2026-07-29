@@ -39,7 +39,7 @@ features:
   <h3>Use a familiar language</h3>
 
   <span>
-    AGS uses the world's most used langauge: <i>JavaScript/TypeScript</i>. The rendering
+    AGS uses the world's most used language: <i>JavaScript/TypeScript</i>. The rendering
     library which let's you use an XML like syntax in JavaScript is inspired by web
     frameworks such as React and Solid.
   </span>
