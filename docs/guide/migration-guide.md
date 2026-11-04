@@ -48,7 +48,7 @@ Box({
 ### GObject decorators
 
 They were updated to the stage 3 proposal. You can read more about them on the
-[Gnim](https://aylur.github.io/gnim/gobject.html) documentation.
+[Gnim](https://v1.gnimjs.dev/gobject.html) documentation.
 
 ```ts
 @register()
@@ -94,7 +94,7 @@ Make sure to also update `tsconfig.json`
 
 `Variable` has been removed in favor of `Accessor` and `createState`. You can
 read more about them on the
-[Gnim](https://aylur.github.io/gnim/jsx.html#state-management) documentation.
+[Gnim](https://v1.gnimjs.dev/jsx.html#state-management) documentation.
 
 ```tsx
 // [!code --:3]
@@ -112,8 +112,8 @@ Variable methods have a matching Accessor create functions
 - `.poll`: [`createPoll`](./utilities.md#createpoll)
 - `.watch`: [`createSubprocess`](./utilities.md#createsubprocess)
 - `.observe`:
-  [`createConnection`](https://aylur.github.io/gnim/jsx#createconnection)
-- `.derive`: [`createComputed`](https://aylur.github.io/gnim/jsx#createcomputed)
+  [`createConnection`](https://v1.gnimjs.dev/jsx#createconnection)
+- `.derive`: [`createComputed`](https://v1.gnimjs.dev/jsx#createcomputed)
 
 - `.drop`: Accessors cannot be explicitly cleaned up. Use the intended create
   functions which will be cleaned up automatically.
@@ -205,7 +205,7 @@ app.start({
 
 It is no longer recommended to create top level instances because scripts can
 run in
-[client mode](https://aylur.github.io/astal/guide/typescript/cli-app#client) and
+[client mode](https://astal.dev/guide/typescript/cli-app#client) and
 it is recommended to only execute code in either `main` or `client` blocks.
 
 ```js
@@ -314,7 +314,7 @@ These are no longer called `Service`. There is no longer a distinction between a
 `Service` and `GObject.Object` and there are no longer builtin Services.
 
 These are now simply external
-[libraries](https://aylur.github.io/astal/guide/libraries/references#astal-libraries)
+[libraries](https://astal.dev/guide/libraries/references#astal-libraries)
 that will have to be installed next to AGS. They are now implemented in Vala or
 C which makes it possible to also use them outside of AGS.
 
@@ -383,10 +383,10 @@ class MyService extends GObject.Object {
 - Icon lookup is has no alternative. Use `Gtk.IconTheme`.
 
 - Authenticating have been moved to
-  [AstalAuth](https://aylur.github.io/astal/guide/libraries/auth)
+  [AstalAuth](https://astal.dev/guide/libraries/auth)
 
 - Sending notifications will be available in
-  [AstalNotifd](https://aylur.github.io/astal/guide/libraries/notifd). Until
+  [AstalNotifd](https://astal.dev/guide/libraries/notifd). Until
   then see [#26](https://github.com/Aylur/astal/issues/26).
 
 ### CLI

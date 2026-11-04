@@ -21,7 +21,7 @@ Read more about running AGS on [Nix](./nix)
 ## From Source
 
 1. Install these three
-   [Astal packages](https://aylur.github.io/astal/guide/installation)
+   [Astal packages](https://astal.dev/guide/installation)
 
    - astal-io
    - astal3

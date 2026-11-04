@@ -10,7 +10,7 @@ export default defineConfig({
   lastUpdated: true,
 
   head: [
-    ["link", { rel: "icon", href: "https://aylur.github.io/astal/icon.svg" }],
+    ["link", { rel: "icon", href: "https://astal.dev/icon.svg" }],
   ],
 
   markdown: {
@@ -47,11 +47,11 @@ export default defineConfig({
           },
           {
             text: "Astal",
-            link: "https://aylur.github.io/astal/",
+            link: "https://astal.dev/",
           },
           {
             text: "Gnim",
-            link: "https://aylur.github.io/gnim/",
+            link: "https://v1.gnimjs.dev/",
           },
         ],
       },

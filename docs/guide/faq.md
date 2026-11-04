@@ -9,7 +9,7 @@ alternative for most APIs in [GLib](https://docs.gtk.org/glib/) and
 ## Avoiding JSX
 
 JSX syntax is entirely optional. Under the hood it is just syntactic sugar for
-[function composition](https://aylur.github.io/gnim/jsx#jsx-expressions-and-jsx-function).
+[function composition](https://v1.gnimjs.dev/jsx#jsx-expressions-and-jsx-function).
 
 ```tsx
 function Bar() {
@@ -269,15 +269,15 @@ keymode.
   [Popover](https://docs.gtk.org/gtk4/class.Popover.html).
 
 - Gtk3: you can create an
-  [Astal.Window](https://aylur.github.io/libastal/astal3/class.Window.html)
+  [Astal.Window](https://docs.astal.dev/astal3/class.Window.html)
   instance, position it and handle click events. Checkout
   [examples/gtk3/popover](https://github.com/Aylur/ags/tree/main/examples/gtk3/popover)
 
 ## Nested reactive values
 
 You might want to access deeply nested objects reactively which you can do using
-the [`<With>`](https://aylur.github.io/gnim/jsx#dynamic-rendering) component or
-by using [`createBinding`](https://aylur.github.io/gnim/jsx#createbinding).
+the [`<With>`](https://v1.gnimjs.dev/jsx#dynamic-rendering) component or
+by using [`createBinding`](https://v1.gnimjs.dev/jsx#createbinding).
 
 ```ts
 interface Nested extends GObject.Object {

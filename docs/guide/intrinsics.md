@@ -151,7 +151,7 @@ example `<box />` and `<Gtk.Box />` are exactly the same thing.
 
 ### slider
 
-[Astal.Slider](https://aylur.github.io/libastal/astal4/class.Slider.html)
+[Astal.Slider](https://docs.astal.dev/astal4/class.Slider.html)
 
 ```tsx
 <slider
@@ -191,7 +191,7 @@ example `<box />` and `<Gtk.Box />` are exactly the same thing.
 
 ### window
 
-[Astal.Window](https://aylur.github.io/libastal/astal4/class.Window.html)
+[Astal.Window](https://docs.astal.dev/astal4/class.Window.html)
 
 ```tsx
 <window
@@ -237,7 +237,7 @@ example `<box />` and `<Gtk.Box />` are exactly the same thing.
 
 ### centerbox
 
-[Astal.CenterBox](https://aylur.github.io/libastal/astal3/class.CenterBox.html)
+[Astal.CenterBox](https://docs.astal.dev/astal3/class.CenterBox.html)
 
 ```tsx
 <centerbox orientation={Gtk.Orientation.HORIZONTAL}>
@@ -249,7 +249,7 @@ example `<box />` and `<Gtk.Box />` are exactly the same thing.
 
 ### circularprogress
 
-[Astal.CircularProgress](https://aylur.github.io/libastal/astal3/class.CircularProgress.html)
+[Astal.CircularProgress](https://docs.astal.dev/astal3/class.CircularProgress.html)
 
 ```tsx
 <circularprogress value={0.5} startAt={0.75} endAt={0.75}>
@@ -292,7 +292,7 @@ circularprogress {
 
 ### eventbox
 
-[Astal.EventBox](https://aylur.github.io/libastal/astal3/class.EventBox.html)
+[Astal.EventBox](https://docs.astal.dev/astal3/class.EventBox.html)
 
 ```tsx
 <eventbox
@@ -304,7 +304,7 @@ circularprogress {
 
 ### icon
 
-[Astal.Icon](https://aylur.github.io/libastal/astal3/class.Icon.html)
+[Astal.Icon](https://docs.astal.dev/astal3/class.Icon.html)
 
 ```tsx
 <icon
@@ -322,7 +322,7 @@ icon {
 
 ### label
 
-[Astal.Label](https://aylur.github.io/libastal/astal3/class.Label.html)
+[Astal.Label](https://docs.astal.dev/astal3/class.Label.html)
 
 ```tsx
 <label label="hello" maxWidthChars={16} wrap />
@@ -330,7 +330,7 @@ icon {
 
 ### levelbar
 
-[Astal.LevelBar](https://aylur.github.io/libastal/astal3/class.LevelBar.html)
+[Astal.LevelBar](https://docs.astal.dev/astal3/class.LevelBar.html)
 
 ```tsx
 <levelbar value={0.5} widthRequest={200} />
@@ -338,7 +338,7 @@ icon {
 
 ### overlay
 
-[Astal.Overlay](https://aylur.github.io/libastal/astal3/class.Overlay.html)
+[Astal.Overlay](https://docs.astal.dev/astal3/class.Overlay.html)
 
 ```tsx
 <overlay>
@@ -363,7 +363,7 @@ icon {
 
 ### scrollable
 
-[Astal.Scrollable](https://aylur.github.io/libastal/astal3/class.Scrollable.html)
+[Astal.Scrollable](https://docs.astal.dev/astal3/class.Scrollable.html)
 
 ```tsx
 <scrollable heightRequest={100}>
@@ -373,7 +373,7 @@ icon {
 
 ### slider
 
-[Astal.Slider](https://aylur.github.io/libastal/astal3/class.Slider.html)
+[Astal.Slider](https://docs.astal.dev/astal3/class.Slider.html)
 
 ```tsx
 <slider widthRequest={100} onDragged={({ value }) => print(value)} />
@@ -381,7 +381,7 @@ icon {
 
 ### stack
 
-[Astal.Stack](https://aylur.github.io/libastal/astal3/class.Stack.html)
+[Astal.Stack](https://docs.astal.dev/astal3/class.Stack.html)
 
 ```tsx
 <stack visibleChildName="child2">
@@ -400,7 +400,7 @@ icon {
 
 ### overlay
 
-[Astal.Overlay](https://aylur.github.io/libastal/astal3/class.Overlay.html)
+[Astal.Overlay](https://docs.astal.dev/astal3/class.Overlay.html)
 
 ```tsx
 <overlay>
@@ -420,7 +420,7 @@ icon {
 
 ### window
 
-[Astal.Window](https://aylur.github.io/libastal/astal4/class.Window.html)
+[Astal.Window](https://docs.astal.dev/astal4/class.Window.html)
 
 ```tsx
 <window

@@ -1,7 +1,7 @@
 # First Widgets
 
 On this page you will learn about the JSX syntax. To learn about it more in
-depth you can read the [Gnim docs](https://aylur.github.io/gnim/jsx.html).
+depth you can read the [Gnim docs](https://v1.gnimjs.dev/jsx.html).
 
 > [!TIP]
 >
@@ -29,7 +29,7 @@ app.start({
 Desktop Shells are composed of widgets. A widget is a piece of UI that has its
 own logic and style. A widget can be as small as a button or an entire bar. The
 top level - also known as a root - widget is always a
-[Window](https://aylur.github.io/libastal/astal4/class.Window.html).
+[Window](https://docs.astal.dev/astal4/class.Window.html).
 
 ```tsx [widget/Bar.tsx]
 function Bar(monitor = 0) {
@@ -255,7 +255,7 @@ return (
 ## State management
 
 State is managed using signals which are called
-[`Accessor`](https://aylur.github.io/gnim/jsx#state-management).
+[`Accessor`](https://v1.gnimjs.dev/jsx#state-management).
 
 - with `createState` you can instantiate a writable reactive value
 - with `createBinding` you can hook into GObject properties.

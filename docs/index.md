@@ -5,7 +5,7 @@ pageClass: home-page
 hero:
   name: AGS
   text: A framework for crafting Wayland Desktop Shells
-  image: https://aylur.github.io/astal/icon.svg
+  image: https://astal.dev/icon.svg
   actions:
     - theme: brand
       text: Get Started
@@ -73,7 +73,7 @@ function Bar() {
   <h3>Batteries included</h3>
 
   <span>
-    Most common operations and queries you want to do are available from <a href="https://aylur.github.io/astal/" target="_blank">Astal</a> libraries. With most of the backend code provided, all you have to worry about is building the UI.
+    Most common operations and queries you want to do are available from <a href="https://astal.dev/" target="_blank">Astal</a> libraries. With most of the backend code provided, all you have to worry about is building the UI.
   </span>
 
   </div>

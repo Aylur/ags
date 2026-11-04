@@ -80,7 +80,7 @@ While working on the project, it would make sense to use the `ags` cli instead
 of building it everytime with `nix`.
 
 You could enter a shell with `agsFull` package which exposes AGS + every
-[Astal library](https://aylur.github.io/astal/guide/libraries/references#astal-libraries).
+[Astal library](https://astal.dev/guide/libraries/references#astal-libraries).
 
 ```sh
 nix shell github:aylur/ags#agsFull
@@ -184,7 +184,7 @@ Example content of `home.nix` file
 
 The module only includes the core `astal3`, `astal4` and `astal-io` libraries.
 If you want to include any other
-[library](https://aylur.github.io/astal/guide/libraries/references#astal-libraries)
+[library](https://astal.dev/guide/libraries/references#astal-libraries)
 you have to add them to `extraPackages`. You can also add binaries which will be
 added to the gjs runtime.
 

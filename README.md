@@ -7,4 +7,4 @@ GJS is a JavaScript runtime built on Firefox's SpiderMonkey JavaScript engine an
 
 ## Get started
 
-To get started read the [wiki](https://aylur.github.io/ags).
+To get started read the [wiki](https://agsv3.astal.dev/).

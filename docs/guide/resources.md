@@ -1,6 +1,6 @@
 # Resources
 
-- [Gnim](https://aylur.github.io/gnim/): The base GJS library AGS is built on.
+- [Gnim](https://v1.gnimjs.dev/): The base GJS library AGS is built on.
   Note that `gnim` modules are reexported from the `ags` namespace. For example
   the `gnim/gobject` module becomes `ags/gobject`.
 
@@ -14,31 +14,31 @@
 
 ## Astal Libraries
 
-- [Apps](https://aylur.github.io/libastal/apps): Library and CLI tool for
+- [Apps](https://docs.astal.dev/apps): Library and CLI tool for
   querying applications
-- [Auth](https://aylur.github.io/libastal/auth): Authentication library using
+- [Auth](https://docs.astal.dev/auth): Authentication library using
   PAM
-- [Battery](https://aylur.github.io/libastal/battery): DBus proxy library for
+- [Battery](https://docs.astal.dev/battery): DBus proxy library for
   upower daemon
-- [Bluetooth](https://aylur.github.io/libastal/bluetooth): Library to control
+- [Bluetooth](https://docs.astal.dev/bluetooth): Library to control
   bluez over dbus
-- [Cava](https://aylur.github.io/libastal/cava): Audio visualizer library using
+- [Cava](https://docs.astal.dev/cava): Audio visualizer library using
   cava
-- [Greet](https://aylur.github.io/libastal/greet): Library and CLI tool for
+- [Greet](https://docs.astal.dev/greet): Library and CLI tool for
   sending requests to greetd
-- [Hyprland](https://aylur.github.io/libastal/hyprland): Library and CLI tool
+- [Hyprland](https://docs.astal.dev/hyprland): Library and CLI tool
   for Hyprland IPC socket
-- [Mpris](https://aylur.github.io/libastal/mpris): Library and CLI tool for
+- [Mpris](https://docs.astal.dev/mpris): Library and CLI tool for
   controlling media players
-- [Network](https://aylur.github.io/libastal/network): NetworkManager wrapper
+- [Network](https://docs.astal.dev/network): NetworkManager wrapper
   library
-- [Notifd](https://aylur.github.io/libastal/notifd): A notification daemon
+- [Notifd](https://docs.astal.dev/notifd): A notification daemon
   library and CLI tool
-- [PowerProfiles](https://aylur.github.io/libastal/powerprofiles): Library and
+- [PowerProfiles](https://docs.astal.dev/powerprofiles): Library and
   CLI to control upowerd powerprofiles
-- [River](https://aylur.github.io/libastal/river): Library and CLI tool for
+- [River](https://docs.astal.dev/river): Library and CLI tool for
   getting status information of the river wayland compositor
-- [Tray](https://aylur.github.io/libastal/tray): A systemtray library and CLI
+- [Tray](https://docs.astal.dev/tray): A systemtray library and CLI
   tool
-- [WirePlumber](https://aylur.github.io/libastal/wireplumber): A library for
+- [WirePlumber](https://docs.astal.dev/wireplumber): A library for
   audio control using wireplumber
