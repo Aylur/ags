@@ -10,6 +10,7 @@
     "preview": "vitepress preview ."
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "devicon": "^2.16.0"
   },
   "prettier": {

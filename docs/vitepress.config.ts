@@ -5,7 +5,8 @@ export default defineConfig({
   description: "Documentation website of AGS",
 
   outDir: "./dist",
-  base: "/ags/",
+  base: process.env.VERCEL ? "" : "/ags/",
+  cleanUrls: true,
   lastUpdated: true,
 
   head: [
@@ -83,7 +84,7 @@ export default defineConfig({
     ],
 
     editLink: {
-      pattern: "https://github.com/aylur/ags/edit/main/docs/:path",
+      pattern: "https://github.com/aylur/ags/edit/v3/docs/:path",
       text: "Edit this page on GitHub",
     },
 
